@@ -3,7 +3,7 @@ title: Politique de confidentialité
 description: Traitement des données par Perpetual — journaux techniques d'hébergement et contact par e-mail, conforme au RGPD.
 ---
 
-<!-- Relu par le GenIA-L Assistant (Larcier-Intersentia) le 13/09/2026 : conforme au RGPD et à la loi belge du 30/07/2018 pour ce périmètre (pas de formulaire, pas de cookies). Date de dernière mise à jour à remplir à la mise en ligne (lot 9) — voir TODO du Cockpit. -->
+<!-- Date de dernière mise à jour à remplir à la mise en ligne. -->
 
 Dernière mise à jour : [DATE DE MISE EN LIGNE]
 

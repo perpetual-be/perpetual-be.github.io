@@ -3,7 +3,7 @@ title: Mentions légales
 description: Éditeur du site, hébergement et propriété intellectuelle — Perpetual SRL.
 ---
 
-<!-- Adresse du siège reprise du KBO (Banque-Carrefour des Entreprises) le 12/09/2026, à faire confirmer par Julien avant la mise en ligne. Relu par le GenIA-L Assistant (Larcier-Intersentia) le 13/09 : conforme au Livre XII du Code de droit économique. -->
+<!-- Adresse du siège : celle de la Banque-Carrefour des Entreprises, à confirmer avant la mise en ligne. -->
 
 ## Éditeur du site
 
