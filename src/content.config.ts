@@ -6,7 +6,16 @@ const pages = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './content' }),
   schema: z.object({
     title: z.string(),
+    subtitle: z.string().optional(),
     description: z.string().optional(),
+    // Home uniquement : chiffres clés et répartition du portefeuille.
+    stats: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    portfolio: z
+      .object({
+        title: z.string(),
+        items: z.array(z.object({ label: z.string(), percent: z.number() })),
+      })
+      .optional(),
   }),
 });
 

@@ -1,1 +1,279 @@
-[]
+[
+  {
+    "id": "ateliers-118",
+    "name": "Ateliers 118",
+    "kind": "detailed",
+    "order": 1,
+    "location": "Molenbeek-Saint-Jean",
+    "surface": "1 200 m²",
+    "was": "Une usine de colle construite dans les années 1950, devenue entrepôt à vin pendant trois décennies. Un bâtiment qui avait déjà survécu à deux vies.",
+    "saw": "De la lumière, des volumes, et des infrastructures trop coûteuses pour un seul occupant — donc à partager. Tout était déjà là ; il suffisait de le mettre dans le bon ordre.",
+    "became": "Acheté en 2016, rénové de fond en comble : isolation des façades, 300 m² de production solaire. Aujourd’hui treize ateliers de 30 à 300 m² où des artisans, des artistes, des indépendants et de petites entreprises développent leur activité — et parfois leur rêve.",
+    "photos": [
+      "ateliers-118-01.jpg",
+      "ateliers-118-02.jpg",
+      "ateliers-118-03.jpg",
+      "ateliers-118-04.jpg",
+      "ateliers-118-05.jpg"
+    ],
+    "hero": "ateliers-118-02.jpg"
+  },
+  {
+    "id": "the-bank",
+    "name": "The Bank",
+    "kind": "detailed",
+    "order": 2,
+    "location": "Liège, rue des Mineurs",
+    "surface": "900 m²",
+    "was": "Une agence bancaire de 900 m², au cœur de Liège.",
+    "saw": "Une surface unique qui pouvait en accueillir trois. Le service bancaire maintenu sur ce qu’il lui faut, une vitrine rendue au commerce, et les niveaux supérieurs libérés pour l’habitat.",
+    "became": "Une bijouterie de 160 m², un point Bancontact de 60 m², et un projet de logements de standing. Vendu.",
+    "photos": [
+      "the-bank-01.jpg",
+      "the-bank-02.jpg",
+      "the-bank-03.jpg"
+    ],
+    "hero": "the-bank-03.jpg"
+  },
+  {
+    "id": "data-box",
+    "name": "Data Box",
+    "kind": "detailed",
+    "order": 3,
+    "surface": "4 000 m² sur un hectare",
+    "was": "Un site technique construit pour un seul usage, occupé par un opérateur télécom.",
+    "saw": "Du temps. Le bâtiment reste occupé par Proximus jusqu’en 2031. Nos manières de travailler changent vite : décider aujourd’hui de ce que ce lieu sera dans six ans serait la seule erreur.",
+    "became": "Un site sécurisé jusqu’en 2031, dont la destination future reste ouverte.",
+    "photos": [
+      "data-box-01.jpg",
+      "data-box-02.jpg",
+      "data-box-03.jpg"
+    ],
+    "hero": "data-box-03.jpg"
+  },
+  {
+    "id": "community",
+    "name": "Community",
+    "kind": "detailed",
+    "order": 4,
+    "location": "Uccle",
+    "surface": "14 unités",
+    "was": "Une parcelle longue et étroite, difficile à découper. Trois logements y ont été tentés, le permis a été refusé.",
+    "saw": "Que la contrainte disait quelque chose : ce terrain refusait la division. Un seul projet, alors — les espaces communs au pied de l’immeuble, les chambres et leurs salles de bain dans les étages.",
+    "became": "Quatorze unités organisées autour d’espaces partagés. Ce qui coûte trop cher à chacun devient ce qu’on partage.",
+    "photos": [
+      "community-01.jpg",
+      "community-02.jpg",
+      "community-03.jpg",
+      "community-04.jpg",
+      "community-05.jpg",
+      "community-06.jpg",
+      "community-07.jpg",
+      "community-08.jpg",
+      "community-09.jpg",
+      "community-10.jpg",
+      "community-11.jpg",
+      "community-12.jpg",
+      "community-13.jpg",
+      "community-14.png",
+      "community-15.png",
+      "community-16.png"
+    ],
+    "hero": "community-05.jpg"
+  },
+  {
+    "id": "bnp-braine-le-comte",
+    "name": "Braine-le-Comte",
+    "kind": "agency",
+    "order": 1,
+    "location": "Braine-le-Comte",
+    "use": "Point Bancontact et service finance de la commune",
+    "photos": [
+      "bnp-braine-le-comte-01.jpg",
+      "bnp-braine-le-comte-02.jpg",
+      "bnp-braine-le-comte-03.jpg",
+      "bnp-braine-le-comte-04.jpg"
+    ]
+  },
+  {
+    "id": "bnp-pont-a-celles",
+    "name": "Pont-à-Celles",
+    "kind": "agency",
+    "order": 2,
+    "location": "Pont-à-Celles",
+    "surface": "220 m²",
+    "use": "Point Bancontact et auto-école",
+    "photos": [
+      "bnp-pont-a-celles-01.jpg",
+      "bnp-pont-a-celles-02.jpg"
+    ]
+  },
+  {
+    "id": "bnp-jambes",
+    "name": "Jambes",
+    "kind": "agency",
+    "order": 3,
+    "location": "Jambes",
+    "use": "Point Bancontact, école de danse et commerce de proximité",
+    "photos": [
+      "bnp-jambes-01.jpg",
+      "bnp-jambes-02.jpg"
+    ]
+  },
+  {
+    "id": "belfius-mettet",
+    "name": "Mettet",
+    "kind": "agency",
+    "order": 4,
+    "location": "Mettet",
+    "use": "Point Bancontact et quatre logements",
+    "photos": [
+      "belfius-mettet-01.jpg",
+      "belfius-mettet-02.jpg",
+      "belfius-mettet-03.jpg",
+      "belfius-mettet-04.jpg",
+      "belfius-mettet-05.jpg"
+    ]
+  },
+  {
+    "id": "belfius-braine-l-alleud",
+    "name": "Braine-l’Alleud",
+    "kind": "gallery",
+    "order": 1,
+    "location": "Braine-l’Alleud",
+    "photos": [
+      "belfius-braine-l-alleud-01.jpg",
+      "belfius-braine-l-alleud-02.jpg",
+      "belfius-braine-l-alleud-03.jpg",
+      "belfius-braine-l-alleud-04.jpg"
+    ]
+  },
+  {
+    "id": "bnp-bois-de-villers",
+    "name": "Bois-de-Villers",
+    "kind": "gallery",
+    "order": 2,
+    "location": "Bois-de-Villers",
+    "photos": [
+      "bnp-bois-de-villers-01.jpg",
+      "bnp-bois-de-villers-02.jpg"
+    ]
+  },
+  {
+    "id": "ing-belgrade",
+    "name": "Belgrade",
+    "kind": "gallery",
+    "order": 3,
+    "location": "Belgrade (Namur)",
+    "photos": [
+      "ing-belgrade-01.jpg",
+      "ing-belgrade-02.jpg"
+    ]
+  },
+  {
+    "id": "ing-haaltert",
+    "name": "Haaltert",
+    "kind": "gallery",
+    "order": 4,
+    "location": "Haaltert",
+    "photos": [
+      "ing-haaltert-01.jpg",
+      "ing-haaltert-02.jpg",
+      "ing-haaltert-03.jpg"
+    ]
+  },
+  {
+    "id": "ing-landen",
+    "name": "Landen",
+    "kind": "gallery",
+    "order": 5,
+    "location": "Landen",
+    "photos": [
+      "ing-landen-01.jpg",
+      "ing-landen-02.jpg",
+      "ing-landen-03.jpg",
+      "ing-landen-04.jpg"
+    ]
+  },
+  {
+    "id": "ing-tervuren",
+    "name": "Tervuren",
+    "kind": "gallery",
+    "order": 6,
+    "location": "Tervuren",
+    "photos": [
+      "ing-tervuren-01.jpg",
+      "ing-tervuren-02.jpg",
+      "ing-tervuren-03.jpg"
+    ]
+  },
+  {
+    "id": "ing-welkenraedt",
+    "name": "Welkenraedt",
+    "kind": "gallery",
+    "order": 7,
+    "location": "Welkenraedt",
+    "photos": [
+      "ing-welkenraedt-01.jpg",
+      "ing-welkenraedt-02.jpg",
+      "ing-welkenraedt-03.jpg"
+    ]
+  },
+  {
+    "id": "perwez",
+    "name": "Perwez",
+    "kind": "gallery",
+    "order": 8,
+    "location": "Perwez",
+    "photos": [
+      "perwez-01.jpg",
+      "perwez-02.jpg"
+    ]
+  },
+  {
+    "id": "waremme",
+    "name": "Waremme",
+    "kind": "gallery",
+    "order": 9,
+    "location": "Waremme",
+    "photos": [
+      "waremme-01.jpg",
+      "waremme-02.jpg",
+      "waremme-03.jpg",
+      "waremme-04.jpg"
+    ]
+  },
+  {
+    "id": "gilly",
+    "name": "Gilly",
+    "kind": "gallery",
+    "order": 10,
+    "location": "Gilly",
+    "photos": [
+      "gilly-01.jpg",
+      "gilly-02.jpg"
+    ]
+  },
+  {
+    "id": "wayez-27",
+    "name": "Wayez 27",
+    "kind": "gallery",
+    "order": 11,
+    "photos": [
+      "wayez-27-01.jpg",
+      "wayez-27-02.jpg",
+      "wayez-27-03.jpg",
+      "wayez-27-04.jpg"
+    ]
+  },
+  {
+    "id": "consolation",
+    "name": "Consolation",
+    "kind": "gallery",
+    "order": 12,
+    "photos": [
+      "consolation-01.jpg",
+      "consolation-02.jpg"
+    ]
+  }
+]

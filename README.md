@@ -21,8 +21,10 @@ Chaque push sur la branche `main` construit le site et le publie sur GitHub Page
 
 | Je veux… | Fichier |
 |---|---|
-| Changer le texte d'une page | `content/<page>.md` |
+| Changer le texte d'une page | `content/<page>.md` (`home`, `realisations`, `collectif`, `engagements`, `contact`) |
+| Chiffres clés et répartition du portefeuille (Home) | en-tête de `content/home.md` (`stats`, `portfolio`) |
 | Ajouter ou modifier un projet (détaillé, programme agences, galerie) | `data/projects.json` |
+| Navigation, e-mail, ville, TVA, citation de pied de site | `data/site.json` |
 | Ajouter un logo partenaire | `data/partners.json` + le fichier dans `public/partners/` |
 | Ajouter des photos | déposer les originaux dans le Drive, puis lancer le pipeline photos (voir plus bas) |
 | Changer la mise en page ou les styles | `src/` (pages, gabarits, `styles/`) |
@@ -36,14 +38,32 @@ Le contenu est de la donnée, pas du code : ajouter un projet consiste à ajoute
 content/             textes des pages (Markdown), un fichier par page
 data/projects.json   projets détaillés, programme agences, galerie
 data/partners.json   logos partenaires
+data/site.json       navigation, coordonnées, citation de pied de site
 design/              palette, typographies, maquettes exportées
 public/              favicon, logo, fichiers statiques servis tels quels
 src/                 layouts, pages, styles (Astro)
 ```
 
+Dans les fichiers Markdown, les commentaires HTML (`<!-- … -->`) sont des indications de mise en page : ils ne sont pas publiés.
+
+### Projets (`data/projects.json`)
+
+Une entrée par projet. Champs :
+
+| Champ | Rôle |
+|---|---|
+| `id` | clé du projet ; c'est aussi le nom du dossier de photos et le préfixe des fichiers (`<id>-01.jpg`, `<id>-02.jpg`, …) |
+| `name` | nom affiché |
+| `kind` | `detailed` (projet détaillé, page Réalisations), `agency` (exemple du programme agences) ou `gallery` (grille photo) |
+| `order` | ordre d'affichage au sein de son `kind` |
+| `location`, `surface`, `use` | la description standard « Localisation · Surface · Usage » |
+| `was`, `saw`, `became` | les trois champs d'un projet détaillé : ce que c'était, ce que nous y avons vu, ce que c'est devenu |
+| `photos` | fichiers du reportage, dans l'ordre |
+| `hero` | la photo pleine largeur d'un projet détaillé |
+
 ### Photos
 
-Les photos originales (haute résolution) ne sont pas dans le dépôt. Elles vivent dans le dossier Google Drive partagé, sous `02 Photos/<clé du projet>/`. Le pipeline de redimensionnement et de conversion (WebP/AVIF) sera documenté ici quand il existera.
+Les photos originales (haute résolution) ne sont pas dans le dépôt. Elles vivent dans le dossier Google Drive, sous `02 Photos/<id du projet>/`, nommées `<id>-01.jpg`, `<id>-02.jpg`, … dans l'ordre listé dans `data/projects.json`. Le pipeline de redimensionnement et de conversion (WebP/AVIF) sera documenté ici quand il existera.
 
 ## Domaine
 

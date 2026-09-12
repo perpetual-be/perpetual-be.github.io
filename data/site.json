@@ -1,0 +1,20 @@
+{
+  "name": "Perpetual",
+  "tagline": "Le trait d’union entre les idées et le capital.",
+  "signature": "Everything is already inside.",
+  "email": "julien@perpetual.be",
+  "city": "1030 Bruxelles",
+  "vat": "BE 0812.325.906",
+  "since": 2002,
+  "nav": [
+    { "label": "Home", "href": "/" },
+    { "label": "Réalisations", "href": "/realisations" },
+    { "label": "Collectif", "href": "/collectif" },
+    { "label": "Engagements", "href": "/engagements" },
+    { "label": "Contact", "href": "/contact" }
+  ],
+  "quote": {
+    "text": "Le véritable voyage de découverte ne consiste pas à chercher de nouveaux paysages, mais à avoir de nouveaux yeux.",
+    "author": "Marcel Proust"
+  }
+}
