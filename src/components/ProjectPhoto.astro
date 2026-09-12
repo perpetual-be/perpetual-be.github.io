@@ -46,7 +46,9 @@ const image = importer ? (await importer()).default : null;
 
 const alt =
   project.captions?.[filename] ??
-  (project.location ? `${project.name}, ${project.location}` : project.name);
+  (project.location && project.location !== project.name
+    ? `${project.name}, ${project.location}`
+    : project.name);
 
 const fallbackFormat = image?.format === 'png' ? 'png' : 'jpeg';
 ---

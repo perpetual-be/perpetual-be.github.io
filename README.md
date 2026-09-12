@@ -81,7 +81,7 @@ Lancer, depuis la racine du dépôt :
 npm run photos:ingest -- "<chemin vers le dossier Drive '02 Photos'>"
 ```
 
-Sur le PC d'Axel (synchro Drive locale), par exemple :
+Avec la synchronisation Google Drive installée sur le poste, par exemple :
 
 ```bash
 npm run photos:ingest -- "G:\Mon Drive\PERPETUAL\Site 2026\02 Photos"
@@ -93,7 +93,7 @@ Le script est incrémental (il ignore les fichiers déjà à jour) et signale en
 
 **Page de vérification** (non indexée) : [`/dev/photos`](http://localhost:4321/dev/photos) affiche toutes les photos de tous les projets, avec le compte ingérées / manquantes — sert à contrôler le pipeline avant de s'en servir dans les vraies pages (lot 5).
 
-**Point ouvert (technique, pas visuel)** : `src/photos-source/` n'étant pas versionné, le build automatique sur GitHub Actions n'aura pas les photos tant qu'elles n'y sont pas d'une manière ou d'une autre — à trancher au lot 4/5, quand les vraies pages afficheront des photos (options : les committer une fois triées, ou une autre solution). `/dev/photos` n'a besoin de rien de tout ça : elle ne sert qu'en local.
+`src/photos-source/` n'étant pas versionné, le build automatique sur GitHub Actions ne dispose pas des photos : la façon de les lui fournir sera documentée ici quand les pages du site en afficheront. `/dev/photos` ne sert qu'en local.
 
 ## Domaine
 
