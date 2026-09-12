@@ -1,0 +1,3 @@
+# Prévisualisation : pas d'indexation avant la mise en ligne sur perpetual.be (lot 9).
+User-agent: *
+Disallow: /

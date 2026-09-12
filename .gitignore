@@ -1,0 +1,19 @@
+# build
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# environment
+.env
+.env.*
+
+# photos originales : elles vivent dans le Drive, pas dans le dépôt
+photos-source/
+
+# OS / éditeurs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

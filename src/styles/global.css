@@ -1,0 +1,59 @@
+/* Styles de base. La palette et les typographies définitives arrivent avec la direction visuelle (lot 2) :
+   ces valeurs sont volontairement neutres. */
+:root {
+  --color-bg: #ffffff;
+  --color-text: #1f2328;
+  --color-muted: #757575;
+  --color-rule: #e5e5e5;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --measure: 38rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  font-family: var(--font-body);
+  font-size: 100%;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+main { flex: 1; }
+
+a { color: inherit; text-underline-offset: 0.2em; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible { outline: 2px solid var(--color-text); outline-offset: 3px; }
+
+img { max-width: 100%; height: auto; display: block; }
+
+.wrap {
+  width: min(100% - 3rem, 72rem);
+  margin-inline: auto;
+}
+
+.site-header, .site-footer {
+  padding-block: 1.5rem;
+}
+
+.site-header a {
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.site-footer {
+  border-top: 1px solid var(--color-rule);
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.site-footer p { margin: 0; }
