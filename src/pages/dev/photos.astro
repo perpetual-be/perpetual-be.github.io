@@ -1,0 +1,85 @@
+---
+// Page de vérification du pipeline photos (lot 4.2) : toutes les photos de tous les
+// projets, groupées par projet. Non indexée, pas de lien dans la navigation — sert
+// uniquement à contrôler visuellement l'ingestion avant de brancher les vraies pages
+// (lot 5). N'a pas besoin de fonctionner en CI : elle est utile en local, après
+// `npm run photos:ingest`.
+import Base from '../../layouts/Base.astro';
+import ProjectPhoto from '../../components/ProjectPhoto.astro';
+import { getCollection } from 'astro:content';
+
+const KIND_ORDER: Record<string, number> = { detailed: 0, agency: 1, gallery: 2 };
+
+const projects = (await getCollection('projects')).sort((a, b) => {
+  if (a.data.kind !== b.data.kind) return KIND_ORDER[a.data.kind] - KIND_ORDER[b.data.kind];
+  return (a.data.order ?? 0) - (b.data.order ?? 0);
+});
+
+const sourceImages = import.meta.glob('/src/photos-source/**/*.{jpg,jpeg,png,webp}');
+const isIngested = (id: string, filename: string) => `/src/photos-source/${id}/${filename}` in sourceImages;
+
+let totalPhotos = 0;
+let totalMissing = 0;
+for (const project of projects) {
+  for (const filename of project.data.photos) {
+    totalPhotos += 1;
+    if (!isIngested(project.id, filename)) totalMissing += 1;
+  }
+}
+---
+<Base title="QA photos" noindex>
+  <section class="wrap">
+    <p class="summary">
+      {projects.length} projets · {totalPhotos} photos référencées · {totalPhotos - totalMissing} ingérées
+      {totalMissing > 0 ? <strong> · {totalMissing} manquantes</strong> : <> · toutes ingérées</>}
+    </p>
+
+    {projects.map((project) => (
+      <article class="project">
+        <h2>
+          {project.data.name}
+          <span class="meta">
+            {project.data.location ? ` · ${project.data.location}` : ''} · {project.data.kind}
+          </span>
+        </h2>
+        {project.data.hero && <p class="tag">hero : {project.data.hero}</p>}
+        {project.data.heroCandidates?.length ? (
+          <p class="tag">heroCandidates : {project.data.heroCandidates.join(', ')}</p>
+        ) : null}
+        <div class="grid">
+          {project.data.photos.map((filename) => (
+            <figure>
+              <ProjectPhoto
+                project={{ id: project.id, ...project.data }}
+                filename={filename}
+                sizes="240px"
+                widths={[240, 480, 720]}
+              />
+              <figcaption>
+                {filename}
+                {!isIngested(project.id, filename) && <span class="warn"> — pas ingérée</span>}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </article>
+    ))}
+  </section>
+</Base>
+
+<style>
+  .summary { font-size: 0.9rem; margin-block: 1.5rem; }
+  .project { margin-block-end: 3rem; }
+  .project h2 { font-size: 1.1rem; margin-block-end: 0.25rem; font-weight: 600; }
+  .meta, .tag { color: var(--color-muted); font-size: 0.8rem; font-weight: 400; }
+  .tag { margin: 0.15rem 0; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-block-start: 0.75rem;
+  }
+  figure { margin: 0; }
+  figcaption { font-size: 0.7rem; color: var(--color-muted); word-break: break-all; margin-block-start: 0.25rem; }
+  .warn { color: #b3261e; }
+</style>

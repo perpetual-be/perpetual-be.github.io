@@ -26,7 +26,7 @@ Chaque push sur la branche `main` construit le site et le publie sur GitHub Page
 | Ajouter ou modifier un projet (détaillé, programme agences, galerie) | `data/projects.json` |
 | Navigation, e-mail, ville, TVA, citation de pied de site | `data/site.json` |
 | Ajouter un logo partenaire | `data/partners.json` + le fichier dans `public/partners/` |
-| Ajouter des photos | déposer les originaux dans le Drive, puis lancer le pipeline photos (voir plus bas) |
+| Ajouter des photos | déposer les originaux dans le Drive, référencer les fichiers dans `data/projects.json`, puis lancer `npm run photos:ingest` (voir plus bas) |
 | Changer la mise en page ou les styles | `src/` (pages, gabarits, `styles/`) |
 | Palette, typographies, maquettes | `design/` |
 
@@ -35,13 +35,15 @@ Le contenu est de la donnée, pas du code : ajouter un projet consiste à ajoute
 ### Structure
 
 ```
-content/             textes des pages (Markdown), un fichier par page
-data/projects.json   projets détaillés, programme agences, galerie
-data/partners.json   logos partenaires
-data/site.json       navigation, coordonnées, citation de pied de site
-design/              palette, typographies, maquettes exportées
-public/              favicon, logo, fichiers statiques servis tels quels
-src/                 layouts, pages, styles (Astro)
+content/               textes des pages (Markdown), un fichier par page
+data/projects.json     projets détaillés, programme agences, galerie
+data/partners.json     logos partenaires
+data/site.json         navigation, coordonnées, citation de pied de site
+design/                palette, typographies, maquettes exportées
+public/                favicon, logo, fichiers statiques servis tels quels
+scripts/               scripts d'outillage (ingestion des photos)
+src/                   layouts, pages, composants, styles (Astro)
+src/photos-source/     photos prêtes pour le site, générées par `npm run photos:ingest` (non versionné)
 ```
 
 Dans les fichiers Markdown, les commentaires HTML (`<!-- … -->`) sont des indications de mise en page : ils ne sont pas publiés.
@@ -65,7 +67,33 @@ Une entrée par projet. Champs :
 
 ### Photos
 
-Les photos originales (haute résolution) ne sont pas dans le dépôt. Elles vivent dans le dossier Google Drive, sous `02 Photos/<id du projet>/`, nommées `<id>-01.jpg`, `<id>-02.jpg`, … dans l'ordre listé dans `data/projects.json`. Le pipeline de redimensionnement et de conversion (WebP/AVIF) sera documenté ici quand il existera.
+Les photos originales (haute résolution) ne sont pas dans le dépôt. Elles vivent dans le dossier Google Drive `PERPETUAL / Site 2026 / 02 Photos/<id du projet>/`, nommées `<id>-01.jpg`, `<id>-02.jpg`, … dans l'ordre listé dans `data/projects.json`.
+
+**Pipeline d'ingestion** (`scripts/ingest-photos.mjs`) : lit `data/projects.json`, va chercher chaque photo référencée (`photos`, `hero`, `heroCandidates`) dans le dossier Drive local, et produit une version prête pour le site dans `src/photos-source/<id>/<fichier>` (dossier non versionné — voir `.gitignore` — puisque les originaux restent dans le Drive). Pour chaque photo, mécaniquement et sans aucun recadrage :
+
+- redressement selon l'orientation EXIF ;
+- suppression des métadonnées (EXIF, IPTC, XMP) ;
+- plus grand côté plafonné à 3000 px (jamais agrandi).
+
+Lancer, depuis la racine du dépôt :
+
+```bash
+npm run photos:ingest -- "<chemin vers le dossier Drive '02 Photos'>"
+```
+
+Sur le PC d'Axel (synchro Drive locale), par exemple :
+
+```bash
+npm run photos:ingest -- "G:\Mon Drive\PERPETUAL\Site 2026\02 Photos"
+```
+
+Le script est incrémental (il ignore les fichiers déjà à jour) et signale en fin d'exécution les photos référencées dans `data/projects.json` mais absentes du Drive, ainsi que les fichiers présents dans le Drive mais non référencés.
+
+**Utilisation dans le site** : le composant `src/components/ProjectPhoto.astro` affiche une photo à partir de son projet et de son nom de fichier ; il génère WebP/AVIF en plusieurs largeurs via `<Picture>` (`astro:assets`), et prend le texte alternatif dans `captions` (repli : « nom du projet, lieu »). Une photo pas encore ingérée s'affiche comme un espace réservé plutôt que de casser la page.
+
+**Page de vérification** (non indexée) : [`/dev/photos`](http://localhost:4321/dev/photos) affiche toutes les photos de tous les projets, avec le compte ingérées / manquantes — sert à contrôler le pipeline avant de s'en servir dans les vraies pages (lot 5).
+
+**Point ouvert (technique, pas visuel)** : `src/photos-source/` n'étant pas versionné, le build automatique sur GitHub Actions n'aura pas les photos tant qu'elles n'y sont pas d'une manière ou d'une autre — à trancher au lot 4/5, quand les vraies pages afficheront des photos (options : les committer une fois triées, ou une autre solution). `/dev/photos` n'a besoin de rien de tout ça : elle ne sert qu'en local.
 
 ## Domaine
 

@@ -1,0 +1,87 @@
+---
+// Affiche une photo d'un projet (data/projects.json) ingérée par
+// scripts/ingest-photos.mjs dans src/photos-source/<id>/<fichier>.
+//
+// - WebP/AVIF, plusieurs largeurs, srcset : via <Picture> (astro:assets).
+// - Texte alternatif : data.captions[<fichier>], repli « nom du projet, lieu ».
+// - Pas de recadrage ici : l'image s'affiche à ses proportions naturelles,
+//   le cadrage se fera en CSS aux lots 4-5.
+// - Une photo pas encore ingérée n'interrompt pas la page : espace réservé.
+import type { ImageMetadata } from 'astro';
+import { Picture } from 'astro:assets';
+
+const sourceImages = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/photos-source/**/*.{jpg,jpeg,png,webp}'
+);
+
+interface ProjectLike {
+  id: string;
+  name: string;
+  location?: string;
+  captions?: Record<string, string>;
+}
+
+interface Props {
+  project: ProjectLike;
+  filename: string;
+  /** Largeurs proposées ; Astro ignore automatiquement celles au-delà de la taille source. */
+  widths?: number[];
+  sizes?: string;
+  loading?: 'lazy' | 'eager';
+  class?: string;
+}
+
+const {
+  project,
+  filename,
+  widths = [480, 768, 1080, 1440, 1920, 2400, 3000],
+  sizes = '100vw',
+  loading = 'lazy',
+  class: className,
+} = Astro.props;
+
+const key = `/src/photos-source/${project.id}/${filename}`;
+const importer = sourceImages[key];
+const image = importer ? (await importer()).default : null;
+
+const alt =
+  project.captions?.[filename] ??
+  (project.location ? `${project.name}, ${project.location}` : project.name);
+
+const fallbackFormat = image?.format === 'png' ? 'png' : 'jpeg';
+---
+{
+  image ? (
+    <Picture
+      src={image}
+      alt={alt}
+      formats={['avif', 'webp']}
+      fallbackFormat={fallbackFormat}
+      widths={widths}
+      sizes={sizes}
+      loading={loading}
+      class={className}
+    />
+  ) : (
+    <div class="photo-missing" role="img" aria-label={`Photo pas encore ingérée : ${filename}`}>
+      <p>Pas encore ingérée</p>
+      <code>{project.id}/{filename}</code>
+    </div>
+  )
+}
+
+<style>
+  .photo-missing {
+    display: grid;
+    place-items: center;
+    gap: 0.25rem;
+    aspect-ratio: 4 / 3;
+    border: 1px dashed var(--color-rule, #ccc);
+    color: var(--color-muted, #757575);
+    font-size: 0.75rem;
+    text-align: center;
+    padding: 1rem;
+  }
+  .photo-missing p { margin: 0; }
+  .photo-missing code { font-size: 0.7rem; word-break: break-all; }
+</style>

@@ -7,9 +7,13 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "photos:ingest": "node scripts/ingest-photos.mjs"
   },
   "dependencies": {
     "astro": "^7.3.2"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.4"
   }
 }

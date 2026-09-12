@@ -7,4 +7,9 @@ export default defineConfig({
   site: 'https://perpetual-be.github.io',
   trailingSlash: 'never',
   build: { format: 'file' },
+  image: {
+    // Service par défaut d'Astro (Sharp) ; explicite ici parce que le pipeline photos
+    // (scripts/ingest-photos.mjs) et le composant ProjectPhoto.astro en dépendent tous les deux.
+    service: { entrypoint: 'astro/assets/services/sharp' },
+  },
 });
