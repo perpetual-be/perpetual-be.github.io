@@ -9,14 +9,24 @@
     "was": "Une usine de colle construite dans les années 1950, devenue entrepôt à vin pendant trois décennies. Un bâtiment qui avait déjà survécu à deux vies.",
     "saw": "De la lumière, des volumes, et des infrastructures trop coûteuses pour un seul occupant — donc à partager. Tout était déjà là ; il suffisait de le mettre dans le bon ordre.",
     "became": "Acheté en 2016, rénové de fond en comble : isolation des façades, 300 m² de production solaire. Aujourd’hui treize ateliers de 30 à 300 m² où des artisans, des artistes, des indépendants et de petites entreprises développent leur activité — et parfois leur rêve.",
+    "heroCandidates": [
+      "ateliers-118-01.jpg",
+      "ateliers-118-05.jpg"
+    ],
+    "captions": {
+      "ateliers-118-01.jpg": "Façade avant, côté rue",
+      "ateliers-118-02.jpg": "Anciens garages, aujourd’hui stockage des artistes et artisans",
+      "ateliers-118-03.jpg": "Anciens garages, aujourd’hui stockage des artistes et artisans",
+      "ateliers-118-04.jpg": "Un des treize ateliers",
+      "ateliers-118-05.jpg": "Arrière du bâtiment : les ateliers vitrés donnent sur la cour"
+    },
     "photos": [
       "ateliers-118-01.jpg",
       "ateliers-118-02.jpg",
       "ateliers-118-03.jpg",
       "ateliers-118-04.jpg",
       "ateliers-118-05.jpg"
-    ],
-    "hero": "ateliers-118-02.jpg"
+    ]
   },
   {
     "id": "the-bank",
@@ -28,12 +38,12 @@
     "was": "Une agence bancaire de 900 m², au cœur de Liège.",
     "saw": "Une surface unique qui pouvait en accueillir trois. Le service bancaire maintenu sur ce qu’il lui faut, une vitrine rendue au commerce, et les niveaux supérieurs libérés pour l’habitat.",
     "became": "Une bijouterie de 160 m², un point Bancontact de 60 m², et un projet de logements de standing. Vendu.",
+    "hero": "the-bank-03.jpg",
     "photos": [
       "the-bank-01.jpg",
       "the-bank-02.jpg",
       "the-bank-03.jpg"
-    ],
-    "hero": "the-bank-03.jpg"
+    ]
   },
   {
     "id": "data-box",
@@ -44,12 +54,12 @@
     "was": "Un site technique construit pour un seul usage, occupé par un opérateur télécom.",
     "saw": "Du temps. Le bâtiment reste occupé par Proximus jusqu’en 2031. Nos manières de travailler changent vite : décider aujourd’hui de ce que ce lieu sera dans six ans serait la seule erreur.",
     "became": "Un site sécurisé jusqu’en 2031, dont la destination future reste ouverte.",
+    "hero": "data-box-03.jpg",
     "photos": [
       "data-box-01.jpg",
       "data-box-02.jpg",
       "data-box-03.jpg"
-    ],
-    "hero": "data-box-03.jpg"
+    ]
   },
   {
     "id": "community",
@@ -61,6 +71,15 @@
     "was": "Une parcelle longue et étroite, difficile à découper. Trois logements y ont été tentés, le permis a été refusé.",
     "saw": "Que la contrainte disait quelque chose : ce terrain refusait la division. Un seul projet, alors — les espaces communs au pied de l’immeuble, les chambres et leurs salles de bain dans les étages.",
     "became": "Quatorze unités organisées autour d’espaces partagés. Ce qui coûte trop cher à chacun devient ce qu’on partage.",
+    "heroCandidates": [
+      "community-05.jpg",
+      "community-06.jpg",
+      "community-07.jpg",
+      "community-09.jpg",
+      "community-10.jpg",
+      "community-14.png",
+      "community-15.png"
+    ],
     "photos": [
       "community-01.jpg",
       "community-02.jpg",
@@ -78,8 +97,7 @@
       "community-14.png",
       "community-15.png",
       "community-16.png"
-    ],
-    "hero": "community-05.jpg"
+    ]
   },
   {
     "id": "bnp-braine-le-comte",

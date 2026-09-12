@@ -60,6 +60,8 @@ Une entrée par projet. Champs :
 | `was`, `saw`, `became` | les trois champs d'un projet détaillé : ce que c'était, ce que nous y avons vu, ce que c'est devenu |
 | `photos` | fichiers du reportage, dans l'ordre |
 | `hero` | la photo pleine largeur d'un projet détaillé |
+| `heroCandidates` | plusieurs photos pleine largeur à tester tant que le choix n'est pas fait |
+| `captions` | légende par fichier photo (sert de texte alternatif) |
 
 ### Photos
 

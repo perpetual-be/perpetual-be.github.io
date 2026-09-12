@@ -31,6 +31,10 @@ const projects = defineCollection({
     order: z.number().optional(),
     photos: z.array(z.string()).default([]),
     hero: z.string().optional(),
+    // Plusieurs photos pleine largeur à tester avant de trancher (lot 5).
+    heroCandidates: z.array(z.string()).optional(),
+    // Légende par fichier, sert de texte alternatif.
+    captions: z.record(z.string(), z.string()).optional(),
     was: z.string().optional(),
     saw: z.string().optional(),
     became: z.string().optional(),
