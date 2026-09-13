@@ -59,6 +59,7 @@ Une entrée par projet. Champs :
 | `kind` | `detailed` (projet détaillé, page Réalisations), `agency` (exemple du programme agences) ou `gallery` (grille photo) |
 | `order` | ordre d'affichage au sein de son `kind` |
 | `location`, `surface`, `use` | la description standard « Localisation · Surface · Usage » |
+| `address` | adresse complète du bien (tableau de Julien du 13/09) ; donnée de référence, pas nécessairement affichée |
 | `was`, `saw`, `became` | les trois champs d'un projet détaillé : ce que c'était, ce que nous y avons vu, ce que c'est devenu |
 | `photos` | fichiers du reportage, dans l'ordre |
 | `hero` | la photo pleine largeur d'un projet détaillé |

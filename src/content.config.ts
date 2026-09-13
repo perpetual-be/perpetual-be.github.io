@@ -26,6 +26,8 @@ const projects = defineCollection({
     name: z.string(),
     kind: z.enum(['detailed', 'agency', 'gallery']),
     location: z.string().optional(),
+    // Adresse complète fournie par Julien (tableau du 13/09) ; pas forcément affichée.
+    address: z.string().optional(),
     surface: z.string().optional(),
     use: z.string().optional(),
     order: z.number().optional(),

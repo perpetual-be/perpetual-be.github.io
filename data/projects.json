@@ -5,6 +5,7 @@
     "kind": "detailed",
     "order": 1,
     "location": "Molenbeek-Saint-Jean",
+    "address": "Rue des Béguines 118, 1080 Bruxelles",
     "surface": "1 200 m²",
     "was": "Une usine de colle construite dans les années 1950, devenue entrepôt à vin pendant trois décennies. Un bâtiment qui avait déjà survécu à deux vies.",
     "saw": "De la lumière, des volumes, et des infrastructures trop coûteuses pour un seul occupant — donc à partager. Tout était déjà là ; il suffisait de le mettre dans le bon ordre.",
@@ -34,6 +35,7 @@
     "kind": "detailed",
     "order": 2,
     "location": "Liège, rue des Mineurs",
+    "address": "Rue des Mineurs 53-55, 4000 Liège",
     "surface": "900 m²",
     "was": "Une agence bancaire de 900 m², au cœur de Liège.",
     "saw": "Une surface unique qui pouvait en accueillir trois. Le service bancaire maintenu sur ce qu’il lui faut, une vitrine rendue au commerce, et les niveaux supérieurs libérés pour l’habitat.",
@@ -50,6 +52,8 @@
     "name": "Data Box",
     "kind": "detailed",
     "order": 3,
+    "location": "Jemelle",
+    "address": "Rue Delvigne 102, Jemelle",
     "surface": "4 000 m² sur un hectare",
     "was": "Un site technique construit pour un seul usage, occupé par un opérateur télécom.",
     "saw": "Du temps. Le bâtiment reste occupé par Proximus jusqu’en 2031. Nos manières de travailler changent vite : décider aujourd’hui de ce que ce lieu sera dans six ans serait la seule erreur.",
@@ -67,6 +71,7 @@
     "kind": "detailed",
     "order": 4,
     "location": "Uccle",
+    "address": "Chaussée Saint-Job 8, 1180 Bruxelles",
     "surface": "14 unités",
     "was": "Une parcelle longue et étroite, difficile à découper. Trois logements y ont été tentés, le permis a été refusé.",
     "saw": "Que la contrainte disait quelque chose : ce terrain refusait la division. Un seul projet, alors — les espaces communs au pied de l’immeuble, les chambres et leurs salles de bain dans les étages.",
@@ -105,6 +110,8 @@
     "kind": "agency",
     "order": 1,
     "location": "Braine-le-Comte",
+    "address": "Grand-Place 18, Braine-le-Comte",
+    "surface": "600 m²",
     "use": "Point Bancontact et service finance de la commune",
     "photos": [
       "bnp-braine-le-comte-01.jpg",
@@ -119,6 +126,7 @@
     "kind": "agency",
     "order": 2,
     "location": "Pont-à-Celles",
+    "address": "Place Communale 25, Pont-à-Celles",
     "surface": "220 m²",
     "use": "Point Bancontact et auto-école",
     "photos": [
@@ -132,6 +140,8 @@
     "kind": "agency",
     "order": 3,
     "location": "Jambes",
+    "address": "Avenue Bourgmestre Jean Materne 135, Jambes",
+    "surface": "400 m²",
     "use": "Point Bancontact, école de danse et commerce de proximité",
     "photos": [
       "bnp-jambes-01.jpg",
@@ -144,6 +154,8 @@
     "kind": "agency",
     "order": 4,
     "location": "Mettet",
+    "address": "Rue de Lurot 1, Mettet",
+    "surface": "600 m²",
     "use": "Point Bancontact et quatre logements",
     "photos": [
       "belfius-mettet-01.jpg",
@@ -155,10 +167,13 @@
   },
   {
     "id": "belfius-braine-l-alleud",
-    "name": "Braine-l’Alleud",
+    "name": "# Bank 24",
     "kind": "gallery",
     "order": 1,
     "location": "Braine-l’Alleud",
+    "address": "Rue du Serment 6, Braine-l’Alleud",
+    "surface": "110 m²",
+    "use": "Commerce",
     "photos": [
       "belfius-braine-l-alleud-01.jpg",
       "belfius-braine-l-alleud-02.jpg",
@@ -168,10 +183,13 @@
   },
   {
     "id": "bnp-bois-de-villers",
-    "name": "Bois-de-Villers",
+    "name": "# Bank 9",
     "kind": "gallery",
     "order": 2,
     "location": "Bois-de-Villers",
+    "address": "Rue Raymond Noël 1, 5170 Profondeville",
+    "surface": "60 m²",
+    "use": "Commerce",
     "photos": [
       "bnp-bois-de-villers-01.jpg",
       "bnp-bois-de-villers-02.jpg"
@@ -179,10 +197,13 @@
   },
   {
     "id": "ing-belgrade",
-    "name": "Belgrade",
+    "name": "# Bank 34",
     "kind": "gallery",
     "order": 3,
     "location": "Belgrade (Namur)",
+    "address": "Avenue Joseph Abras 25, Belgrade",
+    "surface": "130 m²",
+    "use": "Commerces",
     "photos": [
       "ing-belgrade-01.jpg",
       "ing-belgrade-02.jpg"
@@ -190,10 +211,13 @@
   },
   {
     "id": "ing-haaltert",
-    "name": "Haaltert",
+    "name": "# Bank 11",
     "kind": "gallery",
     "order": 4,
     "location": "Haaltert",
+    "address": "Hoogstraat 54, Haaltert",
+    "surface": "250 m²",
+    "use": "Logement / bureau / commerce",
     "photos": [
       "ing-haaltert-01.jpg",
       "ing-haaltert-02.jpg",
@@ -202,10 +226,13 @@
   },
   {
     "id": "ing-landen",
-    "name": "Landen",
+    "name": "# Bank 10",
     "kind": "gallery",
     "order": 5,
     "location": "Landen",
+    "address": "Stationsstraat 129, Landen",
+    "surface": "350 m²",
+    "use": "Logements & commerce",
     "photos": [
       "ing-landen-01.jpg",
       "ing-landen-02.jpg",
@@ -215,10 +242,13 @@
   },
   {
     "id": "ing-tervuren",
-    "name": "Tervuren",
+    "name": "# Bank 8",
     "kind": "gallery",
     "order": 6,
     "location": "Tervuren",
+    "address": "Steenweg op Brussel 20, Tervuren",
+    "surface": "320 m²",
+    "use": "Commerces & parkings",
     "photos": [
       "ing-tervuren-01.jpg",
       "ing-tervuren-02.jpg",
@@ -227,10 +257,13 @@
   },
   {
     "id": "ing-welkenraedt",
-    "name": "Welkenraedt",
+    "name": "# Bank 29",
     "kind": "gallery",
     "order": 7,
     "location": "Welkenraedt",
+    "address": "Rue de la Gare 1A, Welkenraedt",
+    "surface": "120 m²",
+    "use": "Commerce",
     "photos": [
       "ing-welkenraedt-01.jpg",
       "ing-welkenraedt-02.jpg",
@@ -239,10 +272,13 @@
   },
   {
     "id": "perwez",
-    "name": "Perwez",
+    "name": "Swap",
     "kind": "gallery",
     "order": 8,
     "location": "Perwez",
+    "address": "Rue de la Station 68A, Perwez",
+    "surface": "60 m²",
+    "use": "Commerce",
     "photos": [
       "perwez-01.jpg",
       "perwez-02.jpg"
@@ -250,10 +286,13 @@
   },
   {
     "id": "waremme",
-    "name": "Waremme",
+    "name": "Corner",
     "kind": "gallery",
     "order": 9,
     "location": "Waremme",
+    "address": "Avenue Reine Astrid 7, 4300 Waremme",
+    "surface": "110 m²",
+    "use": "Commerce",
     "photos": [
       "waremme-01.jpg",
       "waremme-02.jpg",
@@ -263,10 +302,13 @@
   },
   {
     "id": "gilly",
-    "name": "Gilly",
+    "name": "Greek Style",
     "kind": "gallery",
     "order": 10,
     "location": "Gilly",
+    "address": "Chaussée de Lodelinsart 192, Gilly",
+    "surface": "450 m²",
+    "use": "Logements & commerces",
     "photos": [
       "gilly-01.jpg",
       "gilly-02.jpg"
@@ -274,9 +316,13 @@
   },
   {
     "id": "wayez-27",
-    "name": "Wayez 27",
+    "name": "Diversity",
     "kind": "gallery",
     "order": 11,
+    "location": "Anderlecht",
+    "address": "Rue Wayez 27, 1070 Bruxelles",
+    "surface": "230 m²",
+    "use": "Commerce & atelier",
     "photos": [
       "wayez-27-01.jpg",
       "wayez-27-02.jpg",
@@ -286,9 +332,13 @@
   },
   {
     "id": "consolation",
-    "name": "Consolation",
+    "name": "Ode to Joy",
     "kind": "gallery",
     "order": 12,
+    "location": "Schaerbeek",
+    "address": "Rue de la Consolation 72, 1030 Bruxelles",
+    "surface": "700 m²",
+    "use": "Logements & équipement public",
     "photos": [
       "consolation-01.jpg",
       "consolation-02.jpg"
