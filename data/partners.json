@@ -1,1 +1,58 @@
-[]
+[
+  {
+    "id": "asap",
+    "name": "ASAP",
+    "logo": "/partners/couleur/asap.svg",
+    "logoMono": "/partners/mono/asap.svg",
+    "logoInk": "/partners/encre/asap.svg"
+  },
+  {
+    "id": "batopin",
+    "name": "Batopin",
+    "logo": "/partners/couleur/batopin.svg",
+    "logoMono": "/partners/mono/batopin.svg",
+    "logoInk": "/partners/encre/batopin.svg"
+  },
+  {
+    "id": "cn-architecture",
+    "name": "CN Architecture",
+    "logo": "/partners/couleur/cn-architecture.svg",
+    "logoMono": "/partners/mono/cn-architecture.svg",
+    "logoInk": "/partners/encre/cn-architecture.svg"
+  },
+  {
+    "id": "felis-associes",
+    "name": "Felis & Associés",
+    "logo": "/partners/couleur/felis-associes.svg",
+    "logoMono": "/partners/mono/felis-associes.svg",
+    "logoInk": "/partners/encre/felis-associes.svg"
+  },
+  {
+    "id": "menuisol",
+    "name": "Menuisol",
+    "logo": "/partners/couleur/menuisol.svg",
+    "logoMono": "/partners/mono/menuisol.svg",
+    "logoInk": "/partners/encre/menuisol.svg"
+  },
+  {
+    "id": "property-lab",
+    "name": "Property Lab",
+    "logo": "/partners/couleur/property-lab.svg",
+    "logoMono": "/partners/mono/property-lab.svg",
+    "logoInk": "/partners/encre/property-lab.svg"
+  },
+  {
+    "id": "synopsis",
+    "name": "Synopsis",
+    "logo": "/partners/couleur/synopsis.svg",
+    "logoMono": "/partners/mono/synopsis.svg",
+    "logoInk": "/partners/encre/synopsis.svg"
+  },
+  {
+    "id": "zekaj-construct",
+    "name": "Zekaj Construct",
+    "logo": "/partners/couleur/zekaj-construct.svg",
+    "logoMono": "/partners/mono/zekaj-construct.svg",
+    "logoInk": "/partners/encre/zekaj-construct.svg"
+  }
+]

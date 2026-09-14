@@ -49,6 +49,11 @@ const partners = defineCollection({
   schema: z.object({
     name: z.string(),
     logo: z.string(),
+    // Déclinaison monochrome noire du même logo.
+    logoMono: z.string().optional(),
+    // Même tracé, mais peint en `currentColor` : la couleur vient du CSS.
+    // Exige une insertion en SVG inline (un <img> le rend en noir, cf. README).
+    logoInk: z.string().optional(),
     url: z.string().url().optional(),
   }),
 });

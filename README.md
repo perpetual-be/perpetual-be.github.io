@@ -25,7 +25,7 @@ Chaque push sur la branche `main` construit le site et le publie sur GitHub Page
 | Chiffres clés et répartition du portefeuille (Home) | en-tête de `content/home.md` (`stats`, `portfolio`) |
 | Ajouter ou modifier un projet (détaillé, programme agences, galerie) | `data/projects.json` |
 | Navigation, e-mail, ville, TVA, citation de pied de site | `data/site.json` |
-| Ajouter un logo partenaire | `data/partners.json` + le fichier dans `public/partners/` |
+| Ajouter un logo partenaire | `data/partners.json` + les fichiers dans `public/partners/couleur/`, `mono/` et `encre/` |
 | Ajouter des photos | déposer les originaux dans le Drive, référencer les fichiers dans `data/projects.json`, puis lancer `npm run photos:ingest` (voir plus bas) |
 | Changer la mise en page ou les styles | `src/` (pages, gabarits, `styles/`) |
 | Palette, typographies, maquettes | `design/` |
@@ -38,6 +38,7 @@ Le contenu est de la donnée, pas du code : ajouter un projet consiste à ajoute
 content/               textes des pages (Markdown), un fichier par page
 data/projects.json     projets détaillés, programme agences, galerie
 data/partners.json     logos partenaires
+public/partners/       logos partenaires en SVG : couleur/, mono/ et encre/ (currentColor)
 data/site.json         navigation, coordonnées, citation de pied de site
 design/                palette, typographies, maquettes exportées
 public/                favicon, logo, fichiers statiques servis tels quels
@@ -65,6 +66,33 @@ Une entrée par projet. Champs :
 | `hero` | la photo pleine largeur d'un projet détaillé |
 | `heroCandidates` | plusieurs photos pleine largeur à tester tant que le choix n'est pas fait |
 | `captions` | légende par fichier photo (sert de texte alternatif) |
+
+### Partenaires (`data/partners.json`)
+
+Une entrée par partenaire. Champs :
+
+| Champ | Rôle |
+|---|---|
+| `id` | clé du partenaire ; c'est aussi le nom des fichiers SVG (`<id>.svg`) dans `public/partners/couleur/` et `public/partners/mono/` |
+| `name` | nom affiché (sert de texte alternatif) |
+| `logo` | chemin du logo en couleurs d'origine, servi depuis `public/` (`/partners/couleur/<id>.svg`) |
+| `logoMono` | chemin de la déclinaison monochrome noire (`/partners/mono/<id>.svg`) |
+| `logoInk` | chemin de la déclinaison à encre variable (`/partners/encre/<id>.svg`) — même tracé que `mono`, peint en `currentColor` |
+| `url` | site du partenaire ; absent tant que l'adresse n'est pas connue |
+
+Les trois jeux de SVG sont **normalisés optiquement** : chaque fichier a un canevas de 100 unités de haut, le logo étant centré dedans à une taille qui égalise son poids visuel (un bloc plein comme Synopsis occupe moins de hauteur qu'un logotype linéaire comme CN Architecture). Une seule règle CSS — même hauteur pour tous — suffit donc à obtenir une bande équilibrée ; il ne faut **pas** régler la taille logo par logo.
+
+Les trois traitements sont en concurrence, le choix n'est pas fait :
+
+| Jeu | Ce que c'est | Comment l'insérer |
+|---|---|---|
+| `couleur/` | couleurs d'origine de chaque partenaire | `<img src="…">` |
+| `mono/` | noir pur `#000000`, figé dans le fichier | `<img src="…">` |
+| `encre/` | même tracé, couleur pilotée par le CSS | **SVG inline obligatoire** |
+
+**Piège à connaître sur `encre/`** : `currentColor` ne traverse pas la frontière d'un `<img>`. Inséré avec `<img src="/partners/encre/asap.svg">`, le logo s'affiche en noir — c'est-à-dire exactement comme `mono/`. Pour que la couleur suive le CSS, le SVG doit être injecté dans le HTML (lecture du fichier au build et insertion du balisage), et la couleur se règle alors par la propriété `color` du conteneur. Le repli est donc sans danger : au pire on retombe sur le monochrome noir.
+
+La planche de comparaison des traitements est dans `design/partenaires-comparaison.svg` (les bandes « encre » y sont montrées dans les couleurs du logo Perpetual, à titre d'essai seulement — la palette du site n'est pas arrêtée).
 
 ### Photos
 

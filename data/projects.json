@@ -36,8 +36,8 @@
     "order": 2,
     "location": "Liège, rue des Mineurs",
     "address": "Rue des Mineurs 53-55, 4000 Liège",
-    "surface": "900 m²",
-    "was": "Une agence bancaire de 900 m², au cœur de Liège.",
+    "surface": "1 100 m²",
+    "was": "Une agence bancaire de 1 100 m², au cœur de Liège.",
     "saw": "Une surface unique qui pouvait en accueillir trois. Le service bancaire maintenu sur ce qu’il lui faut, une vitrine rendue au commerce, et les niveaux supérieurs libérés pour l’habitat.",
     "became": "Une bijouterie de 160 m², un point Bancontact de 60 m², et un projet de logements de standing. Vendu.",
     "hero": "the-bank-03.jpg",
@@ -54,15 +54,21 @@
     "order": 3,
     "location": "Jemelle",
     "address": "Rue Delvigne 102, Jemelle",
-    "surface": "4 000 m² sur un hectare",
+    "surface": "4 200 m² sur un hectare",
     "was": "Un site technique construit pour un seul usage, occupé par un opérateur télécom.",
     "saw": "Du temps. Le bâtiment reste occupé par Proximus jusqu’en 2031. Nos manières de travailler changent vite : décider aujourd’hui de ce que ce lieu sera dans six ans serait la seule erreur.",
     "became": "Un site sécurisé jusqu’en 2031, dont la destination future reste ouverte.",
-    "hero": "data-box-03.jpg",
+    "heroCandidates": [
+      "data-box-01.jpg",
+      "data-box-02.jpg"
+    ],
+    "captions": {
+      "data-box-01.jpg": "Vue aérienne : le site et sa parcelle d’un hectare, le long de la ligne de chemin de fer",
+      "data-box-02.jpg": "Le bâtiment principal et la halle, depuis l’aire de manœuvre"
+    },
     "photos": [
       "data-box-01.jpg",
-      "data-box-02.jpg",
-      "data-box-03.jpg"
+      "data-box-02.jpg"
     ]
   },
   {
@@ -127,7 +133,7 @@
     "order": 2,
     "location": "Pont-à-Celles",
     "address": "Place Communale 25, Pont-à-Celles",
-    "surface": "220 m²",
+    "surface": "250 m²",
     "use": "Point Bancontact et auto-école",
     "photos": [
       "bnp-pont-a-celles-01.jpg",
