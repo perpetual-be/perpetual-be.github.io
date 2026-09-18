@@ -1,7 +1,8 @@
 // Génère les pages de la maquette du lot 2 (design/maquette/*.html) à partir des données du dépôt.
 // Exécuter depuis la racine : node design/maquette/src/build.mjs
-// Lit data/*.json, content/home.md, content/collectif.md, public/favicon.svg, public/partners/encre/*.svg
-// et design/directions/src/wordmark-mask.png. N'écrit que dans design/maquette/. Aucune dépendance hors Node.
+// Lit data/*.json, content/home.md, content/collectif.md, content/realisations.md, public/favicon.svg, public/partners/encre/*.svg,
+// design/maquette/src/carte/belgique.{svg,json} et design/directions/src/wordmark-mask.png. N'écrit que dans design/maquette/.
+// Aucune dépendance hors Node.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -41,6 +42,16 @@ const home = {
 };
 const collectifBlocks = blocks(frontmatter(read('content/collectif.md')).body);
 const collectif = { paragraphs: collectifBlocks.slice(0, -1), chute: collectifBlocks[collectifBlocks.length - 1] };
+// Section Réalisations : le paragraphe est celui du programme agences (content/realisations.md), tel quel.
+const realisationsBlocks = blocks(frontmatter(read('content/realisations.md')).body);
+const agences = realisationsBlocks[realisationsBlocks.indexOf('## Le programme agences') + 1];
+if (!agences || agences.startsWith('#')) throw new Error('content/realisations.md : paragraphe du programme agences introuvable');
+// Bande des réalisations : une vignette par agence du programme (kind: agency) et par bien de la galerie (kind: gallery),
+// photo <id>-01-s.jpg (800 px, design/directions/src/reduire-photos.mjs --petit), ville = dernier segment de l'adresse après
+// la virgule, code postal retiré (→ « Bruxelles » pour wayez-27 et consolation).
+const ville = p => p.address.split(',').pop().trim().replace(/^\d{4}\s+/, '');
+const vignettes = projects.filter(p => p.kind === 'agency' || p.kind === 'gallery').map(p => ({ id: p.id, ville: ville(p), img: `${p.id}-01-s.jpg` }));
+for (const v of vignettes) if (!fs.existsSync(path.join(REPO, 'design/directions/img', v.img))) console.warn('vignette absente :', v.img);
 
 // Les quatre projets de la Home : une ligne chacun (mêmes lignes que la planche A), aperçu photo.
 const four = [
@@ -51,10 +62,9 @@ const four = [
 ];
 
 // Chiffres sur photo : les candidates de la bascule 9b, en 1800 px (<nom>.jpg) puis 2800 px (<nom>-l.jpg) pour les grands écrans ;
-// le srcset porte la largeur réelle de chaque fichier, lue dans l'en-tête JPEG. Data Box 02 n'existe qu'en 800 px : son original
-// (8064 px, 26 Mo) reste à réduire avec design/directions/src/reduire-photos.mjs --grand --tres-grand, puis à lister ici.
+// le srcset porte la largeur réelle de chaque fichier, lue dans l'en-tête JPEG. Les versions se génèrent depuis l'original avec
+// design/directions/src/reduire-photos.mjs --grand --tres-grand ; tant qu'elles manquent, la page se replie sur <nom>-s.jpg (800 px).
 function jpegWidth(file) {
-  if (!fs.existsSync(file)) { console.warn('photo absente :', path.basename(file)); return null; }
   const b = fs.readFileSync(file);
   for (let i = 2; i < b.length - 9;) {
     if (b[i] !== 0xFF) { i++; continue; }
@@ -68,10 +78,15 @@ function jpegWidth(file) {
 }
 const photoCandidates = [
   { key: 'community-05', files: ['community-05.jpg', 'community-05-l.jpg'] },
-  { key: 'data-box-02', files: ['data-box-02-s.jpg'] },
+  { key: 'data-box-02', files: ['data-box-02.jpg', 'data-box-02-l.jpg'] },
   { key: 'the-bank-01', files: ['the-bank-01.jpg', 'the-bank-01-l.jpg'] },
   { key: 'the-bank-03', files: ['the-bank-03.jpg', 'the-bank-03-l.jpg'] },
-].map(c => ({ key: c.key, sources: c.files.map(f => ({ file: f, width: jpegWidth(path.join(REPO, 'design/directions/img', f)) })) }));
+].map(c => {
+  const chemin = f => path.join(REPO, 'design/directions/img', f);
+  const sources = c.files.filter(f => fs.existsSync(chemin(f)) || (console.warn('photo absente :', f), false)).map(f => ({ file: f, width: jpegWidth(chemin(f)) }));
+  if (!sources.length) { console.warn(`${c.key} : repli sur ${c.key}-s.jpg (800 px)`); sources.push({ file: `${c.key}-s.jpg`, width: jpegWidth(chemin(`${c.key}-s.jpg`)) }); }
+  return { key: c.key, sources };
+});
 
 // ---------- logos ----------
 function partnerSvg(file) {
@@ -171,6 +186,52 @@ function projets() {
 </div></section>`;
 }
 
+// Carte des réalisations : src/carte/belgique.svg (contour, 20 points, 17 étiquettes placées à la main ; « Bruxelles » pour les
+// quatre adresses bruxelloises, groupe défini dans belgique.json). Chaque étiquette est regroupée avec son ou ses points dans un
+// <g class="carte__lieu"> : le survol d'un point colore (ou révèle) l'étiquette en CSS seul. data-rang="1" sur une étiquette du SVG
+// la garde visible en mode « quelques-unes » (bascule 15b) et sur mobile.
+function carteSvg() {
+  const svg = fs.readFileSync(path.join(HERE, 'carte/belgique.svg'), 'utf8').replace(/<!--[\s\S]*?-->\s*/g, '');
+  const groupes = JSON.parse(fs.readFileSync(path.join(HERE, 'carte/belgique.json'), 'utf8')).groupes;
+  const ouverture = svg.match(/<svg[^>]*>/)[0];
+  const pays = svg.match(/<path class="carte__pays"[^>]*\/>/)[0];
+  const points = [...svg.matchAll(/<circle[^>]*>\s*<title>([^<]*)<\/title>\s*<\/circle>/g)].map(m => ({ nom: m[1], html: m[0] }));
+  const etiquettes = [...svg.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map(m => ({ nom: m[1], html: m[0] }));
+  const membres = nom => (groupes.find(g => g.nom === nom) || { membres: [nom] }).membres;
+  const lieux = etiquettes.map(e => {
+    const pts = points.filter(p => membres(e.nom).includes(p.nom));
+    if (!pts.length) throw new Error('carte : aucun point pour l’étiquette ' + e.nom);
+    return `<g class="carte__lieu" data-lieu="${esc(e.nom)}">${pts.map(p => p.html).join('')}${e.html}</g>`;
+  });
+  const orphelins = points.filter(p => !etiquettes.some(e => membres(e.nom).includes(p.nom)));
+  if (orphelins.length) throw new Error('carte : points sans étiquette : ' + orphelins.map(p => p.nom).join(', '));
+  console.log(`carte : ${points.length} points, ${etiquettes.length} étiquettes`);
+  return `${ouverture}\n${pays}\n${lieux.join('\n')}\n</svg>`;
+}
+
+// Section Réalisations (bascule 15) : la carte (défaut) avec le texte à droite, ou la bande de vignettes qui défile ;
+// les deux sont dans la page, le CSS montre l'une ou l'autre. Indépendante de la bascule 11.
+function autres() {
+  const item = v => `<li class="bande__item"><img src="${IMG}/${v.img}" alt="" loading="lazy" decoding="async"><span class="bande__ville">${esc(v.ville)}</span></li>`;
+  return `<section class="section section--autres" id="realisations">
+<div class="container">
+  <p class="eyebrow">Réalisations</p>
+  <a class="autres__tous trait" href="projets.html">Tous les projets →</a>
+  <div class="carte">
+    <div class="carte__fig">${carteSvg()}</div>
+    <div class="carte__texte">
+      <h2 class="h2">Vingt adresses, de Haaltert à Welkenraedt.</h2>
+      <p>${agences}</p>
+      <a class="autres__lien trait" href="projets.html">Tous les projets →</a>
+    </div>
+  </div>
+</div>
+<div class="bande" aria-label="Seize réalisations en photo">
+  <ul class="bande__piste">${vignettes.map(item).join('')}${vignettes.map(v => item(v).replace('<li class="bande__item">', '<li class="bande__item" aria-hidden="true">')).join('')}</ul>
+</div>
+</section>`;
+}
+
 function collectifBlock() {
   return `<section class="section section--collectif" id="collectif"><div class="container">
   <p class="eyebrow">Collectif</p>
@@ -196,7 +257,7 @@ function footer() {
 
 // ---------- pages ----------
 const pages = {
-  'index.html': () => head({ page: 'home', text: `${site.name} — ${site.tagline}` }) + '\n' + header('') + '\n<main>\n' + lead() + '\n' + chart() + '\n' + projets() + '\n' + collectifBlock() + '\n</main>\n' + footer(),
+  'index.html': () => head({ page: 'home', text: `${site.name} — ${site.tagline}` }) + '\n' + header('') + '\n<main>\n' + lead() + '\n' + chart() + '\n' + projets() + '\n' + autres() + '\n' + collectifBlock() + '\n</main>\n' + footer(),
 };
 
 for (const [name, render] of Object.entries(pages)) {
