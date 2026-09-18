@@ -50,29 +50,28 @@ const four = [
   { id: 'community', line: 'Uccle · 14 unités · Quatorze unités autour d’espaces partagés', img: 'community-05-s.jpg', href: 'projets.html#community' },
 ];
 
-// La roue : les quatre agences du programme et quatre biens de la galerie.
-const roue = [
-  { id: 'bnp-braine-le-comte', href: 'projets.html#programme' },
-  { id: 'bnp-pont-a-celles', href: 'projets.html#programme' },
-  { id: 'bnp-jambes', href: 'projets.html#programme' },
-  { id: 'belfius-mettet', href: 'projets.html#programme' },
-  { id: 'waremme', href: 'projets.html#galerie' },
-  { id: 'gilly', href: 'projets.html#galerie' },
-  { id: 'ing-tervuren', href: 'projets.html#galerie' },
-  { id: 'ing-landen', href: 'projets.html#galerie' },
-].map(r => ({ ...r, img: `${r.id}-01-s.jpg`, p: byId[r.id] }));
-for (const r of roue) if (!fs.existsSync(path.join(REPO, 'design/directions/img', r.img))) console.warn('photo absente :', r.img);
-
-// Chiffres sur photo : les candidates de la bascule 9.
+// Chiffres sur photo : les candidates de la bascule 9b, en 1800 px (<nom>.jpg) puis 2800 px (<nom>-l.jpg) pour les grands écrans ;
+// le srcset porte la largeur réelle de chaque fichier, lue dans l'en-tête JPEG. Data Box 02 n'existe qu'en 800 px : son original
+// (8064 px, 26 Mo) reste à réduire avec design/directions/src/reduire-photos.mjs --grand --tres-grand, puis à lister ici.
+function jpegWidth(file) {
+  if (!fs.existsSync(file)) { console.warn('photo absente :', path.basename(file)); return null; }
+  const b = fs.readFileSync(file);
+  for (let i = 2; i < b.length - 9;) {
+    if (b[i] !== 0xFF) { i++; continue; }
+    const m = b[i + 1];
+    if (m === 0xFF) { i++; continue; }
+    if (m === 0xD8 || m === 0x01 || (m >= 0xD0 && m <= 0xD7)) { i += 2; continue; }
+    if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC) return b.readUInt16BE(i + 7); // SOFn : longueur, précision, hauteur, largeur
+    i += 2 + b.readUInt16BE(i + 2);
+  }
+  return null;
+}
 const photoCandidates = [
-  { key: 'community-05', file: 'community-05.jpg' },
-  { key: 'data-box-02', file: 'data-box-02-s.jpg' },
-  { key: 'the-bank-01', file: 'the-bank-01.jpg' },
-  { key: 'the-bank-03', file: 'the-bank-03.jpg' },
-];
-
-// Phrase courte du centre de la roue : les mots de Julien (Ateliers 118, « ce que nous y avons vu »).
-const phraseRoue = byId['ateliers-118'].saw.split(' ;')[0] + '.';
+  { key: 'community-05', files: ['community-05.jpg', 'community-05-l.jpg'] },
+  { key: 'data-box-02', files: ['data-box-02-s.jpg'] },
+  { key: 'the-bank-01', files: ['the-bank-01.jpg', 'the-bank-01-l.jpg'] },
+  { key: 'the-bank-03', files: ['the-bank-03.jpg', 'the-bank-03-l.jpg'] },
+].map(c => ({ key: c.key, sources: c.files.map(f => ({ file: f, width: jpegWidth(path.join(REPO, 'design/directions/img', f)) })) }));
 
 // ---------- logos ----------
 function partnerSvg(file) {
@@ -81,7 +80,16 @@ function partnerSvg(file) {
   s = s.replace(/\swidth="[^"]*"/, '').replace(/\sheight="[^"]*"/, '').replace('<svg', '<svg class="partner__encre" aria-hidden="true"');
   return s.trim();
 }
-const partnersHtml = partners.map(p => `<li class="partner" title="${esc(p.name)}">${partnerSvg(p.logoInk)}<img class="partner__couleur" src="${PARTNERS}/couleur/${path.basename(p.logo)}" alt="${esc(p.name)}" loading="lazy"></li>`).join('\n');
+// Hauteur de chaque logo à la masse visuelle : 34 px × √(291 / largeur du viewBox), bornée 34–60 px
+// (les canevas font 100 de haut ; Batopin, 291 de large, est l'étalon à 34 px). Posée en --logo-h sur le <li>.
+function partnerHeight(svg) {
+  const w = Number(svg.match(/viewBox="0 0 ([\d.]+) 100"/)[1]);
+  return Math.min(60, Math.max(34, Math.round(34 * Math.sqrt(291 / w))));
+}
+const partnersHtml = partners.map(p => {
+  const svg = partnerSvg(p.logoInk);
+  return `<li class="partner" style="--logo-h:${partnerHeight(svg)}px" title="${esc(p.name)}">${svg}<img class="partner__couleur" src="${PARTNERS}/couleur/${path.basename(p.logo)}" alt="${esc(p.name)}" loading="lazy"></li>`;
+}).join('\n');
 
 const markPath = read('public/favicon.svg').match(/<g[\s\S]*<\/g>/)[0];
 const phiSymbol = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="phi" viewBox="0 0 100 104.02">${markPath}</symbol></svg>`;
@@ -136,33 +144,22 @@ function lead() {
 </div></section>
 <section class="band stats-band" aria-label="Chiffres clés">${deco()}<div class="container">${statsList()}</div></section>
 <section class="stats-photo" aria-label="Chiffres clés">
-  ${photoCandidates.map(c => `<img class="stats-photo__img" data-photo="${c.key}" src="${IMG}/${c.file}" alt="" loading="lazy" decoding="async">`).join('\n  ')}
+  ${photoCandidates.map(c => `<img class="stats-photo__img" data-photo="${c.key}" src="${IMG}/${c.sources[0].file}"${c.sources.length > 1 ? ` srcset="${c.sources.map(s => `${IMG}/${s.file} ${s.width}w`).join(', ')}" sizes="100vw"` : ''} alt="" loading="lazy" decoding="async">`).join('\n  ')}
   <div class="container stats-photo__in">${statsList(' stats--photo')}</div>
 </section>
 </div>`;
 }
 
-function ringSvg(items) {
-  const gap = 1.4; let start = 0;
-  const arcs = items.map(i => {
-    const len = i.percent - gap;
-    const c = `<circle cx="120" cy="120" r="100" fill="none" stroke="currentColor" stroke-width="22" pathLength="100" stroke-dasharray="${len} ${100 - len}" stroke-dashoffset="${-(start + gap / 2)}"/>`;
-    start += i.percent; return c;
-  }).join('');
-  return `<svg class="ring" viewBox="0 0 240 240" aria-hidden="true"><g transform="rotate(-90 120 120)">${arcs}</g></svg>`;
-}
-
 function chart() {
   return `<section class="section section--chart"><div class="container">
   <h2 class="h2">${esc(portfolio.title)}</h2>
-  <div class="chart">${ringSvg(portfolio.items)}<div class="bars">${portfolio.items.map(i => `<div class="bar"><span class="bar__label">${esc(i.label)}</span><span class="bar__track"><span class="bar__fill" style="width:${i.percent}%"></span></span><span class="bar__value">${i.percent} %</span></div>`).join('')}</div></div>
+  <div class="bars">${portfolio.items.map(i => `<div class="bar"><span class="bar__label">${esc(i.label)}</span><span class="bar__track"><span class="bar__fill" style="width:${i.percent}%"></span></span><span class="bar__value">${i.percent} %</span></div>`).join('')}</div>
 </div></section>`;
 }
 
 function projets() {
   const rows = four.map((f, i) => `<li class="four__row${i === 0 ? ' is-active' : ''}" data-index="${i}"><a href="${f.href}"><span class="four__name">${esc(byId[f.id].name)}</span><span class="four__line">${esc(f.line)}</span></a></li>`).join('\n      ');
   const previews = four.map((f, i) => `<img${i === 0 ? ' class="is-active"' : ' loading="lazy"'} src="${IMG}/${f.img}" alt="" decoding="async">`).join('');
-  const slots = roue.map((r, i) => `<div class="roue__slot" style="--i:${i}"><a class="roue__item" href="${r.href}" title="${esc(r.p.name)} · ${esc(r.p.location)}"><img src="${IMG}/${r.img}" alt="${esc(r.p.name)} · ${esc(r.p.location)}" loading="lazy" decoding="async"></a></div>`).join('\n      ');
   return `<section class="section section--projets" id="projets"><div class="container">
   <p class="eyebrow">Projets</p>
   <div class="four">
@@ -170,12 +167,6 @@ function projets() {
       ${rows}
     </ol>
     <div class="four__preview" aria-hidden="true">${previews}</div>
-  </div>
-  <div class="roue" aria-label="Huit projets">
-    <div class="roue__disque">
-      ${slots}
-    </div>
-    <div class="roue__centre">${phi('roue__phi')}<span class="roue__mot">Projets</span><span class="roue__phrase">${esc(phraseRoue)}</span></div>
   </div>
 </div></section>`;
 }
