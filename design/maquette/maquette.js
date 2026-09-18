@@ -18,9 +18,12 @@
     { n: 10, cle: 'deco', titre: 'Élément de la bande', groupe: 'Or et bande', valeurs: [['0', 'rien'], ['arcs', '1a · deux arcs'], ['phi', '4 · Φ en filigrane'], ['anneaux', '6 · anneaux']], inactif: { cle: 'chiffres', vals: ['photo'], note: 'sans bande en mode « sur photo »' }, pages: ['home'] },
     { n: 9, cle: 'chiffres', titre: 'Chiffres clés', groupe: 'Chiffres', valeurs: [['colonnes', '4 colonnes'], ['liste', 'liste'], ['photo', 'sur photo']], pages: ['home'] },
     { n: '9a', cle: 'structure', titre: 'Structure', groupe: 'Chiffres', parent: { cle: 'chiffres', vals: ['photo'] }, valeurs: [['c', 'C’ : hero, puis la photo'], ['b', 'B : accroche, photo, paragraphes']], pages: ['home'] },
-    { n: '9b', cle: 'photo', titre: 'Photo', groupe: 'Chiffres', parent: { cle: 'chiffres', vals: ['photo'] }, valeurs: [['community-05', 'Community 05'], ['data-box-02', 'Data Box 02 · 800 px'], ['the-bank-01', 'The Bank 01 · portrait'], ['the-bank-03', 'The Bank 03']], pages: ['home'] },
+    { n: '9b', cle: 'photo', titre: 'Photo', groupe: 'Chiffres', parent: { cle: 'chiffres', vals: ['photo'] }, valeurs: [['community-05', 'Community 05'], ['data-box-02', 'Data Box 02'], ['the-bank-01', 'The Bank 01 · portrait'], ['the-bank-03', 'The Bank 03']], pages: ['home'] },
     { n: '9c', cle: 'cote', titre: 'Position', groupe: 'Chiffres', parent: { cle: 'chiffres', vals: ['photo'] }, valeurs: [['gauche', 'gauche'], ['droite', 'droite']], pages: ['home'] },
     { n: 11, cle: 'projets', titre: 'Section projets', groupe: 'Projets', valeurs: [['liste', 'liste des 4'], ['aucune', 'aucune']], pages: ['home'] },
+    { n: 15, cle: 'autres', titre: 'Réalisations', groupe: 'Projets', valeurs: [['carte', 'carte'], ['bande', 'bande'], ['aucune', 'aucune']], pages: ['home'] },
+    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Projets', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['papier', 'papier'], ['trait', 'trait']], pages: ['home'] },
+    { n: '15b', cle: 'villes', titre: 'Villes', groupe: 'Projets', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['toutes', 'toutes'], ['quelques-unes', 'quelques-unes'], ['aucune', 'aucune']], note: 'quelques-unes : Bruxelles, Liège, Jemelle (data-rang="1" dans le SVG) ; sur mobile, celles-là seulement', pages: ['home'] },
     { n: 14, cle: 'logos', titre: 'Logos partenaires', groupe: 'Partenaires', valeurs: [['noir', 'noir'], ['gris', 'gris chaud'], ['couleur', 'couleur']], pages: ['home'] }
   ];
   var defauts = {};

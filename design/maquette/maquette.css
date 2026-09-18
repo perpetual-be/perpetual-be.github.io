@@ -20,7 +20,7 @@
   /* palette */
   --blanc:#FFFFFF;--anthracite:#26231F;--gris:#6B655C;--gris-clair:#9A948A;--gris-chaud:#7A7466;--filet:#E6E1D6;
   --or:#9A7A3B;--or-fonce:#8A6B2F;--or-clair:#B8975A;--bronze:#684E1E;
-  --sable:#F6F1E6;--papier:#F9F9F6;--gris-piste:#F1EFEA;
+  --sable:#F6F1E6;--papier:#F9F9F6;--gris-piste:#F1EFEA;--trait-carte:#D6D0C4;
   --or-deco:#C9B58A;--or-deco-2:#D9C9A3;--or-filigrane:#EFE7D3;
   --gris-deco:#D9D5CD;--gris-deco-2:#E6E1D6;--gris-filigrane:#F1EFEA;
   --photo-texte:#FFFFFF;--photo-meta:rgba(255,255,255,.82);--photo-filet:rgba(255,255,255,.35);
@@ -28,10 +28,10 @@
   /* rôles : les composants ne lisent que ceux-ci */
   --c-texte:var(--anthracite);--c-meta:var(--gris);
   --c-chiffre:var(--or);--c-signature:var(--or-fonce);--c-lien:var(--or-fonce);
-  --c-trait:var(--or);--c-trait-fin:var(--or-clair);--c-remplissage:var(--or);--c-num-chapitre:var(--or);
+  --c-trait:var(--or);--c-trait-fin:var(--or-clair);--c-remplissage:var(--or);--c-num-chapitre:var(--or);--c-point:var(--or);
   --c-logos:var(--anthracite);--c-phi:var(--bronze);--c-wordmark:var(--anthracite);
   --c-deco:var(--or-deco);--c-deco-2:var(--or-deco-2);--c-filigrane:var(--or-filigrane);
-  --surface:var(--sable);--surface-bande:var(--surface);--surface-piste:var(--surface);
+  --surface:var(--sable);--surface-bande:var(--surface);--surface-piste:var(--surface);--surface-carte:var(--sable);
   /* typographie */
   --serif:"Newsreader",Georgia,serif;--sans:"Inter",system-ui,sans-serif;
   --font-titres:var(--serif);--poids-titres:400;
@@ -130,6 +130,27 @@ ol,ul{list-style:none}
 .four__preview img.is-active{opacity:1}
 .four__list:hover~.four__preview img.is-active{transform:scale(var(--zoom))}
 
+/* réalisations : la carte (bascule 15, défaut) ou la bande de vignettes qui défile — les deux sont dans la page, le CSS montre l'une ou l'autre */
+.carte{display:grid;grid-template-columns:7fr 5fr;gap:64px;align-items:center}
+.carte__fig{max-width:500px}
+.carte__svg{display:block;width:100%;height:auto;font-family:var(--sans);font-size:12px}
+.carte__pays{fill:var(--surface-carte);stroke:none}
+.carte__pt{fill:var(--c-point);stroke:var(--blanc);stroke-width:1.5}
+.carte__lab{fill:var(--c-meta);pointer-events:none;transition:fill .2s,opacity .2s}
+.carte__lab--groupe{fill:var(--c-texte)}
+.carte__lieu:hover .carte__lab{fill:var(--c-texte);opacity:1}
+.carte__texte .h2{margin-bottom:20px}
+.carte__texte p{max-width:46ch;margin-bottom:24px}
+.autres__lien,.autres__tous{display:inline-block;color:var(--c-lien);font-size:15px;padding-bottom:1px}
+.autres__tous{display:none}
+.bande{display:none;overflow:hidden}
+/* piste = les 16 vignettes puis leur copie ; la marge droite de chaque vignette (pas de gap) fait tomber la copie exactement à −50 % */
+.bande__piste{display:flex;width:max-content;animation:bande 70s linear infinite}
+.bande__item{flex:none;width:200px;margin-right:24px}
+.bande__item img{width:200px;height:133px;object-fit:cover}
+.bande__ville{display:block;font-size:var(--fs-etiquette);color:var(--c-meta);margin-top:8px}
+@keyframes bande{to{transform:translateX(-50%)}}
+
 /* collectif et partenaires */
 .collectif__text{max-width:64ch}
 .collectif__text p{margin-bottom:16px}
@@ -172,6 +193,9 @@ ol,ul{list-style:none}
   .bar{grid-template-columns:84px 1fr 48px;gap:12px}
   .four{grid-template-columns:1fr}
   .four__preview{display:none}
+  .carte{grid-template-columns:1fr;gap:28px}
+  .carte__fig{max-width:none}
+  .carte__lab:not([data-rang="1"]){opacity:0}
   .partners{gap:22px 28px}
   .footer__grid{grid-template-columns:1fr;gap:28px}
 }
@@ -180,7 +204,8 @@ ol,ul{list-style:none}
   :root{--hero-haut:48px;--hero-bas:40px;--bande-haut:36px;--bande-bas:32px;--premier-ecran:452px;--premier-ecran-b:264px;--accroche-haut:48px;--accroche-bas:28px}
 }
 @media (prefers-reduced-motion:reduce){
-  .trait::after,.four__name::after,.four__preview img{transition:none}
+  .trait::after,.four__name::after,.four__preview img,.carte__lab{transition:none}
+  .bande__piste{animation:none}
 }
 
 /* ---------- 6. Bascules ---------- */
@@ -203,7 +228,7 @@ html[data-sans="instrument"]{--sans:"Instrument Sans",system-ui,sans-serif}
 /* 06 · couleur du Φ : bronze (défaut) / or mat */
 html[data-phi="or"]{--c-phi:var(--or)}
 /* 07 · dosage de l'or : partout (défaut) / touches — l'or ne reste que sur le Φ et le trait de survol ; bande blanche, ou papier si la 08 est sur papier */
-html[data-or="touches"]{--c-chiffre:var(--anthracite);--c-signature:var(--anthracite);--c-lien:var(--anthracite);--c-remplissage:var(--anthracite);--c-num-chapitre:var(--gris);
+html[data-or="touches"]{--c-chiffre:var(--anthracite);--c-signature:var(--anthracite);--c-lien:var(--anthracite);--c-remplissage:var(--anthracite);--c-point:var(--anthracite);--c-num-chapitre:var(--gris);
   --c-deco:var(--gris-deco);--c-deco-2:var(--gris-deco-2);--c-filigrane:var(--gris-filigrane);--surface-bande:var(--blanc);--surface-piste:var(--gris-piste)}
 html[data-or="touches"][data-bande="papier"]{--surface-bande:var(--papier)}
 /* 08 · surface de la bande : sable (défaut) / papier */
@@ -247,6 +272,17 @@ html[data-deco="phi"] .deco--phi{display:block}
 html[data-deco="anneaux"] .deco--anneaux{display:block}
 /* 11 · section projets : liste (défaut) / aucune */
 html[data-projets="aucune"] .section--projets{display:none}
+/* 15 · réalisations : carte (défaut) / bande / aucune — indépendante de la 11 */
+html[data-autres="bande"] .carte{display:none}
+html[data-autres="bande"] .section--autres>.container{display:flex;justify-content:space-between;align-items:baseline}
+html[data-autres="bande"] .autres__tous{display:inline-block}
+html[data-autres="bande"] .bande{display:block}
+html[data-autres="aucune"] .section--autres{display:none}
+/* 15a · carte : papier (défaut) / trait */
+html[data-carte="trait"] .carte__pays{fill:none;stroke:var(--trait-carte);stroke-width:1}
+/* 15b · villes : toutes (défaut) / quelques-unes (les étiquettes data-rang="1" de src/carte/belgique.svg) / aucune ; le survol d'un point révèle toujours la sienne */
+html[data-villes="quelques-unes"] .carte__lab:not([data-rang="1"]),html[data-villes="aucune"] .carte__lab{opacity:0}
+html[data-villes] .carte__lieu:hover .carte__lab{opacity:1}
 /* 14 · logos partenaires : noir (défaut) / gris chaud / couleur */
 html[data-logos="gris"]{--c-logos:var(--gris-chaud)}
 html[data-logos="couleur"] .partner__encre{display:none}
