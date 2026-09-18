@@ -12,7 +12,8 @@ const OUT = path.resolve(HERE, '..');            // design/maquette/
 const REPO = path.resolve(HERE, '../../..');     // racine du dépôt
 const IMG = '../directions/img';                 // photos réduites, relatif aux pages
 const PARTNERS = '../../public/partners';        // logos, relatif aux pages
-const read = f => fs.readFileSync(path.join(REPO, f), 'utf8');
+// Fins de ligne ramenées à \n : un clone Windows (core.autocrlf) livre les .md en CRLF, et « . » ne franchit pas un \r dans une expression régulière.
+const read = f => fs.readFileSync(path.join(REPO, f), 'utf8').replace(/\r\n?/g, '\n');
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 // ---------- données ----------
