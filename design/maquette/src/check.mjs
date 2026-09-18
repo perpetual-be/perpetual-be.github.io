@@ -148,6 +148,8 @@ console.log('\n5 · Φ de l’en-tête, logos partenaires, photo 2800 px, prése
 {
   const { p, ctx } = await ouvrir('');
   ok((await style(p, '.logo__mark', 'fill')) === 'rgb(104, 78, 30)', 'Φ de l’en-tête peint en bronze par défaut (fill hérité de color)');
+  const barres = await p.evaluate(() => [...document.querySelectorAll('.bar')].map(b => b.querySelector('.bar__label').textContent + ' ' + b.querySelector('.bar__fill').style.width));
+  ok(barres.length === 3 && barres.every(b => /\d+%$/.test(b)), 'graphique : trois barres avec leur pourcentage — ' + barres.join(' · '));
   const logos = await p.evaluate(() => [...document.querySelectorAll('.partner')].map(li => { const r = li.querySelector('.partner__encre').getBoundingClientRect(); return { nom: li.title, h: Math.round(r.height), c: Math.round((r.top + r.bottom) / 2) }; }));
   const attendu = { ASAP: 42, Batopin: 34, 'CN Architecture': 35, 'Felis & Associés': 34, Menuisol: 34, 'Property Lab': 49, Synopsis: 60, 'Zekaj Construct': 34 };
   ok(logos.length === 8 && logos.every(l => l.h === attendu[l.nom]), 'logos à la masse visuelle : ' + logos.map(l => `${l.nom} ${l.h}`).join(' · '));
