@@ -17,7 +17,8 @@
     "Uccle",
     "Anderlecht",
     "Schaerbeek"
-   ]
+   ],
+   "rang": 1
   }
  ],
  "villes": [
@@ -41,7 +42,8 @@
     10,
     4,
     "start"
-   ]
+   ],
+   "rang": 1
   },
   {
    "ville": "Jemelle",
@@ -54,7 +56,8 @@
     10,
     4,
     "start"
-   ]
+   ],
+   "rang": 1
   },
   {
    "ville": "Uccle",
@@ -251,5 +254,9 @@
    "groupe": "Bruxelles",
    "aVerifier": "adresse déduite du nom du dossier (wayez-27 → rue Wayez ; consolation → rue de la Consolation)"
   }
- ]
+ ],
+ "bascules": {
+  "carte": "papier (fill sable) / trait (contour fin, fond blanc)",
+  "villes": "toutes / quelques-unes (rang 1) / aucune (points seuls, nom au survol)"
+ }
 }
