@@ -8,7 +8,6 @@
 
   // La table des bascules : numéro du brief, clé (= attribut data-<clé> et paramètre d'URL), valeurs [valeur, libellé] ; la première valeur est le défaut.
   var BASCULES = [
-    { n: 1, cle: 'nav', titre: 'Liens du header', groupe: 'En-tête', valeurs: [['droite', 'droite'], ['centre', 'centre']] },
     { n: 5, cle: 'wordmark', titre: 'Wordmark', groupe: 'En-tête', valeurs: [['trace', 'tracé actuel'], ['jost', 'Jost 400 · 0,18 em'], ['source-serif', 'Source Serif 4'], ['literata', 'Literata'], ['playfair', 'Playfair Display']] },
     { n: 6, cle: 'phi', titre: 'Couleur du Φ', groupe: 'En-tête', valeurs: [['bronze', 'bronze'], ['or', 'or mat']] },
     { n: 2, cle: 'serif', titre: 'Serif', groupe: 'Typographie', valeurs: [['newsreader', 'Newsreader'], ['source-serif', 'Source Serif 4'], ['literata', 'Literata'], ['playfair', 'Playfair Display']] },
@@ -21,9 +20,7 @@
     { n: '9a', cle: 'structure', titre: 'Structure', groupe: 'Chiffres', parent: { cle: 'chiffres', vals: ['photo'] }, valeurs: [['c', 'C’ : hero, puis la photo'], ['b', 'B : accroche, photo, paragraphes']], pages: ['home'] },
     { n: '9b', cle: 'photo', titre: 'Photo', groupe: 'Chiffres', parent: { cle: 'chiffres', vals: ['photo'] }, valeurs: [['community-05', 'Community 05'], ['data-box-02', 'Data Box 02 · 800 px'], ['the-bank-01', 'The Bank 01 · portrait'], ['the-bank-03', 'The Bank 03']], pages: ['home'] },
     { n: '9c', cle: 'cote', titre: 'Position', groupe: 'Chiffres', parent: { cle: 'chiffres', vals: ['photo'] }, valeurs: [['gauche', 'gauche'], ['droite', 'droite']], pages: ['home'] },
-    { n: 13, cle: 'graphique', titre: 'Graphique', groupe: 'Graphique', valeurs: [['barres', 'barres'], ['anneau', 'anneau']], pages: ['home'] },
-    { n: 11, cle: 'projets', titre: 'Section projets', groupe: 'Projets', valeurs: [['liste', 'liste des 4'], ['roue', 'roue'], ['deux', 'les deux'], ['aucune', 'aucune']], pages: ['home'] },
-    { n: 12, cle: 'roue', titre: 'Centre de la roue', groupe: 'Projets', parent: { cle: 'projets', vals: ['roue', 'deux'] }, valeurs: [['phi', 'Φ'], ['mot', '« Projets »'], ['phrase', 'phrase courte']], pages: ['home'] },
+    { n: 11, cle: 'projets', titre: 'Section projets', groupe: 'Projets', valeurs: [['liste', 'liste des 4'], ['aucune', 'aucune']], pages: ['home'] },
     { n: 14, cle: 'logos', titre: 'Logos partenaires', groupe: 'Partenaires', valeurs: [['noir', 'noir'], ['gris', 'gris chaud'], ['couleur', 'couleur']], pages: ['home'] }
   ];
   var defauts = {};

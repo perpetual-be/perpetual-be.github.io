@@ -1,5 +1,5 @@
 // Vérifications de la maquette (Playwright + Chromium) : premier écran, débordement, effet de chaque bascule,
-// mouvement réduit, mode présentation, page sans JavaScript, polices, contrastes.
+// Φ de l'en-tête, logos partenaires, photo 2800 px, mode présentation, page sans JavaScript, polices, contrastes.
 // Usage, depuis la racine du dépôt : NODE_PATH=$(npm root -g) node design/maquette/src/check.mjs [--page index]
 import path from 'node:path';
 import fs from 'node:fs';
@@ -43,7 +43,7 @@ for (const [w, h] of [[1440, 900], [1366, 703]]) {
 
 console.log('\n2 · Aucun débordement horizontal');
 for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
-  for (const etat of ['', 'projets=roue', 'projets=deux', 'chiffres=photo', 'chiffres=photo&structure=b', 'graphique=anneau', 'chiffres=liste', 'nav=centre&wordmark=playfair']) {
+  for (const etat of ['', 'chiffres=photo', 'chiffres=photo&structure=b', 'chiffres=liste', 'wordmark=playfair']) {
     const { p, ctx } = await ouvrir(etat, [w, h]);
     ok((await largeur(p)) === 0, `${w} · ${etat || 'défaut'}`); await ctx.close();
   }
@@ -51,7 +51,6 @@ for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
 
 console.log('\n3 · Chaque valeur de chaque bascule change le rendu (dans son contexte)');
 const tests = [
-  ['nav=centre', async p => { const r = await p.evaluate(() => document.querySelector('.site-nav').getBoundingClientRect()); return Math.abs((r.left + r.right) / 2 - 720) < 30; }],
   ['serif=source-serif', p => style(p, '.hero__title', 'fontFamily').then(v => /Source Serif 4/.test(v))],
   ['serif=literata', p => style(p, '.hero__title', 'fontFamily').then(v => /Literata/.test(v))],
   ['serif=playfair', p => style(p, '.hero__title', 'fontFamily').then(v => /Playfair/.test(v))],
@@ -61,7 +60,7 @@ const tests = [
   ['wordmark=source-serif', p => style(p, '.logo__texte', 'fontFamily').then(v => /Source Serif 4/.test(v))],
   ['wordmark=literata', p => style(p, '.logo__texte', 'fontFamily').then(v => /Literata/.test(v))],
   ['wordmark=playfair', p => style(p, '.logo__texte', 'fontFamily').then(v => /Playfair/.test(v))],
-  ['phi=or', p => style(p, '.logo__mark', 'color').then(v => v === 'rgb(154, 122, 59)')],
+  ['phi=or', async p => (await style(p, '.logo__mark', 'color')) === 'rgb(154, 122, 59)' && (await style(p, '.logo__mark', 'fill')) === 'rgb(154, 122, 59)'],
   ['or=touches', async p => (await style(p, '.stat__value', 'color')) === 'rgb(38, 35, 31)' && (await style(p, '.stats-band', 'backgroundColor')) === 'rgb(255, 255, 255)' && (await style(p, '.signature', 'color')) === 'rgb(38, 35, 31)'],
   ['or=touches&bande=papier', p => style(p, '.stats-band', 'backgroundColor').then(v => v === 'rgb(249, 249, 246)')],
   ['or=touches&chiffres=photo', p => style(p, '.stats--photo .stat__value', 'color').then(v => v === 'rgb(255, 255, 255)')],
@@ -76,12 +75,7 @@ const tests = [
   ['deco=arcs', p => style(p, '.deco--arcs', 'display').then(v => v === 'block')],
   ['deco=phi', p => style(p, '.deco--phi', 'display').then(v => v === 'block')],
   ['deco=anneaux', p => style(p, '.deco--anneaux', 'display').then(v => v === 'block')],
-  ['projets=roue', async p => (await style(p, '.roue', 'display')) === 'block' && (await style(p, '.four', 'display')) === 'none'],
-  ['projets=deux', async p => (await style(p, '.roue', 'display')) === 'block' && (await style(p, '.four', 'display')) === 'grid'],
   ['projets=aucune', p => style(p, '.section--projets', 'display').then(v => v === 'none')],
-  ['projets=roue&roue=mot', async p => (await style(p, '.roue__mot', 'display')) === 'block' && (await style(p, '.roue__phi', 'display')) === 'none'],
-  ['projets=roue&roue=phrase', p => style(p, '.roue__phrase', 'display').then(v => v === 'block')],
-  ['graphique=anneau', async p => (await style(p, '.ring', 'display')) === 'block' && (await style(p, '.bar__track', 'display')) === 'none'],
   ['logos=gris', p => style(p, '.partners', 'color').then(v => v === 'rgb(122, 116, 102)')],
   ['logos=couleur', async p => (await style(p, '.partner__couleur', 'display')) === 'block' && (await style(p, '.partner__encre', 'display')) === 'none'],
 ];
@@ -91,14 +85,19 @@ for (const [etat, test] of tests) {
   ok(res, etat); await ctx.close();
 }
 
-console.log('\n4 · Mouvement réduit, présentation, sans JavaScript, polices');
+console.log('\n4 · Φ de l’en-tête, logos partenaires, photo 2800 px, présentation, sans JavaScript, polices');
 {
-  const { p, ctx } = await ouvrir('projets=roue', [1440, 900], { reducedMotion: 'reduce' });
-  ok((await style(p, '.roue__disque', 'animationName')) === 'none' && (await style(p, '.roue__item', 'animationName')) === 'none', 'prefers-reduced-motion : la roue est immobile'); await ctx.close();
+  const { p, ctx } = await ouvrir('');
+  ok((await style(p, '.logo__mark', 'fill')) === 'rgb(104, 78, 30)', 'Φ de l’en-tête peint en bronze par défaut (fill hérité de color)');
+  const logos = await p.evaluate(() => [...document.querySelectorAll('.partner')].map(li => { const r = li.querySelector('.partner__encre').getBoundingClientRect(); return { nom: li.title, h: Math.round(r.height), c: Math.round((r.top + r.bottom) / 2) }; }));
+  const attendu = { ASAP: 42, Batopin: 34, 'CN Architecture': 35, 'Felis & Associés': 34, Menuisol: 34, 'Property Lab': 49, Synopsis: 60, 'Zekaj Construct': 34 };
+  ok(logos.length === 8 && logos.every(l => l.h === attendu[l.nom]), 'logos à la masse visuelle : ' + logos.map(l => `${l.nom} ${l.h}`).join(' · '));
+  ok(Math.max(...logos.map(l => l.c)) - Math.min(...logos.map(l => l.c)) <= 1, 'logos alignés au centre de la rangée');
+  await ctx.close();
 }
 {
-  const { p, ctx } = await ouvrir('projets=roue', [1440, 900], { reducedMotion: 'no-preference' });
-  ok((await style(p, '.roue__disque', 'animationName')) === 'roue-tour', 'sans préférence : la roue tourne'); await ctx.close();
+  const { p, ctx } = await ouvrir('chiffres=photo', [1440, 900], { deviceScaleFactor: 2 });
+  ok(await p.evaluate(() => /community-05-l\.jpg$/.test(document.querySelector('.stats-photo__img[data-photo="community-05"]').currentSrc)), 'chiffres sur photo : la version 2800 px est servie à 1440 × 2'); await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('panneau=off');

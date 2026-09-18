@@ -1,4 +1,4 @@
-// Captures PNG des pages de la maquette (Playwright + Chromium), panneau masqué, roue immobile.
+// Captures PNG des pages de la maquette (Playwright + Chromium), panneau masqué.
 // Usage, depuis la racine du dépôt :
 //   NODE_PATH=$(npm root -g) node design/maquette/src/export.mjs [options]
 // Options :
