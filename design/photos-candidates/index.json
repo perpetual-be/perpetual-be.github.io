@@ -1,0 +1,482 @@
+[
+ {
+  "proj": "belfius-braine-l-alleud",
+  "file": "belfius-braine-l-alleud__belfius-braine-l-alleud-01.jpg",
+  "src": "belfius-braine-l-alleud-01.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "belfius-braine-l-alleud",
+  "file": "belfius-braine-l-alleud__belfius-braine-l-alleud-02.jpg",
+  "src": "belfius-braine-l-alleud-02.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "belfius-braine-l-alleud",
+  "file": "belfius-braine-l-alleud__belfius-braine-l-alleud-03.jpg",
+  "src": "belfius-braine-l-alleud-03.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "belfius-braine-l-alleud",
+  "file": "belfius-braine-l-alleud__belfius-braine-l-alleud-04.jpg",
+  "src": "belfius-braine-l-alleud-04.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "belfius-mettet",
+  "file": "belfius-mettet__belfius-mettet-01.jpg",
+  "src": "belfius-mettet-01.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "belfius-mettet",
+  "file": "belfius-mettet__belfius-mettet-02.jpg",
+  "src": "belfius-mettet-02.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "belfius-mettet",
+  "file": "belfius-mettet__belfius-mettet-03.jpg",
+  "src": "belfius-mettet-03.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "belfius-mettet",
+  "file": "belfius-mettet__belfius-mettet-04.jpg",
+  "src": "belfius-mettet-04.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "belfius-mettet",
+  "file": "belfius-mettet__belfius-mettet-05.jpg",
+  "src": "belfius-mettet-05.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "bnp-bois-de-villers",
+  "file": "bnp-bois-de-villers__bnp-bois-de-villers-01.jpg",
+  "src": "bnp-bois-de-villers-01.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "bnp-bois-de-villers",
+  "file": "bnp-bois-de-villers__bnp-bois-de-villers-02.jpg",
+  "src": "bnp-bois-de-villers-02.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "bnp-braine-le-comte",
+  "file": "bnp-braine-le-comte__bnp-braine-le-comte-01.jpg",
+  "src": "bnp-braine-le-comte-01.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "bnp-braine-le-comte",
+  "file": "bnp-braine-le-comte__bnp-braine-le-comte-02.jpg",
+  "src": "bnp-braine-le-comte-02.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "bnp-braine-le-comte",
+  "file": "bnp-braine-le-comte__bnp-braine-le-comte-03.jpg",
+  "src": "bnp-braine-le-comte-03.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "bnp-jambes",
+  "file": "bnp-jambes__bnp-jambes-01.jpg",
+  "src": "bnp-jambes-01.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "bnp-jambes",
+  "file": "bnp-jambes__bnp-jambes-02.jpg",
+  "src": "bnp-jambes-02.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "community",
+  "file": "community__community-05.jpg",
+  "src": "community-05.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": true
+ },
+ {
+  "proj": "community",
+  "file": "community__community-06.jpg",
+  "src": "community-06.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": true
+ },
+ {
+  "proj": "community",
+  "file": "community__community-07.jpg",
+  "src": "community-07.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": true
+ },
+ {
+  "proj": "community",
+  "file": "community__community-08.jpg",
+  "src": "community-08.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": true
+ },
+ {
+  "proj": "community",
+  "file": "community__community-09.jpg",
+  "src": "community-09.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": true
+ },
+ {
+  "proj": "community",
+  "file": "community__community-10.jpg",
+  "src": "community-10.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__data-box-01.jpg",
+  "src": "data-box-01.jpg.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__data-box-02.jpg",
+  "src": "data-box-02.jpg.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__dji_fly_20260830_161008_0063_1788102734855_photo.jpg",
+  "src": "dji_fly_20260830_161008_0063_1788102734855_photo.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__dji_fly_20260830_161022_0064_1788102731453_photo.jpg",
+  "src": "dji_fly_20260830_161022_0064_1788102731453_photo.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__dji_fly_20260830_161050_0065_1788102728952_photo.jpg",
+  "src": "dji_fly_20260830_161050_0065_1788102728952_photo.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__dji_fly_20260830_161056_0066_1788102725790_photo.jpg",
+  "src": "dji_fly_20260830_161056_0066_1788102725790_photo.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__dji_fly_20260830_161508_0068_1788102633507_photo.jpg",
+  "src": "dji_fly_20260830_161508_0068_1788102633507_photo.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__dji_fly_20260830_161514_0069_1788102629831_photo.jpg",
+  "src": "dji_fly_20260830_161514_0069_1788102629831_photo.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__dji_fly_20260830_161620_0071_1788102618576_photo.jpg",
+  "src": "dji_fly_20260830_161620_0071_1788102618576_photo.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__dji_fly_20260830_161632_0072_1788102614329_photo.jpg",
+  "src": "dji_fly_20260830_161632_0072_1788102614329_photo.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__dji_fly_20260830_161724_0073_1788102611239_photo.jpg",
+  "src": "dji_fly_20260830_161724_0073_1788102611239_photo.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__dji_fly_20260830_161738_0074_1788102608272_photo.jpg",
+  "src": "dji_fly_20260830_161738_0074_1788102608272_photo.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__dji_fly_20260830_161802_0075_1788102603815_photo.jpg",
+  "src": "dji_fly_20260830_161802_0075_1788102603815_photo.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "data-box",
+  "file": "data-box__dji_fly_20260830_161856_0076_1788102599255_photo.jpg",
+  "src": "dji_fly_20260830_161856_0076_1788102599255_photo.JPG",
+  "w": 8064,
+  "h": 4536,
+  "phare": true
+ },
+ {
+  "proj": "gilly",
+  "file": "gilly__gilly-01.jpg",
+  "src": "gilly-01.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "gilly",
+  "file": "gilly__gilly-02.jpg",
+  "src": "gilly-02.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "ing-belgrade",
+  "file": "ing-belgrade__ing-belgrade-01.jpg",
+  "src": "ing-belgrade-01.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "ing-belgrade",
+  "file": "ing-belgrade__ing-belgrade-02.jpg",
+  "src": "ing-belgrade-02.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "ing-haaltert",
+  "file": "ing-haaltert__ing-haaltert-01.jpg",
+  "src": "ing-haaltert-01.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "ing-haaltert",
+  "file": "ing-haaltert__ing-haaltert-03.jpg",
+  "src": "ing-haaltert-03.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "ing-landen",
+  "file": "ing-landen__ing-landen-01.jpg",
+  "src": "ing-landen-01.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "ing-landen",
+  "file": "ing-landen__ing-landen-02.jpg",
+  "src": "ing-landen-02.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "ing-landen",
+  "file": "ing-landen__ing-landen-03.jpg",
+  "src": "ing-landen-03.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "ing-landen",
+  "file": "ing-landen__ing-landen-04.jpg",
+  "src": "ing-landen-04.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "ing-tervuren",
+  "file": "ing-tervuren__ing-tervuren-01.jpg",
+  "src": "ing-tervuren-01.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "ing-tervuren",
+  "file": "ing-tervuren__ing-tervuren-02.jpg",
+  "src": "ing-tervuren-02.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "ing-welkenraedt",
+  "file": "ing-welkenraedt__ing-welkenraedt-01.jpg",
+  "src": "ing-welkenraedt-01.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "ing-welkenraedt",
+  "file": "ing-welkenraedt__ing-welkenraedt-02.jpg",
+  "src": "ing-welkenraedt-02.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "ing-welkenraedt",
+  "file": "ing-welkenraedt__ing-welkenraedt-03.jpg",
+  "src": "ing-welkenraedt-03.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "the-bank",
+  "file": "the-bank__the-bank-02.jpg",
+  "src": "the-bank-02.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": true
+ },
+ {
+  "proj": "the-bank",
+  "file": "the-bank__the-bank-03.jpg",
+  "src": "the-bank-03.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": true
+ },
+ {
+  "proj": "waremme",
+  "file": "waremme__waremme-02.jpg",
+  "src": "waremme-02.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "waremme",
+  "file": "waremme__waremme-03.jpg",
+  "src": "waremme-03.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "waremme",
+  "file": "waremme__waremme-04.jpg",
+  "src": "waremme-04.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "wayez-27",
+  "file": "wayez-27__wayez-27-01.jpg",
+  "src": "wayez-27-01.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "wayez-27",
+  "file": "wayez-27__wayez-27-02.jpg",
+  "src": "wayez-27-02.jpg",
+  "w": 3344,
+  "h": 2508,
+  "phare": false
+ },
+ {
+  "proj": "wayez-27",
+  "file": "wayez-27__wayez-27-03.jpg",
+  "src": "wayez-27-03.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ },
+ {
+  "proj": "wayez-27",
+  "file": "wayez-27__wayez-27-04.jpg",
+  "src": "wayez-27-04.jpg",
+  "w": 2896,
+  "h": 2172,
+  "phare": false
+ }
+]
