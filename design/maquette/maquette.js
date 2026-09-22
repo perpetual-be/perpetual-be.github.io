@@ -1,5 +1,5 @@
 /* Perpetual — maquette du lot 2 : le panneau de bascules, l'état dans l'URL, l'aperçu de la liste des projets.
-   L'état (une valeur par bascule) vit dans la query de l'URL (?serif=literata&or=touches) ; le hash reste aux ancres.
+   L'état (une valeur par bascule) vit dans la query de l'URL (?ecran=photo&serif=source-serif) ; le hash reste aux ancres.
    Un script en tête de page pose déjà les attributs data-* avant le premier rendu ; ici on dessine le panneau et on tient l'URL à jour. */
 (function () {
   'use strict';
@@ -7,24 +7,21 @@
   var PAGE = html.getAttribute('data-page') || 'home';
 
   // La table des bascules : numéro du brief, clé (= attribut data-<clé> et paramètre d'URL), valeurs [valeur, libellé] ; la première valeur est le défaut.
+  // Figées le 22/09, valeur écrite dans :root de maquette.css et retirées d'ici : 1 liens du header (droite), 4 sans (Instrument Sans),
+  // 5 wordmark (Jost 400, 0,18 em), 6 Φ (bronze), 7 dosage de l'or et 8 surface de la bande (remplacées par le dosage fixe), 11 section projets (liste des 4),
+  // 12 roue et 13 anneau (abandonnées) ; la 9 est réduite à colonnes / photo (structure E), ses sous-choix 9a structure et 9c position sont retirés.
   var BASCULES = [
-    { n: 5, cle: 'wordmark', titre: 'Wordmark', groupe: 'En-tête', valeurs: [['trace', 'tracé actuel'], ['jost', 'Jost 400 · 0,18 em'], ['source-serif', 'Source Serif 4'], ['literata', 'Literata'], ['playfair', 'Playfair Display']] },
-    { n: 6, cle: 'phi', titre: 'Couleur du Φ', groupe: 'En-tête', valeurs: [['bronze', 'bronze'], ['or', 'or mat']] },
-    { n: 2, cle: 'serif', titre: 'Serif', groupe: 'Typographie', valeurs: [['newsreader', 'Newsreader'], ['source-serif', 'Source Serif 4'], ['literata', 'Literata'], ['playfair', 'Playfair Display']] },
-    { n: 3, cle: 'portee', titre: 'Portée de la serif', groupe: 'Typographie', valeurs: [['partout', 'partout'], ['rationnee', 'rationnée']] },
-    { n: 4, cle: 'sans', titre: 'Sans', groupe: 'Typographie', valeurs: [['inter', 'Inter'], ['instrument', 'Instrument Sans']] },
-    { n: 7, cle: 'or', titre: 'Dosage de l’or', groupe: 'Or et bande', valeurs: [['partout', 'partout'], ['touches', 'touches']] },
-    { n: 8, cle: 'bande', titre: 'Surface de la bande', groupe: 'Or et bande', valeurs: [['sable', 'sable'], ['papier', 'papier']], note: 'sous « touches », sable devient blanc' },
-    { n: 10, cle: 'deco', titre: 'Élément de la bande', groupe: 'Or et bande', valeurs: [['0', 'rien'], ['arcs', '1a · deux arcs'], ['phi', '4 · Φ en filigrane'], ['anneaux', '6 · anneaux']], inactif: { cle: 'chiffres', vals: ['photo'], note: 'sans bande en mode « sur photo »' }, pages: ['home'] },
-    { n: 9, cle: 'chiffres', titre: 'Chiffres clés', groupe: 'Chiffres', valeurs: [['colonnes', '4 colonnes'], ['liste', 'liste'], ['photo', 'sur photo']], pages: ['home'] },
-    { n: '9a', cle: 'structure', titre: 'Structure', groupe: 'Chiffres', parent: { cle: 'chiffres', vals: ['photo'] }, valeurs: [['c', 'C’ : hero, puis la photo'], ['b', 'B : accroche, photo, paragraphes']], pages: ['home'] },
-    { n: '9b', cle: 'photo', titre: 'Photo', groupe: 'Chiffres', parent: { cle: 'chiffres', vals: ['photo'] }, valeurs: [['community-05', 'Community 05'], ['data-box-02', 'Data Box 02'], ['the-bank-01', 'The Bank 01 · portrait'], ['the-bank-03', 'The Bank 03']], pages: ['home'] },
-    { n: '9c', cle: 'cote', titre: 'Position', groupe: 'Chiffres', parent: { cle: 'chiffres', vals: ['photo'] }, valeurs: [['gauche', 'gauche'], ['droite', 'droite']], pages: ['home'] },
-    { n: 11, cle: 'projets', titre: 'Section projets', groupe: 'Projets', valeurs: [['liste', 'liste des 4'], ['aucune', 'aucune']], pages: ['home'] },
-    { n: 15, cle: 'autres', titre: 'Réalisations', groupe: 'Projets', valeurs: [['carte', 'carte'], ['bande', 'bande'], ['aucune', 'aucune']], pages: ['home'] },
-    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Projets', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['papier', 'papier'], ['trait', 'trait']], pages: ['home'] },
-    { n: '15b', cle: 'villes', titre: 'Villes', groupe: 'Projets', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['toutes', 'toutes'], ['quelques-unes', 'quelques-unes'], ['aucune', 'aucune']], note: 'quelques-unes : Bruxelles, Liège, Jemelle (data-rang="1" dans le SVG) ; sur mobile, celles-là seulement', pages: ['home'] },
-    { n: 14, cle: 'logos', titre: 'Logos partenaires', groupe: 'Partenaires', valeurs: [['noir', 'noir'], ['gris', 'gris chaud'], ['couleur', 'couleur']], pages: ['home'] }
+    { n: 2, cle: 'serif', titre: 'Serif', groupe: 'Typographie', valeurs: [['newsreader', 'Newsreader'], ['source-serif', 'Source Serif 4']] },
+    { n: 3, cle: 'portee', titre: 'Portée de la serif', groupe: 'Typographie', valeurs: [['rationnee', 'rationnée'], ['partout', 'partout']], note: 'rationnée : titres de section et de chapitre en sans medium' },
+    { n: 17, cle: 'graisse', titre: 'Graisse de la serif', groupe: 'Typographie', valeurs: [['400', '400'], ['500', '500']], note: 'accroche et chiffres clés' },
+    { n: 9, cle: 'ecran', titre: 'Premier écran', groupe: 'Premier écran', valeurs: [['colonnes', 'colonnes'], ['photo', 'photo · structure E']], note: 'les quatre chiffres restent dans la bande', pages: ['home'] },
+    { n: '9b', cle: 'photo', titre: 'Photo', groupe: 'Premier écran', parent: { cle: 'ecran', vals: ['photo'] }, valeurs: [['community-05', 'Community 05'], ['data-box-02', 'Data Box 02'], ['the-bank-01', 'The Bank 01 · portrait'], ['the-bank-03', 'The Bank 03']], pages: ['home'] },
+    { n: 10, cle: 'deco', titre: 'Élément de la bande', groupe: 'Or', valeurs: [['phi', '4 · Φ en filigrane'], ['0', 'rien'], ['arcs', '1a · deux arcs'], ['anneaux', '6 · anneaux']], pages: ['home'] },
+    { n: 16, cle: 'signature', titre: 'Signature', groupe: 'Or', valeurs: [['or', 'or'], ['anthracite', 'anthracite']], note: 'or = or foncé #8A6B2F, comme les liens', pages: ['home'] },
+    { n: 15, cle: 'autres', titre: 'Réalisations', groupe: 'Réalisations', valeurs: [['carte', 'carte'], ['bande', 'bande'], ['aucune', 'aucune']], pages: ['home'] },
+    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Réalisations', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['plein', 'plein'], ['trait', 'trait']], note: 'plein : pays rempli en papier (--surface)', pages: ['home'] },
+    { n: '15b', cle: 'villes', titre: 'Villes', groupe: 'Réalisations', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['toutes', 'toutes'], ['quelques-unes', 'quelques-unes'], ['aucune', 'aucune']], note: 'quelques-unes : Bruxelles, Liège, Jemelle (data-rang="1" dans le SVG) ; sur mobile, celles-là seulement', pages: ['home'] },
+    { n: 14, cle: 'logos', titre: 'Logos partenaires', groupe: 'Partenaires', valeurs: [['couleur', 'couleur'], ['noir', 'noir'], ['gris', 'gris chaud']], pages: ['home'] }
   ];
   var defauts = {};
   BASCULES.forEach(function (b) { defauts[b.cle] = b.valeurs[0][0]; });
@@ -132,7 +129,7 @@
       note.textContent = inactif ? (b.pages && b.pages.indexOf(PAGE) === -1 ? 'sans effet sur cette page' : b.inactif.note) : '';
       if (actif(b, etat) && etat[b.cle] !== defauts[b.cle]) n++;
     });
-    panneau.querySelector('.mq__compte').textContent = n ? '· ' + n + ' ≠ défaut' : '· planche A';
+    panneau.querySelector('.mq__compte').textContent = n ? '· ' + n + ' ≠ défaut' : '· combinaison retenue';
     var q = query(etat, false);
     panneau.querySelector('.mq__url').textContent = q ? '?' + q : 'valeurs par défaut';
     panneau.querySelector('[data-action="precedente"]').disabled = !precedent;

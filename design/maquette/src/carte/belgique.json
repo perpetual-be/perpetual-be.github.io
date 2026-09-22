@@ -18,7 +18,9 @@
     "Anderlecht",
     "Schaerbeek"
    ],
-   "rang": 1
+   "rang": 1,
+   "rayon": 6.5,
+   "note": "dessiné dans belgique.svg comme un seul point de rayon 6,5 en (x, y), nommé « Bruxelles » ; les membres gardent leur entrée dans villes (coordonnées de référence, non dessinées)"
   }
  ],
  "villes": [
@@ -256,7 +258,7 @@
   }
  ],
  "bascules": {
-  "carte": "papier (fill sable) / trait (contour fin, fond blanc)",
+  "carte": "plein (pays rempli en --surface-carte, papier) / trait (contour fin, fond blanc)",
   "villes": "toutes / quelques-unes (rang 1) / aucune (points seuls, nom au survol)"
  }
 }
