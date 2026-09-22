@@ -65,7 +65,7 @@ for (const [w, h] of [[1440, 900], [1366, 703]]) {
 
 console.log('\n2 · Aucun débordement horizontal');
 for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
-  for (const etat of ['', 'ecran=photo', 'ecran=photo&photo=the-bank-01', 'ecran=photo-bande', 'portee=partout', 'serif=source-serif&graisse=500', 'autres=bande', 'pied=sable']) {
+  for (const etat of ['', 'ecran=photo', 'ecran=photo&photo=data-box-01', 'ecran=photo-bande', 'portee=partout', 'serif=source-serif&graisse=500', 'autres=bande', 'pied=sable']) {
     const { p, ctx } = await ouvrir(etat, [w, h]);
     ok((await largeur(p)) === 0, `${w} · ${etat || 'défaut'}`); await ctx.close();
   }
@@ -78,10 +78,10 @@ const tests = [
   ['graisse=500', async p => (await style(p, '.hero__title', 'fontWeight')) === '500' && (await style(p, '.stat__value', 'fontWeight')) === '500' && (await style(p, '.signature', 'fontWeight')) === '400' && (await style(p, '.four__name', 'fontWeight')) === '400', 'graisse=500 : accroche et chiffres en 500, la signature et les noms de projets restent en 400'],
   ['ecran=photo', async p => (await style(p, '.hero__photo', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="community-05"]', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="data-box-02"]', 'display')) === 'none' && (await style(p, '.stats-band', 'display')) === 'block' && (await style(p, '.deco--arcs', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.stat').length)) === 4, 'ecran=photo : photo Community 05, la bande garde ses quatre chiffres et son élément décoratif'],
   ['ecran=photo&photo=data-box-02', async p => (await style(p, '.hero__photo img[data-photo="data-box-02"]', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="community-05"]', 'display')) === 'none'],
-  ['ecran=photo&photo=the-bank-01', p => style(p, '.hero__photo img[data-photo="the-bank-01"]', 'display').then(v => v === 'block')],
-  ['ecran=photo&photo=the-bank-03', p => style(p, '.hero__photo img[data-photo="the-bank-03"]', 'display').then(v => v === 'block')],
+  ['ecran=photo&photo=data-box-01', p => style(p, '.hero__photo img[data-photo="data-box-01"]', 'display').then(v => v === 'block')],
+  ['ecran=photo&photo=data-box-03', p => style(p, '.hero__photo img[data-photo="data-box-03"]', 'display').then(v => v === 'block')],
   ['ecran=photo-bande', async p => (await style(p, '.hero__photo', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="community-05"]', 'display')) === 'block' && (await style(p, '.stats-band', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.stat').length)) === 4, 'ecran=photo-bande : structure F, photo Community 05, la bande garde ses quatre chiffres'],
-  ['ecran=photo-bande&photo=the-bank-01', p => style(p, '.hero__photo img[data-photo="the-bank-01"]', 'display').then(v => v === 'block')],
+  ['ecran=photo-bande&photo=data-box-01', p => style(p, '.hero__photo img[data-photo="data-box-01"]', 'display').then(v => v === 'block')],
   ['deco=0', async p => (await style(p, '.deco--arcs', 'display')) === 'none' && (await style(p, '.deco--anneaux', 'display')) === 'none'],
   ['deco=anneaux', async p => (await style(p, '.deco--anneaux', 'display')) === 'block' && (await style(p, '.deco--arcs', 'display')) === 'none'],
   ['signature=anthracite', p => style(p, '.signature', 'color').then(v => v === ANTHRACITE)],
