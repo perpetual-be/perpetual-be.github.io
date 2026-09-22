@@ -1,7 +1,7 @@
 // Génère les pages de la maquette du lot 2 (design/maquette/*.html) à partir des données du dépôt.
 // Exécuter depuis la racine : node design/maquette/src/build.mjs
 // Lit data/*.json, content/home.md, content/collectif.md, content/realisations.md, public/favicon.svg, public/partners/encre/*.svg,
-// design/maquette/src/carte/belgique.{svg,json} et design/directions/src/wordmark-mask.png. N'écrit que dans design/maquette/.
+// design/maquette/src/carte/belgique.{svg,json}. N'écrit que dans design/maquette/.
 // Aucune dépendance hors Node.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -62,7 +62,7 @@ const four = [
   { id: 'community', line: 'Uccle · 14 unités · Quatorze unités autour d’espaces partagés', img: 'community-05-s.jpg', href: 'projets.html#community' },
 ];
 
-// Chiffres sur photo : les candidates de la bascule 9b, en 1800 px (<nom>.jpg) puis 2800 px (<nom>-l.jpg) pour les grands écrans ;
+// Structure E (bascule 9 sur « photo ») : les photos candidates de la bascule 9b, en 1800 px (<nom>.jpg) puis 2800 px (<nom>-l.jpg) pour les grands écrans ;
 // le srcset porte la largeur réelle de chaque fichier, lue dans l'en-tête JPEG. Les versions se génèrent depuis l'original avec
 // design/directions/src/reduire-photos.mjs --grand --tres-grand ; tant qu'elles manquent, la page se replie sur <nom>-s.jpg (800 px).
 function jpegWidth(file) {
@@ -110,7 +110,6 @@ const partnersHtml = partners.map(p => {
 const markPath = read('public/favicon.svg').match(/<g[\s\S]*<\/g>/)[0];
 const phiSymbol = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="phi" viewBox="0 0 100 104.02">${markPath}</symbol></svg>`;
 const phi = (cls) => `<svg class="${cls}" aria-hidden="true"><use href="#phi"/></svg>`;
-const maskData = 'data:image/png;base64,' + fs.readFileSync(path.resolve(REPO, 'design/directions/src/wordmark-mask.png')).toString('base64');
 
 // ---------- fragments ----------
 const stateScript = `<script>(function(){var p=new URLSearchParams(location.search),h=document.documentElement;p.forEach(function(v,k){if(/^[a-z][a-z-]*$/.test(k)&&/^[a-z0-9-]*$/.test(v))h.setAttribute('data-'+k,v)})})();</script>`;
@@ -124,7 +123,6 @@ function head(title) {
 <title>${esc(title.text)}</title>
 ${stateScript}
 <link rel="stylesheet" href="maquette.css">
-<style>:root{--wordmark-mask:url("${maskData}")}</style>
 <link rel="icon" href="../../public/favicon.svg">
 </head>
 <body>
@@ -134,12 +132,12 @@ ${phiSymbol}`;
 function header(active = '') {
   const a = k => active === k ? ' class="trait is-active"' : ' class="trait"';
   return `<header class="site-header">
-  <a class="logo" href="index.html" aria-label="Perpetual">${phi('logo__mark')}<span class="logo__trace" role="img" aria-label="Perpetual"></span><span class="logo__texte" aria-hidden="true">Perpetual</span></a>
+  <a class="logo" href="index.html" aria-label="Perpetual">${phi('logo__mark')}<span class="logo__texte">Perpetual</span></a>
   <nav class="site-nav" aria-label="Navigation"><a href="projets.html"${a('projets')}>Projets</a><a href="#"${a('engagements')}>Engagements</a><a href="#contact" class="trait">Contact</a></nav>
 </header>`;
 }
 
-const statsList = (cls = '') => `<ol class="stats${cls}">${stats.map(s => `<li class="stat"><span class="stat__value">${esc(s.value)}</span><span class="stat__label">${esc(s.label)}</span></li>`).join('')}</ol>`;
+const statsList = () => `<ol class="stats">${stats.map(s => `<li class="stat"><span class="stat__value">${esc(s.value)}</span><span class="stat__label">${esc(s.label)}</span></li>`).join('')}</ol>`;
 
 function deco() {
   const arcL = 'M 0 200 A 520 520 0 0 1 180 0', arcR = 'M 420 20 A 520 520 0 0 1 240 220';
@@ -151,19 +149,21 @@ function deco() {
   </div>`;
 }
 
+// Premier écran : structure colonnes (défaut) ou structure E (bascule 9, ?ecran=photo) — même HTML, le CSS replace les enfants de .hero__grid
+// et montre .hero__photo (masqué en structure colonnes : ses images en chargement paresseux n'y sont pas demandées). Les quatre chiffres restent
+// dans la bande dans les deux structures.
 function lead() {
-  return `<div class="lead">
-<section class="hero"><div class="container hero__grid">
+  return `<section class="hero">
+<div class="hero__photo" aria-hidden="true">
+  ${photoCandidates.map(c => `<img data-photo="${c.key}" src="${IMG}/${c.sources[0].file}"${c.sources.length > 1 ? ` srcset="${c.sources.map(s => `${IMG}/${s.file} ${s.width}w`).join(', ')}" sizes="100vw"` : ''} alt="" loading="lazy" decoding="async">`).join('\n  ')}
+</div>
+<div class="container hero__grid">
   <h1 class="hero__title"><span>${home.h1}</span></h1>
   <p class="signature">${home.signature}</p>
   <div class="hero__text">${home.paragraphs.map(p => `<p>${p}</p>`).join('')}</div>
-</div></section>
-<section class="band stats-band" aria-label="Chiffres clés">${deco()}<div class="container">${statsList()}</div></section>
-<section class="stats-photo" aria-label="Chiffres clés">
-  ${photoCandidates.map(c => `<img class="stats-photo__img" data-photo="${c.key}" src="${IMG}/${c.sources[0].file}"${c.sources.length > 1 ? ` srcset="${c.sources.map(s => `${IMG}/${s.file} ${s.width}w`).join(', ')}" sizes="100vw"` : ''} alt="" loading="lazy" decoding="async">`).join('\n  ')}
-  <div class="container stats-photo__in">${statsList(' stats--photo')}</div>
+</div>
 </section>
-</div>`;
+<section class="band stats-band" aria-label="Chiffres clés">${deco()}<div class="container">${statsList()}</div></section>`;
 }
 
 function chart() {
@@ -187,10 +187,10 @@ function projets() {
 </div></section>`;
 }
 
-// Carte des réalisations : src/carte/belgique.svg (contour, 20 points, 17 étiquettes placées à la main ; « Bruxelles » pour les
-// quatre adresses bruxelloises, groupe défini dans belgique.json). Chaque étiquette est regroupée avec son ou ses points dans un
-// <g class="carte__lieu"> : le survol d'un point colore (ou révèle) l'étiquette en CSS seul. data-rang="1" sur une étiquette du SVG
-// la garde visible en mode « quelques-unes » (bascule 15b) et sur mobile.
+// Carte des réalisations : src/carte/belgique.svg (contour, 17 points, 17 étiquettes placées à la main ; les quatre adresses bruxelloises
+// — groupe « Bruxelles » de belgique.json — sont un seul point plus gros, r 6,5, nommé comme l'étiquette). Chaque étiquette est regroupée
+// avec son point (même nom, ou membre de son groupe) dans un <g class="carte__lieu"> : le survol d'un point colore (ou révèle) l'étiquette
+// en CSS seul. data-rang="1" sur une étiquette du SVG la garde visible en mode « quelques-unes » (bascule 15b) et sur mobile.
 function carteSvg() {
   const svg = fs.readFileSync(path.join(HERE, 'carte/belgique.svg'), 'utf8').replace(/<!--[\s\S]*?-->\s*/g, '');
   const groupes = JSON.parse(fs.readFileSync(path.join(HERE, 'carte/belgique.json'), 'utf8')).groupes;
@@ -200,11 +200,11 @@ function carteSvg() {
   const etiquettes = [...svg.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map(m => ({ nom: m[1], html: m[0] }));
   const membres = nom => (groupes.find(g => g.nom === nom) || { membres: [nom] }).membres;
   const lieux = etiquettes.map(e => {
-    const pts = points.filter(p => membres(e.nom).includes(p.nom));
+    const pts = points.filter(p => p.nom === e.nom || membres(e.nom).includes(p.nom));
     if (!pts.length) throw new Error('carte : aucun point pour l’étiquette ' + e.nom);
     return `<g class="carte__lieu" data-lieu="${esc(e.nom)}">${pts.map(p => p.html).join('')}${e.html}</g>`;
   });
-  const orphelins = points.filter(p => !etiquettes.some(e => membres(e.nom).includes(p.nom)));
+  const orphelins = points.filter(p => !etiquettes.some(e => e.nom === p.nom || membres(e.nom).includes(p.nom)));
   if (orphelins.length) throw new Error('carte : points sans étiquette : ' + orphelins.map(p => p.nom).join(', '));
   console.log(`carte : ${points.length} points, ${etiquettes.length} étiquettes`);
   return `${ouverture}\n${pays}\n${lieux.join('\n')}\n</svg>`;
