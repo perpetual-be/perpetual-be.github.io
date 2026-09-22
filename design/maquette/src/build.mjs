@@ -1,6 +1,6 @@
 // Génère les pages de la maquette du lot 2 (design/maquette/*.html) à partir des données du dépôt.
 // Exécuter depuis la racine : node design/maquette/src/build.mjs
-// Lit data/*.json, content/home.md, content/collectif.md, content/realisations.md, public/favicon.svg, public/partners/encre/*.svg,
+// Lit data/*.json, content/home.md, content/collectif.md, content/realisations.md, public/favicon.svg, public/partners/encre/*.svg (hauteurs des logos),
 // design/maquette/src/carte/belgique.{svg,json}. N'écrit que dans design/maquette/.
 // Aucune dépendance hors Node.
 import fs from 'node:fs';
@@ -21,6 +21,9 @@ const site = JSON.parse(read('data/site.json'));
 const projects = JSON.parse(read('data/projects.json'));
 const partners = JSON.parse(read('data/partners.json'));
 const byId = Object.fromEntries(projects.map(p => [p.id, p]));
+// Libellé de l'entrée « réalisations » de la navigation et du plan du pied de page : data/site.json est la source unique (reprise par le site au lot 4).
+const navLabel = href => { const n = site.nav.find(x => x.href === href); if (!n) throw new Error('data/site.json : entrée de navigation ' + href + ' introuvable'); return n.label; };
+const REALISATIONS = navLabel('/realisations');
 
 function frontmatter(md) {
   const m = md.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -77,35 +80,31 @@ function jpegWidth(file) {
   }
   return null;
 }
+// Chaque photo déclare son point focal (object-position, posé en style sur l'<img>, vaut aussi sur téléphone) et le côté de l'accroche
+// quand la bascule 9d est sur « auto » (gauche / droite ; build.mjs en tire les règles de la balise <style> du premier écran).
+// La première entrée est le défaut de la bascule 9b. Ne jamais retourner une photo en miroir : on déplace l'accroche, pas l'image.
 const photoCandidates = [
-  { key: 'community-05', files: ['community-05.jpg', 'community-05-l.jpg'] },
-  { key: 'data-box-02', files: ['data-box-02.jpg', 'data-box-02-l.jpg'] },
-  { key: 'data-box-01', files: ['data-box-01.jpg', 'data-box-01-l.jpg'] },
-  { key: 'data-box-03', files: ['data-box-03.jpg', 'data-box-03-l.jpg'] },
+  { key: 'data-box-03', focal: '50% 18%', accroche: 'gauche', files: ['data-box-03.jpg', 'data-box-03-l.jpg'] },   // la forêt à gauche
+  { key: 'community-05', focal: '50% 50%', accroche: 'droite', files: ['community-05.jpg', 'community-05-l.jpg'] }, // le bardage noir à droite
 ].map(c => {
   const chemin = f => path.join(REPO, 'design/directions/img', f);
   const sources = c.files.filter(f => fs.existsSync(chemin(f)) || (console.warn('photo absente :', f), false)).map(f => ({ file: f, width: jpegWidth(chemin(f)) }));
   if (!sources.length) { console.warn(`${c.key} : repli sur ${c.key}-s.jpg (800 px)`); sources.push({ file: `${c.key}-s.jpg`, width: jpegWidth(chemin(`${c.key}-s.jpg`)) }); }
-  return { key: c.key, sources };
+  return { key: c.key, focal: c.focal, accroche: c.accroche, sources };
 });
 
 // ---------- logos ----------
-function partnerSvg(file) {
-  let s = fs.readFileSync(path.join(REPO, 'public/partners/encre', path.basename(file)), 'utf8');
-  s = s.replace(/<\?xml[^>]*>/, '').replace(/<metadata>[\s\S]*?<\/metadata>/g, '').replace(/\sxmlns:c2pa="[^"]*"/, '');
-  s = s.replace(/\swidth="[^"]*"/, '').replace(/\sheight="[^"]*"/, '').replace('<svg', '<svg class="partner__encre" aria-hidden="true"');
-  return s.trim();
-}
-// Hauteur de chaque logo à la masse visuelle : 34 px × √(291 / largeur du viewBox), bornée 34–60 px
+// Figés en couleur le 22/09 (bascule 14 retirée) : <img> de public/partners/couleur/. La hauteur de chaque logo se calcule à la masse visuelle
+// sur le viewBox du fichier encre (mêmes canevas) : 34 px × √(291 / largeur du viewBox), bornée 34–60 px
 // (les canevas font 100 de haut ; Batopin, 291 de large, est l'étalon à 34 px). Posée en --logo-h sur le <li>.
-function partnerHeight(svg) {
+function partnerHeight(file) {
+  const svg = fs.readFileSync(path.join(REPO, 'public/partners/encre', path.basename(file)), 'utf8');
   const w = Number(svg.match(/viewBox="0 0 ([\d.]+) 100"/)[1]);
   return Math.min(60, Math.max(34, Math.round(34 * Math.sqrt(291 / w))));
 }
-const partnersHtml = partners.map(p => {
-  const svg = partnerSvg(p.logoInk);
-  return `<li class="partner" style="--logo-h:${partnerHeight(svg)}px" title="${esc(p.name)}">${svg}<img class="partner__couleur" src="${PARTNERS}/couleur/${path.basename(p.logo)}" alt="${esc(p.name)}" loading="lazy"></li>`;
-}).join('\n');
+const partnersHtml = partners.map(p =>
+  `<li class="partner" style="--logo-h:${partnerHeight(p.logoInk)}px" title="${esc(p.name)}"><img class="partner__couleur" src="${PARTNERS}/couleur/${path.basename(p.logo)}" alt="${esc(p.name)}" loading="lazy"></li>`
+).join('\n');
 
 const markPath = read('public/favicon.svg').match(/<g[\s\S]*<\/g>/)[0];
 const phiSymbol = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="phi" viewBox="0 0 100 104.02">${markPath}</symbol></svg>`;
@@ -123,7 +122,7 @@ function head(title) {
 <title>${esc(title.text)}</title>
 ${stateScript}
 <link rel="stylesheet" href="maquette.css">
-<link rel="icon" href="../../public/favicon.svg">
+${title.page === 'home' ? accrocheAuto() + '\n' : ''}<link rel="icon" href="../../public/favicon.svg">
 </head>
 <body>
 ${phiSymbol}`;
@@ -133,7 +132,7 @@ function header(active = '') {
   const a = k => active === k ? ' class="trait is-active"' : ' class="trait"';
   return `<header class="site-header">
   <a class="logo" href="index.html" aria-label="Perpetual">${phi('logo__mark')}<span class="logo__texte">Perpetual</span></a>
-  <nav class="site-nav" aria-label="Navigation"><a href="projets.html"${a('projets')}>Projets</a><a href="#"${a('engagements')}>Engagements</a><a href="#contact" class="trait">Contact</a></nav>
+  <nav class="site-nav" aria-label="Navigation"><a href="projets.html"${a('projets')}>${esc(REALISATIONS)}</a><a href="#"${a('engagements')}>Engagements</a><a href="#contact" class="trait">Contact</a></nav>
 </header>`;
 }
 
@@ -152,10 +151,21 @@ function deco() {
 // les enfants de .hero (display:contents sur .hero__grid, sauf en colonnes) et montre .hero__photo (masqué en structure colonnes : ses images en
 // chargement paresseux n'y sont pas demandées). La bande des chiffres est un enfant de .hero, après le bloc titre/texte/signature : en colonnes et
 // en structure E elle suit son ordre naturel (après les paragraphes) ; en structure F, le CSS la remonte juste après la photo, avant les paragraphes.
+// Bascule 9d sur « auto » (sans attribut data-accroche) : le côté de l'accroche suit la photo affichée, tel que photoCandidates le déclare.
+// Les deux côtés sont décrits par des variables dans maquette.css (--accroche-align, --voile-coin) ; ici, seulement l'aiguillage photo → côté.
+const COTES = { gauche: '--accroche-align:left;--voile-coin:0 0', droite: '--accroche-align:right;--voile-coin:100% 0' };
+function accrocheAuto() {
+  const sel = (c, i) => `html:not([data-accroche])${i === 0 ? `:is(:not([data-photo]),[data-photo="${c.key}"])` : `[data-photo="${c.key}"]`}`;
+  return `<style>/* 9d · accroche « auto » : côté déclaré par photo dans photoCandidates (build.mjs) */\n${photoCandidates.map((c, i) => {
+    if (!COTES[c.accroche]) throw new Error(`${c.key} : côté d'accroche inconnu « ${c.accroche} »`);
+    return `${sel(c, i)}{${COTES[c.accroche]}}`;
+  }).join('\n')}</style>`;
+}
+
 function lead() {
   return `<section class="hero">
 <div class="hero__photo" aria-hidden="true">
-  ${photoCandidates.map(c => `<img data-photo="${c.key}" src="${IMG}/${c.sources[0].file}"${c.sources.length > 1 ? ` srcset="${c.sources.map(s => `${IMG}/${s.file} ${s.width}w`).join(', ')}" sizes="100vw"` : ''} alt="" loading="lazy" decoding="async">`).join('\n  ')}
+  ${photoCandidates.map(c => `<img data-photo="${c.key}" style="object-position:${c.focal}" src="${IMG}/${c.sources[0].file}"${c.sources.length > 1 ? ` srcset="${c.sources.map(s => `${IMG}/${s.file} ${s.width}w`).join(', ')}" sizes="100vw"` : ''} alt="" loading="lazy" decoding="async">`).join('\n  ')}
 </div>
 <div class="container hero__grid">
   <h1 class="hero__title"><span>${home.h1}</span></h1>
@@ -177,7 +187,7 @@ function projets() {
   const rows = four.map((f, i) => `<li class="four__row${i === 0 ? ' is-active' : ''}" data-index="${i}"><a href="${f.href}"><span class="four__name">${esc(byId[f.id].name)}</span><span class="four__line">${esc(f.line)}</span></a></li>`).join('\n      ');
   const previews = four.map((f, i) => `<img${i === 0 ? ' class="is-active"' : ' loading="lazy"'} src="${IMG}/${f.img}" alt="" decoding="async">`).join('');
   return `<section class="section section--projets" id="projets"><div class="container">
-  <p class="eyebrow">Projets</p>
+  <p class="eyebrow">Réalisations</p>
   <div class="four">
     <ol class="four__list">
       ${rows}
@@ -217,13 +227,13 @@ function autres() {
   return `<section class="section section--autres" id="realisations">
 <div class="container">
   <p class="eyebrow">Réalisations</p>
-  <a class="autres__tous trait" href="projets.html">Tous les projets →</a>
+  <a class="autres__tous trait" href="projets.html">Toutes les réalisations →</a>
   <div class="carte">
     <div class="carte__fig">${carteSvg()}</div>
     <div class="carte__texte">
       <h2 class="h2">Vingt adresses, de Haaltert à Welkenraedt.</h2>
       <p>${agences}</p>
-      <a class="autres__lien trait" href="projets.html">Tous les projets →</a>
+      <a class="autres__lien trait" href="projets.html">Toutes les réalisations →</a>
     </div>
   </div>
 </div>
@@ -246,7 +256,7 @@ ${partnersHtml}
 function footer() {
   return `<footer class="site-footer" id="contact"><div class="container footer__grid">
   <div class="footer__contact"><p class="footer__name">Julien De Dobbeleer</p><a class="footer__mail" href="mailto:${site.email}">${site.email}</a><p class="footer__addr">${site.name}, ${site.city}</p></div>
-  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="projets.html">Projets</a><a class="trait" href="#collectif">Collectif</a><a class="trait" href="#">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
+  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="projets.html">${esc(REALISATIONS)}</a><a class="trait" href="#collectif">Collectif</a><a class="trait" href="#">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
   <blockquote class="footer__quote"><p>« ${site.quote.text} »</p><cite>${site.quote.author}</cite></blockquote>
   <p class="footer__legal">© 2026 ${site.name}</p>
 </div></footer>
