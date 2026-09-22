@@ -180,17 +180,19 @@ console.log('\n5 · Réalisations : la carte (défaut) et la bande');
   ok(align <= 1, `carte : le bloc de texte est aligné sur le haut de la carte (écart ${align} px)`);
   await p.hover('.carte__lieu[data-lieu="Jemelle"] .carte__pt');
   ok((await style(p, '.carte__lieu[data-lieu="Jemelle"] .carte__lab', 'fill')) === ANTHRACITE, 'carte : le survol d’un point passe son étiquette en anthracite');
-  const grappe = ['Braine-l’Alleud', 'Braine-le-Comte', 'Pont-à-Celles', 'Gilly', 'Mettet', 'Belgrade', 'Jambes', 'Bois-de-Villers'];
-  const chevauchements = await p.evaluate(noms => {
-    const labs = noms.map(nom => [...document.querySelectorAll('.carte__lab')].find(t => t.textContent === nom).getBoundingClientRect());
-    const pts = [...document.querySelectorAll('.carte__pt')].map(c => ({ nom: c.querySelector('title').textContent, r: c.getBoundingClientRect() }));
-    const inter = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+  // Chevauchements dans le SVG : getBBox() donne la boîte englobante dans le système de coordonnées propre du SVG (le viewBox, indépendant
+  // du zoom ou de la largeur d'écran), donc directement comparable aux décalages écrits dans belgique.json/belgique.svg. On teste les 17
+  // étiquettes deux à deux, plus chaque étiquette contre chaque point (aucun n'a de transform propre, donc les boîtes sont comparables telles quelles).
+  const chevauchements = await p.evaluate(() => {
+    const labs = [...document.querySelectorAll('.carte__lab')].map(t => ({ nom: t.textContent, b: t.getBBox() }));
+    const pts = [...document.querySelectorAll('.carte__pt')].map(c => ({ nom: c.querySelector('title').textContent, b: c.getBBox() }));
+    const inter = (a, b) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
     const paires = [];
-    for (let i = 0; i < labs.length; i++) for (let j = i + 1; j < labs.length; j++) if (inter(labs[i], labs[j])) paires.push(noms[i] + ' / ' + noms[j]);
-    for (let i = 0; i < labs.length; i++) for (const pt of pts) if (inter(labs[i], pt.r)) paires.push(noms[i] + ' / point ' + pt.nom);
+    for (let i = 0; i < labs.length; i++) for (let j = i + 1; j < labs.length; j++) if (inter(labs[i].b, labs[j].b)) paires.push(labs[i].nom + ' / ' + labs[j].nom);
+    for (const lab of labs) for (const pt of pts) if (inter(lab.b, pt.b)) paires.push(lab.nom + ' / point ' + pt.nom);
     return paires;
-  }, grappe);
-  ok(!chevauchements.length, chevauchements.length ? `carte : chevauchements dans la grappe centrale — ${chevauchements.join(', ')}` : 'carte : aucune étiquette ni aucun point de la grappe centrale ne se chevauchent (11 px, décalages augmentés)');
+  });
+  ok(!chevauchements.length, chevauchements.length ? `carte : chevauchements (getBBox) — ${chevauchements.join(', ')}` : 'carte : aucune des 17 étiquettes ne chevauche une autre étiquette ni un point (getBBox, boîtes du SVG)');
   console.log(`        hauteur de la section : ${c.section} px (visée ≈ 550)`);
   await ctx.close();
 }
