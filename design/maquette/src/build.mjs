@@ -144,14 +144,14 @@ function deco() {
   return `<div class="deco" aria-hidden="true">
     <svg class="deco__svg deco__l deco--arcs" viewBox="0 0 420 220" preserveAspectRatio="xMinYMid slice"><path d="${arcL}" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>
     <svg class="deco__svg deco__r deco--arcs" viewBox="0 0 420 220" preserveAspectRatio="xMaxYMid slice"><path d="${arcR}" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>
-    <svg class="deco__svg deco__phi deco--phi" viewBox="0 0 100 104.02"><use href="#phi"/></svg>
     <svg class="deco__svg deco__r deco--anneaux" viewBox="0 0 420 220" preserveAspectRatio="xMaxYMid meet"><circle cx="270" cy="110" r="110" fill="none" stroke="currentColor" stroke-width="1"/><circle class="deco__2" cx="270" cy="110" r="150" fill="none" stroke="currentColor" stroke-width="1"/></svg>
   </div>`;
 }
 
-// Premier écran : structure colonnes (défaut) ou structure E (bascule 9, ?ecran=photo) — même HTML, le CSS replace les enfants de .hero__grid
-// et montre .hero__photo (masqué en structure colonnes : ses images en chargement paresseux n'y sont pas demandées). Les quatre chiffres restent
-// dans la bande dans les deux structures.
+// Premier écran : structure colonnes (défaut), structure E (bascule 9, ?ecran=photo) ou structure F (?ecran=photo-bande) — même HTML, le CSS replace
+// les enfants de .hero (display:contents sur .hero__grid) et montre .hero__photo (masqué en structure colonnes : ses images en chargement paresseux
+// n'y sont pas demandées). La bande des chiffres est un enfant de .hero, après le bloc titre/texte/signature : en colonnes et en structure E elle
+// suit son ordre naturel (après les paragraphes) ; en structure F, le CSS la remonte juste après la photo, avant les paragraphes.
 function lead() {
   return `<section class="hero">
 <div class="hero__photo" aria-hidden="true">
@@ -162,8 +162,8 @@ function lead() {
   <p class="signature">${home.signature}</p>
   <div class="hero__text">${home.paragraphs.map(p => `<p>${p}</p>`).join('')}</div>
 </div>
-</section>
-<section class="band stats-band" aria-label="Chiffres clés">${deco()}<div class="container">${statsList()}</div></section>`;
+<section class="band stats-band" aria-label="Chiffres clés">${deco()}<div class="container">${statsList()}</div></section>
+</section>`;
 }
 
 function chart() {

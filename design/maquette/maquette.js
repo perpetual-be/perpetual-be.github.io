@@ -14,14 +14,18 @@
     { n: 2, cle: 'serif', titre: 'Serif', groupe: 'Typographie', valeurs: [['newsreader', 'Newsreader'], ['source-serif', 'Source Serif 4']] },
     { n: 3, cle: 'portee', titre: 'Portée de la serif', groupe: 'Typographie', valeurs: [['rationnee', 'rationnée'], ['partout', 'partout']], note: 'rationnée : titres de section et de chapitre en sans medium' },
     { n: 17, cle: 'graisse', titre: 'Graisse de la serif', groupe: 'Typographie', valeurs: [['400', '400'], ['500', '500']], note: 'accroche et chiffres clés' },
-    { n: 9, cle: 'ecran', titre: 'Premier écran', groupe: 'Premier écran', valeurs: [['colonnes', 'colonnes'], ['photo', 'photo · structure E']], note: 'les quatre chiffres restent dans la bande', pages: ['home'] },
-    { n: '9b', cle: 'photo', titre: 'Photo', groupe: 'Premier écran', parent: { cle: 'ecran', vals: ['photo'] }, valeurs: [['community-05', 'Community 05'], ['data-box-02', 'Data Box 02'], ['the-bank-01', 'The Bank 01 · portrait'], ['the-bank-03', 'The Bank 03']], pages: ['home'] },
-    { n: 10, cle: 'deco', titre: 'Élément de la bande', groupe: 'Or', valeurs: [['phi', '4 · Φ en filigrane'], ['0', 'rien'], ['arcs', '1a · deux arcs'], ['anneaux', '6 · anneaux']], pages: ['home'] },
+    { n: 9, cle: 'ecran', titre: 'Premier écran', groupe: 'Premier écran', valeurs: [['colonnes', 'colonnes'], ['photo', 'photo · structure E'], ['photo-bande', 'photo-bande · structure F']], note: 'les quatre chiffres restent dans la bande', pages: ['home'] },
+    { n: '9b', cle: 'photo', titre: 'Photo', groupe: 'Premier écran', parent: { cle: 'ecran', vals: ['photo', 'photo-bande'] }, valeurs: [['community-05', 'Community 05'], ['data-box-02', 'Data Box 02'], ['the-bank-01', 'The Bank 01 · portrait'], ['the-bank-03', 'The Bank 03']], pages: ['home'] },
+    { n: 19, cle: 'etiquettes', titre: 'Étiquettes des chiffres', groupe: 'Premier écran', valeurs: [['gris-chaud', 'gris chaud'], ['anthracite', 'anthracite']], pages: ['home'] },
+    { n: 10, cle: 'deco', titre: 'Élément de la bande', groupe: 'Or', valeurs: [['arcs', '1a · deux arcs'], ['anneaux', '6 · anneaux'], ['0', 'rien']], pages: ['home'] },
     { n: 16, cle: 'signature', titre: 'Signature', groupe: 'Or', valeurs: [['or', 'or'], ['anthracite', 'anthracite']], note: 'or = or foncé #8A6B2F, comme les liens', pages: ['home'] },
+    { n: '16a', cle: 'sigpos', titre: 'Position de la signature', groupe: 'Or', valeurs: [['gauche', 'gauche'], ['droite', 'droite · sous les paragraphes']], note: 'structure colonnes', inactif: { cle: 'ecran', vals: ['photo', 'photo-bande'], note: 'sans effet hors structure colonnes (déjà sous les paragraphes)' }, pages: ['home'] },
     { n: 15, cle: 'autres', titre: 'Réalisations', groupe: 'Réalisations', valeurs: [['carte', 'carte'], ['bande', 'bande'], ['aucune', 'aucune']], pages: ['home'] },
-    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Réalisations', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['plein', 'plein'], ['trait', 'trait']], note: 'plein : pays rempli en papier (--surface)', pages: ['home'] },
+    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Réalisations', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['plein', 'plein'], ['trait', 'trait']], note: 'plein : pays rempli en sable (--surface-carte)', pages: ['home'] },
+    { n: '15c', cle: 'contour', titre: 'Contour de la carte', groupe: 'Réalisations', parent: { cle: 'carte', vals: ['plein'] }, valeurs: [['sans', 'sans'], ['fin', 'fin']], note: 'sur la version pleine', pages: ['home'] },
     { n: '15b', cle: 'villes', titre: 'Villes', groupe: 'Réalisations', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['toutes', 'toutes'], ['quelques-unes', 'quelques-unes'], ['aucune', 'aucune']], note: 'quelques-unes : Bruxelles, Liège, Jemelle (data-rang="1" dans le SVG) ; sur mobile, celles-là seulement', pages: ['home'] },
-    { n: 14, cle: 'logos', titre: 'Logos partenaires', groupe: 'Partenaires', valeurs: [['couleur', 'couleur'], ['noir', 'noir'], ['gris', 'gris chaud']], pages: ['home'] }
+    { n: 14, cle: 'logos', titre: 'Logos partenaires', groupe: 'Partenaires', valeurs: [['couleur', 'couleur'], ['noir', 'noir'], ['gris', 'gris chaud']], pages: ['home'] },
+    { n: 18, cle: 'pied', titre: 'Fond du pied de page', groupe: 'Pied de page', valeurs: [['blanc', 'blanc'], ['papier', 'papier'], ['sable', 'sable']], pages: ['home'] }
   ];
   var defauts = {};
   BASCULES.forEach(function (b) { defauts[b.cle] = b.valeurs[0][0]; });
