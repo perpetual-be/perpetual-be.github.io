@@ -148,10 +148,10 @@ function deco() {
   </div>`;
 }
 
-// Premier écran : structure colonnes (défaut), structure E (bascule 9, ?ecran=photo) ou structure F (?ecran=photo-bande) — même HTML, le CSS replace
-// les enfants de .hero (display:contents sur .hero__grid) et montre .hero__photo (masqué en structure colonnes : ses images en chargement paresseux
-// n'y sont pas demandées). La bande des chiffres est un enfant de .hero, après le bloc titre/texte/signature : en colonnes et en structure E elle
-// suit son ordre naturel (après les paragraphes) ; en structure F, le CSS la remonte juste après la photo, avant les paragraphes.
+// Premier écran : structure E (bascule 9, défaut), structure colonnes (?ecran=colonnes) ou structure F (?ecran=photo-bande) — même HTML, le CSS replace
+// les enfants de .hero (display:contents sur .hero__grid, sauf en colonnes) et montre .hero__photo (masqué en structure colonnes : ses images en
+// chargement paresseux n'y sont pas demandées). La bande des chiffres est un enfant de .hero, après le bloc titre/texte/signature : en colonnes et
+// en structure E elle suit son ordre naturel (après les paragraphes) ; en structure F, le CSS la remonte juste après la photo, avant les paragraphes.
 function lead() {
   return `<section class="hero">
 <div class="hero__photo" aria-hidden="true">
@@ -189,8 +189,8 @@ function projets() {
 
 // Carte des réalisations : src/carte/belgique.svg (contour, 17 points, 17 étiquettes placées à la main ; les quatre adresses bruxelloises
 // — groupe « Bruxelles » de belgique.json — sont un seul point plus gros, r 6,5, nommé comme l'étiquette). Chaque étiquette est regroupée
-// avec son point (même nom, ou membre de son groupe) dans un <g class="carte__lieu"> : le survol d'un point colore (ou révèle) l'étiquette
-// en CSS seul. data-rang="1" sur une étiquette du SVG la garde visible en mode « quelques-unes » (bascule 15b) et sur mobile.
+// avec son point (même nom, ou membre de son groupe) dans un <g class="carte__lieu"> : le survol d'un point colore l'étiquette en CSS seul
+// (les villes sont figées sur « toutes », visibles sans survol). data-rang="1" sur une étiquette du SVG la garde visible sur mobile.
 function carteSvg() {
   const svg = fs.readFileSync(path.join(HERE, 'carte/belgique.svg'), 'utf8').replace(/<!--[\s\S]*?-->\s*/g, '');
   const groupes = JSON.parse(fs.readFileSync(path.join(HERE, 'carte/belgique.json'), 'utf8')).groupes;

@@ -9,21 +9,18 @@
   // La table des bascules : numéro du brief, clé (= attribut data-<clé> et paramètre d'URL), valeurs [valeur, libellé] ; la première valeur est le défaut.
   // Figées le 22/09, valeur écrite dans :root de maquette.css et retirées d'ici : 1 liens du header (droite), 4 sans (Instrument Sans),
   // 5 wordmark (Jost 400, 0,18 em), 6 Φ (bronze), 7 dosage de l'or et 8 surface de la bande (remplacées par le dosage fixe), 11 section projets (liste des 4),
-  // 12 roue et 13 anneau (abandonnées) ; la 9 est réduite à colonnes / photo (structure E), ses sous-choix 9a structure et 9c position sont retirés.
+  // 12 roue et 13 anneau (abandonnées), 19 étiquettes des chiffres (gris chaud), 16a position de la signature (malentendu, retiré) ;
+  // 15b villes et 15c contour de la carte pleine sont retirés (villes figées sur « toutes », 15c absorbé par 15a).
   var BASCULES = [
     { n: 2, cle: 'serif', titre: 'Serif', groupe: 'Typographie', valeurs: [['newsreader', 'Newsreader'], ['source-serif', 'Source Serif 4']] },
     { n: 3, cle: 'portee', titre: 'Portée de la serif', groupe: 'Typographie', valeurs: [['rationnee', 'rationnée'], ['partout', 'partout']], note: 'rationnée : titres de section et de chapitre en sans medium' },
     { n: 17, cle: 'graisse', titre: 'Graisse de la serif', groupe: 'Typographie', valeurs: [['400', '400'], ['500', '500']], note: 'accroche et chiffres clés' },
-    { n: 9, cle: 'ecran', titre: 'Premier écran', groupe: 'Premier écran', valeurs: [['colonnes', 'colonnes'], ['photo', 'photo · structure E'], ['photo-bande', 'photo-bande · structure F']], note: 'les quatre chiffres restent dans la bande', pages: ['home'] },
+    { n: 9, cle: 'ecran', titre: 'Premier écran', groupe: 'Premier écran', valeurs: [['photo', 'photo · structure E'], ['colonnes', 'colonnes'], ['photo-bande', 'photo-bande · structure F']], note: 'les quatre chiffres restent dans la bande', pages: ['home'] },
     { n: '9b', cle: 'photo', titre: 'Photo', groupe: 'Premier écran', parent: { cle: 'ecran', vals: ['photo', 'photo-bande'] }, valeurs: [['community-05', 'Community 05'], ['data-box-02', 'Data Box 02 · aérienne basse'], ['data-box-01', 'Data Box 01 · aérienne large'], ['data-box-03', 'Data Box 03 · drone']], pages: ['home'] },
-    { n: 19, cle: 'etiquettes', titre: 'Étiquettes des chiffres', groupe: 'Premier écran', valeurs: [['gris-chaud', 'gris chaud'], ['anthracite', 'anthracite']], pages: ['home'] },
     { n: 10, cle: 'deco', titre: 'Élément de la bande', groupe: 'Or', valeurs: [['arcs', '1a · deux arcs'], ['anneaux', '6 · anneaux'], ['0', 'rien']], pages: ['home'] },
     { n: 16, cle: 'signature', titre: 'Signature', groupe: 'Or', valeurs: [['or', 'or'], ['anthracite', 'anthracite']], note: 'or = or foncé #8A6B2F, comme les liens', pages: ['home'] },
-    { n: '16a', cle: 'sigpos', titre: 'Position de la signature', groupe: 'Or', valeurs: [['gauche', 'gauche'], ['droite', 'droite · sous les paragraphes']], note: 'structure colonnes', inactif: { cle: 'ecran', vals: ['photo', 'photo-bande'], note: 'sans effet hors structure colonnes (déjà sous les paragraphes)' }, pages: ['home'] },
     { n: 15, cle: 'autres', titre: 'Réalisations', groupe: 'Réalisations', valeurs: [['carte', 'carte'], ['bande', 'bande'], ['aucune', 'aucune']], pages: ['home'] },
-    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Réalisations', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['plein', 'plein'], ['trait', 'trait']], note: 'plein : pays rempli en sable (--surface-carte)', pages: ['home'] },
-    { n: '15c', cle: 'contour', titre: 'Contour de la carte', groupe: 'Réalisations', parent: { cle: 'carte', vals: ['plein'] }, valeurs: [['sans', 'sans'], ['fin', 'fin']], note: 'sur la version pleine', pages: ['home'] },
-    { n: '15b', cle: 'villes', titre: 'Villes', groupe: 'Réalisations', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['toutes', 'toutes'], ['quelques-unes', 'quelques-unes'], ['aucune', 'aucune']], note: 'quelques-unes : Bruxelles, Liège, Jemelle (data-rang="1" dans le SVG) ; sur mobile, celles-là seulement', pages: ['home'] },
+    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Réalisations', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['sable', 'sable'], ['pierre', 'pierre'], ['papier-contour', 'papier, contour fin'], ['trait', 'trait']], note: 'sable, pierre : remplissage seul ; papier-contour et trait ajoutent le trait fin (--trait-carte)', pages: ['home'] },
     { n: 14, cle: 'logos', titre: 'Logos partenaires', groupe: 'Partenaires', valeurs: [['couleur', 'couleur'], ['noir', 'noir'], ['gris', 'gris chaud']], pages: ['home'] },
     { n: 18, cle: 'pied', titre: 'Fond du pied de page', groupe: 'Pied de page', valeurs: [['blanc', 'blanc'], ['papier', 'papier'], ['sable', 'sable']], pages: ['home'] }
   ];
