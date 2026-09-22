@@ -17,3 +17,8 @@ photos-source/
 Thumbs.db
 .vscode/
 .idea/
+
+# lot 2 : images de travail des planches et de la maquette
+design/photos-candidates/
+design/directions/img/
+design/directions/*.png
