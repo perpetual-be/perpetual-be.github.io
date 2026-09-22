@@ -16,11 +16,12 @@
   --blanc:#FFFFFF;--anthracite:#26231F;--gris:#6B655C;--gris-clair:#9A948A;--gris-chaud:#7A7466;--filet:#E6E1D6;
   --or:#9A7A3B;--or-fonce:#8A6B2F;--or-clair:#B8975A;--bronze:#684E1E;
   --sable:#F6F1E6;--papier:#F9F9F6;--trait-carte:#D6D0C4;
-  --or-deco:#C9B58A;--or-deco-2:#D9C9A3;--or-filigrane:#EFE7D3;
+  --or-deco:#C9B58A;--or-deco-2:#D9C9A3;
   --photo-texte:#FFFFFF;--voile-fort:rgba(0,0,0,.72);--voile-moyen:rgba(0,0,0,.55);--voile-leger:rgba(0,0,0,.12);
   /* rôles — le dosage figé le 22/09 ; les composants ne lisent que ceux-ci */
   --c-texte:var(--anthracite);--c-meta:var(--gris);
   --c-chiffre:var(--or);                                  /* chiffres clés */
+  --c-etiquette-chiffre:var(--gris-chaud);                /* étiquettes des chiffres (bascule 19) */
   --c-signature:var(--or-fonce);                          /* signature (bascule 16) */
   --c-lien:var(--or-fonce);                               /* « Tous les projets → » */
   --c-mail:var(--anthracite);                             /* mail du pied de page, souligné en or clair */
@@ -29,9 +30,9 @@
   --c-point:var(--anthracite);                            /* carte : points */
   --c-num-chapitre:var(--or);
   --c-logos:var(--anthracite);--c-phi:var(--bronze);--c-wordmark:var(--anthracite);
-  --c-deco:var(--or-deco);--c-deco-2:var(--or-deco-2);--c-filigrane:var(--or-filigrane);   /* élément de la bande : or */
-  --surface:var(--papier);--surface-bande:var(--surface);--surface-carte:var(--surface);  /* bande et fond du pays : papier */
-  --surface-piste:var(--sable);                           /* graphique : la piste vide — seule surface en sable, pour qu'elle se lise */
+  --c-deco:var(--or-deco);--c-deco-2:var(--or-deco-2);    /* élément de la bande : or */
+  --surface:var(--papier);--surface-bande:var(--surface);--surface-carte:var(--sable);   /* bande : papier ; fond du pays (carte), détaché de --surface : sable, pour se lire malgré ses bords irréguliers */
+  --surface-piste:var(--sable);--surface-pied:var(--blanc);                              /* graphique : piste en sable ; pied de page : blanc (bascule 18) */
   /* typographie */
   --serif:"Newsreader",Georgia,serif;--sans:"Instrument Sans",system-ui,sans-serif;
   --font-titres:var(--sans);--poids-titres:500;--poids-serif:400;
@@ -70,9 +71,10 @@ ol,ul{list-style:none}
 .site-nav{grid-column:3;display:flex;gap:36px;font-size:var(--fs-nav);font-weight:500}
 .site-nav a{padding:6px 0;color:var(--c-texte)}
 
-/* premier écran, structure colonnes (défaut) : accroche à gauche, signature juste dessous, paragraphes à droite */
-.hero{padding:var(--hero-haut) 0 var(--hero-bas)}
-.hero__grid{display:grid;grid-template-columns:7fr 5fr;grid-template-rows:auto 1fr;column-gap:72px}
+/* premier écran, structure colonnes (défaut) : accroche à gauche, signature juste dessous, paragraphes à droite ; la bande (bascule 9) est un enfant
+   du hero, après hero__grid — son padding-bottom porte l'espace avant elle (au lieu du hero lui-même), pour rester correct dans les trois structures */
+.hero{padding:var(--hero-haut) 0 0}
+.hero__grid{display:grid;grid-template-columns:7fr 5fr;grid-template-rows:auto 1fr;column-gap:72px;padding-bottom:var(--hero-bas)}
 .hero__title{grid-area:1/1/2/2;font-family:var(--serif);font-weight:var(--poids-serif);font-size:var(--fs-accroche);line-height:1.08;letter-spacing:-.012em;text-wrap:balance}
 .signature{grid-area:2/1/3/2;align-self:start;margin-top:28px;font-family:var(--serif);font-style:italic;font-size:var(--fs-signature);line-height:1.3;color:var(--c-signature)}
 .hero__text{grid-area:1/2/3/3}
@@ -83,7 +85,7 @@ ol,ul{list-style:none}
 .hero__photo img{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .hero__photo::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.6) 0%,rgba(0,0,0,.38) 30%,var(--voile-leger) 56%,transparent 76%)}
 
-/* bande des chiffres : les quatre chiffres y restent dans les deux structures */
+/* bande des chiffres : les quatre chiffres et l'élément décoratif y restent dans les trois structures, à des positions différentes (bascule 9) */
 .band{background:var(--surface-bande)}
 .stats-band{position:relative;overflow:hidden;padding:var(--bande-haut) 0 var(--bande-bas)}
 .stats-band>.container{position:relative;z-index:1}
@@ -91,13 +93,12 @@ ol,ul{list-style:none}
 .stat{padding:4px 32px 4px 28px;border-left:1px solid var(--filet)}
 .stat:first-child{border-left:0;padding-left:0}
 .stat__value{display:block;font-family:var(--serif);font-weight:var(--poids-serif);font-size:var(--fs-chiffre);line-height:1;color:var(--c-chiffre);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.stat__label{display:block;font-size:var(--fs-etiquette-chiffre);color:var(--c-meta);margin-top:10px;max-width:18ch;line-height:1.4}
+.stat__label{display:block;font-size:var(--fs-etiquette-chiffre);color:var(--c-etiquette-chiffre);margin-top:10px;max-width:22ch;line-height:1.4}
 .deco{position:absolute;inset:0;pointer-events:none}
 .deco__svg{display:none;position:absolute;top:0;height:100%;width:420px;color:var(--c-deco)}
 .deco__l{left:0}
 .deco__r{right:0}
-.deco__phi{width:300px;height:312px;left:auto;right:-40px;top:-30px;color:var(--c-filigrane);fill:currentColor}
-.deco--phi{display:block}
+.deco--arcs{display:block}
 .deco__2{color:var(--c-deco-2)}
 
 /* graphique */
@@ -124,9 +125,9 @@ ol,ul{list-style:none}
 .four__list:hover~.four__preview img.is-active{transform:scale(var(--zoom))}
 
 /* réalisations : la carte (bascule 15, défaut) ou la bande de vignettes qui défile — les deux sont dans la page, le CSS montre l'une ou l'autre */
-.carte{display:grid;grid-template-columns:7fr 5fr;gap:64px;align-items:center}
-.carte__fig{max-width:500px}
-.carte__svg{display:block;width:100%;height:auto;font-family:var(--sans);font-size:12px}
+.carte{display:grid;grid-template-columns:8fr 4fr;gap:64px;align-items:start}
+.carte__fig{max-width:700px}
+.carte__svg{display:block;width:100%;height:auto;font-family:var(--sans);font-size:11px}
 .carte__pays{fill:var(--surface-carte);stroke:none}
 .carte__pt{fill:var(--c-point);stroke:var(--blanc);stroke-width:1.5}
 .carte__lab{fill:var(--c-meta);pointer-events:none;transition:fill .2s,opacity .2s}
@@ -155,7 +156,7 @@ ol,ul{list-style:none}
 .partner__couleur{display:block;height:calc(var(--logo-h)*var(--logo-echelle));width:auto}
 
 /* pied de page */
-.site-footer{border-top:1px solid var(--filet);padding:56px 0 40px;font-size:15px}
+.site-footer{border-top:1px solid var(--filet);padding:56px 0 40px;font-size:15px;background:var(--surface-pied)}
 .footer__grid{display:grid;grid-template-columns:4fr 3fr 5fr;gap:48px;align-items:start}
 .footer__name{font-weight:500}
 .footer__mail{display:inline-block;color:var(--c-mail);border-bottom:1px solid var(--c-trait-fin);margin:4px 0}
@@ -209,50 +210,70 @@ html[data-serif="source-serif"]{--serif:"Source Serif 4",Georgia,serif}
 html[data-portee="partout"]{--font-titres:var(--serif);--poids-titres:400;--fs-h2:34px;--fs-chapitre:32px}
 /* 17 · graisse de la serif sur l'accroche et les chiffres clés : 400 (défaut) / 500 */
 html[data-graisse="500"]{--poids-serif:500}
-/* 09 · premier écran : colonnes (défaut) / photo — structure E : la photo pleine largeur porte l'accroche en blanc, en haut à gauche dans le container ;
-   puis les paragraphes (deux colonnes) et la signature sur blanc, puis la bande. La grille du hero passe en display:contents, ses enfants se replacent. */
-html[data-ecran="photo"] .hero{display:grid;grid-template-columns:minmax(0,1fr);padding:0}
-html[data-ecran="photo"] .hero__grid{display:contents}
-html[data-ecran="photo"] .hero__photo{display:block;grid-area:1/1/2/2}
-html[data-ecran="photo"] .hero__title{grid-area:1/1/2/2;position:relative;z-index:1;align-self:start;justify-self:center;width:100%;max-width:var(--max);padding:var(--photo-haut) var(--gutter) 0;color:var(--photo-texte)}
-html[data-ecran="photo"] .hero__title span{display:inline-block;max-width:24ch}
-html[data-ecran="photo"] .hero__text{grid-area:2/1/3/2;justify-self:center;width:100%;max-width:var(--max);margin:0;padding:56px var(--gutter) 0;columns:2;column-gap:56px}
-html[data-ecran="photo"] .hero__text p{max-width:none;break-inside:avoid}
-html[data-ecran="photo"] .signature{grid-area:3/1/4/2;justify-self:center;width:100%;max-width:var(--max);margin:0;padding:24px var(--gutter) 56px}
-/* 09b · photo : community-05 (défaut) / data-box-02 / the-bank-01 / the-bank-03 */
-html[data-ecran="photo"]:is(:not([data-photo]),[data-photo="community-05"]) .hero__photo img[data-photo="community-05"]{display:block}
-html[data-ecran="photo"][data-photo="data-box-02"] .hero__photo img[data-photo="data-box-02"]{display:block}
-html[data-ecran="photo"][data-photo="the-bank-01"] .hero__photo img[data-photo="the-bank-01"]{display:block}
-html[data-ecran="photo"][data-photo="the-bank-03"] .hero__photo img[data-photo="the-bank-03"]{display:block}
-/* 10 · élément de la bande : phi (défaut, 4 · Φ en filigrane) / 0 rien / arcs (1a) / anneaux (6) */
-html[data-deco]:not([data-deco="phi"]) .deco--phi{display:none}
-html[data-deco="arcs"] .deco--arcs{display:block}
+/* 09 · premier écran : colonnes (défaut) / photo — structure E / photo-bande — structure F. Dans les deux, la photo pleine largeur porte l'accroche
+   en blanc, en haut à gauche dans le container ; la grille du hero passe en display:contents, ses enfants se replacent dans une grille à une colonne.
+   E : photo → paragraphes (deux colonnes) + signature sur blanc → bande. F : photo → bande (avec l'élément décoratif) → paragraphes + signature. */
+html:is([data-ecran="photo"],[data-ecran="photo-bande"]) .hero{display:grid;grid-template-columns:minmax(0,1fr);padding:0}
+html:is([data-ecran="photo"],[data-ecran="photo-bande"]) .hero__grid{display:contents}
+html:is([data-ecran="photo"],[data-ecran="photo-bande"]) .hero__photo{display:block;grid-area:1/1/2/2}
+html:is([data-ecran="photo"],[data-ecran="photo-bande"]) .hero__title{grid-area:1/1/2/2;position:relative;z-index:1;align-self:start;justify-self:center;width:100%;max-width:var(--max);padding:var(--photo-haut) var(--gutter) 0;color:var(--photo-texte)}
+html:is([data-ecran="photo"],[data-ecran="photo-bande"]) .hero__title span{display:inline-block;max-width:24ch}
+html:is([data-ecran="photo"],[data-ecran="photo-bande"]) .hero__text{justify-self:center;width:100%;max-width:var(--max);margin:0;padding:56px var(--gutter) 0;columns:2;column-gap:56px}
+html:is([data-ecran="photo"],[data-ecran="photo-bande"]) .hero__text p{max-width:none;break-inside:avoid}
+html:is([data-ecran="photo"],[data-ecran="photo-bande"]) .signature{justify-self:center;width:100%;max-width:var(--max);margin:0;padding:24px var(--gutter) 56px}
+/* la ligne de la bande dans la grille à une colonne : après les paragraphes en E, entre la photo et les paragraphes en F */
+html[data-ecran="photo"] .hero__text{grid-area:2/1/3/2}
+html[data-ecran="photo"] .signature{grid-area:3/1/4/2}
+html[data-ecran="photo"] .band.stats-band{grid-area:4/1/5/2}
+html[data-ecran="photo-bande"] .band.stats-band{grid-area:2/1/3/2}
+html[data-ecran="photo-bande"] .hero__text{grid-area:3/1/4/2}
+html[data-ecran="photo-bande"] .signature{grid-area:4/1/5/2}
+/* 09b · photo : community-05 (défaut) / data-box-02 / the-bank-01 / the-bank-03 — partagée par les structures E et F */
+html:is([data-ecran="photo"],[data-ecran="photo-bande"]):is(:not([data-photo]),[data-photo="community-05"]) .hero__photo img[data-photo="community-05"]{display:block}
+html:is([data-ecran="photo"],[data-ecran="photo-bande"])[data-photo="data-box-02"] .hero__photo img[data-photo="data-box-02"]{display:block}
+html:is([data-ecran="photo"],[data-ecran="photo-bande"])[data-photo="the-bank-01"] .hero__photo img[data-photo="the-bank-01"]{display:block}
+html:is([data-ecran="photo"],[data-ecran="photo-bande"])[data-photo="the-bank-03"] .hero__photo img[data-photo="the-bank-03"]{display:block}
+/* 10 · élément de la bande : arcs (défaut, 1a deux arcs en miroir) / anneaux (6) / 0 rien */
+html[data-deco="anneaux"] .deco--arcs{display:none}
 html[data-deco="anneaux"] .deco--anneaux{display:block}
-/* 16 · signature : or (défaut, or foncé comme les liens) / anthracite */
+html[data-deco="0"] .deco--arcs{display:none}
+/* 16 · signature : or (défaut, or foncé comme les liens) / anthracite — actif dans les trois structures du premier écran */
 html[data-signature="anthracite"]{--c-signature:var(--anthracite)}
+/* 16a · position de la signature (structure colonnes seulement, sans effet en E et F où elle est déjà sous les paragraphes) :
+   gauche (défaut, sous le titre) / droite (sous les paragraphes) */
+html[data-sigpos="droite"]:not([data-ecran]) .hero__text{grid-area:1/2/2/3}
+html[data-sigpos="droite"]:not([data-ecran]) .signature{grid-area:2/2/3/3}
+/* 19 · étiquettes des chiffres de la bande : gris chaud (défaut) / anthracite */
+html[data-etiquettes="anthracite"]{--c-etiquette-chiffre:var(--anthracite)}
 /* 15 · réalisations : carte (défaut) / bande / aucune */
 html[data-autres="bande"] .carte{display:none}
 html[data-autres="bande"] .section--autres>.container{display:flex;justify-content:space-between;align-items:baseline}
 html[data-autres="bande"] .autres__tous{display:inline-block}
 html[data-autres="bande"] .bande{display:block}
 html[data-autres="aucune"] .section--autres{display:none}
-/* 15a · carte : plein (défaut, pays rempli en --surface-carte) / trait (contour fin sur blanc) */
+/* 15a · carte : plein (défaut, pays rempli en --surface-carte, sable) / trait (contour fin sur blanc) */
 html[data-carte="trait"] .carte__pays{fill:none;stroke:var(--trait-carte);stroke-width:1}
 /* 15b · villes : toutes (défaut) / quelques-unes (les étiquettes data-rang="1" de src/carte/belgique.svg) / aucune ; le survol d'un point révèle toujours la sienne */
 html[data-villes="quelques-unes"] .carte__lab:not([data-rang="1"]),html[data-villes="aucune"] .carte__lab{opacity:0}
 html[data-villes] .carte__lieu:hover .carte__lab{opacity:1}
+/* 15c · contour de la carte pleine : sans (défaut) / fin (stroke 1 px, en plus du remplissage) */
+html[data-contour="fin"] .carte__pays{stroke:var(--trait-carte);stroke-width:1}
 /* 14 · logos partenaires : couleur (défaut) / noir / gris chaud — noir et gris peignent l'encre inline */
 html[data-logos]:not([data-logos="couleur"]) .partner__encre{display:block}
 html[data-logos]:not([data-logos="couleur"]) .partner__couleur{display:none}
 html[data-logos="gris"]{--c-logos:var(--gris-chaud)}
+/* 18 · fond du pied de page : blanc (défaut) / papier / sable — quand ce n'est pas blanc, retirer le filet du haut */
+html[data-pied="papier"]{--surface-pied:var(--papier)}
+html[data-pied="sable"]{--surface-pied:var(--sable)}
+html[data-pied] .site-footer{border-top:none}
 
 /* ---------- 7. Mobile, après les bascules (mêmes sélecteurs, l'ordre tranche) ---------- */
 @media (max-width:640px){
   html[data-portee="partout"]{--fs-h2:26px}
-  /* structure E sur téléphone : photo de 420 px, accroche en bas à gauche, voile depuis le bas, paragraphes en une colonne */
-  html[data-ecran="photo"] .hero__photo{height:420px}
-  html[data-ecran="photo"] .hero__photo::after{background:linear-gradient(to top,var(--voile-fort) 0%,var(--voile-moyen) 45%,transparent 85%)}
-  html[data-ecran="photo"] .hero__title{align-self:end;padding:0 var(--gutter) 28px}
-  html[data-ecran="photo"] .hero__text{columns:1;padding-top:36px}
-  html[data-ecran="photo"] .signature{padding:20px var(--gutter) 40px}
+  /* structures E et F sur téléphone : photo de 420 px, accroche en bas à gauche, voile depuis le bas, paragraphes en une colonne */
+  html:is([data-ecran="photo"],[data-ecran="photo-bande"]) .hero__photo{height:420px}
+  html:is([data-ecran="photo"],[data-ecran="photo-bande"]) .hero__photo::after{background:linear-gradient(to top,var(--voile-fort) 0%,var(--voile-moyen) 45%,transparent 85%)}
+  html:is([data-ecran="photo"],[data-ecran="photo-bande"]) .hero__title{align-self:end;padding:0 var(--gutter) 28px}
+  html:is([data-ecran="photo"],[data-ecran="photo-bande"]) .hero__text{columns:1;padding-top:36px}
+  html:is([data-ecran="photo"],[data-ecran="photo-bande"]) .signature{padding:20px var(--gutter) 40px}
 }

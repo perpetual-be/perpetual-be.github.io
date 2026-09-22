@@ -77,8 +77,8 @@
    "x": 220.3,
    "y": 197,
    "etiquette": [
-    -9,
-    4,
+    -14,
+    10,
     "end"
    ]
   },
@@ -89,8 +89,8 @@
    "x": 249.4,
    "y": 218,
    "etiquette": [
-    -9,
-    4,
+    -16,
+    14,
     "end"
    ]
   },
@@ -101,8 +101,8 @@
    "x": 313.9,
    "y": 228,
    "etiquette": [
-    9,
-    8,
+    14,
+    -6,
     "start"
    ]
   },
@@ -113,8 +113,8 @@
    "x": 287.5,
    "y": 255,
    "etiquette": [
-    -9,
-    4,
+    -10,
+    16,
     "end"
    ]
   },
@@ -137,8 +137,8 @@
    "x": 264.1,
    "y": 235.1,
    "etiquette": [
-    -9,
-    8,
+    -12,
+    18,
     "end"
    ]
   },
@@ -210,8 +210,8 @@
    "y": 225,
    "etiquette": [
     0,
-    -8,
-    "middle"
+    -11,
+    "end"
    ]
   },
   {
@@ -221,8 +221,8 @@
    "x": 309.2,
    "y": 242.1,
    "etiquette": [
-    9,
-    4,
+    16,
+    14,
     "start"
    ]
   },
@@ -233,8 +233,8 @@
    "x": 249.8,
    "y": 182.2,
    "etiquette": [
-    -9,
-    4,
+    -14,
+    -14,
     "end"
    ]
   },
@@ -258,7 +258,8 @@
   }
  ],
  "bascules": {
-  "carte": "plein (pays rempli en --surface-carte, papier) / trait (contour fin, fond blanc)",
+  "carte": "plein (pays rempli en --surface-carte, sable, détachée de --surface) / trait (contour fin, fond blanc)",
+  "contour": "sans / fin (stroke #D6D0C4 1 px en plus du remplissage, sur la version pleine)",
   "villes": "toutes / quelques-unes (rang 1) / aucune (points seuls, nom au survol)"
  }
 }

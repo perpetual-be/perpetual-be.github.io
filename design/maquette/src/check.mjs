@@ -1,4 +1,4 @@
-// Vérifications de la maquette (Playwright + Chromium) : premier écran (colonnes et structure E), débordement, effet de chaque bascule,
+// Vérifications de la maquette (Playwright + Chromium) : premier écran (colonnes, structure E, structure F), débordement, effet de chaque bascule,
 // dosage figé et alignement, en-tête (Φ, wordmark), carte et bande des réalisations, logos partenaires, photo 2800 px, mode présentation,
 // page sans JavaScript, polices, contrastes.
 // Usage, depuis la racine du dépôt : NODE_PATH=$(npm root -g) node design/maquette/src/check.mjs [--page index]
@@ -15,7 +15,10 @@ const URL = 'file://' + path.join(MAQ, PAGE + '.html');
 let ko = 0;
 const ok = (cond, msg) => { console.log((cond ? '  ok  ' : '  KO  ') + msg); if (!cond) ko++; };
 
-const browser = await chromium.launch();
+// Sur certains environnements, un Chromium pré-installé (PLAYWRIGHT_BROWSERS_PATH) peut être une révision différente de celle que playwright
+// vient de télécharger côté npm ; s'il est là, on le pointe explicitement plutôt que de retélécharger un navigateur.
+const CHROMIUM_PREINSTALLE = '/opt/pw-browsers/chromium';
+const browser = await chromium.launch(fs.existsSync(CHROMIUM_PREINSTALLE) ? { executablePath: CHROMIUM_PREINSTALLE } : {});
 async function ouvrir(etat, viewport = [1440, 900], options = {}) {
   const ctx = await browser.newContext({ viewport: { width: viewport[0], height: viewport[1] }, reducedMotion: 'reduce', ...options });
   const p = await ctx.newPage();
@@ -30,9 +33,9 @@ const largeur = (p) => p.evaluate(() => document.documentElement.scrollWidth - d
 
 // la palette, telle que Chromium la rend
 const ANTHRACITE = 'rgb(38, 35, 31)', GRIS = 'rgb(107, 101, 92)', GRIS_CHAUD = 'rgb(122, 116, 102)', OR = 'rgb(154, 122, 59)', OR_FONCE = 'rgb(138, 107, 47)', OR_CLAIR = 'rgb(184, 151, 90)',
-  BRONZE = 'rgb(104, 78, 30)', PAPIER = 'rgb(249, 249, 246)', SABLE = 'rgb(246, 241, 230)', BLANC = 'rgb(255, 255, 255)', FILIGRANE = 'rgb(239, 231, 211)', TRAIT_CARTE = 'rgb(214, 208, 196)';
+  BRONZE = 'rgb(104, 78, 30)', PAPIER = 'rgb(249, 249, 246)', SABLE = 'rgb(246, 241, 230)', BLANC = 'rgb(255, 255, 255)', OR_DECO = 'rgb(201, 181, 138)', TRAIT_CARTE = 'rgb(214, 208, 196)';
 
-console.log('\n1 · Premier écran — colonnes : bas des chiffres (px), doit tenir dans 900 à 1440 et dans 703 à 1366 · structure E : la photo porte l’accroche');
+console.log('\n1 · Premier écran — colonnes : bas des chiffres (px), doit tenir dans 900 à 1440 et dans 703 à 1366 · structures E et F : la photo porte l’accroche');
 for (const [w, h] of [[1440, 900], [1366, 703]]) {
   for (const etat of ['', 'serif=source-serif', 'graisse=500']) {
     const { p, ctx } = await ouvrir(etat, [w, h]);
@@ -40,18 +43,29 @@ for (const [w, h] of [[1440, 900], [1366, 703]]) {
     ok(b <= h, `${w}×${h} · colonnes · ${etat || 'Newsreader 400'} : ${b}`);
     await ctx.close();
   }
-  const { p, ctx } = await ouvrir('ecran=photo', [w, h]);
-  const attendu = Math.min(620, Math.max(420, h - 200)), gauche = (w - 1200) / 2 + 40;
-  const photo = await rect(p, '.hero__photo'), titre = await rect(p, '.hero__title span'), texte = await rect(p, '.hero__text'), sig = await rect(p, '.signature'), bande = await rect(p, '.stats-band');
-  ok(photo.top === 76 && photo.height === attendu && photo.width === w, `${w}×${h} · structure E · photo pleine largeur sous l’en-tête, ${photo.height} px de haut (clamp → ${attendu})`);
-  ok(titre.left === gauche && Math.abs(titre.top - (photo.top + 64)) <= 4 && titre.bottom < photo.bottom - 100 && (await style(p, '.hero__title', 'color')) === BLANC, `${w}×${h} · structure E · accroche en blanc, en haut à gauche du container (x ${titre.left}, y ${titre.top})`);
-  ok(texte.top >= photo.bottom && sig.top >= texte.bottom && bande.top >= sig.bottom && (await style(p, '.hero__text', 'columnCount')) === '2', `${w}×${h} · structure E · paragraphes en deux colonnes puis signature sur blanc, puis la bande (bas des chiffres : ${bande.bottom})`);
-  await ctx.close();
+  {
+    const { p, ctx } = await ouvrir('ecran=photo', [w, h]);
+    const attendu = Math.min(620, Math.max(420, h - 200)), gauche = (w - 1200) / 2 + 40;
+    const photo = await rect(p, '.hero__photo'), titre = await rect(p, '.hero__title span'), texte = await rect(p, '.hero__text'), sig = await rect(p, '.signature'), bande = await rect(p, '.stats-band');
+    ok(photo.top === 76 && photo.height === attendu && photo.width === w, `${w}×${h} · structure E · photo pleine largeur sous l’en-tête, ${photo.height} px de haut (clamp → ${attendu})`);
+    ok(titre.left === gauche && Math.abs(titre.top - (photo.top + 64)) <= 4 && titre.bottom < photo.bottom - 100 && (await style(p, '.hero__title', 'color')) === BLANC, `${w}×${h} · structure E · accroche en blanc, en haut à gauche du container (x ${titre.left}, y ${titre.top})`);
+    ok(texte.top >= photo.bottom && sig.top >= texte.bottom && bande.top >= sig.bottom && (await style(p, '.hero__text', 'columnCount')) === '2', `${w}×${h} · structure E · paragraphes en deux colonnes puis signature sur blanc, puis la bande (bas des chiffres : ${bande.bottom})`);
+    await ctx.close();
+  }
+  {
+    const { p, ctx } = await ouvrir('ecran=photo-bande', [w, h]);
+    const attendu = Math.min(620, Math.max(420, h - 200)), gauche = (w - 1200) / 2 + 40;
+    const photo = await rect(p, '.hero__photo'), titre = await rect(p, '.hero__title span'), texte = await rect(p, '.hero__text'), sig = await rect(p, '.signature'), bande = await rect(p, '.stats-band');
+    ok(photo.top === 76 && photo.height === attendu && photo.width === w, `${w}×${h} · structure F · photo pleine largeur sous l’en-tête, ${photo.height} px de haut (clamp → ${attendu})`);
+    ok(titre.left === gauche && Math.abs(titre.top - (photo.top + 64)) <= 4 && titre.bottom < photo.bottom - 100 && (await style(p, '.hero__title', 'color')) === BLANC, `${w}×${h} · structure F · accroche en blanc, en haut à gauche du container (x ${titre.left}, y ${titre.top})`);
+    ok(bande.top >= photo.bottom && texte.top >= bande.bottom && sig.top >= texte.bottom && (await style(p, '.hero__text', 'columnCount')) === '2', `${w}×${h} · structure F · la bande vient juste après la photo, avant les paragraphes (bande à ${bande.top}, paragraphes à ${texte.top})`);
+    await ctx.close();
+  }
 }
 
 console.log('\n2 · Aucun débordement horizontal');
 for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
-  for (const etat of ['', 'ecran=photo', 'ecran=photo&photo=the-bank-01', 'portee=partout', 'serif=source-serif&graisse=500', 'autres=bande']) {
+  for (const etat of ['', 'ecran=photo', 'ecran=photo&photo=the-bank-01', 'ecran=photo-bande', 'portee=partout', 'serif=source-serif&graisse=500', 'autres=bande', 'pied=sable']) {
     const { p, ctx } = await ouvrir(etat, [w, h]);
     ok((await largeur(p)) === 0, `${w} · ${etat || 'défaut'}`); await ctx.close();
   }
@@ -62,17 +76,20 @@ const tests = [
   ['serif=source-serif', async p => /Source Serif 4/.test(await style(p, '.hero__title', 'fontFamily')) && /Source Serif 4/.test(await style(p, '.stat__value', 'fontFamily')) && /Source Serif 4/.test(await style(p, '.signature', 'fontFamily'))],
   ['portee=partout', async p => /Newsreader/.test(await style(p, '.h2', 'fontFamily')) && (await style(p, '.h2', 'fontWeight')) === '400' && (await style(p, '.h2', 'fontSize')) === '34px'],
   ['graisse=500', async p => (await style(p, '.hero__title', 'fontWeight')) === '500' && (await style(p, '.stat__value', 'fontWeight')) === '500' && (await style(p, '.signature', 'fontWeight')) === '400' && (await style(p, '.four__name', 'fontWeight')) === '400', 'graisse=500 : accroche et chiffres en 500, la signature et les noms de projets restent en 400'],
-  ['ecran=photo', async p => (await style(p, '.hero__photo', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="community-05"]', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="data-box-02"]', 'display')) === 'none' && (await style(p, '.stats-band', 'display')) === 'block' && (await style(p, '.deco--phi', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.stat').length)) === 4, 'ecran=photo : photo Community 05, la bande garde ses quatre chiffres et son élément décoratif'],
+  ['ecran=photo', async p => (await style(p, '.hero__photo', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="community-05"]', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="data-box-02"]', 'display')) === 'none' && (await style(p, '.stats-band', 'display')) === 'block' && (await style(p, '.deco--arcs', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.stat').length)) === 4, 'ecran=photo : photo Community 05, la bande garde ses quatre chiffres et son élément décoratif'],
   ['ecran=photo&photo=data-box-02', async p => (await style(p, '.hero__photo img[data-photo="data-box-02"]', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="community-05"]', 'display')) === 'none'],
   ['ecran=photo&photo=the-bank-01', p => style(p, '.hero__photo img[data-photo="the-bank-01"]', 'display').then(v => v === 'block')],
   ['ecran=photo&photo=the-bank-03', p => style(p, '.hero__photo img[data-photo="the-bank-03"]', 'display').then(v => v === 'block')],
-  ['deco=0', async p => (await style(p, '.deco--phi', 'display')) === 'none' && (await style(p, '.deco--arcs', 'display')) === 'none' && (await style(p, '.deco--anneaux', 'display')) === 'none'],
-  ['deco=arcs', async p => (await style(p, '.deco--arcs', 'display')) === 'block' && (await style(p, '.deco--phi', 'display')) === 'none'],
-  ['deco=anneaux', async p => (await style(p, '.deco--anneaux', 'display')) === 'block' && (await style(p, '.deco--phi', 'display')) === 'none'],
+  ['ecran=photo-bande', async p => (await style(p, '.hero__photo', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="community-05"]', 'display')) === 'block' && (await style(p, '.stats-band', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.stat').length)) === 4, 'ecran=photo-bande : structure F, photo Community 05, la bande garde ses quatre chiffres'],
+  ['ecran=photo-bande&photo=the-bank-01', p => style(p, '.hero__photo img[data-photo="the-bank-01"]', 'display').then(v => v === 'block')],
+  ['deco=0', async p => (await style(p, '.deco--arcs', 'display')) === 'none' && (await style(p, '.deco--anneaux', 'display')) === 'none'],
+  ['deco=anneaux', async p => (await style(p, '.deco--anneaux', 'display')) === 'block' && (await style(p, '.deco--arcs', 'display')) === 'none'],
   ['signature=anthracite', p => style(p, '.signature', 'color').then(v => v === ANTHRACITE)],
+  ['sigpos=droite', async p => { const t = await rect(p, '.hero__text'), s = await rect(p, '.signature'); return s.top >= t.bottom && s.left === t.left; }, 'sigpos=droite : la signature passe sous les paragraphes (colonne de droite)'],
   ['autres=bande', async p => (await style(p, '.bande', 'display')) === 'block' && (await style(p, '.carte', 'display')) === 'none' && (await style(p, '.autres__tous', 'display')) !== 'none' && (await p.evaluate(() => document.querySelectorAll('.bande__item').length)) === 32],
   ['autres=aucune', p => style(p, '.section--autres', 'display').then(v => v === 'none')],
   ['carte=trait', async p => (await style(p, '.carte__pays', 'fill')) === 'none' && (await style(p, '.carte__pays', 'stroke')) === TRAIT_CARTE && (await style(p, '.carte__pays', 'strokeWidth')) === '1px'],
+  ['contour=fin', async p => (await style(p, '.carte__pays', 'fill')) === SABLE && (await style(p, '.carte__pays', 'stroke')) === TRAIT_CARTE && (await style(p, '.carte__pays', 'strokeWidth')) === '1px', 'contour=fin : carte pleine (sable) avec un contour fin, à la différence de carte=trait (sans remplissage)'],
   ['villes=quelques-unes', p => p.evaluate(() => { const l = [...document.querySelectorAll('.carte__lab')]; const v = l.filter(t => getComputedStyle(t).opacity === '1'); return l.length === 17 && v.length === 3 && v.every(t => t.dataset.rang === '1'); })],
   ['villes=aucune', async p => {
     if (!(await p.evaluate(() => [...document.querySelectorAll('.carte__lab')].every(t => getComputedStyle(t).opacity === '0')))) return false;
@@ -81,6 +98,9 @@ const tests = [
   }, 'villes=aucune : points seuls, l’étiquette du point survolé apparaît en anthracite'],
   ['logos=noir', async p => (await style(p, '.partner__encre', 'display')) === 'block' && (await style(p, '.partner__couleur', 'display')) === 'none' && (await style(p, '.partners', 'color')) === ANTHRACITE],
   ['logos=gris', async p => (await style(p, '.partner__encre', 'display')) === 'block' && (await style(p, '.partner__couleur', 'display')) === 'none' && (await style(p, '.partners', 'color')) === GRIS_CHAUD],
+  ['etiquettes=anthracite', p => style(p, '.stat__label', 'color').then(v => v === ANTHRACITE)],
+  ['pied=papier', async p => (await style(p, '.site-footer', 'backgroundColor')) === PAPIER && (await style(p, '.site-footer', 'borderTopStyle')) === 'none'],
+  ['pied=sable', async p => (await style(p, '.site-footer', 'backgroundColor')) === SABLE && (await style(p, '.site-footer', 'borderTopStyle')) === 'none'],
 ];
 for (const [etat, test, libelle] of tests) {
   const { p, ctx } = await ouvrir(etat);
@@ -95,9 +115,13 @@ console.log('\n4 · Dosage figé et alignement (valeurs par défaut)');
   ok((await style(p, '.hero__title', 'fontWeight')) === '400' && (await style(p, '.stat__value', 'fontWeight')) === '400', 'graisse 400 par défaut');
   ok((await style(p, '.stats-band', 'backgroundColor')) === PAPIER, 'bande : surface papier');
   ok((await style(p, '.stat__value', 'color')) === OR, 'chiffres clés : or');
-  ok((await style(p, '.deco--phi', 'display')) === 'block' && (await style(p, '.deco--phi', 'color')) === FILIGRANE && (await style(p, '.deco--arcs', 'display')) === 'none', 'élément de la bande : Φ en filigrane (4) par défaut, or #EFE7D3');
+  const largeurEtiquette = parseFloat(await style(p, '.stat__label', 'maxWidth'));
+  ok((await style(p, '.stat__label', 'color')) === GRIS_CHAUD && largeurEtiquette > 195 && largeurEtiquette < 215, `étiquettes des chiffres : gris chaud par défaut, 22ch (${largeurEtiquette}px)`);
+  ok((await p.evaluate(() => document.querySelectorAll('.stat__label')[1].getBoundingClientRect().height)) < 45, '« Agences bancaires transformées en quatre ans » ne se déchire plus sur trois lignes (22ch)');
+  ok((await style(p, '.deco--arcs', 'display')) === 'block' && (await style(p, '.deco--arcs', 'color')) === OR_DECO && (await style(p, '.deco--anneaux', 'display')) === 'none', 'élément de la bande : deux arcs (1a) par défaut, or #C9B58A');
   ok((await style(p, '.bar__fill', 'backgroundColor')) === ANTHRACITE && (await style(p, '.bar__track', 'backgroundColor')) === SABLE, 'graphique : barres anthracite sur piste sable (--surface-piste détachée de --surface)');
-  ok((await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pays', 'fill')) === PAPIER, 'carte : points anthracite, fond du pays papier (--surface-carte suit --surface)');
+  ok((await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pays', 'fill')) === SABLE, 'carte : points anthracite, fond du pays sable (--surface-carte détachée de --surface)');
+  ok((await style(p, '.site-footer', 'backgroundColor')) === BLANC && (await style(p, '.site-footer', 'borderTopStyle')) === 'solid', 'pied de page : fond blanc par défaut, filet du haut (bascule 18)');
   ok((await style(p, '.autres__lien', 'color')) === OR_FONCE, 'lien « Tous les projets → » : or foncé');
   ok((await style(p, '.footer__mail', 'color')) === ANTHRACITE && (await style(p, '.footer__mail', 'borderBottom')) === `1px solid ${OR_CLAIR}`, 'mail du pied de page : anthracite, souligné (--c-mail distinct de --c-lien)');
   ok((await style(p, '.signature', 'color')) === OR_FONCE && (await style(p, '.signature', 'fontStyle')) === 'italic', 'signature : or (or foncé) par défaut, italique');
@@ -113,7 +137,7 @@ console.log('\n4 · Dosage figé et alignement (valeurs par défaut)');
   ok((await style(p, '.section--projets', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.four__row').length)) === 4, 'section projets : liste des 4 (bascule 11 figée)');
   ok((await style(p, '.partner__couleur', 'display')) === 'block' && (await style(p, '.partner__encre', 'display')) === 'none', 'logos partenaires : couleur par défaut');
   const cles = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle));
-  ok(cles.join(' ') === 'serif portee graisse ecran photo deco signature autres carte villes logos', 'panneau : ' + cles.join(' · '));
+  ok(cles.join(' ') === 'serif portee graisse ecran photo etiquettes deco signature sigpos autres carte contour villes logos pied', 'panneau : ' + cles.join(' · '));
   await ctx.close();
 }
 {
@@ -150,10 +174,23 @@ console.log('\n5 · Réalisations : la carte (défaut) et la bande');
   ok(c.pts === 17 && c.labs === 17 && c.groupe === 'Bruxelles', `carte : ${c.pts} points, ${c.labs} étiquettes, groupe « ${c.groupe} »`);
   ok(c.bxl.length === 1 && c.bxl[0] === '6.5' && c.autres.length === 16 && c.autres.every(r => r === '4.5'), 'carte : Bruxelles = un seul point r 6,5, les seize autres r 4,5');
   ok(c.rang1.length === 3, 'carte : étiquettes de rang 1 — ' + c.rang1.join(' · '));
-  ok(c.fig <= 500, `carte : SVG ${c.fig} px de large (500 max)`);
-  ok((await style(p, '.carte__pays', 'fill')) === PAPIER && (await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pt', 'stroke')) === BLANC && (await style(p, '.carte__lab', 'fill')) === GRIS && (await style(p, '.carte__lab--groupe', 'fill')) === ANTHRACITE, 'carte : pays papier (plein), points anthracite à liseré blanc, étiquettes gris chaud, Bruxelles anthracite');
+  ok(c.fig <= 700, `carte : SVG ${c.fig} px de large (700 max)`);
+  ok((await style(p, '.carte__pays', 'fill')) === SABLE && (await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pt', 'stroke')) === BLANC && (await style(p, '.carte__lab', 'fill')) === GRIS && (await style(p, '.carte__lab--groupe', 'fill')) === ANTHRACITE, 'carte : pays sable (plein, --surface-carte détachée de --surface), points anthracite à liseré blanc, étiquettes gris chaud, Bruxelles anthracite');
+  const align = await p.evaluate(() => Math.abs(document.querySelector('.carte__fig').getBoundingClientRect().top - document.querySelector('.carte__texte').getBoundingClientRect().top));
+  ok(align <= 1, `carte : le bloc de texte est aligné sur le haut de la carte (écart ${align} px)`);
   await p.hover('.carte__lieu[data-lieu="Jemelle"] .carte__pt');
   ok((await style(p, '.carte__lieu[data-lieu="Jemelle"] .carte__lab', 'fill')) === ANTHRACITE, 'carte : le survol d’un point passe son étiquette en anthracite');
+  const grappe = ['Braine-l’Alleud', 'Braine-le-Comte', 'Pont-à-Celles', 'Gilly', 'Mettet', 'Belgrade', 'Jambes', 'Bois-de-Villers'];
+  const chevauchements = await p.evaluate(noms => {
+    const labs = noms.map(nom => [...document.querySelectorAll('.carte__lab')].find(t => t.textContent === nom).getBoundingClientRect());
+    const pts = [...document.querySelectorAll('.carte__pt')].map(c => ({ nom: c.querySelector('title').textContent, r: c.getBoundingClientRect() }));
+    const inter = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+    const paires = [];
+    for (let i = 0; i < labs.length; i++) for (let j = i + 1; j < labs.length; j++) if (inter(labs[i], labs[j])) paires.push(noms[i] + ' / ' + noms[j]);
+    for (let i = 0; i < labs.length; i++) for (const pt of pts) if (inter(labs[i], pt.r)) paires.push(noms[i] + ' / point ' + pt.nom);
+    return paires;
+  }, grappe);
+  ok(!chevauchements.length, chevauchements.length ? `carte : chevauchements dans la grappe centrale — ${chevauchements.join(', ')}` : 'carte : aucune étiquette ni aucun point de la grappe centrale ne se chevauchent (11 px, décalages augmentés)');
   console.log(`        hauteur de la section : ${c.section} px (visée ≈ 550)`);
   await ctx.close();
 }
@@ -238,7 +275,7 @@ console.log('\n7 · Contrastes (WCAG) sur les fonds réels');
 const lum = hex => { const c = hex.replace('#', ''); const [r, g, b] = [0, 2, 4].map(i => parseInt(c.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
 const contraste = (a, b) => { const [l1, l2] = [lum(a), lum(b)].sort((x, y) => y - x); return ((l1 + 0.05) / (l2 + 0.05)).toFixed(2); };
 const fonds = { blanc: '#FFFFFF', papier: '#F9F9F6', sable: '#F6F1E6' };
-const encres = [['#26231F', 'anthracite (texte, barres)'], ['#6B655C', 'gris (étiquettes < 18 px)'], ['#9A948A', 'gris clair (réservé ≥ 18 px)'], ['#9A7A3B', 'or mat (chiffres ≥ 40 px)'], ['#8A6B2F', 'or foncé (liens, signature)'], ['#B8975A', 'or clair (filets seulement)'], ['#7A7466', 'gris chaud (logos)']];
+const encres = [['#26231F', 'anthracite (texte, barres)'], ['#6B655C', 'gris (étiquettes < 18 px)'], ['#9A948A', 'gris clair (réservé ≥ 18 px)'], ['#9A7A3B', 'or mat (chiffres ≥ 40 px)'], ['#8A6B2F', 'or foncé (liens, signature)'], ['#B8975A', 'or clair (filets seulement)'], ['#7A7466', 'gris chaud (logos, étiquettes des chiffres)']];
 for (const [hex, nom] of encres) console.log('  ' + nom.padEnd(30) + Object.entries(fonds).map(([f, h]) => `${f} ${contraste(hex, h)}:1`).join('   '));
 
 await browser.close();
