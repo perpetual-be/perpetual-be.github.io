@@ -80,8 +80,8 @@ function jpegWidth(file) {
 const photoCandidates = [
   { key: 'community-05', files: ['community-05.jpg', 'community-05-l.jpg'] },
   { key: 'data-box-02', files: ['data-box-02.jpg', 'data-box-02-l.jpg'] },
-  { key: 'the-bank-01', files: ['the-bank-01.jpg', 'the-bank-01-l.jpg'] },
-  { key: 'the-bank-03', files: ['the-bank-03.jpg', 'the-bank-03-l.jpg'] },
+  { key: 'data-box-01', files: ['data-box-01.jpg', 'data-box-01-l.jpg'] },
+  { key: 'data-box-03', files: ['data-box-03.jpg', 'data-box-03-l.jpg'] },
 ].map(c => {
   const chemin = f => path.join(REPO, 'design/directions/img', f);
   const sources = c.files.filter(f => fs.existsSync(chemin(f)) || (console.warn('photo absente :', f), false)).map(f => ({ file: f, width: jpegWidth(chemin(f)) }));
