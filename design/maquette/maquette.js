@@ -10,18 +10,18 @@
   // Figées le 22/09, valeur écrite dans :root de maquette.css et retirées d'ici : 1 liens du header (droite), 4 sans (Instrument Sans),
   // 5 wordmark (Jost 400, 0,18 em), 6 Φ (bronze), 7 dosage de l'or et 8 surface de la bande (remplacées par le dosage fixe), 11 section projets (liste des 4),
   // 12 roue et 13 anneau (abandonnées), 19 étiquettes des chiffres (gris chaud), 16a position de la signature (malentendu, retiré) ;
-  // 15b villes et 15c contour de la carte pleine sont retirés (villes figées sur « toutes », 15c absorbé par 15a).
+  // 15b villes et 15c contour de la carte pleine sont retirés (villes figées sur « toutes », 15c absorbé par 15a) ; 14 logos partenaires (couleur).
   var BASCULES = [
     { n: 2, cle: 'serif', titre: 'Serif', groupe: 'Typographie', valeurs: [['newsreader', 'Newsreader'], ['source-serif', 'Source Serif 4']] },
     { n: 3, cle: 'portee', titre: 'Portée de la serif', groupe: 'Typographie', valeurs: [['rationnee', 'rationnée'], ['partout', 'partout']], note: 'rationnée : titres de section et de chapitre en sans medium' },
     { n: 17, cle: 'graisse', titre: 'Graisse de la serif', groupe: 'Typographie', valeurs: [['400', '400'], ['500', '500']], note: 'accroche et chiffres clés' },
     { n: 9, cle: 'ecran', titre: 'Premier écran', groupe: 'Premier écran', valeurs: [['photo', 'photo · structure E'], ['colonnes', 'colonnes'], ['photo-bande', 'photo-bande · structure F']], note: 'les quatre chiffres restent dans la bande', pages: ['home'] },
-    { n: '9b', cle: 'photo', titre: 'Photo', groupe: 'Premier écran', parent: { cle: 'ecran', vals: ['photo', 'photo-bande'] }, valeurs: [['community-05', 'Community 05'], ['data-box-02', 'Data Box 02 · aérienne basse'], ['data-box-01', 'Data Box 01 · aérienne large'], ['data-box-03', 'Data Box 03 · drone']], pages: ['home'] },
+    { n: '9b', cle: 'photo', titre: 'Photo', groupe: 'Premier écran', parent: { cle: 'ecran', vals: ['photo', 'photo-bande'] }, valeurs: [['data-box-03', 'Data Box 03 · drone'], ['community-05', 'Community 05']], note: 'point focal déclaré par photo dans build.mjs (photoCandidates)', pages: ['home'] },
+    { n: '9d', cle: 'accroche', titre: 'Accroche', groupe: 'Premier écran', parent: { cle: 'ecran', vals: ['photo', 'photo-bande'] }, valeurs: [['auto', 'auto · suit la photo'], ['gauche', 'gauche'], ['droite', 'droite']], note: 'auto : le côté déclaré pour chaque photo dans build.mjs (photoCandidates) ; téléphone inchangé', pages: ['home'] },
     { n: 10, cle: 'deco', titre: 'Élément de la bande', groupe: 'Or', valeurs: [['arcs', '1a · deux arcs'], ['anneaux', '6 · anneaux'], ['0', 'rien']], pages: ['home'] },
     { n: 16, cle: 'signature', titre: 'Signature', groupe: 'Or', valeurs: [['or', 'or'], ['anthracite', 'anthracite']], note: 'or = or foncé #8A6B2F, comme les liens', pages: ['home'] },
     { n: 15, cle: 'autres', titre: 'Réalisations', groupe: 'Réalisations', valeurs: [['carte', 'carte'], ['bande', 'bande'], ['aucune', 'aucune']], pages: ['home'] },
     { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Réalisations', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['sable', 'sable'], ['pierre', 'pierre'], ['papier-contour', 'papier, contour fin'], ['trait', 'trait']], note: 'sable, pierre : remplissage seul ; papier-contour et trait ajoutent le trait fin (--trait-carte)', pages: ['home'] },
-    { n: 14, cle: 'logos', titre: 'Logos partenaires', groupe: 'Partenaires', valeurs: [['couleur', 'couleur'], ['noir', 'noir'], ['gris', 'gris chaud']], pages: ['home'] },
     { n: 18, cle: 'pied', titre: 'Fond du pied de page', groupe: 'Pied de page', valeurs: [['blanc', 'blanc'], ['papier', 'papier'], ['sable', 'sable']], pages: ['home'] }
   ];
   var defauts = {};
@@ -59,7 +59,24 @@
     });
     var qs = q + (presentation() ? (q ? '&' : '') + 'panneau=off' : '');
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+    ajusterAccroche();
   }
+
+  // ---- accroche à droite sur la photo (bascule 9d) : text-wrap:balance raccourcit les lignes sans rétrécir la boîte (24ch), qui touche le bord
+  // droit du container alors que le texte s'arrête bien avant ; on ramène la boîte à sa plus longue ligne pour que le texte, aligné à gauche,
+  // arrive au bord. À gauche (et sur téléphone, en colonnes), rien ne change : la largeur posée est retirée.
+  function ajusterAccroche() {
+    var titre = document.querySelector('.hero__title'), s = titre && titre.querySelector('span');
+    if (!s) return;
+    s.style.width = '';
+    if (getComputedStyle(titre).textAlign !== 'right') return;
+    var r = document.createRange(), w = 0;
+    r.selectNodeContents(s);
+    Array.prototype.forEach.call(r.getClientRects(), function (x) { w = Math.max(w, x.width); });
+    if (w) s.style.width = Math.ceil(w) + 1 + 'px';
+  }
+  window.addEventListener('resize', ajusterAccroche);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajusterAccroche);
 
   // ---- panneau ----
   var CSS = '.mq{position:fixed;right:16px;bottom:16px;z-index:1000;width:324px;max-height:min(80vh,calc(100vh - 32px));display:flex;flex-direction:column;background:#fff;color:#26231F;border:1px solid #26231F;font:12px/1.45 system-ui,sans-serif}' +
@@ -99,7 +116,7 @@
   var corps = groupes.map(function (g) {
     return '<div class="mq__groupe"><div class="mq__gtitre">' + g + '</div>' + BASCULES.filter(function (b) { return b.groupe === g; }).map(fieldset).join('') + '</div>';
   }).join('');
-  var pagesHtml = [['index.html', 'home', 'Home'], ['projet-the-bank.html', 'fiche', 'Fiche'], ['projets.html', 'projets', 'Projets']].map(function (p) {
+  var pagesHtml = [['index.html', 'home', 'Home'], ['projet-the-bank.html', 'fiche', 'Fiche'], ['projets.html', 'projets', 'Réalisations']].map(function (p) {
     return '<a href="' + p[0] + '"' + (p[1] === PAGE ? ' class="is-active"' : '') + '>' + p[2] + '</a>';
   }).join('');
 

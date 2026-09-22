@@ -69,11 +69,20 @@ for (const [w, h] of [[1440, 900], [1366, 703]]) {
     ok(await p.evaluate(() => !document.documentElement.hasAttribute('data-ecran') && getComputedStyle(document.querySelector('.hero__photo')).display === 'block'), `${w}×${h} · premier écran par défaut : structure E (photo), sans attribut data-ecran`);
     await ctx.close();
   }
+  // bascule 9d sur « auto » : Community 05 déclare l'accroche à droite (photoCandidates) — le bloc touche le bord droit du container, texte aligné à gauche
+  for (const ecran of ['photo', 'photo-bande']) {
+    const { p, ctx } = await ouvrir(`ecran=${ecran}&photo=community-05`, [w, h]);
+    const droite = w - (w - 1200) / 2 - 40, photo = await rect(p, '.hero__photo'), titre = await rect(p, '.hero__title span');
+    const lignes = await p.evaluate(() => { const r = document.createRange(); r.selectNodeContents(document.querySelector('.hero__title span')); return [...r.getClientRects()].map(x => [Math.round(x.left), Math.round(x.right)]); });
+    ok(Math.abs(titre.right - droite) <= 1 && Math.abs(Math.max(...lignes.map(l => l[1])) - droite) <= 2 && lignes.every(l => l[0] === titre.left) && Math.abs(titre.top - (photo.top + 64)) <= 4 && (await style(p, '.hero__title span', 'textAlign')) === 'left',
+      `${w}×${h} · structure ${ecran === 'photo' ? 'E' : 'F'} · Community 05 : accroche à droite, bloc au bord droit du container (${titre.right} / ${droite}), lignes alignées à gauche`);
+    await ctx.close();
+  }
 }
 
 console.log('\n2 · Aucun débordement horizontal');
 for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
-  for (const etat of ['', 'ecran=colonnes', 'ecran=photo', 'ecran=photo&photo=data-box-01', 'ecran=photo-bande', 'portee=partout', 'serif=source-serif&graisse=500', 'autres=bande', 'pied=sable']) {
+  for (const etat of ['', 'ecran=colonnes', 'ecran=photo', 'ecran=photo&photo=community-05', 'ecran=photo-bande', 'ecran=photo-bande&photo=community-05', 'accroche=droite', 'portee=partout', 'serif=source-serif&graisse=500', 'autres=bande', 'pied=sable']) {
     const { p, ctx } = await ouvrir(etat, [w, h]);
     ok((await largeur(p)) === 0, `${w} · ${etat || 'défaut'}`); await ctx.close();
   }
@@ -85,12 +94,13 @@ const tests = [
   ['portee=partout', async p => /Newsreader/.test(await style(p, '.h2', 'fontFamily')) && (await style(p, '.h2', 'fontWeight')) === '400' && (await style(p, '.h2', 'fontSize')) === '34px'],
   ['graisse=500', async p => (await style(p, '.hero__title', 'fontWeight')) === '500' && (await style(p, '.stat__value', 'fontWeight')) === '500' && (await style(p, '.signature', 'fontWeight')) === '400' && (await style(p, '.four__name', 'fontWeight')) === '400', 'graisse=500 : accroche et chiffres en 500, la signature et les noms de projets restent en 400'],
   ['ecran=colonnes', async p => (await style(p, '.hero__photo', 'display')) === 'none' && (await style(p, '.hero', 'paddingTop')) === '112px' && (await style(p, '.hero__title', 'color')) === ANTHRACITE, 'ecran=colonnes : pas de photo, l’accroche redevient anthracite (à la différence du défaut, structure E)'],
-  ['ecran=photo', async p => (await style(p, '.hero__photo', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="community-05"]', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="data-box-02"]', 'display')) === 'none' && (await style(p, '.stats-band', 'display')) === 'block' && (await style(p, '.deco--arcs', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.stat').length)) === 4, 'ecran=photo : photo Community 05, la bande garde ses quatre chiffres et son élément décoratif'],
-  ['ecran=photo&photo=data-box-02', async p => (await style(p, '.hero__photo img[data-photo="data-box-02"]', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="community-05"]', 'display')) === 'none'],
-  ['ecran=photo&photo=data-box-01', p => style(p, '.hero__photo img[data-photo="data-box-01"]', 'display').then(v => v === 'block')],
-  ['ecran=photo&photo=data-box-03', p => style(p, '.hero__photo img[data-photo="data-box-03"]', 'display').then(v => v === 'block')],
-  ['ecran=photo-bande', async p => (await style(p, '.hero__photo', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="community-05"]', 'display')) === 'block' && (await style(p, '.stats-band', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.stat').length)) === 4, 'ecran=photo-bande : structure F, photo Community 05, la bande garde ses quatre chiffres'],
-  ['ecran=photo-bande&photo=data-box-01', p => style(p, '.hero__photo img[data-photo="data-box-01"]', 'display').then(v => v === 'block')],
+  ['ecran=photo', async p => (await style(p, '.hero__photo', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="data-box-03"]', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="community-05"]', 'display')) === 'none' && (await style(p, '.stats-band', 'display')) === 'block' && (await style(p, '.deco--arcs', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.stat').length)) === 4, 'ecran=photo : photo Data Box 03 (défaut), la bande garde ses quatre chiffres et son élément décoratif'],
+  ['ecran=photo&photo=community-05', async p => (await style(p, '.hero__photo img[data-photo="community-05"]', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="data-box-03"]', 'display')) === 'none'],
+  ['ecran=photo-bande', async p => (await style(p, '.hero__photo', 'display')) === 'block' && (await style(p, '.hero__photo img[data-photo="data-box-03"]', 'display')) === 'block' && (await style(p, '.stats-band', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.stat').length)) === 4, 'ecran=photo-bande : structure F, photo Data Box 03, la bande garde ses quatre chiffres'],
+  ['ecran=photo-bande&photo=community-05', p => style(p, '.hero__photo img[data-photo="community-05"]', 'display').then(v => v === 'block')],
+  ['photo=community-05', async p => (await style(p, '.hero__title', 'textAlign')) === 'right' && /at 100% 0/.test(await p.evaluate(() => getComputedStyle(document.querySelector('.hero__photo'), '::after').backgroundImage)), 'accroche auto · Community 05 : à droite, voile depuis le coin haut-droit'],
+  ['accroche=droite', async p => (await style(p, '.hero__title', 'textAlign')) === 'right' && /at 100% 0/.test(await p.evaluate(() => getComputedStyle(document.querySelector('.hero__photo'), '::after').backgroundImage)), 'accroche=droite · Data Box 03 : à droite, voile depuis le coin haut-droit'],
+  ['photo=community-05&accroche=gauche', async p => (await style(p, '.hero__title', 'textAlign')) === 'left' && /at 0(px)? 0(px)?,/.test(await p.evaluate(() => getComputedStyle(document.querySelector('.hero__photo'), '::after').backgroundImage)), 'accroche=gauche · Community 05 : à gauche, voile depuis le coin haut-gauche'],
   ['deco=0', async p => (await style(p, '.deco--arcs', 'display')) === 'none' && (await style(p, '.deco--anneaux', 'display')) === 'none'],
   ['deco=anneaux', async p => (await style(p, '.deco--anneaux', 'display')) === 'block' && (await style(p, '.deco--arcs', 'display')) === 'none'],
   ['signature=anthracite', p => style(p, '.signature', 'color').then(v => v === ANTHRACITE)],
@@ -99,8 +109,6 @@ const tests = [
   ['carte=pierre', async p => (await style(p, '.carte__pays', 'fill')) === PIERRE && (await style(p, '.carte__pays', 'stroke')) === 'none'],
   ['carte=papier-contour', async p => (await style(p, '.carte__pays', 'fill')) === PAPIER && (await style(p, '.carte__pays', 'stroke')) === TRAIT_CARTE && (await style(p, '.carte__pays', 'strokeWidth')) === '1px'],
   ['carte=trait', async p => (await style(p, '.carte__pays', 'fill')) === 'none' && (await style(p, '.carte__pays', 'stroke')) === TRAIT_CARTE && (await style(p, '.carte__pays', 'strokeWidth')) === '1px'],
-  ['logos=noir', async p => (await style(p, '.partner__encre', 'display')) === 'block' && (await style(p, '.partner__couleur', 'display')) === 'none' && (await style(p, '.partners', 'color')) === ANTHRACITE],
-  ['logos=gris', async p => (await style(p, '.partner__encre', 'display')) === 'block' && (await style(p, '.partner__couleur', 'display')) === 'none' && (await style(p, '.partners', 'color')) === GRIS_CHAUD],
   ['pied=papier', async p => (await style(p, '.site-footer', 'backgroundColor')) === PAPIER && (await style(p, '.site-footer', 'borderTopStyle')) === 'none'],
   ['pied=sable', async p => (await style(p, '.site-footer', 'backgroundColor')) === SABLE && (await style(p, '.site-footer', 'borderTopStyle')) === 'none'],
 ];
@@ -124,7 +132,15 @@ console.log('\n4 · Dosage figé et alignement (valeurs par défaut)');
   ok((await style(p, '.bar__fill', 'backgroundColor')) === ANTHRACITE && (await style(p, '.bar__track', 'backgroundColor')) === SABLE, 'graphique : barres anthracite sur piste sable (--surface-piste détachée de --surface)');
   ok((await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pays', 'fill')) === SABLE, 'carte : points anthracite, fond du pays sable par défaut (bascule 15a)');
   ok((await style(p, '.site-footer', 'backgroundColor')) === BLANC && (await style(p, '.site-footer', 'borderTopStyle')) === 'solid', 'pied de page : fond blanc par défaut, filet du haut (bascule 18)');
-  ok((await style(p, '.autres__lien', 'color')) === OR_FONCE, 'lien « Tous les projets → » : or foncé');
+  ok((await style(p, '.autres__lien', 'color')) === OR_FONCE && (await p.evaluate(() => document.querySelector('.autres__lien').textContent)) === 'Toutes les réalisations →', 'lien « Toutes les réalisations → » : or foncé');
+  const libelles = await p.evaluate(() => ({ nav: document.querySelector('.site-nav a').textContent, plan: document.querySelector('.footer__nav a').textContent, liste: document.querySelector('.section--projets .eyebrow').textContent, carte: document.querySelector('.section--autres .eyebrow').textContent,
+    chiffre: [...document.querySelectorAll('.stat__label')].some(l => l.textContent === 'Projets en cours'), onglet: [...document.querySelectorAll('.mq__pages a')].map(a => a.textContent).join(' · ') }));
+  const siteNav = JSON.parse(fs.readFileSync(path.resolve(MAQ, '../../data/site.json'), 'utf8')).nav.find(n => n.href === '/realisations').label;
+  ok(libelles.nav === siteNav && libelles.plan === siteNav && libelles.liste === 'Réalisations' && libelles.carte === 'Réalisations' && libelles.chiffre && libelles.onglet === 'Home · Fiche · Réalisations',
+    `libellés : navigation et plan « ${libelles.nav} » (data/site.json), liste des 4 « ${libelles.liste} », « Projets en cours » inchangé, onglets ${libelles.onglet}`);
+  const focal = await p.evaluate(() => Object.fromEntries([...document.querySelectorAll('.hero__photo img')].map(i => [i.dataset.photo, getComputedStyle(i).objectPosition])));
+  ok(Object.keys(focal).join(' ') === 'data-box-03 community-05' && focal['data-box-03'] === '50% 18%' && focal['community-05'] === '50% 50%', 'photos de la bascule 9b et point focal : ' + Object.entries(focal).map(([k, v]) => `${k} ${v}`).join(' · '));
+  ok((await style(p, '.hero__title', 'textAlign')) === 'left' && /at 0(px)? 0(px)?,/.test(await p.evaluate(() => getComputedStyle(document.querySelector('.hero__photo'), '::after').backgroundImage)), 'accroche auto · Data Box 03 (défaut) : à gauche, voile depuis le coin haut-gauche');
   ok((await style(p, '.footer__mail', 'color')) === ANTHRACITE && (await style(p, '.footer__mail', 'borderBottom')) === `1px solid ${OR_CLAIR}`, 'mail du pied de page : anthracite, souligné (--c-mail distinct de --c-lien)');
   ok((await style(p, '.signature', 'color')) === OR_FONCE && (await style(p, '.signature', 'fontStyle')) === 'italic', 'signature : or (or foncé) par défaut, italique');
   ok((await style(p, '.logo__mark', 'color')) === BRONZE && (await style(p, '.logo__mark', 'fill')) === BRONZE, 'Φ de l’en-tête : bronze');
@@ -134,9 +150,9 @@ console.log('\n4 · Dosage figé et alignement (valeurs par défaut)');
   const hd = await p.evaluate(() => ({ header: document.querySelector('.site-header').getBoundingClientRect().width, logo: document.querySelector('.logo').getBoundingClientRect().left, nav: document.querySelector('.site-nav').getBoundingClientRect().right }));
   ok(hd.header === 1440 && Math.round(hd.logo) === 40 && Math.round(hd.nav) === 1400, `en-tête pleine largeur (logo à ${Math.round(hd.logo)} px, liens à ${1440 - Math.round(hd.nav)} px du bord)`);
   ok((await style(p, '.section--projets', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.four__row').length)) === 4, 'section projets : liste des 4 (bascule 11 figée)');
-  ok((await style(p, '.partner__couleur', 'display')) === 'block' && (await style(p, '.partner__encre', 'display')) === 'none', 'logos partenaires : couleur par défaut');
+  ok((await style(p, '.partner__couleur', 'display')) === 'block' && !(await p.evaluate(() => document.querySelector('.partner__encre'))), 'logos partenaires : couleur, figés (plus d’encre inline)');
   const cles = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle));
-  ok(cles.join(' ') === 'serif portee graisse ecran photo deco signature autres carte logos pied', 'panneau : ' + cles.join(' · '));
+  ok(cles.join(' ') === 'serif portee graisse ecran photo accroche deco signature autres carte pied', 'panneau : ' + cles.join(' · '));
   await ctx.close();
 }
 {
@@ -170,6 +186,12 @@ console.log('\n4 · Dosage figé et alignement (valeurs par défaut)');
   const photo = await rect(p, '.hero__photo'), titre = await rect(p, '.hero__title span'), texte = await rect(p, '.hero__text');
   ok(photo.height === 420 && titre.left === 20 && photo.bottom - titre.bottom >= 24 && photo.bottom - titre.bottom <= 40 && texte.top >= photo.bottom && (await style(p, '.hero__text', 'columnCount')) !== '2', `mobile · structure E : photo de ${photo.height} px, accroche en bas à gauche (à ${photo.bottom - titre.bottom} px du bas), paragraphes en une colonne`);
   ok(/to top/.test(await p.evaluate(() => getComputedStyle(document.querySelector('.hero__photo'), '::after').backgroundImage)), 'mobile · structure E : voile depuis le bas');
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('ecran=photo&photo=community-05', [390, 844]);
+  const photo = await rect(p, '.hero__photo'), titre = await rect(p, '.hero__title span');
+  ok(titre.left === 20 && photo.bottom - titre.bottom >= 24 && photo.bottom - titre.bottom <= 40 && (await style(p, '.hero__title', 'textAlign')) === 'left' && /to top/.test(await p.evaluate(() => getComputedStyle(document.querySelector('.hero__photo'), '::after').backgroundImage)), 'mobile · Community 05 (accroche auto à droite sur grand écran) : inchangé, en bas à gauche, voile depuis le bas');
   await ctx.close();
 }
 
@@ -243,25 +265,17 @@ console.log('\n5 · Réalisations : la carte (défaut) et la bande');
 
 console.log('\n6 · Logos partenaires, photo 2800 px, présentation, sans JavaScript, polices');
 {
-  const { p, ctx } = await ouvrir('logos=noir');
+  const { p, ctx } = await ouvrir('');
   const barres = await p.evaluate(() => [...document.querySelectorAll('.bar')].map(b => b.querySelector('.bar__label').textContent + ' ' + b.querySelector('.bar__fill').style.width));
   ok(barres.length === 3 && barres.every(b => /\d+%$/.test(b)), 'graphique : trois barres avec leur pourcentage — ' + barres.join(' · '));
-  const logos = await p.evaluate(() => [...document.querySelectorAll('.partner')].map(li => { const r = li.querySelector('.partner__encre').getBoundingClientRect(); return { nom: li.title, h: Math.round(r.height), c: Math.round((r.top + r.bottom) / 2) }; }));
-  const attendu = { ASAP: 42, Batopin: 34, 'CN Architecture': 35, 'Felis & Associés': 34, Menuisol: 34, 'Property Lab': 49, Synopsis: 60, 'Zekaj Construct': 34 };
-  ok(logos.length === 8 && logos.every(l => l.h === attendu[l.nom]), 'logos (encre) à la masse visuelle : ' + logos.map(l => `${l.nom} ${l.h}`).join(' · '));
-  ok(Math.max(...logos.map(l => l.c)) - Math.min(...logos.map(l => l.c)) <= 1, 'logos alignés au centre de la rangée');
-  await ctx.close();
-}
-{
-  const { p, ctx } = await ouvrir('');
   const logos = await p.evaluate(() => [...document.querySelectorAll('.partner')].map(li => { const r = li.querySelector('.partner__couleur').getBoundingClientRect(); return { nom: li.title, h: Math.round(r.height), c: Math.round((r.top + r.bottom) / 2) }; }));
   const attendu = { ASAP: 42, Batopin: 34, 'CN Architecture': 35, 'Felis & Associés': 34, Menuisol: 34, 'Property Lab': 49, Synopsis: 60, 'Zekaj Construct': 34 };
-  ok(logos.length === 8 && logos.every(l => l.h === attendu[l.nom]) && Math.max(...logos.map(l => l.c)) - Math.min(...logos.map(l => l.c)) <= 1, 'logos (couleur, défaut) : mêmes hauteurs, alignés au centre');
+  ok(logos.length === 8 && logos.every(l => l.h === attendu[l.nom]) && Math.max(...logos.map(l => l.c)) - Math.min(...logos.map(l => l.c)) <= 1, 'logos (couleur) à la masse visuelle, alignés au centre : ' + logos.map(l => `${l.nom} ${l.h}`).join(' · '));
   await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('ecran=photo', [1440, 900], { deviceScaleFactor: 2 });
-  ok(await p.evaluate(() => /community-05-l\.jpg$/.test(document.querySelector('.hero__photo img[data-photo="community-05"]').currentSrc)), 'structure E : la version 2800 px est servie à 1440 × 2'); await ctx.close();
+  ok(await p.evaluate(() => /data-box-03-l\.jpg$/.test(document.querySelector('.hero__photo img[data-photo="data-box-03"]').currentSrc)), 'structure E : la version 2800 px est servie à 1440 × 2'); await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('ecran=colonnes');
