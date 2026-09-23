@@ -1,5 +1,5 @@
 /* Perpetual — maquette du lot 2 : le panneau de bascules, l'état dans l'URL, l'aperçu de la liste des projets.
-   L'état (une valeur par bascule) vit dans la query de l'URL (?cadrage=haut&serif=source-serif) ; le hash reste aux ancres.
+   L'état (une valeur par bascule) vit dans la query de l'URL (?cadrage=haut&carte=papier-contour) ; le hash reste aux ancres.
    Un script en tête de page pose déjà les attributs data-* avant le premier rendu ; ici on dessine le panneau et on tient l'URL à jour. */
 (function () {
   'use strict';
@@ -13,12 +13,12 @@
   // 15b villes et 15c contour de la carte pleine sont retirés (villes figées sur « toutes », 15c absorbé par 15a) ; 14 logos partenaires (couleur).
   // Figées le 23/09 : 9 premier écran (structure F), 9b photo (Community 05), 9d accroche (gauche), 10 élément de la bande (anneaux), 16 signature (or),
   // 18 fond du pied de page (papier, sans filet), 15 réalisations (carte) ; 3 portée de la serif retirée (classes .h2--sans / .h2--serif).
-  // 9c cadrage est temporaire : la valeur retenue remplacera le point focal de community-05 dans photoCandidates (build.mjs).
+  // Gel de la Home (23/09) : 2 serif (Newsreader) et 17 graisse (400) figées ; 9c réduite à centre / haut (« bas » retiré).
+  // Sur la Home ne restent que deux décisions reportées : 9c cadrage (temporaire : la valeur retenue remplacera le point focal de community-05
+  // dans photoCandidates, build.mjs) et 15a carte.
   var BASCULES = [
-    { n: 2, cle: 'serif', titre: 'Serif', groupe: 'Typographie', valeurs: [['newsreader', 'Newsreader'], ['source-serif', 'Source Serif 4']] },
-    { n: 17, cle: 'graisse', titre: 'Graisse de la serif', groupe: 'Typographie', valeurs: [['400', '400'], ['500', '500']], note: 'accroche et chiffres clés' },
-    { n: '9c', cle: 'cadrage', titre: 'Cadrage de Community 05', groupe: 'Premier écran', valeurs: [['centre', 'centre · 50% 50%'], ['haut', 'haut · 50% 20%'], ['bas', 'bas · 50% 75%']], note: 'temporaire : la valeur retenue remplacera le point focal de photoCandidates (build.mjs)', pages: ['home'] },
-    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Réalisations', valeurs: [['sable', 'sable'], ['papier-contour', 'papier, contour fin']], note: 'papier-contour ajoute le trait fin (--trait-carte)', pages: ['home'] }
+    { n: '9c', cle: 'cadrage', titre: 'Cadrage de Community 05', groupe: 'Home', valeurs: [['centre', 'centre · 50% 50%'], ['haut', 'haut · 50% 20%']], note: 'décision reportée : la valeur retenue remplacera le point focal de photoCandidates (build.mjs)', pages: ['home'] },
+    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Home', valeurs: [['sable', 'sable'], ['papier-contour', 'papier, contour fin']], note: 'décision reportée : papier-contour ajoute le trait fin (--trait-carte)', pages: ['home'] }
   ];
   var defauts = {};
   BASCULES.forEach(function (b) { defauts[b.cle] = b.valeurs[0][0]; });

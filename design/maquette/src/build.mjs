@@ -138,8 +138,9 @@ function deco() {
   </div>`;
 }
 
-// Premier écran, structure F (figée le 23/09 ; structures E et colonnes retirées) : même HTML qu'avant, le CSS replace les enfants de .hero
-// (display:contents sur .hero__grid) et remonte la bande des chiffres juste après la photo, avant les paragraphes et la signature.
+// Premier écran, structure F (figée le 23/09 ; structures E et colonnes retirées) : le CSS replace les enfants de .hero (display:contents sur
+// .hero__grid) et remonte la bande des chiffres juste après la photo, avant les paragraphes. Gel du 23/09 : le premier paragraphe à gauche,
+// le second à droite avec la signature dessous (.hero__col), les deux colonnes s'équilibrent.
 function lead() {
   return `<section class="hero">
 <div class="hero__photo" aria-hidden="true">
@@ -147,8 +148,7 @@ function lead() {
 </div>
 <div class="container hero__grid">
   <h1 class="hero__title"><span>${home.h1}</span></h1>
-  <p class="signature">${home.signature}</p>
-  <div class="hero__text">${home.paragraphs.map(p => `<p>${p}</p>`).join('')}</div>
+  <div class="hero__text"><p>${home.paragraphs[0]}</p><div class="hero__col">${home.paragraphs.slice(1).map(p => `<p>${p}</p>`).join('')}<p class="signature">${home.signature}</p></div></div>
 </div>
 <section class="band stats-band" aria-label="Chiffres clés">${deco()}<div class="container">${statsList()}</div></section>
 </section>`;
