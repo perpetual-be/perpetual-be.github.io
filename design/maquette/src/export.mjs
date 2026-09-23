@@ -2,7 +2,7 @@
 // Usage, depuis la racine du dépôt :
 //   NODE_PATH=$(npm root -g) node design/maquette/src/export.mjs [options]
 // Options :
-//   --etat "ecran=photo&serif=source-serif"   la combinaison à capturer (défaut : la combinaison retenue)
+//   --etat "cadrage=haut&serif=source-serif" la combinaison à capturer (défaut : la combinaison retenue)
 //   --pages index,projet-the-bank,projets    (défaut : les pages présentes dans design/maquette/)
 //   --formats 1440,1366,390                  (défaut : 1440,390) — 1440 × 900, 1366 × 703, 390 × 844
 //   --out <dossier>                          (défaut : design/maquette/export/)
