@@ -1,7 +1,8 @@
 // Vérifications de la maquette (Playwright + Chromium) : premier écran (structure F), débordement, effet de chaque bascule,
 // valeurs figées et alignement (gel de la Home du 23/09 : signature, espacements, pied de page), en-tête (Φ, wordmark), carte des réalisations,
-// logos partenaires, photo 2800 px, mode présentation, page sans JavaScript, polices, contrastes ; puis la fiche The Bank et la vue Réalisations
-// (débordement horizontal, polices, premier écran, bascules 20 et 21, ancres, galerie).
+// logos partenaires, photo 2800 px, srcset de l'aperçu des 4, mode présentation, page sans JavaScript, polices, contrastes ; puis la fiche The Bank et la vue
+// Réalisations (débordement horizontal, polices, gouttière du titre, premier écran, bascule 20, cartes et leurs ancres, srcset et agrandissement des photos,
+// sous-titre en liens, programme agences, galerie — ordre, lieu, voile — et mobile).
 // Usage, depuis la racine du dépôt : NODE_PATH=$(npm root -g) node design/maquette/src/check.mjs
 import path from 'node:path';
 import fs from 'node:fs';
@@ -29,6 +30,44 @@ async function ouvrir(etat, viewport = [1440, 900], options = {}, page = 'index'
 const style = (p, sel, prop) => p.evaluate(([s, pr]) => { const el = document.querySelector(s); return el ? getComputedStyle(el)[pr] : null; }, [sel, prop]);
 const rect = (p, sel) => p.evaluate(s => { const el = document.querySelector(s); if (!el) return null; const r = el.getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width), height: Math.round(r.height) }; }, sel);
 const largeur = (p) => p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+// text-wrap: pretty — Chromium l'expose en text-wrap (raccourci) ou text-wrap-style selon la version
+const pretty = (p, sel) => p.evaluate(s => { const c = getComputedStyle(document.querySelector(s)); return c.textWrapStyle === 'pretty' || c.textWrap === 'pretty'; }, sel);
+// Photos des cartes (vue Réalisations) et de l'aperçu de la liste des 4 (Home) : clé (<clé>-s.jpg → clé), srcset, sizes, source servie, point focal posé en style,
+// cadre (boîte de mise en page, insensible au zoom du survol) et l'échelle du rendu en object-fit: cover à 1× — max(cadre ÷ pixels du fichier servi) sur les deux axes,
+// > 1 = photo agrandie. Les pixels sont lus dans l'en-tête JPEG du fichier servi : naturalWidth est corrigé de la densité sur une <img srcset>, il ne convient pas.
+// Les images paresseuses sont amenées à l'écran et attendues.
+const IMG_DIR = path.resolve(MAQ, '../directions/img');
+function tailleJpeg(file) {
+  const b = fs.readFileSync(file);
+  for (let i = 2; i < b.length - 9;) {
+    if (b[i] !== 0xFF) { i++; continue; }
+    const m = b[i + 1];
+    if (m === 0xFF) { i++; continue; }
+    if (m === 0xD8 || m === 0x01 || (m >= 0xD0 && m <= 0xD7)) { i += 2; continue; }
+    if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC) return { width: b.readUInt16BE(i + 7), height: b.readUInt16BE(i + 5) };
+    i += 2 + b.readUInt16BE(i + 2);
+  }
+  throw new Error(`${file} : dimensions JPEG introuvables`);
+}
+async function photosImg(p, sel) {
+  await p.evaluate(async s => {
+    const imgs = [...document.querySelectorAll(s)];
+    for (const i of imgs) { i.scrollIntoView(); await new Promise(r => setTimeout(r, 50)); }
+    await Promise.all(imgs.map(i => (i.complete && i.naturalWidth) ? null : Promise.race([new Promise(r => { i.addEventListener('load', r, { once: true }); i.addEventListener('error', r, { once: true }); }), new Promise(r => setTimeout(r, 4000))])));
+    await new Promise(r => requestAnimationFrame(r));
+  }, sel);
+  const liste = await p.evaluate(s => [...document.querySelectorAll(s)].map(i => ({ cle: i.getAttribute('src').replace(/^.*\//, '').replace(/-s\.jpg$/, ''), srcset: i.getAttribute('srcset') || '', sizes: i.getAttribute('sizes') || '', servi: i.currentSrc.replace(/^.*\//, ''), focal: i.style.objectPosition, w: i.offsetWidth, h: i.offsetHeight })), sel);
+  return liste.map(i => { const t = tailleJpeg(path.join(IMG_DIR, i.servi)); return { ...i, pixels: `${t.width}×${t.height}`, echelle: +Math.max(i.w / t.width, i.h / t.height).toFixed(3) }; });
+}
+// srcset attendu : <clé>-s.jpg (800 px) et <clé>.jpg (1800 px) avec leur largeur ; le 1800 px doit exister (design/directions/src/reduire-photos.mjs --grand <original>).
+function verifierSrcset(liste, nom) {
+  for (const i of liste) {
+    const grand = fs.existsSync(path.join(IMG_DIR, `${i.cle}.jpg`));
+    ok(grand, `${nom} : ${i.cle}.jpg (1800 px) présent dans design/directions/img/` + (grand ? '' : ` — à produire : node design/directions/src/reduire-photos.mjs --grand <original ${i.cle}.jpg>, puis rebâtir`));
+    if (grand) ok(new RegExp(`^[^,]*/${i.cle}-s\\.jpg \\d+w, [^,]*/${i.cle}\\.jpg \\d+w$`).test(i.srcset) && /px$/.test(i.sizes), `${nom} : ${i.cle} — srcset 800w / 1800w et sizes (${i.sizes})`);
+    else ok(!i.srcset && !i.sizes, `${nom} : ${i.cle} — sans 1800 px, l'<img> n'a que le 800 px (pas de srcset)`);
+  }
+}
 
 // la palette, telle que Chromium la rend
 const ANTHRACITE = 'rgb(38, 35, 31)', GRIS = 'rgb(107, 101, 92)', GRIS_CHAUD = 'rgb(122, 116, 102)', OR = 'rgb(154, 122, 59)', OR_FONCE = 'rgb(138, 107, 47)', OR_CLAIR = 'rgb(184, 151, 90)',
@@ -131,7 +170,15 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok((await style(p, '.section--projets', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.four__row').length)) === 4, 'section projets : liste des 4 (bascule 11 figée)');
   ok((await style(p, '.partner__couleur', 'display')) === 'block' && !(await p.evaluate(() => document.querySelector('.partner__encre'))), 'logos partenaires : couleur, figés (plus d’encre inline)');
   const cles = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle));
-  ok(cles.join(' ') === 'cadrage carte chapitres quatre', 'panneau : ' + cles.join(' · '));
+  ok(cles.join(' ') === 'cadrage carte chapitres', 'panneau : ' + cles.join(' · ') + ' (21 retirée)');
+  ok(await pretty(p, '.four__line'), 'liste des 4 : text-wrap: pretty sur les lignes');
+  // aperçu de la liste des 4 : srcset 800 / 1800 px (revue du 23/09) ; à 1×, aucune photo agrandie — Data Box 02 (800 × 450, cadre 440 × 550) reçoit le 1800 px
+  const apercu = await photosImg(p, '.four__preview img');
+  ok(apercu.length === 4 && apercu.map(i => i.cle).join(' ') === 'ateliers-118-05 the-bank-01 data-box-02 community-05', 'aperçu de la liste des 4 : ' + apercu.map(i => i.cle).join(' · '));
+  verifierSrcset(apercu, 'aperçu');
+  ok(apercu.every(i => i.w === 440 && i.h === 550), `aperçu : cadre 440 × 550 (${apercu.map(i => i.w + '×' + i.h).join(', ')})`);
+  ok(apercu.every(i => i.echelle <= 1), `aperçu à 1× : aucune photo agrandie (${apercu.map(i => `${i.cle} ${i.pixels} ×${i.echelle}`).join(', ')})`);
+  ok(apercu[2].servi === 'data-box-02.jpg', `aperçu à 1× : Data Box 02 est servie en 1800 px (${apercu[2].servi}), plus en 800 × 450 agrandi ×1,22`);
   const liens = await p.evaluate(() => ({ nav: document.querySelector('.site-nav a').getAttribute('href'), plan: document.querySelector('.footer__nav a').getAttribute('href'), tous: document.querySelector('.autres__lien').getAttribute('href'),
     quatre: [...document.querySelectorAll('.four__row a')].map(a => a.getAttribute('href')) }));
   ok(liens.nav === 'realisations.html' && liens.plan === 'realisations.html' && liens.tous === 'realisations.html' && liens.quatre.join(' ') === 'realisations.html#ateliers-118 projet-the-bank.html realisations.html#data-box realisations.html#community',
@@ -211,7 +258,10 @@ console.log('\n6 · Logos partenaires, photo 2800 px, présentation, sans JavaSc
 }
 {
   const { p, ctx } = await ouvrir('', [1440, 900], { deviceScaleFactor: 2 });
-  ok(await p.evaluate(() => /community-05-l\.jpg$/.test(document.querySelector('.hero__photo img').currentSrc)), 'premier écran : la version 2800 px est servie à 1440 × 2'); await ctx.close();
+  ok(await p.evaluate(() => /community-05-l\.jpg$/.test(document.querySelector('.hero__photo img').currentSrc)), 'premier écran : la version 2800 px est servie à 1440 × 2');
+  const apercu2 = (await photosImg(p, '.four__preview img')).filter(i => fs.existsSync(path.join(IMG_DIR, `${i.cle}.jpg`)));
+  ok(apercu2.length >= 3 && apercu2.every(i => i.servi === `${i.cle}.jpg`), `aperçu de la liste des 4 à 1440 × 2 : le 1800 px est servi (${apercu2.map(i => i.servi).join(', ')})`);
+  await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('panneau=off');
@@ -284,8 +334,17 @@ for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
   ok(suivant.href === 'realisations.html#data-box' && suivant.texte === 'Projet suivant — Data Box →' && suivant.color === OR_FONCE && suivant.bloc === 'block', `« ${suivant.texte} » → ${suivant.href}, or foncé, l'étiquette au-dessus du nom`);
   ok(await p.evaluate(() => getComputedStyle(document.querySelector('.site-footer')).backgroundColor === 'rgb(249, 249, 246)' && document.querySelector('.footer__nav a').getAttribute('href') === 'realisations.html' && document.querySelector('.footer__nav a[href="index.html#collectif"]') !== null), 'pied de page papier ; plan vers realisations.html, Collectif vers index.html#collectif');
   const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '')).join(' · '));
-  ok(panneau === 'cadrage (sans effet) · carte (sans effet) · chapitres · quatre (sans effet)', 'panneau : ' + panneau);
+  ok(panneau === 'cadrage (sans effet) · carte (sans effet) · chapitres', 'panneau : ' + panneau);
   await ctx.close();
+}
+// gouttière du titre de page (revue du 23/09) : .page-head est un .container, son padding latéral doit rester celui de .container
+for (const [w, h] of [[1440, 900], [390, 844]]) {
+  for (const page of [FICHE, REAL]) {
+    const { p, ctx } = await ouvrir('', [w, h], {}, page);
+    const g = await p.evaluate(() => ({ titre: Math.round(document.querySelector('.page__titre').getBoundingClientRect().left), eyebrow: Math.round(document.querySelector('.eyebrow').getBoundingClientRect().left), pad: getComputedStyle(document.querySelector('.page-head')).paddingLeft }));
+    ok(g.titre === g.eyebrow && g.titre === (w === 1440 ? 160 : 20), `${page} · ${w} : .page__titre au même x que la première .eyebrow (${g.titre} = ${g.eyebrow}, padding latéral ${g.pad})`);
+    await ctx.close();
+  }
 }
 {
   const { p, ctx } = await ouvrir('chapitres=sans', [1440, 900], {}, FICHE);
@@ -295,7 +354,7 @@ for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
 }
 {
   const { p, ctx } = await ouvrir('chapitres=sans&quatre=cartes');
-  ok((await p.evaluate(() => document.querySelectorAll('.chapitre').length)) === 0 && (await style(p, '.four', 'display')) === 'grid', 'Home : chapitres=sans et quatre=cartes sont sans effet');
+  ok((await p.evaluate(() => document.querySelectorAll('.chapitre').length)) === 0 && (await style(p, '.four', 'display')) === 'grid', 'Home : chapitres=sans et quatre=cartes (bascule retirée) sont sans effet');
   await ctx.close();
 }
 {
@@ -315,56 +374,77 @@ for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
 
 console.log('\n9 · Vue Réalisations');
 for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
-  for (const etat of ['', 'quatre=cartes']) {
-    const { p, ctx } = await ouvrir(etat, [w, h], {}, REAL);
-    ok((await largeur(p)) === 0, `réalisations · ${w} · ${etat || 'défaut'} : aucun débordement horizontal`); await ctx.close();
-  }
+  const { p, ctx } = await ouvrir('', [w, h], {}, REAL);
+  ok((await largeur(p)) === 0, `réalisations · ${w} : aucun débordement horizontal`); await ctx.close();
 }
+const donnees = JSON.parse(fs.readFileSync(path.resolve(MAQ, '../../data/projects.json'), 'utf8'));
+const galerieAttendue = donnees.filter(x => x.kind === 'gallery').sort((a, b) => a.order - b.order);
 {
   const { p, ctx } = await ouvrir('', [1440, 900], {}, REAL);
   await polices(p, 'réalisations');
-  const t = await p.evaluate(() => ({ title: document.title, h1: document.querySelector('.page__titre').textContent, sous: document.querySelector('.page__sous').textContent, actif: document.querySelector('.site-nav a.is-active') && document.querySelector('.site-nav a.is-active').textContent }));
+  const t = await p.evaluate(() => ({ title: document.title, h1: document.querySelector('.page__titre').textContent, sous: document.querySelector('.page__sous').textContent, actif: document.querySelector('.site-nav a.is-active') && document.querySelector('.site-nav a.is-active').textContent,
+    liens: [...document.querySelectorAll('.page__sous a')].map(a => a.className + ' ' + a.getAttribute('href') + (document.querySelector(a.getAttribute('href')) ? '' : ' (cible absente)')) }));
   ok(t.title === 'Réalisations — Perpetual' && t.h1 === 'Réalisations' && t.actif === 'Réalisations', `titre « ${t.h1} », « ${t.actif} » actif dans la navigation (${t.sous})`);
-  const liste = await p.evaluate(() => ({ four: getComputedStyle(document.querySelector('.section--quatre .four')).display, cartes: getComputedStyle(document.querySelector('.cartes')).display, rows: [...document.querySelectorAll('.section--quatre .four__row')].map(r => (r.id || '—') + ' → ' + r.querySelector('a').getAttribute('href')),
-    apercu: !!document.querySelector('.section--quatre .four__preview img.is-active'), bas: Math.round(document.querySelector('.section--quatre .four').getBoundingClientRect().bottom) }));
-  ok(liste.four === 'grid' && liste.cartes === 'none' && liste.rows.join(' | ') === 'ateliers-118 → realisations.html#ateliers-118 | — → projet-the-bank.html | data-box → realisations.html#data-box | community → realisations.html#community' && liste.apercu,
-    'les 4 projets en liste par défaut (bascule 21), ancres sur les lignes, The Bank vers sa fiche, aperçu photo');
-  ok(liste.bas <= 900, `premier écran à 1440 × 900 : le titre et la liste des 4 tiennent (liste à ${liste.bas})`);
+  ok(t.liens.join(' | ') === 'trait #projets | trait #agences | trait #galerie', 'sous-titre : trois liens (trait) vers #projets, #agences, #galerie — ' + t.liens.join(' | '));
+  await p.hover('.page__sous a:nth-child(2)');
+  ok((await p.evaluate(() => getComputedStyle(document.querySelector('.page__sous a:nth-child(2)'), '::after').transform)) === 'matrix(1, 0, 0, 1, 0, 0)', 'sous-titre : le trait glisse au survol');
+  const c = await p.evaluate(() => ({ four: !!document.querySelector('.section--quatre .four, .section--quatre .four__row'), cartes: getComputedStyle(document.querySelector('.cartes')).display, cols: getComputedStyle(document.querySelector('.cartes')).gridTemplateColumns.split(' ').length,
+    items: [...document.querySelectorAll('.cartes__item')].map(i => (i.id || '—') + ' → ' + i.querySelector('a').getAttribute('href')), ratio: (() => { const r = document.querySelector('.cartes__photo').getBoundingClientRect(); return r.width / r.height; })(),
+    noms: [...document.querySelectorAll('.cartes__nom')].map(n => n.textContent), lignes: document.querySelectorAll('.cartes__ligne').length, ancre: !!document.querySelector('[data-ancre]'),
+    rangee: Math.round(document.querySelector('.cartes__item:nth-child(2) .cartes__ligne').getBoundingClientRect().bottom) }));
+  ok(!c.four && c.cartes === 'grid' && c.cols === 2 && Math.abs(c.ratio - 1.5) < 0.01 && c.noms.join(' · ') === 'Ateliers 118 · The Bank · Data Box · Community' && c.lignes === 4, 'les 4 projets en quatre cartes photo 3:2 en 2 × 2 (bascule 21 figée) ; la liste n’est plus générée sur cette page');
+  ok(c.items.join(' | ') === 'ateliers-118 → realisations.html#ateliers-118 | — → projet-the-bank.html | data-box → realisations.html#data-box | community → realisations.html#community' && !c.ancre, 'ancres en dur sur les cartes (id), plus de data-ancre ; The Bank vers sa fiche');
+  ok(c.rangee <= 900, `premier écran à 1440 × 900 : le titre, l'étiquette et la première rangée de cartes tiennent (ligne de la seconde carte à ${c.rangee})`);
   ok(await p.evaluate(() => [...document.querySelectorAll('[id]')].map(e => e.id).filter((x, i, a) => a.indexOf(x) !== i).length === 0), 'aucun id en double');
+  ok(await pretty(p, '.cartes__ligne'), 'cartes : text-wrap: pretty sur les lignes');
+  const cartes = await photosImg(p, '.cartes__photo img');
+  ok(cartes.map(i => i.cle).join(' ') === 'ateliers-118-05 the-bank-01 data-box-02 community-05', 'cartes : ' + cartes.map(i => i.cle).join(' · '));
+  ok(cartes[1].cle === 'the-bank-01' && cartes[1].focal === '50% 60%' && cartes.filter(i => i.focal).length === 1, `carte The Bank : la façade (the-bank-01), object-position ${cartes[1].focal} posé en style sur l'<img> (la fiche garde the-bank-03 en tête)`);
+  verifierSrcset(cartes, 'cartes');
+  ok(cartes.every(i => i.w === 544 && i.h === 363), `cartes : cadre 544 × 363 (${cartes.map(i => i.w + '×' + i.h).join(', ')})`);
+  ok(cartes.every(i => i.echelle <= 1), `cartes à 1× : aucune photo agrandie (${cartes.map(i => `${i.cle} ${i.pixels} ×${i.echelle}`).join(', ')})`);
   const ag = await p.evaluate(() => ({ intro: document.querySelector('.agences__intro').textContent.slice(0, 30), noms: [...document.querySelectorAll('.agence__nom')].map(n => n.textContent), lignes: [...document.querySelectorAll('.agence__ligne')].map(n => n.textContent), ff: getComputedStyle(document.querySelector('.agence__nom')).fontFamily }));
   ok(ag.noms.join(' · ') === 'Braine-le-Comte · Pont-à-Celles · Jambes · Mettet' && ag.lignes.every(l => /^\d.*m² · /.test(l)) && ag.ff.startsWith('Newsreader') && ag.intro.startsWith('Une agence bancaire fermée'), 'programme agences : intro de content/realisations.md, puis ' + ag.noms.join(' · '));
   const g = await p.evaluate(() => ({ n: document.querySelectorAll('.galerie__item').length, cols: getComputedStyle(document.querySelector('.galerie')).gridTemplateColumns.split(' ').length, srcs: [...document.querySelectorAll('.galerie__item img')].map(i => i.getAttribute('src').replace(/^.*\//, '')),
-    ratio: (() => { const r = document.querySelector('.galerie__photo').getBoundingClientRect(); return r.width / r.height; })(), noms: [...document.querySelectorAll('.galerie__nom')].map(n => n.textContent), voile: getComputedStyle(document.querySelector('.galerie__voile')).opacity, meta: getComputedStyle(document.querySelector('.galerie__meta')).display,
-    metaTexte: document.querySelector('.galerie__voile').textContent }));
-  ok(g.n === 12 && g.cols === 3 && g.srcs.every(s => /-01-s\.jpg$/.test(s)) && Math.abs(g.ratio - 1.5) < 0.01 && g.noms[0] === '# Bank 24' && g.noms[11] === 'Ode to Joy' && g.voile === '0' && g.meta === 'none' && /^\d.* m² · /.test(g.metaTexte),
-    `galerie : ${g.n} biens en 3 colonnes, photos <id>-01-s.jpg en 3:2, nom sous la photo, « ${g.metaTexte} » caché au repos`);
+    ratio: (() => { const r = document.querySelector('.galerie__photo').getBoundingClientRect(); return r.width / r.height; })(), noms: [...document.querySelectorAll('.galerie__nom')].map(n => n.textContent),
+    items: [...document.querySelectorAll('.galerie__item')].map(it => ({ lieu: it.querySelector('.galerie__lieu').textContent, voile: it.querySelector('.galerie__voile').textContent, meta: it.querySelector('.galerie__meta').textContent })),
+    voile: (() => { const v = document.querySelector('.galerie__voile'), s = getComputedStyle(v); return { opacity: s.opacity, padding: s.paddingTop + ' ' + s.paddingLeft + ' ' + s.paddingBottom, fond: s.backgroundImage, fs: s.fontSize, hidden: v.getAttribute('aria-hidden') }; })(),
+    lieu: (() => { const s = getComputedStyle(document.querySelector('.galerie__lieu')); return { display: s.display, fs: s.fontSize, fw: s.fontWeight }; })(),
+    meta: (() => { const m = document.querySelector('.galerie__meta'), s = getComputedStyle(m), r = m.getBoundingClientRect(); return { display: s.display, clip: s.clipPath, w: Math.round(r.width), h: Math.round(r.height), position: s.position }; })() }));
+  ok(g.n === 12 && g.cols === 3 && g.srcs.every(s => /-01-s\.jpg$/.test(s)) && Math.abs(g.ratio - 1.5) < 0.01, `galerie : ${g.n} biens en 3 colonnes, photos <id>-01-s.jpg en 3:2`);
+  ok(g.noms.join(' · ') === galerieAttendue.map(x => x.name).join(' · ') && g.noms.join(' · ') === '# Bank 24 · # Bank 9 · # Bank 34 · # Bank 11 · # Bank 10 · # Bank 8 · Swap · # Bank 29 · Greek Style · Diversity · Ode to Joy · Corner', 'galerie : ordre de data/projects.json — ' + g.noms.join(' · '));
+  ok(g.items.every((it, i) => it.lieu === galerieAttendue[i].location && it.voile === `${galerieAttendue[i].location}${galerieAttendue[i].surface} · ${galerieAttendue[i].use}` && it.meta === `${galerieAttendue[i].location} · ${galerieAttendue[i].surface} · ${galerieAttendue[i].use}`),
+    `galerie : le lieu (data/projects.json) sur le voile puis « surface · usage » ; .galerie__meta « ${g.items[6].meta} »`);
+  ok(g.voile.opacity === '0' && g.voile.hidden === 'true' && g.voile.padding === '56px 20px 16px' && /rgba\(0, 0, 0, 0\.64\) 0%, rgba\(0, 0, 0, 0\.42\) 50%, rgba\(0, 0, 0, 0\) 100%/.test(g.voile.fond) && g.voile.fs === '14px', `galerie : voile caché au repos, aria-hidden, padding 56 20 16, dégradé .64 → .42 → transparent, 14 px (${g.voile.fond})`);
+  ok(g.lieu.display === 'block' && g.lieu.fs === '15px' && g.lieu.fw === '500', 'galerie : .galerie__lieu en bloc, 15 px, medium');
+  ok(g.meta.display !== 'none' && g.meta.position === 'absolute' && g.meta.clip === 'inset(50%)' && g.meta.w === 1 && g.meta.h === 1, `galerie au-dessus de 640 px : .galerie__meta dans la page mais masquée visuellement (clip, ${g.meta.w} × ${g.meta.h} px)`);
   await p.hover('.galerie__item:nth-child(2) .galerie__photo');
-  const hv = await p.evaluate(() => { const it = document.querySelector('.galerie__item:nth-child(2)'); return { voile: getComputedStyle(it.querySelector('.galerie__voile')).opacity, zoom: getComputedStyle(it.querySelector('img')).transform }; });
-  ok(hv.voile === '1' && /^matrix\(1\.035, 0, 0, 1\.035/.test(hv.zoom), `galerie : au survol, surface · usage en surimpression et zoom 1,035 (${hv.zoom})`);
+  const hv = await p.evaluate(() => { const it = document.querySelector('.galerie__item:nth-child(2)'); return { voile: getComputedStyle(it.querySelector('.galerie__voile')).opacity, zoom: getComputedStyle(it.querySelector('img')).transform, lieuTop: it.querySelector('.galerie__lieu').getBoundingClientRect().bottom <= it.querySelector('.galerie__voile').getBoundingClientRect().bottom - 16 }; });
+  ok(hv.voile === '1' && /^matrix\(1\.035, 0, 0, 1\.035/.test(hv.zoom) && hv.lieuTop, `galerie : au survol, lieu puis surface · usage sur deux lignes en surimpression, zoom 1,035 (${hv.zoom})`);
+  const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '')).join(' · '));
+  ok(panneau === 'cadrage (sans effet) · carte (sans effet) · chapitres (sans effet)', 'panneau : ' + panneau);
   await ctx.close();
 }
 {
-  const { p, ctx } = await ouvrir('quatre=cartes', [1440, 900], {}, REAL);
-  const c = await p.evaluate(() => ({ four: getComputedStyle(document.querySelector('.section--quatre .four')).display, cartes: getComputedStyle(document.querySelector('.cartes')).display, cols: getComputedStyle(document.querySelector('.cartes')).gridTemplateColumns.split(' ').length,
-    items: [...document.querySelectorAll('.cartes__item')].map(i => (i.id || '—') + ' → ' + i.querySelector('a').getAttribute('href')), ratio: (() => { const r = document.querySelector('.cartes__photo').getBoundingClientRect(); return r.width / r.height; })(),
-    noms: [...document.querySelectorAll('.cartes__nom')].map(n => n.textContent), lignes: document.querySelectorAll('.cartes__ligne').length, rowsId: [...document.querySelectorAll('.four__row[id]')].length, doublons: [...document.querySelectorAll('[id]')].map(e => e.id).filter((x, i, a) => a.indexOf(x) !== i).length }));
-  ok(c.four === 'none' && c.cartes === 'grid' && c.cols === 2 && Math.abs(c.ratio - 1.5) < 0.01 && c.noms.join(' · ') === 'Ateliers 118 · The Bank · Data Box · Community' && c.lignes === 4, 'quatre=cartes : la liste disparaît, quatre cartes photo 3:2 en 2 × 2, nom et ligne sous la photo');
-  ok(c.items.join(' | ') === 'ateliers-118 → realisations.html?quatre=cartes#ateliers-118 | — → projet-the-bank.html?quatre=cartes | data-box → realisations.html?quatre=cartes#data-box | community → realisations.html?quatre=cartes#community' && c.rowsId === 0 && c.doublons === 0,
-    'quatre=cartes : les ancres passent sur les cartes (les lignes de la liste les perdent), aucun id en double');
+  const { p, ctx } = await ouvrir('', [1440, 900], { deviceScaleFactor: 2 }, REAL);
+  const cartes2 = (await photosImg(p, '.cartes__photo img')).filter(i => fs.existsSync(path.join(IMG_DIR, `${i.cle}.jpg`)));
+  ok(cartes2.length >= 3 && cartes2.every(i => i.servi === `${i.cle}.jpg`), `cartes à 1440 × 2 : le 1800 px est servi (${cartes2.map(i => i.servi).join(', ')})`);
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('quatre=liste&quatre=cartes', [1440, 900], {}, REAL);
+  ok((await style(p, '.cartes', 'display')) === 'grid' && !(await p.evaluate(() => document.querySelector('.section--quatre .four'))) && (await p.evaluate(() => document.querySelector('#data-box').className)) === 'cartes__item',
+    'quatre=… (bascule 21 retirée) : sans effet, les cartes et leurs ancres restent');
   await p.hover('.cartes__item:first-child a');
   ok(/^matrix\(1\.035/.test(await p.evaluate(() => getComputedStyle(document.querySelector('.cartes__item:first-child img')).transform)), 'cartes : zoom 1,035 au survol');
   await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('', [390, 844], {}, REAL);
-  const m = await p.evaluate(() => ({ cols: getComputedStyle(document.querySelector('.galerie')).gridTemplateColumns.split(' ').length, meta: getComputedStyle(document.querySelector('.galerie__meta')).display, voile: getComputedStyle(document.querySelector('.galerie__voile')).display,
-    agences: getComputedStyle(document.querySelector('.agences')).gridTemplateColumns.split(' ').length, apercu: getComputedStyle(document.querySelector('.section--quatre .four__preview')).display, titre: getComputedStyle(document.querySelector('.page__titre')).fontSize }));
-  ok(m.cols === 1 && m.meta === 'block' && m.voile === 'none' && m.agences === 1 && m.apercu === 'none' && m.titre === '44px', 'mobile : galerie en une colonne avec surface · usage affichés, agences en une colonne, liste sans aperçu, titre 44 px');
-  await ctx.close();
-}
-{
-  const { p, ctx } = await ouvrir('quatre=cartes', [390, 844], {}, REAL);
-  ok((await style(p, '.cartes', 'gridTemplateColumns')).split(' ').length === 1, 'mobile : cartes en une colonne');
+  const m = await p.evaluate(() => ({ cols: getComputedStyle(document.querySelector('.galerie')).gridTemplateColumns.split(' ').length, meta: (() => { const e = document.querySelector('.galerie__item:nth-child(7) .galerie__meta'), s = getComputedStyle(e); return { display: s.display, position: s.position, clip: s.clipPath, w: Math.round(e.getBoundingClientRect().width), texte: e.textContent }; })(),
+    voile: getComputedStyle(document.querySelector('.galerie__voile')).display, agences: getComputedStyle(document.querySelector('.agences')).gridTemplateColumns.split(' ').length, cartes: getComputedStyle(document.querySelector('.cartes')).gridTemplateColumns.split(' ').length, titre: getComputedStyle(document.querySelector('.page__titre')).fontSize }));
+  ok(m.cols === 1 && m.meta.display === 'block' && m.meta.position === 'static' && m.meta.clip === 'none' && m.meta.w > 100 && m.meta.texte === 'Perwez · 60 m² · Commerce' && m.voile === 'none', `mobile : galerie en une colonne, « ${m.meta.texte} » affiché sous le nom, voile absent`);
+  ok(m.agences === 1 && m.cartes === 1 && m.titre === '44px', 'mobile : agences en une colonne, cartes en une colonne, titre 44 px');
   await ctx.close();
 }
 

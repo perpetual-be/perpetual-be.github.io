@@ -123,7 +123,7 @@ ol,ul{list-style:none}
 .four__name{display:inline-block;position:relative;font-family:var(--serif);font-size:var(--fs-nom);line-height:1.05;letter-spacing:-.01em;padding-bottom:4px}
 .four__name::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--c-trait);transform:scaleX(0);transform-origin:left;transition:transform .25s}
 .four__row:hover .four__name::after,.four__row.is-active .four__name::after{transform:scaleX(1)}
-.four__line{display:block;font-size:var(--fs-ligne);color:var(--c-meta);margin-top:8px}
+.four__line{display:block;font-size:var(--fs-ligne);color:var(--c-meta);margin-top:8px;text-wrap:pretty}
 .four__preview{position:sticky;top:24px;aspect-ratio:4/5;overflow:hidden;background:var(--surface)}
 .four__preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s,transform var(--zoom-duree) ease}
 .four__preview img.is-active{opacity:1}
@@ -151,11 +151,13 @@ ol,ul{list-style:none}
    Logos figés en couleur le 22/09 (bascule 14 retirée) */
 .partner__couleur{display:block;height:calc(var(--logo-h)*var(--logo-echelle));width:auto}
 
-/* fiche projet et vue Réalisations (23/09) : mêmes jetons et composants que la Home */
-.page-head{padding:40px 0 32px}
+/* fiche projet et vue Réalisations (23/09) : mêmes jetons et composants que la Home.
+   .page-head est un .container : ne poser que padding-top / padding-bottom, le padding latéral (la gouttière) reste celui de .container (revue du 23/09) */
+.page-head{padding-top:40px;padding-bottom:32px}
 .page-head .eyebrow{margin-bottom:14px}
 .page__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-titre-page);line-height:1;letter-spacing:-.015em}
 .page__sous{font-size:var(--fs-ligne);color:var(--c-meta);margin-top:14px}
+.page__sous a{padding-bottom:1px}   /* vue Réalisations : les trois éléments du sous-titre sont des liens (trait) vers #projets, #agences, #galerie */
 /* fiche : photo hero à 520 px, puis la bande de trois faits — le composant de la bande des chiffres (surface papier, valeur en serif or, étiquette gris chaud) */
 .fiche__hero{height:520px;overflow:hidden}
 .fiche__hero img{width:100%;height:100%;object-fit:cover}
@@ -177,9 +179,10 @@ ol,ul{list-style:none}
 .suivant{display:block;border-top:1px solid var(--filet);padding:24px 0 72px;margin-top:8px}
 .suivant .eyebrow{display:block;margin-bottom:6px}
 .suivant__nom{display:inline-block;font-family:var(--serif);font-size:var(--fs-suivant);line-height:1.2;color:var(--c-lien);padding-bottom:2px}
-/* vue Réalisations : les 4 projets — la liste de la Home (défaut) ou quatre cartes photo 3:2 (bascule 21) */
+/* vue Réalisations : les 4 projets en quatre cartes photo 3:2, 2 × 2 (bascule 21 figée sur « cartes » le 23/09 ; la liste des 4 reste sur la Home) ;
+   chaque carte porte l'ancre de son projet (id), srcset 800 / 1800 px */
 .section--quatre{padding-top:48px}
-.cartes{display:none;grid-template-columns:1fr 1fr;gap:44px 32px}
+.cartes{display:grid;grid-template-columns:1fr 1fr;gap:44px 32px}
 .cartes__item a{display:block}
 .cartes__photo{display:block;aspect-ratio:3/2;overflow:hidden;background:var(--surface)}
 .cartes__photo img{width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
@@ -187,7 +190,7 @@ ol,ul{list-style:none}
 .cartes__nom{display:inline-block;position:relative;font-family:var(--serif);font-size:var(--fs-carte-nom);line-height:1.1;letter-spacing:-.01em;margin-top:18px;padding-bottom:3px}
 .cartes__nom::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--c-trait);transform:scaleX(0);transform-origin:left;transition:transform .25s}
 .cartes__item a:hover .cartes__nom::after{transform:scaleX(1)}
-.cartes__ligne{display:block;font-size:var(--fs-ligne);color:var(--c-meta);margin-top:6px}
+.cartes__ligne{display:block;font-size:var(--fs-ligne);color:var(--c-meta);margin-top:6px;text-wrap:pretty}
 /* programme agences : l'intro, puis les quatre exemples en liste typographique */
 .agences{display:grid;grid-template-columns:5fr 7fr;gap:64px;align-items:start}
 .agences__intro{max-width:46ch}
@@ -195,15 +198,19 @@ ol,ul{list-style:none}
 .agences__liste li:last-child{border-bottom:1px solid var(--filet)}
 .agence__nom{display:block;font-family:var(--serif);font-size:var(--fs-agence);line-height:1.1;letter-spacing:-.01em}
 .agence__ligne{display:block;font-size:var(--fs-ligne);color:var(--c-meta);margin-top:6px}
-/* galerie : grille 3 colonnes, photos 3:2, nom sous la photo, surface · usage en surimpression au survol, zoom 1,035 */
+/* galerie : grille 3 colonnes, photos 3:2, nom sous la photo ; au survol, le voile porte le lieu (.galerie__lieu, 15 px medium) puis « surface · usage » (14 px),
+   zoom 1,035. Voile renforcé (revue du 23/09) : 4,8:1 au pire (Perwez) pour le blanc sur le dégradé, contre 3,6:1 avant.
+   .galerie__meta (« Perwez · 60 m² · Commerce ») est affichée sur téléphone ; au-dessus de 640 px elle reste dans la page, masquée visuellement (clip) :
+   le voile est aria-hidden, un lecteur d'écran n'aurait sinon que le nom. */
 .galerie{display:grid;grid-template-columns:repeat(3,1fr);gap:40px 32px}
 .galerie__photo{display:block;position:relative;aspect-ratio:3/2;overflow:hidden;background:var(--surface)}
 .galerie__photo img{width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
 .galerie__item:hover .galerie__photo img{transform:scale(var(--zoom))}
-.galerie__voile{position:absolute;left:0;right:0;bottom:0;padding:44px 20px 16px;color:var(--photo-texte);font-size:14px;line-height:1.4;background:linear-gradient(to top,var(--voile-moyen),transparent);opacity:0;transition:opacity .25s}
+.galerie__voile{position:absolute;left:0;right:0;bottom:0;padding:56px 20px 16px;color:var(--photo-texte);font-size:14px;line-height:1.4;background:linear-gradient(to top,rgba(0,0,0,.64) 0%,rgba(0,0,0,.42) 50%,transparent 100%);opacity:0;transition:opacity .25s}
 .galerie__item:hover .galerie__voile{opacity:1}
+.galerie__lieu{display:block;font-size:15px;font-weight:500}
 .galerie__nom{display:block;font-size:16px;font-weight:500;margin-top:12px}
-.galerie__meta{display:none;font-size:14px;color:var(--c-meta);margin-top:2px}
+.galerie__meta{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;font-size:14px;color:var(--c-meta);margin-top:2px}
 
 /* pied de page */
 /* resserré le 23/09 : 48 px en haut, 32 px entre la dernière ligne des colonnes et le filet du bas (le gap vertical de la grille, sans marge sur le bloc légal) */
@@ -243,7 +250,7 @@ ol,ul{list-style:none}
   .footer__legal{margin-top:4px}
   /* fiche et vue Réalisations : une colonne, tout affiché */
   :root{--fs-titre-page:44px;--fs-chapitre-serif:26px;--fs-chapitre:22px;--fs-fait:22px;--fs-suivant:24px;--fs-agence:24px;--fs-carte-nom:28px}
-  .page-head{padding:28px 0 24px}
+  .page-head{padding-top:28px;padding-bottom:24px}
   .fiche__hero{height:300px}
   .faits-band{padding:24px 0 22px}
   .stats--faits{display:grid;gap:18px 0}
@@ -260,7 +267,7 @@ ol,ul{list-style:none}
   .agences{grid-template-columns:1fr;gap:28px}
   .galerie{grid-template-columns:1fr;gap:28px}
   .galerie__voile{display:none}
-  .galerie__meta{display:block}
+  .galerie__meta{position:static;width:auto;height:auto;overflow:visible;clip:auto;clip-path:none;white-space:normal;display:block}
 }
 /* fenêtre basse (portable 1366 × 768 avec les barres du navigateur) : la bande et ses chiffres tiennent dans 703 px */
 @media (max-height:720px) and (min-width:641px){
@@ -271,7 +278,7 @@ ol,ul{list-style:none}
 }
 
 /* ---------- 6. Bascules ---------- */
-/* Home gelée le 23/09 : il ne reste que deux décisions reportées, 9c et 15a (2 serif et 17 graisse sont figées sur Newsreader 400). */
+/* Home gelée le 23/09 : il ne reste que deux décisions reportées, 9c et 15a (2 serif et 17 graisse sont figées sur Newsreader 400) ; la fiche garde la 20. */
 /* 9c · cadrage de Community 05, temporaire : centre (défaut, le point focal de photoCandidates, 50% 50%) / haut (50% 20%) ; « bas » retiré.
    !important parce que le point focal est posé en style sur l'<img> ; la valeur retenue remplacera celle de photoCandidates et la bascule disparaîtra */
 html[data-cadrage="haut"] .hero__photo img{object-position:50% 20% !important}
@@ -280,9 +287,7 @@ html[data-carte="papier-contour"] .carte__pays{fill:var(--papier);stroke:var(--t
 /* 20 · fiche, titres de chapitre : serif (défaut, Newsreader 400, --fs-chapitre-serif 32 px) / sans (Instrument Sans medium, --fs-chapitre 26 px).
    C'est la dernière question ouverte sur la portée de la serif. */
 html[data-chapitres="sans"] .chapitre__titre{font-family:var(--sans);font-weight:500;font-size:var(--fs-chapitre);letter-spacing:-.01em}
-/* 21 · vue Réalisations, les 4 projets : liste (défaut, la même que sur la Home) / cartes (quatre cartes photo 3:2, nom et ligne sous la photo) */
-html[data-quatre="cartes"] .section--quatre .four{display:none}
-html[data-quatre="cartes"] .cartes{display:grid}
+/* 21 · vue Réalisations, les 4 projets : figée sur « cartes » le 23/09 (.cartes, plus haut) ; la liste des 4 n'est plus générée sur cette page. */
 
 /* ---------- 7. Mobile, premier écran ---------- */
 @media (max-width:640px){
