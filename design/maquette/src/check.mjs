@@ -1,7 +1,7 @@
 // Vérifications de la maquette (Playwright + Chromium) : premier écran (structure F), débordement, effet de chaque bascule,
 // valeurs figées et alignement (gel de la Home du 23/09 : signature, espacements, pied de page), en-tête (Φ, wordmark), carte des réalisations,
 // logos partenaires, photo 2800 px, srcset de l'aperçu des 4, mode présentation, page sans JavaScript, polices, contrastes ; puis la fiche The Bank et la vue
-// Réalisations (débordement horizontal, polices, gouttière du titre, premier écran, bascule 20, cartes et leurs ancres, srcset et agrandissement des photos,
+// Réalisations (débordement horizontal, polices, gouttière du titre, premier écran et photo de tête, titres de chapitre, paire de photos, rythme, cartes et leurs ancres, srcset et agrandissement des photos,
 // sous-titre en liens, programme agences, galerie — ordre, lieu, voile — et mobile).
 // Usage, depuis la racine du dépôt : NODE_PATH=$(npm root -g) node design/maquette/src/check.mjs
 import path from 'node:path';
@@ -170,7 +170,7 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok((await style(p, '.section--projets', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.four__row').length)) === 4, 'section projets : liste des 4 (bascule 11 figée)');
   ok((await style(p, '.partner__couleur', 'display')) === 'block' && !(await p.evaluate(() => document.querySelector('.partner__encre'))), 'logos partenaires : couleur, figés (plus d’encre inline)');
   const cles = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle));
-  ok(cles.join(' ') === 'cadrage carte chapitres', 'panneau : ' + cles.join(' · ') + ' (21 retirée)');
+  ok(cles.join(' ') === 'cadrage carte', 'panneau : ' + cles.join(' · ') + ' (20 et 21 retirées)');
   ok(await pretty(p, '.four__line'), 'liste des 4 : text-wrap: pretty sur les lignes');
   // aperçu de la liste des 4 : srcset 800 / 1800 px (revue du 23/09) ; à 1×, aucune photo agrandie — Data Box 02 (800 × 450, cadre 440 × 550) reçoit le 1800 px
   const apercu = await photosImg(p, '.four__preview img');
@@ -290,6 +290,7 @@ const lum = hex => { const c = hex.replace('#', ''); const [r, g, b] = [0, 2, 4]
 const contraste = (a, b) => { const [l1, l2] = [lum(a), lum(b)].sort((x, y) => y - x); return ((l1 + 0.05) / (l2 + 0.05)).toFixed(2); };
 const fonds = { blanc: '#FFFFFF', papier: '#F9F9F6', sable: '#F6F1E6' };
 const encres = [['#26231F', 'anthracite (texte, barres)'], ['#6B655C', 'gris (étiquettes < 18 px)'], ['#9A948A', 'gris clair (réservé ≥ 18 px)'], ['#9A7A3B', 'or mat (chiffres ≥ 40 px)'], ['#8A6B2F', 'or foncé (liens, signature)'], ['#B8975A', 'or clair (filets seulement)'], ['#7A7466', 'gris chaud (logos, étiquettes des chiffres)']];
+ok(Number(contraste('#8A6B2F', '#FFFFFF')) >= 4.5 && Number(contraste('#9A7A3B', '#FFFFFF')) < 4.5, `numéros de chapitre (15 px) en or foncé : ${contraste('#8A6B2F', '#FFFFFF')}:1 sur blanc (or mat : ${contraste('#9A7A3B', '#FFFFFF')}:1, sous le seuil)`);
 for (const [hex, nom] of encres) console.log('  ' + nom.padEnd(30) + Object.entries(fonds).map(([f, h]) => `${f} ${contraste(hex, h)}:1`).join('   '));
 
 // ---------- fiche The Bank et vue Réalisations ----------
@@ -301,10 +302,8 @@ async function polices(p, nom) {
 
 console.log('\n8 · Fiche The Bank');
 for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
-  for (const etat of ['', 'chapitres=sans']) {
-    const { p, ctx } = await ouvrir(etat, [w, h], {}, FICHE);
-    ok((await largeur(p)) === 0, `fiche · ${w} · ${etat || 'défaut'} : aucun débordement horizontal`); await ctx.close();
-  }
+  const { p, ctx } = await ouvrir('', [w, h], {}, FICHE);
+  ok((await largeur(p)) === 0, `fiche · ${w} : aucun débordement horizontal`); await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('', [1440, 900], {}, FICHE);
@@ -315,26 +314,37 @@ for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
   const t = await p.evaluate(() => ({ eyebrow: document.querySelector('.page-head .eyebrow').textContent, h1: document.querySelector('.page__titre').textContent, h1fs: getComputedStyle(document.querySelector('.page__titre')).fontSize, h1ff: getComputedStyle(document.querySelector('.page__titre')).fontFamily }));
   ok(t.eyebrow === 'Liège, rue des Mineurs' && t.h1 === 'The Bank' && t.h1fs === '64px' && t.h1ff.startsWith('Newsreader'), `« ${t.eyebrow} » en eyebrow, « ${t.h1 } » en serif 64 px`);
   const hero = await rect(p, '.fiche__hero'), faits = await rect(p, '.faits-band'), head = await rect(p, '.page-head');
-  ok(hero.height === 520 && hero.width === 1440 && hero.top >= head.bottom && await p.evaluate(() => /the-bank-03(-l)?\.jpg$/.test(document.querySelector('.fiche__hero img').currentSrc)), `photo hero the-bank-03, pleine largeur, ${hero.height} px de haut`);
-  ok(faits.bottom <= 900, `premier écran à 1440 × 900 : le titre, la photo et la bande de faits tiennent (bande à ${faits.bottom})`);
+  // photo de tête (revue de la fiche) : the-bank-01, srcset 1350w / 2100w, point focal en variables sur l'<img> (déclaré dans `fiche`, build.mjs)
+  const tete = await p.evaluate(() => { const i = document.querySelector('.fiche__hero img'); return { src: i.currentSrc, srcset: i.getAttribute('srcset'), focal: i.style.getPropertyValue('--focal'), focalM: i.style.getPropertyValue('--focal-mobile'), pos: getComputedStyle(i).objectPosition }; });
+  ok(/the-bank-01(-l)?\.jpg$/.test(tete.src) && /the-bank-01\.jpg 1350w, .*the-bank-01-l\.jpg 2100w$/.test(tete.srcset) && tete.focal === '50% 44%' && tete.focalM === '50% 5%' && tete.pos === '50% 44%',
+    `photo de tête the-bank-01 (srcset 1350w / 2100w), point focal --focal ${tete.focal} (servi : ${tete.pos}), --focal-mobile ${tete.focalM}`);
+  ok(hero.height === 570 && hero.width === 1440 && hero.top >= head.bottom, `photo de tête pleine largeur, ${hero.height} px de haut à 1440 × 900`);
+  ok(faits.top === hero.bottom && faits.bottom <= 900 && (await style(p, '.faits-band', 'backgroundColor')) === PAPIER, `premier écran à 1440 × 900 : le titre, la photo et la bande de faits, opaque, sous la photo (bande à ${faits.bottom})`);
+  const ph = await p.evaluate(() => { const s = getComputedStyle(document.querySelector('.fiche .page-head')); return [s.paddingTop, s.paddingBottom, getComputedStyle(document.querySelector('.fiche .page-head .eyebrow')).marginBottom].join(' '); });
+  ok(ph === '12px 24px 8px', `en-tête de page resserré au-dessus de 640 px : padding ${ph.split(' ').slice(0, 2).join(' / ')}, eyebrow à ${ph.split(' ')[2]}`);
   const f = await p.evaluate(() => ({ bande: getComputedStyle(document.querySelector('.faits-band')).backgroundColor, valeurs: [...document.querySelectorAll('.stats--faits .stat__value')].map(v => { const s = getComputedStyle(v); return { t: v.textContent, c: s.color, ff: s.fontFamily, fs: s.fontSize, fw: s.fontWeight }; }),
     etiquettes: [...document.querySelectorAll('.stats--faits .stat__label')].map(l => ({ t: l.textContent, c: getComputedStyle(l).color })) }));
   ok(f.bande === PAPIER && f.valeurs.map(v => v.t).join(' · ') === 'Liège · 1 100 m² · Logements & commerce' && f.valeurs.every(v => v.c === OR && v.ff.startsWith('Newsreader') && v.fs === '28px' && v.fw === '400')
     && f.etiquettes.map(l => l.t).join(' · ') === 'Localisation · Surface · Usage' && f.etiquettes.every(l => l.c === GRIS_CHAUD),
     'bande de faits : surface papier, valeurs en serif or 28 px (Liège · 1 100 m² · Logements & commerce), étiquettes gris chaud');
-  const ch = await p.evaluate(() => [...document.querySelectorAll('.chapitre')].map(c => { const t = c.querySelector('.chapitre__titre'), s = getComputedStyle(t); return { num: c.querySelector('.chapitre__num').textContent, numColor: getComputedStyle(c.querySelector('.chapitre__num')).color, titre: t.textContent, ff: s.fontFamily, fs: s.fontSize, fw: s.fontWeight, texte: c.querySelector('.chapitre__texte').textContent.length, largeur: Math.round(c.parentElement.getBoundingClientRect().width), left: Math.round(c.getBoundingClientRect().left) }; }));
-  ok(ch.length === 3 && ch.map(c => c.num).join(' ') === '01 02 03' && ch.map(c => c.titre).join(' / ') === 'Ce que c’était / Ce que nous y avons vu / Ce que c’est devenu' && ch.every(c => c.texte > 20 && c.numColor === OR), 'trois chapitres numérotés 01 02 03 (numéros or) avec les textes de data/projects.json');
-  ok(ch.every(c => c.ff.startsWith('Newsreader') && c.fs === '32px' && c.fw === '400'), 'titres de chapitre : serif Newsreader 400, 32 px par défaut (bascule 20)');
+  const ch = await p.evaluate(() => [...document.querySelectorAll('.chapitre')].map(c => { const t = c.querySelector('.chapitre__titre'), s = getComputedStyle(t); return { num: c.querySelector('.chapitre__num').textContent, numColor: getComputedStyle(c.querySelector('.chapitre__num')).color, numFf: getComputedStyle(c.querySelector('.chapitre__num')).fontFamily, titre: t.textContent, ff: s.fontFamily, fs: s.fontSize, fw: s.fontWeight, texte: c.querySelector('.chapitre__texte').textContent.length, largeur: Math.round(c.parentElement.getBoundingClientRect().width), left: Math.round(c.getBoundingClientRect().left) }; }));
+  ok(ch.length === 3 && ch.map(c => c.num).join(' ') === '01 02 03' && ch.map(c => c.titre).join(' / ') === 'Ce que c’était / Ce que nous y avons vu / Ce que c’est devenu' && ch.every(c => c.texte > 20 && c.numColor === OR_FONCE && c.numFf.startsWith('"Instrument Sans"')), 'trois chapitres numérotés 01 02 03 (numéros en sans, or foncé) avec les textes de data/projects.json');
+  ok(ch.every(c => c.ff.startsWith('"Instrument Sans"') && c.fs === '26px' && c.fw === '500'), 'titres de chapitre : Instrument Sans 500, 26 px (bascule 20 figée sur « sans »)');
   ok(ch.every(c => c.largeur === 760 && c.left === 160), 'chapitres en colonne de 760 px alignée à gauche');
-  const photos = await p.evaluate(() => [...document.querySelectorAll('.fiche__photos figure')].map(fg => { const r = fg.querySelector('img').getBoundingClientRect(); return { src: fg.querySelector('img').currentSrc.replace(/^.*\//, ''), w: Math.round(r.width), h: Math.round(r.height), legende: fg.querySelector('figcaption').textContent }; }));
+  const photos = await p.evaluate(() => [...document.querySelectorAll('.fiche__photos figure')].map(fg => { const r = fg.querySelector('img').getBoundingClientRect(); return { src: fg.querySelector('img').currentSrc.replace(/^.*\//, ''), srcset: fg.querySelector('img').getAttribute('srcset'), w: Math.round(r.width), h: Math.round(r.height), left: Math.round(r.left), legende: fg.querySelector('figcaption').textContent }; }));
   const place = await p.evaluate(() => { const ch = [...document.querySelectorAll('.chapitre')].map(c => c.getBoundingClientRect().top), ph = document.querySelector('.fiche__photos').getBoundingClientRect().top; return ch[0] < ph && ph < ch[1]; });
-  ok(photos.length === 2 && /^the-bank-01/.test(photos[0].src) && /^the-bank-02/.test(photos[1].src) && photos.every(x => x.h === 440) && photos[0].w < photos[1].w && Math.abs(photos[0].w / photos[1].w - 5 / 7) < 0.03 && photos.every(x => x.legende.length > 5) && place,
-    `photos intercalées entre les chapitres 01 et 02 : the-bank-01 portrait (${photos[0] && photos[0].w} px) et the-bank-02 paysage (${photos[1] && photos[1].w} px), 440 px, légendes`);
+  ok(photos.length === 2 && /^the-bank-02/.test(photos[0].src) && /^the-bank-03/.test(photos[1].src) && photos.every(x => x.h === 440) && photos[0].w === photos[1].w && photos[1].left > photos[0].left
+    && photos.map(x => x.legende).join(' / ') === 'Le point Bancontact, rue des Mineurs / Le point Bancontact, l’intérieur' && /the-bank-03\.jpg 1800w, .*the-bank-03-l\.jpg 2800w$/.test(photos[1].srcset) && place,
+    `paire entre les chapitres 01 et 02 : the-bank-02 à gauche, the-bank-03 à droite (srcset 1800w / 2800w), 440 px, largeurs égales (${photos.map(x => x.w).join(' = ')} px), légendes`);
+  // rythme : 64 px avant et après la paire, 56 px entre chapitres
+  const ry = await p.evaluate(() => { const b = e => e.getBoundingClientRect(), ch = [...document.querySelectorAll('.chapitre')], paire = document.querySelector('.fiche__photos'), txt = c => b(c.querySelector('.chapitre__texte')).bottom;
+    return { avant: Math.round(b(paire.querySelector('img')).top - txt(ch[0])), apres: Math.round(b(ch[1]).top - b(paire).bottom), entre: Math.round(b(ch[2]).top - txt(ch[1])) }; });
+  ok(ry.avant === 64 && ry.apres === 64 && ry.entre === 56, `rythme : ${ry.avant} px avant la paire, ${ry.apres} après, ${ry.entre} entre chapitres`);
   const suivant = await p.evaluate(() => { const a = document.querySelector('.suivant'); return { href: a.getAttribute('href'), texte: a.querySelector('.eyebrow').textContent + ' — ' + a.querySelector('.suivant__nom').textContent, color: getComputedStyle(a.querySelector('.suivant__nom')).color, bloc: getComputedStyle(a.querySelector('.eyebrow')).display }; });
   ok(suivant.href === 'realisations.html#data-box' && suivant.texte === 'Projet suivant — Data Box →' && suivant.color === OR_FONCE && suivant.bloc === 'block', `« ${suivant.texte} » → ${suivant.href}, or foncé, l'étiquette au-dessus du nom`);
   ok(await p.evaluate(() => getComputedStyle(document.querySelector('.site-footer')).backgroundColor === 'rgb(249, 249, 246)' && document.querySelector('.footer__nav a').getAttribute('href') === 'realisations.html' && document.querySelector('.footer__nav a[href="index.html#collectif"]') !== null), 'pied de page papier ; plan vers realisations.html, Collectif vers index.html#collectif');
   const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '')).join(' · '));
-  ok(panneau === 'cadrage (sans effet) · carte (sans effet) · chapitres', 'panneau : ' + panneau);
+  ok(panneau === 'cadrage (sans effet) · carte (sans effet)', 'panneau : ' + panneau + ' (bascule 20 retirée)');
   await ctx.close();
 }
 // gouttière du titre de page (revue du 23/09) : .page-head est un .container, son padding latéral doit rester celui de .container
@@ -346,10 +356,17 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
     await ctx.close();
   }
 }
+// citation du pied de page : espaces insécables (U+00A0) après « et avant », sur les trois pages
+for (const page of ['index', FICHE, REAL]) {
+  const { p, ctx } = await ouvrir('', [1440, 900], {}, page);
+  const q = await p.evaluate(() => document.querySelector('.footer__quote p').textContent);
+  ok(q.startsWith('«\u00A0') && q.endsWith('\u00A0»'), `${page} : citation du pied de page, espaces insécables après « et avant »`);
+  await ctx.close();
+}
 {
-  const { p, ctx } = await ouvrir('chapitres=sans', [1440, 900], {}, FICHE);
+  const { p, ctx } = await ouvrir('chapitres=serif', [1440, 900], {}, FICHE);
   const t = await p.evaluate(() => [...document.querySelectorAll('.chapitre__titre')].map(t => { const s = getComputedStyle(t); return s.fontFamily.startsWith('"Instrument Sans"') && s.fontSize === '26px' && s.fontWeight === '500'; }));
-  ok(t.length === 3 && t.every(Boolean) && (await style(p, '.page__titre', 'fontFamily')).startsWith('Newsreader') && (await style(p, '.stats--faits .stat__value', 'fontFamily')).startsWith('Newsreader'), 'chapitres=sans : titres de chapitre en Instrument Sans medium 26 px, le titre et les faits restent en serif');
+  ok(t.length === 3 && t.every(Boolean) && (await style(p, '.page__titre', 'fontFamily')).startsWith('Newsreader') && (await style(p, '.stats--faits .stat__value', 'fontFamily')).startsWith('Newsreader'), 'chapitres=serif (bascule 20 retirée) : sans effet, titres de chapitre en sans ; le titre et les faits restent en serif');
   await ctx.close();
 }
 {
@@ -359,15 +376,19 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
 }
 {
   const { p, ctx } = await ouvrir('', [1366, 703], {}, FICHE);
-  const hero = await rect(p, '.fiche__hero'), h1 = await rect(p, '.page__titre');
-  ok(h1.bottom < hero.top && hero.top < 703 - 300, `premier écran à 1366 × 703 : le titre et au moins 300 px de la photo (photo de ${hero.top} à ${hero.bottom})`);
+  const hero = await rect(p, '.fiche__hero'), h1 = await rect(p, '.page__titre'), faits = await rect(p, '.faits-band');
+  ok(h1.bottom < hero.top && hero.height === 373 && faits.top === hero.bottom && faits.bottom <= 703, `premier écran à 1366 × 703 : le titre, la photo (${hero.height} px) et la bande de faits (jusqu'à ${faits.bottom})`);
   await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('', [390, 844], {}, FICHE);
-  ok((await style(p, '.logo__texte', 'display')) === 'none' && (await style(p, '.page__titre', 'fontSize')) === '44px' && (await rect(p, '.fiche__hero')).height === 300, 'mobile : Φ seul, titre 44 px, photo de 300 px');
+  ok((await style(p, '.logo__texte', 'display')) === 'none' && (await style(p, '.page__titre', 'fontSize')) === '44px' && (await rect(p, '.fiche__hero')).height === 300 && (await style(p, '.fiche__hero img', 'objectPosition')) === '50% 5%', 'mobile : Φ seul, titre 44 px, photo de 300 px, point focal --focal-mobile 50% 5%');
+  const phM = await p.evaluate(() => { const s = getComputedStyle(document.querySelector('.fiche .page-head')); return [s.paddingTop, s.paddingBottom, getComputedStyle(document.querySelector('.fiche .page-head .eyebrow')).marginBottom].join(' '); });
+  ok(phM === '28px 24px 14px', `mobile : en-tête de page inchangé (${phM})`);
+  const f3 = await p.evaluate(() => { const l = [...document.querySelectorAll('.stats--faits .stat')].map(e => e.getBoundingClientRect()), v = document.querySelector('.stats--faits .stat:nth-child(3) .stat__value'); return { plein: Math.round(l[2].width) >= Math.round(document.querySelector('.stats--faits').getBoundingClientRect().width) - 1, ligne: v.getClientRects().length === 1 && Math.round(v.getBoundingClientRect().height) < 40 }; });
+  ok(f3.plein && f3.ligne, 'mobile : « Logements & commerce » sur toute la largeur, sur une ligne');
   const m = await p.evaluate(() => ({ faits: getComputedStyle(document.querySelector('.stats--faits')).gridTemplateColumns.split(' ').length, photos: getComputedStyle(document.querySelector('.fiche__photos')).gridTemplateColumns.split(' ').length, h: Math.round(document.querySelector('.fiche__photos img').getBoundingClientRect().height), titre: getComputedStyle(document.querySelector('.chapitre__titre')).fontSize, bande: Math.round(document.querySelector('.faits-band').getBoundingClientRect().bottom) }));
-  ok(m.faits === 2 && m.photos === 1 && m.h === 300 && m.titre === '26px', `mobile : faits en 2 × 2, photos en une colonne de 300 px, titres de chapitre 26 px`);
+  ok(m.faits === 2 && m.photos === 1 && m.h === 300 && m.titre === '22px', `mobile : faits sur deux colonnes, photos en une colonne de 300 px, titres de chapitre 22 px`);
   ok(m.bande <= 844, `mobile : le titre, la photo et la bande de faits tiennent dans 844 (bande à ${m.bande})`);
   await ctx.close();
 }
@@ -399,7 +420,7 @@ const galerieAttendue = donnees.filter(x => x.kind === 'gallery').sort((a, b) =>
   ok(await pretty(p, '.cartes__ligne'), 'cartes : text-wrap: pretty sur les lignes');
   const cartes = await photosImg(p, '.cartes__photo img');
   ok(cartes.map(i => i.cle).join(' ') === 'ateliers-118-05 the-bank-01 data-box-02 community-05', 'cartes : ' + cartes.map(i => i.cle).join(' · '));
-  ok(cartes[1].cle === 'the-bank-01' && cartes[1].focal === '50% 60%' && cartes.filter(i => i.focal).length === 1, `carte The Bank : la façade (the-bank-01), object-position ${cartes[1].focal} posé en style sur l'<img> (la fiche garde the-bank-03 en tête)`);
+  ok(cartes[1].cle === 'the-bank-01' && cartes[1].focal === '50% 60%' && cartes.filter(i => i.focal).length === 1, `carte The Bank : la façade (the-bank-01), object-position ${cartes[1].focal} posé en style sur l'<img> (la fiche la prend aussi en tête)`);
   verifierSrcset(cartes, 'cartes');
   ok(cartes.every(i => i.w === 544 && i.h === 363), `cartes : cadre 544 × 363 (${cartes.map(i => i.w + '×' + i.h).join(', ')})`);
   ok(cartes.every(i => i.echelle <= 1), `cartes à 1× : aucune photo agrandie (${cartes.map(i => `${i.cle} ${i.pixels} ×${i.echelle}`).join(', ')})`);
@@ -422,7 +443,7 @@ const galerieAttendue = donnees.filter(x => x.kind === 'gallery').sort((a, b) =>
   const hv = await p.evaluate(() => { const it = document.querySelector('.galerie__item:nth-child(2)'); return { voile: getComputedStyle(it.querySelector('.galerie__voile')).opacity, zoom: getComputedStyle(it.querySelector('img')).transform, lieuTop: it.querySelector('.galerie__lieu').getBoundingClientRect().bottom <= it.querySelector('.galerie__voile').getBoundingClientRect().bottom - 16 }; });
   ok(hv.voile === '1' && /^matrix\(1\.035, 0, 0, 1\.035/.test(hv.zoom) && hv.lieuTop, `galerie : au survol, lieu puis surface · usage sur deux lignes en surimpression, zoom 1,035 (${hv.zoom})`);
   const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '')).join(' · '));
-  ok(panneau === 'cadrage (sans effet) · carte (sans effet) · chapitres (sans effet)', 'panneau : ' + panneau);
+  ok(panneau === 'cadrage (sans effet) · carte (sans effet)', 'panneau : ' + panneau);
   await ctx.close();
 }
 {

@@ -26,7 +26,7 @@
   --c-trait:var(--or);--c-trait-fin:var(--or-clair);      /* trait de survol ; soulignement du mail */
   --c-remplissage:var(--anthracite);                      /* graphique : remplissage des barres */
   --c-point:var(--anthracite);                            /* carte : points */
-  --c-num-chapitre:var(--or);
+  --c-num-chapitre:var(--or-fonce);                       /* numéros de chapitre : or foncé (5,0:1 à 15 px ; l'or mat n'y fait que 4,0:1), revue de la fiche */
   --c-phi:var(--bronze);--c-wordmark:var(--anthracite);
   --c-deco:var(--or-deco);--c-deco-2:var(--or-deco-2);    /* élément de la bande (anneaux) : or */
   --surface:var(--papier);--surface-bande:var(--surface);--surface-carte:var(--sable);   /* bande : papier ; fond du pays (carte), détaché de --surface : sable, pour se lire malgré ses bords irréguliers */
@@ -34,8 +34,8 @@
   /* typographie */
   --serif:"Newsreader",Georgia,serif;--sans:"Instrument Sans",system-ui,sans-serif;   /* serif figée le 23/09 : Newsreader 400 partout (la seconde serif et la graisse 500 sont retirées) */
   /* titres de section : deux classes explicites, .h2--sans (--fs-h2) et .h2--serif (--fs-h2-serif) ;
-     titres de chapitre de la fiche (bascule 20) : serif --fs-chapitre-serif (défaut) ou sans medium --fs-chapitre */
-  --fs-accroche:52px;--fs-chiffre:58px;--fs-h2:28px;--fs-h2-serif:34px;--fs-chapitre-serif:32px;--fs-chapitre:26px;--fs-texte:17px;--fs-nav:15px;
+     titres de chapitre de la fiche : sans medium --fs-chapitre (bascule 20 figée sur « sans », revue de la fiche du 23/09) */
+  --fs-accroche:52px;--fs-chiffre:58px;--fs-h2:28px;--fs-h2-serif:34px;--fs-chapitre:26px;--fs-texte:17px;--fs-nav:15px;
   --fs-etiquette:13px;--fs-etiquette-chiffre:14px;--fs-signature:24px;--fs-chute:26px;--fs-nom:42px;--fs-ligne:16px;--fs-fait:28px;
   --fs-titre-page:64px;--fs-suivant:30px;--fs-agence:30px;--fs-carte-nom:32px;   /* fiche et vue Réalisations */
   /* mise en page */
@@ -158,22 +158,30 @@ ol,ul{list-style:none}
 .page__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-titre-page);line-height:1;letter-spacing:-.015em}
 .page__sous{font-size:var(--fs-ligne);color:var(--c-meta);margin-top:14px}
 .page__sous a{padding-bottom:1px}   /* vue Réalisations : les trois éléments du sous-titre sont des liens (trait) vers #projets, #agences, #galerie */
-/* fiche : photo hero à 520 px, puis la bande de trois faits — le composant de la bande des chiffres (surface papier, valeur en serif or, étiquette gris chaud) */
-.fiche__hero{height:520px;overflow:hidden}
-.fiche__hero img{width:100%;height:100%;object-fit:cover}
+/* fiche : photo hero (the-bank-01), puis la bande de trois faits — le composant de la bande des chiffres (surface papier, valeur en serif or, étiquette gris chaud).
+   Revue de la fiche (23/09) : au-dessus de 640 px, en-tête de page resserré (12 / 24 px, eyebrow à 8 px) et photo calée sur la fenêtre, pour que la bande
+   tienne sous la photo : 570 px à 1440 × 900 (bande jusqu'à ~892), 373 px à 1366 × 703 (bande jusqu'à ~695). Point focal en variables sur l'<img>
+   (--focal, --focal-mobile sous 640 px), déclaré dans `fiche` (build.mjs). */
+.fiche__hero{height:clamp(320px,calc(100vh - 330px),570px);overflow:hidden}
+.fiche__hero img{width:100%;height:100%;object-fit:cover;object-position:var(--focal)}
+@media (min-width:641px){
+  .fiche .page-head{padding-top:12px;padding-bottom:24px}
+  .fiche .page-head .eyebrow{margin-bottom:8px}
+}
 .faits-band{padding:28px 0 26px}
 .stats--faits{display:flex;flex-wrap:wrap}
 .stats--faits .stat{padding:4px 40px 4px 36px}
 .stats--faits .stat:first-child{padding-left:0}
 .stats--faits .stat__value{font-size:var(--fs-fait);line-height:1.1;white-space:nowrap}
 .stats--faits .stat__label{margin-top:6px;font-size:var(--fs-etiquette);max-width:none}
-/* chapitres en colonne de 760 px alignée à gauche ; les deux photos intercalées prennent la largeur du container (5 et 7 colonnes) */
+/* chapitres en colonne de 760 px alignée à gauche ; la paire de photos intercalée prend la largeur du container, en deux colonnes égales.
+   Rythme : 56 px entre chapitres, 64 px avant la paire (56 + 8) et après (le padding haut de .chapitres) */
 .chapitres{max-width:760px;padding-top:64px}
 .chapitre{margin-bottom:56px}
-.chapitre__num{font-family:var(--serif);font-size:15px;color:var(--c-num-chapitre);letter-spacing:.06em;margin-bottom:8px}
-.chapitre__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-chapitre-serif);line-height:1.15;letter-spacing:-.01em;margin-bottom:16px}
+.chapitre__num{font-family:var(--sans);font-size:15px;color:var(--c-num-chapitre);letter-spacing:.06em;margin-bottom:8px}
+.chapitre__titre{font-family:var(--sans);font-weight:500;font-size:var(--fs-chapitre);line-height:1.15;letter-spacing:-.01em;margin-bottom:16px}
 .chapitre__texte{max-width:62ch}
-.fiche__photos{display:grid;grid-template-columns:5fr 7fr;gap:24px;margin:8px 0 64px}
+.fiche__photos{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:0;padding-top:8px}   /* padding, pas margin : une marge de 8 px se replierait dans les 56 px du chapitre */
 .fiche__photos img{width:100%;height:440px;object-fit:cover}
 .fiche__photos figcaption{font-size:var(--fs-etiquette);color:var(--c-meta);margin-top:10px}
 .suivant{display:block;border-top:1px solid var(--filet);padding:24px 0 72px;margin-top:8px}
@@ -249,17 +257,18 @@ ol,ul{list-style:none}
   .footer__grid{grid-template-columns:1fr;gap:28px}
   .footer__legal{margin-top:4px}
   /* fiche et vue Réalisations : une colonne, tout affiché */
-  :root{--fs-titre-page:44px;--fs-chapitre-serif:26px;--fs-chapitre:22px;--fs-fait:22px;--fs-suivant:24px;--fs-agence:24px;--fs-carte-nom:28px}
+  :root{--fs-titre-page:44px;--fs-chapitre:22px;--fs-fait:22px;--fs-suivant:24px;--fs-agence:24px;--fs-carte-nom:28px}
   .page-head{padding-top:28px;padding-bottom:24px}
   .fiche__hero{height:300px}
+  .fiche__hero img{object-position:var(--focal-mobile)}
   .faits-band{padding:24px 0 22px}
   .stats--faits{display:grid;gap:18px 0}
   .stats--faits .stat{padding:0 12px 0 16px}
-  .stats--faits .stat:nth-child(3){padding-left:0}
+  .stats--faits .stat:nth-child(3){padding-left:0;grid-column:1/-1}   /* « Logements & commerce » sur une ligne, plus de case vide */
   .stats--faits .stat__value{white-space:normal}
   .chapitres{padding-top:40px}
   .chapitre{margin-bottom:40px}
-  .fiche__photos{grid-template-columns:1fr;margin-bottom:40px}
+  .fiche__photos{grid-template-columns:1fr}
   .fiche__photos img{height:300px}
   .suivant{padding-bottom:44px}
   .section--quatre{padding-top:24px}
@@ -278,15 +287,13 @@ ol,ul{list-style:none}
 }
 
 /* ---------- 6. Bascules ---------- */
-/* Home gelée le 23/09 : il ne reste que deux décisions reportées, 9c et 15a (2 serif et 17 graisse sont figées sur Newsreader 400) ; la fiche garde la 20. */
+/* Home gelée le 23/09 : il ne reste que deux décisions reportées, 9c et 15a (2 serif et 17 graisse sont figées sur Newsreader 400). */
 /* 9c · cadrage de Community 05, temporaire : centre (défaut, le point focal de photoCandidates, 50% 50%) / haut (50% 20%) ; « bas » retiré.
    !important parce que le point focal est posé en style sur l'<img> ; la valeur retenue remplacera celle de photoCandidates et la bascule disparaîtra */
 html[data-cadrage="haut"] .hero__photo img{object-position:50% 20% !important}
 /* 15a · carte : sable (défaut, pays rempli en --surface-carte) / papier-contour (fill papier + trait fin) */
 html[data-carte="papier-contour"] .carte__pays{fill:var(--papier);stroke:var(--trait-carte);stroke-width:1}
-/* 20 · fiche, titres de chapitre : serif (défaut, Newsreader 400, --fs-chapitre-serif 32 px) / sans (Instrument Sans medium, --fs-chapitre 26 px).
-   C'est la dernière question ouverte sur la portée de la serif. */
-html[data-chapitres="sans"] .chapitre__titre{font-family:var(--sans);font-weight:500;font-size:var(--fs-chapitre);letter-spacing:-.01em}
+/* 20 · fiche, titres de chapitre : figée sur « sans » (revue de la fiche, 23/09) : .chapitre__titre et .chapitre__num, plus haut. */
 /* 21 · vue Réalisations, les 4 projets : figée sur « cartes » le 23/09 (.cartes, plus haut) ; la liste des 4 n'est plus générée sur cette page. */
 
 /* ---------- 7. Mobile, premier écran ---------- */
