@@ -56,7 +56,7 @@ if (!agences || agences.startsWith('#')) throw new Error('content/realisations.m
 // Les quatre projets : une ligne chacun (mêmes lignes que la planche A), la photo de l'aperçu de la liste de la Home (img, cadre portrait 4:5) et la photo
 // de carte de la vue Réalisations (carte, cadre 3:2 — Ateliers 118 n'a que sa vue 05, en portrait, dans design/directions/img/ ; elle est recadrée).
 // Les deux sont des clés de photo : <clé>-s.jpg (800 px) et <clé>.jpg (1800 px) en srcset (photoImgPetit). Retours revue du 23/09 : la carte The Bank
-// montre la façade (the-bank-01), point focal 50% 60% posé en style sur l'<img> (carteFocal, comme photoCandidates) ; la fiche garde the-bank-03 en tête.
+// montre la façade (the-bank-01), point focal 50% 60% posé en style sur l'<img> (carteFocal, comme photoCandidates) ; la fiche la prend aussi en tête depuis la revue de la fiche.
 // The Bank pointe vers sa fiche, les trois autres vers leur ancre sur la vue Réalisations (l'id de leur carte).
 const four = [
   { id: 'ateliers-118', line: 'Molenbeek-Saint-Jean · 1 200 m² · Treize ateliers dans une ancienne usine de colle', img: 'ateliers-118-05', carte: 'ateliers-118-05', href: `${PAGE_REALISATIONS}#ateliers-118` },
@@ -67,14 +67,17 @@ const four = [
 // Le programme agences (kind agency, dans l'ordre) et la galerie (kind gallery, dans l'ordre) : data/projects.json.
 const agencesListe = projects.filter(p => p.kind === 'agency').sort((a, b) => a.order - b.order);
 const galerie = projects.filter(p => p.kind === 'gallery').sort((a, b) => a.order - b.order);
-// Fiche The Bank : la bande de trois faits (comme la planche A), les photos intercalées (01 portrait, 02 paysage) et leurs légendes, le projet suivant.
-// Les légendes ne sont pas dans data/projects.json (pas de captions pour the-bank) : elles décrivent la photo, sans rien ajouter, à confirmer au lot 3.
+// Fiche The Bank : la photo de tête et son point focal, la bande de trois faits (comme la planche A), la paire de photos intercalée et ses légendes, le projet suivant.
+// Revue de la fiche (23/09) : la façade (the-bank-01) passe en tête ; son point focal est posé en variables sur l'<img> (--focal au-dessus de 640 px :
+// le bas de l'image juste au-dessus de la voiture, de 1280 à 1920 px de large ; --focal-mobile à 390 : toute la façade), lues par .fiche__hero img.
+// La paire devient 02 (extérieur, à gauche) + 03 (intérieur, à droite), en deux colonnes égales.
+// Les légendes ne sont pas dans data/projects.json (pas de captions pour the-bank) : provisoires, à confirmer au lot 3.
 const bank = byId['the-bank'];
 const fiche = {
   projet: bank,
   faits: [['Localisation', 'Liège'], ['Surface', bank.surface], ['Usage', 'Logements & commerce']],
-  hero: 'the-bank-03',
-  photos: [{ key: 'the-bank-01', legende: 'La façade, rue des Mineurs', sizes: '(max-width:640px) 100vw, 460px' }, { key: 'the-bank-02', legende: 'Le point Bancontact', sizes: '(max-width:640px) 100vw, 660px' }],
+  hero: { key: 'the-bank-01', focal: '50% 44%', focalMobile: '50% 5%' },
+  photos: [{ key: 'the-bank-02', legende: 'Le point Bancontact, rue des Mineurs', sizes: '(max-width:640px) 100vw, 548px' }, { key: 'the-bank-03', legende: 'Le point Bancontact, l’intérieur', sizes: '(max-width:640px) 100vw, 548px' }],
   chapitres: [['Ce que c’était', bank.was], ['Ce que nous y avons vu', bank.saw], ['Ce que c’est devenu', bank.became]],
   suivant: { projet: byId['data-box'], href: `${PAGE_REALISATIONS}#data-box` },
 };
@@ -287,7 +290,7 @@ function footer() {
   return `<footer class="site-footer" id="contact"><div class="container footer__grid">
   <div class="footer__contact"><p class="footer__name">Julien De Dobbeleer</p><a class="footer__mail" href="mailto:${site.email}">${site.email}</a><p class="footer__addr">${site.name}, ${site.city}</p></div>
   <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="${PAGE_REALISATIONS}">${esc(REALISATIONS)}</a><a class="trait" href="index.html#collectif">Collectif</a><a class="trait" href="#">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
-  <blockquote class="footer__quote"><p>« ${site.quote.text} »</p><cite>${site.quote.author}</cite></blockquote>
+  <blockquote class="footer__quote"><p>«\u00A0${site.quote.text}\u00A0»</p><cite>${site.quote.author}</cite></blockquote>
   <p class="footer__legal">© 2026 ${site.name}</p>
 </div></footer>
 <script src="maquette.js" defer></script>
@@ -297,16 +300,16 @@ function footer() {
 }
 
 // ---------- fiche projet (The Bank) ----------
-// Brief §2 et §5 : lieu en eyebrow → titre 64 px → photo hero 520 px → bande de trois faits (même composant que la bande des chiffres de la Home :
-// surface papier, valeur en serif or, étiquette gris chaud) → chapitre 01 → deux photos (01 portrait sur 5 colonnes, 02 paysage sur 7, 440 px,
-// légendes) → chapitres 02 et 03, en colonne de 760 px alignée à gauche → projet suivant → pied de page.
-// Bascule 20 (maquette.css) : titres de chapitre en serif 32 px (défaut) ou en sans medium 26 px.
+// Brief §2 et §5 : lieu en eyebrow → titre 64 px → photo hero the-bank-01 (hauteur calée sur la fenêtre, point focal en variables) → bande de trois faits
+// (même composant que la bande des chiffres de la Home : surface papier, valeur en serif or, étiquette gris chaud) → chapitre 01 → deux photos (02 et 03,
+// colonnes égales, 440 px, légendes) → chapitres 02 et 03, en colonne de 760 px alignée à gauche → projet suivant → pied de page.
+// Titres de chapitre en sans medium (bascule 20 figée sur « sans », revue du 23/09).
 function fichePage() {
   const f = fiche;
   const chapitre = (i, [titre, texte]) => `<section class="chapitre"><p class="chapitre__num">0${i + 1}</p><h2 class="chapitre__titre">${esc(titre)}</h2><p class="chapitre__texte">${texte}</p></section>`;
   return `<article class="fiche">
 <div class="container page-head"><p class="eyebrow">${esc(f.projet.location)}</p><h1 class="page__titre">${esc(f.projet.name)}</h1></div>
-<div class="fiche__hero">${photoImg(f.hero, '100vw')}</div>
+<div class="fiche__hero">${photoImg(f.hero.key, '100vw', ` style="--focal:${f.hero.focal};--focal-mobile:${f.hero.focalMobile}"`)}</div>
 <section class="band faits-band" aria-label="En bref"><div class="container"><ol class="stats stats--faits">${f.faits.map(([l, v]) => `<li class="stat"><span class="stat__value">${esc(v)}</span><span class="stat__label">${esc(l)}</span></li>`).join('')}</ol></div></section>
 <div class="container">
   <div class="chapitres">${chapitre(0, f.chapitres[0])}</div>

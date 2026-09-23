@@ -15,12 +15,12 @@
   // 18 fond du pied de page (papier, sans filet), 15 réalisations (carte) ; 3 portée de la serif retirée (classes .h2--sans / .h2--serif).
   // Gel de la Home (23/09) : 2 serif (Newsreader) et 17 graisse (400) figées ; 9c réduite à centre / haut (« bas » retiré).
   // Sur la Home ne restent que deux décisions reportées : 9c cadrage (temporaire : la valeur retenue remplacera le point focal de community-05
-  // dans photoCandidates, build.mjs) et 15a carte. La fiche (23/09) porte la bascule 20 ; la 21 (vue Réalisations, liste / cartes) est figée sur
-  // « cartes » le 23/09 : les cartes sont écrites en dur avec leurs ancres, la liste des 4 n'est plus générée sur cette page.
+  // dans photoCandidates, build.mjs) et 15a carte. La 20 (fiche, titres de chapitre) est figée sur « sans »
+  // (revue de la fiche, 23/09) ; la 21 (vue Réalisations, liste / cartes) est figée sur « cartes » le 23/09 : les cartes sont écrites en dur avec leurs ancres,
+  // la liste des 4 n'est plus générée sur cette page.
   var BASCULES = [
     { n: '9c', cle: 'cadrage', titre: 'Cadrage de Community 05', groupe: 'Home', valeurs: [['centre', 'centre · 50% 50%'], ['haut', 'haut · 50% 20%']], note: 'décision reportée : la valeur retenue remplacera le point focal de photoCandidates (build.mjs)', pages: ['home'] },
-    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Home', valeurs: [['sable', 'sable'], ['papier-contour', 'papier, contour fin']], note: 'décision reportée : papier-contour ajoute le trait fin (--trait-carte)', pages: ['home'] },
-    { n: 20, cle: 'chapitres', titre: 'Titres de chapitre', groupe: 'Fiche', valeurs: [['serif', 'serif · Newsreader 32 px'], ['sans', 'sans · Instrument Sans medium 26 px']], note: 'la dernière question ouverte sur la portée de la serif', pages: ['fiche'] }
+    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Home', valeurs: [['sable', 'sable'], ['papier-contour', 'papier, contour fin']], note: 'décision reportée : papier-contour ajoute le trait fin (--trait-carte)', pages: ['home'] }
   ];
   var defauts = {};
   BASCULES.forEach(function (b) { defauts[b.cle] = b.valeurs[0][0]; });
