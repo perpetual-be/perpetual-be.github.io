@@ -1,12 +1,10 @@
-/* Perpetual — maquette du lot 2, direction A (blanc et or). Dosage figé le 22/09, premier écran (structure F) figé le 23/09.
+/* Perpetual — maquette du lot 2, direction A (blanc et or). Dosage figé le 22/09, premier écran (structure F) et Home gelés le 23/09.
    1. Polices locales  2. Jetons  3. Base  4. Composants  5. Mobile, écrans bas, mouvement réduit
    6. Bascules : un bloc par bascule, en fin de fichier ; uniquement des sélecteurs html[data-…]. */
 
 /* ---------- 1. Polices ---------- */
 @font-face{font-family:"Newsreader";font-style:normal;font-weight:200 800;src:url(fonts/newsreader-latin-opsz-normal.woff2) format("woff2-variations")}
 @font-face{font-family:"Newsreader";font-style:italic;font-weight:200 800;src:url(fonts/newsreader-latin-opsz-italic.woff2) format("woff2-variations")}
-@font-face{font-family:"Source Serif 4";font-style:normal;font-weight:200 900;src:url(fonts/source-serif-4-latin-opsz-normal.woff2) format("woff2-variations")}
-@font-face{font-family:"Source Serif 4";font-style:italic;font-weight:200 900;src:url(fonts/source-serif-4-latin-opsz-italic.woff2) format("woff2-variations")}
 @font-face{font-family:"Instrument Sans";font-style:normal;font-weight:400 700;src:url(fonts/instrument-sans-latin-wght-normal.woff2) format("woff2-variations")}
 @font-face{font-family:"Jost";font-style:normal;font-weight:100 900;src:url(fonts/jost-latin-wght-normal.woff2) format("woff2-variations")}
 
@@ -34,11 +32,12 @@
   --surface:var(--papier);--surface-bande:var(--surface);--surface-carte:var(--sable);   /* bande : papier ; fond du pays (carte), détaché de --surface : sable, pour se lire malgré ses bords irréguliers */
   --surface-piste:var(--sable);--surface-pied:var(--papier);                             /* graphique : piste en sable ; pied de page : papier, sans filet en haut (figé le 23/09) */
   /* typographie */
-  --serif:"Newsreader",Georgia,serif;--sans:"Instrument Sans",system-ui,sans-serif;
-  --poids-serif:400;
-  /* titres de section : deux classes explicites, .h2--sans (--fs-h2) et .h2--serif (--fs-h2-serif) ; --fs-chapitre (titres de chapitre de la fiche) reste à décider sur la fiche */
-  --fs-accroche:52px;--fs-chiffre:58px;--fs-h2:28px;--fs-h2-serif:34px;--fs-chapitre:26px;--fs-texte:17px;--fs-nav:15px;
+  --serif:"Newsreader",Georgia,serif;--sans:"Instrument Sans",system-ui,sans-serif;   /* serif figée le 23/09 : Newsreader 400 partout (la seconde serif et la graisse 500 sont retirées) */
+  /* titres de section : deux classes explicites, .h2--sans (--fs-h2) et .h2--serif (--fs-h2-serif) ;
+     titres de chapitre de la fiche (bascule 20) : serif --fs-chapitre-serif (défaut) ou sans medium --fs-chapitre */
+  --fs-accroche:52px;--fs-chiffre:58px;--fs-h2:28px;--fs-h2-serif:34px;--fs-chapitre-serif:32px;--fs-chapitre:26px;--fs-texte:17px;--fs-nav:15px;
   --fs-etiquette:13px;--fs-etiquette-chiffre:14px;--fs-signature:24px;--fs-chute:26px;--fs-nom:42px;--fs-ligne:16px;--fs-fait:28px;
+  --fs-titre-page:64px;--fs-suivant:30px;--fs-agence:30px;--fs-carte-nom:32px;   /* fiche et vue Réalisations */
   /* mise en page */
   --max:1200px;--gutter:40px;--bande-haut:44px;--bande-bas:40px;
   /* photo du premier écran : assez basse pour que la bande et ses quatre chiffres tiennent sous elle à 1440 × 900 et 1366 × 703
@@ -61,6 +60,7 @@ ol,ul{list-style:none}
 .h2--serif{font-family:var(--serif);font-weight:400;font-size:var(--fs-h2-serif)}   /* titre de la carte */
 .section{padding:72px 0}
 .section+.section{border-top:1px solid var(--filet)}
+.section--chart{padding-top:64px}   /* 64 px entre la fin des paragraphes de la Home et « 11 150 m² … » (gel du 23/09) */
 /* le trait qui glisse : l'effet de survol de tous les liens */
 .trait{position:relative}
 .trait::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--c-trait);transform:scaleX(0);transform-origin:left;transition:transform .25s}
@@ -77,16 +77,17 @@ ol,ul{list-style:none}
 .site-nav a{padding:6px 0;color:var(--c-texte)}
 
 /* premier écran (structure F, figée le 23/09) : la photo pleine largeur porte l'accroche en blanc, en haut à gauche du container ; la bande des
-   chiffres vient juste après la photo, puis les paragraphes en deux colonnes et la signature. La grille du hero passe en display:contents,
-   ses enfants (accroche, paragraphes, signature) se replacent dans une grille à une colonne avec la photo et la bande. */
+   chiffres vient juste après la photo, puis les paragraphes en deux colonnes — le premier à gauche, le second à droite avec la signature
+   dessous (gel du 23/09 : les deux colonnes s'équilibrent). La grille du hero passe en display:contents, ses enfants (accroche, texte)
+   se replacent dans une grille à une colonne avec la photo et la bande. */
 .hero{display:grid;grid-template-columns:minmax(0,1fr);padding:0}
 .hero__grid{display:contents}
-.hero__title{grid-area:1/1/2/2;position:relative;z-index:1;align-self:start;justify-self:center;width:100%;max-width:var(--max);padding:var(--photo-haut) var(--gutter) 0;font-family:var(--serif);font-weight:var(--poids-serif);font-size:var(--fs-accroche);line-height:1.08;letter-spacing:-.012em;text-wrap:balance;color:var(--photo-texte)}
+.hero__title{grid-area:1/1/2/2;position:relative;z-index:1;align-self:start;justify-self:center;width:100%;max-width:var(--max);padding:var(--photo-haut) var(--gutter) 0;font-family:var(--serif);font-weight:400;font-size:var(--fs-accroche);line-height:1.08;letter-spacing:-.012em;text-wrap:balance;color:var(--photo-texte)}
 .hero__title span{display:inline-block;max-width:24ch}
-.hero__text{grid-area:3/1/4/2;justify-self:center;width:100%;max-width:var(--max);margin:0;padding:56px var(--gutter) 0;columns:2;column-gap:56px}
-.hero__text p{margin-bottom:16px;max-width:none;break-inside:avoid}
-.hero__text p:last-child{margin-bottom:0}
-.signature{grid-area:4/1/5/2;justify-self:center;width:100%;max-width:var(--max);margin:0;padding:24px var(--gutter) 56px;font-family:var(--serif);font-style:italic;font-size:var(--fs-signature);line-height:1.3;color:var(--c-signature)}
+.hero__text{grid-area:3/1/4/2;justify-self:center;width:100%;max-width:var(--max);margin:0;padding:56px var(--gutter) 0;display:grid;grid-template-columns:1fr 1fr;column-gap:56px;align-items:start}
+.hero__text p{margin-bottom:16px;max-width:none}
+.hero__text>p,.hero__col p:last-child{margin-bottom:0}   /* le premier paragraphe est seul dans sa colonne : pas de marge sous lui */
+.signature{margin-top:8px;font-family:var(--serif);font-style:italic;font-size:var(--fs-signature);line-height:1.3;color:var(--c-signature)}
 .hero__photo{display:block;grid-area:1/1/2/2;position:relative;overflow:hidden;height:var(--photo-hauteur)}
 .hero__photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}   /* object-position : le point focal de la photo, posé par build.mjs (photoCandidates) */
 /* voile depuis le coin haut-gauche, celui de l'accroche, pas depuis tout le haut */
@@ -99,7 +100,7 @@ ol,ul{list-style:none}
 .stats{display:grid;grid-template-columns:repeat(4,1fr)}
 .stat{padding:4px 32px 4px 28px;border-left:1px solid var(--filet)}
 .stat:first-child{border-left:0;padding-left:0}
-.stat__value{display:block;font-family:var(--serif);font-weight:var(--poids-serif);font-size:var(--fs-chiffre);line-height:1;color:var(--c-chiffre);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.stat__value{display:block;font-family:var(--serif);font-weight:400;font-size:var(--fs-chiffre);line-height:1;color:var(--c-chiffre);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .stat__label{display:block;font-size:var(--fs-etiquette-chiffre);color:var(--c-etiquette-chiffre);margin-top:10px;max-width:22ch;line-height:1.4}
 .deco{position:absolute;inset:0;pointer-events:none}
 .deco__svg{display:block;position:absolute;top:0;right:0;height:100%;width:420px;color:var(--c-deco)}
@@ -150,9 +151,64 @@ ol,ul{list-style:none}
    Logos figés en couleur le 22/09 (bascule 14 retirée) */
 .partner__couleur{display:block;height:calc(var(--logo-h)*var(--logo-echelle));width:auto}
 
+/* fiche projet et vue Réalisations (23/09) : mêmes jetons et composants que la Home */
+.page-head{padding:40px 0 32px}
+.page-head .eyebrow{margin-bottom:14px}
+.page__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-titre-page);line-height:1;letter-spacing:-.015em}
+.page__sous{font-size:var(--fs-ligne);color:var(--c-meta);margin-top:14px}
+/* fiche : photo hero à 520 px, puis la bande de trois faits — le composant de la bande des chiffres (surface papier, valeur en serif or, étiquette gris chaud) */
+.fiche__hero{height:520px;overflow:hidden}
+.fiche__hero img{width:100%;height:100%;object-fit:cover}
+.faits-band{padding:28px 0 26px}
+.stats--faits{display:flex;flex-wrap:wrap}
+.stats--faits .stat{padding:4px 40px 4px 36px}
+.stats--faits .stat:first-child{padding-left:0}
+.stats--faits .stat__value{font-size:var(--fs-fait);line-height:1.1;white-space:nowrap}
+.stats--faits .stat__label{margin-top:6px;font-size:var(--fs-etiquette);max-width:none}
+/* chapitres en colonne de 760 px alignée à gauche ; les deux photos intercalées prennent la largeur du container (5 et 7 colonnes) */
+.chapitres{max-width:760px;padding-top:64px}
+.chapitre{margin-bottom:56px}
+.chapitre__num{font-family:var(--serif);font-size:15px;color:var(--c-num-chapitre);letter-spacing:.06em;margin-bottom:8px}
+.chapitre__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-chapitre-serif);line-height:1.15;letter-spacing:-.01em;margin-bottom:16px}
+.chapitre__texte{max-width:62ch}
+.fiche__photos{display:grid;grid-template-columns:5fr 7fr;gap:24px;margin:8px 0 64px}
+.fiche__photos img{width:100%;height:440px;object-fit:cover}
+.fiche__photos figcaption{font-size:var(--fs-etiquette);color:var(--c-meta);margin-top:10px}
+.suivant{display:block;border-top:1px solid var(--filet);padding:24px 0 72px;margin-top:8px}
+.suivant .eyebrow{display:block;margin-bottom:6px}
+.suivant__nom{display:inline-block;font-family:var(--serif);font-size:var(--fs-suivant);line-height:1.2;color:var(--c-lien);padding-bottom:2px}
+/* vue Réalisations : les 4 projets — la liste de la Home (défaut) ou quatre cartes photo 3:2 (bascule 21) */
+.section--quatre{padding-top:48px}
+.cartes{display:none;grid-template-columns:1fr 1fr;gap:44px 32px}
+.cartes__item a{display:block}
+.cartes__photo{display:block;aspect-ratio:3/2;overflow:hidden;background:var(--surface)}
+.cartes__photo img{width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
+.cartes__item a:hover img{transform:scale(var(--zoom))}
+.cartes__nom{display:inline-block;position:relative;font-family:var(--serif);font-size:var(--fs-carte-nom);line-height:1.1;letter-spacing:-.01em;margin-top:18px;padding-bottom:3px}
+.cartes__nom::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--c-trait);transform:scaleX(0);transform-origin:left;transition:transform .25s}
+.cartes__item a:hover .cartes__nom::after{transform:scaleX(1)}
+.cartes__ligne{display:block;font-size:var(--fs-ligne);color:var(--c-meta);margin-top:6px}
+/* programme agences : l'intro, puis les quatre exemples en liste typographique */
+.agences{display:grid;grid-template-columns:5fr 7fr;gap:64px;align-items:start}
+.agences__intro{max-width:46ch}
+.agences__liste li{border-top:1px solid var(--filet);padding:18px 0 20px}
+.agences__liste li:last-child{border-bottom:1px solid var(--filet)}
+.agence__nom{display:block;font-family:var(--serif);font-size:var(--fs-agence);line-height:1.1;letter-spacing:-.01em}
+.agence__ligne{display:block;font-size:var(--fs-ligne);color:var(--c-meta);margin-top:6px}
+/* galerie : grille 3 colonnes, photos 3:2, nom sous la photo, surface · usage en surimpression au survol, zoom 1,035 */
+.galerie{display:grid;grid-template-columns:repeat(3,1fr);gap:40px 32px}
+.galerie__photo{display:block;position:relative;aspect-ratio:3/2;overflow:hidden;background:var(--surface)}
+.galerie__photo img{width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
+.galerie__item:hover .galerie__photo img{transform:scale(var(--zoom))}
+.galerie__voile{position:absolute;left:0;right:0;bottom:0;padding:44px 20px 16px;color:var(--photo-texte);font-size:14px;line-height:1.4;background:linear-gradient(to top,var(--voile-moyen),transparent);opacity:0;transition:opacity .25s}
+.galerie__item:hover .galerie__voile{opacity:1}
+.galerie__nom{display:block;font-size:16px;font-weight:500;margin-top:12px}
+.galerie__meta{display:none;font-size:14px;color:var(--c-meta);margin-top:2px}
+
 /* pied de page */
-.site-footer{padding:56px 0 40px;font-size:15px;background:var(--surface-pied)}
-.footer__grid{display:grid;grid-template-columns:4fr 3fr 5fr;gap:48px;align-items:start}
+/* resserré le 23/09 : 48 px en haut, 32 px entre la dernière ligne des colonnes et le filet du bas (le gap vertical de la grille, sans marge sur le bloc légal) */
+.site-footer{padding:48px 0 40px;font-size:15px;background:var(--surface-pied)}
+.footer__grid{display:grid;grid-template-columns:4fr 3fr 5fr;gap:32px 48px;align-items:start}
 .footer__name{font-weight:500}
 .footer__mail{display:inline-block;color:var(--c-mail);border-bottom:1px solid var(--c-trait-fin);margin:4px 0}
 .footer__addr{color:var(--c-meta)}
@@ -160,7 +216,7 @@ ol,ul{list-style:none}
 .footer__nav a{padding-bottom:1px}
 .footer__quote p{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1.35;color:var(--c-texte)}
 .footer__quote cite{display:block;font-style:normal;font-size:var(--fs-etiquette);color:var(--c-meta);margin-top:10px}
-.footer__legal{grid-column:1/-1;font-size:12px;color:var(--c-meta);margin-top:24px;padding-top:20px;border-top:1px solid var(--filet)}
+.footer__legal{grid-column:1/-1;font-size:12px;color:var(--c-meta);padding-top:20px;border-top:1px solid var(--filet)}
 
 /* ---------- 5. Mobile, écrans bas, mouvement réduit ---------- */
 @media (max-width:640px){
@@ -184,26 +240,49 @@ ol,ul{list-style:none}
   .carte__lab:not([data-rang="1"]){opacity:0}
   .partners{gap:22px 28px}
   .footer__grid{grid-template-columns:1fr;gap:28px}
+  .footer__legal{margin-top:4px}
+  /* fiche et vue Réalisations : une colonne, tout affiché */
+  :root{--fs-titre-page:44px;--fs-chapitre-serif:26px;--fs-chapitre:22px;--fs-fait:22px;--fs-suivant:24px;--fs-agence:24px;--fs-carte-nom:28px}
+  .page-head{padding:28px 0 24px}
+  .fiche__hero{height:300px}
+  .faits-band{padding:24px 0 22px}
+  .stats--faits{display:grid;gap:18px 0}
+  .stats--faits .stat{padding:0 12px 0 16px}
+  .stats--faits .stat:nth-child(3){padding-left:0}
+  .stats--faits .stat__value{white-space:normal}
+  .chapitres{padding-top:40px}
+  .chapitre{margin-bottom:40px}
+  .fiche__photos{grid-template-columns:1fr;margin-bottom:40px}
+  .fiche__photos img{height:300px}
+  .suivant{padding-bottom:44px}
+  .section--quatre{padding-top:24px}
+  .cartes{grid-template-columns:1fr;gap:32px}
+  .agences{grid-template-columns:1fr;gap:28px}
+  .galerie{grid-template-columns:1fr;gap:28px}
+  .galerie__voile{display:none}
+  .galerie__meta{display:block}
 }
 /* fenêtre basse (portable 1366 × 768 avec les barres du navigateur) : la bande et ses chiffres tiennent dans 703 px */
 @media (max-height:720px) and (min-width:641px){
   :root{--bande-haut:36px;--bande-bas:32px}
 }
 @media (prefers-reduced-motion:reduce){
-  .trait::after,.four__name::after,.four__preview img,.carte__lab{transition:none}
+  .trait::after,.four__name::after,.four__preview img,.carte__lab,.cartes__nom::after,.cartes__photo img,.galerie__photo img,.galerie__voile{transition:none}
 }
 
 /* ---------- 6. Bascules ---------- */
-/* 02 · serif : newsreader (défaut) / source-serif */
-html[data-serif="source-serif"]{--serif:"Source Serif 4",Georgia,serif}
-/* 17 · graisse de la serif sur l'accroche et les chiffres clés : 400 (défaut) / 500 */
-html[data-graisse="500"]{--poids-serif:500}
-/* 9c · cadrage de Community 05, temporaire : centre (défaut, le point focal de photoCandidates, 50% 50%) / haut / bas.
+/* Home gelée le 23/09 : il ne reste que deux décisions reportées, 9c et 15a (2 serif et 17 graisse sont figées sur Newsreader 400). */
+/* 9c · cadrage de Community 05, temporaire : centre (défaut, le point focal de photoCandidates, 50% 50%) / haut (50% 20%) ; « bas » retiré.
    !important parce que le point focal est posé en style sur l'<img> ; la valeur retenue remplacera celle de photoCandidates et la bascule disparaîtra */
 html[data-cadrage="haut"] .hero__photo img{object-position:50% 20% !important}
-html[data-cadrage="bas"] .hero__photo img{object-position:50% 75% !important}
 /* 15a · carte : sable (défaut, pays rempli en --surface-carte) / papier-contour (fill papier + trait fin) */
 html[data-carte="papier-contour"] .carte__pays{fill:var(--papier);stroke:var(--trait-carte);stroke-width:1}
+/* 20 · fiche, titres de chapitre : serif (défaut, Newsreader 400, --fs-chapitre-serif 32 px) / sans (Instrument Sans medium, --fs-chapitre 26 px).
+   C'est la dernière question ouverte sur la portée de la serif. */
+html[data-chapitres="sans"] .chapitre__titre{font-family:var(--sans);font-weight:500;font-size:var(--fs-chapitre);letter-spacing:-.01em}
+/* 21 · vue Réalisations, les 4 projets : liste (défaut, la même que sur la Home) / cartes (quatre cartes photo 3:2, nom et ligne sous la photo) */
+html[data-quatre="cartes"] .section--quatre .four{display:none}
+html[data-quatre="cartes"] .cartes{display:grid}
 
 /* ---------- 7. Mobile, premier écran ---------- */
 @media (max-width:640px){
@@ -211,6 +290,7 @@ html[data-carte="papier-contour"] .carte__pays{fill:var(--papier);stroke:var(--t
   .hero__photo{height:420px}
   .hero__photo::after{background:linear-gradient(to top,var(--voile-fort) 0%,var(--voile-moyen) 45%,transparent 85%)}
   .hero__title{align-self:end;padding:0 var(--gutter) 28px}
-  .hero__text{columns:1;padding-top:36px}
-  .signature{padding:20px var(--gutter) 40px}
+  .hero__text{grid-template-columns:1fr;padding-top:36px}
+  .hero__text>p{margin-bottom:16px}
+  .signature{margin-top:4px}
 }

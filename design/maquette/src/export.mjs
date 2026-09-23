@@ -2,8 +2,8 @@
 // Usage, depuis la racine du dépôt :
 //   NODE_PATH=$(npm root -g) node design/maquette/src/export.mjs [options]
 // Options :
-//   --etat "cadrage=haut&serif=source-serif" la combinaison à capturer (défaut : la combinaison retenue)
-//   --pages index,projet-the-bank,projets    (défaut : les pages présentes dans design/maquette/)
+//   --etat "cadrage=haut&carte=papier-contour" la combinaison à capturer (défaut : la combinaison retenue)
+//   --pages index,projet-the-bank,realisations (défaut : les pages présentes dans design/maquette/)
 //   --formats 1440,1366,390                  (défaut : 1440,390) — 1440 × 900, 1366 × 703, 390 × 844
 //   --out <dossier>                          (défaut : design/maquette/export/)
 //   --echelle 2                              facteur de pixels (défaut 2)
@@ -22,7 +22,7 @@ const FORMATS = { 1440: [1440, 900], 1366: [1366, 703], 390: [390, 844] };
 const args = process.argv.slice(2);
 const opt = (name, def) => { const i = args.indexOf('--' + name); return i !== -1 && args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : def; };
 const etat = opt('etat', '');
-const pages = opt('pages', ['index', 'projet-the-bank', 'projets'].filter(p => fs.existsSync(path.join(MAQ, p + '.html'))).join(',')).split(',');
+const pages = opt('pages', ['index', 'projet-the-bank', 'realisations'].filter(p => fs.existsSync(path.join(MAQ, p + '.html'))).join(',')).split(',');
 const formats = opt('formats', '1440,390').split(',');
 const out = path.resolve(opt('out', path.join(MAQ, 'export')));
 const echelle = Number(opt('echelle', '2'));
