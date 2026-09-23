@@ -1,0 +1,56 @@
+name: Fusion automatique des PR
+
+# Fusionne automatiquement toute PR ouverte depuis une branche de ce dépôt,
+# une fois que le site se construit sans erreur.
+# Pour garder une PR ouverte, ajouter l'étiquette « no-auto-merge ».
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review, unlabeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  merge:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Vérifier que le site se construit
+        run: |
+          npm ci
+          npm run build
+
+      - name: Fusionner la PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          if [ "$(gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json isDraft -q .isDraft)" = "true" ]; then
+            gh pr ready "$PR" --repo "$GITHUB_REPOSITORY"
+          fi
+          gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --merge --delete-branch
+
+      # Une fusion faite avec le jeton GITHUB_TOKEN ne déclenche pas le
+      # workflow de déploiement (push sur main) : on le lance explicitement.
+      - name: Lancer le déploiement
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
