@@ -50,12 +50,6 @@ const collectif = { paragraphs: collectifBlocks.slice(0, -1), chute: collectifBl
 const realisationsBlocks = blocks(frontmatter(read('content/realisations.md')).body);
 const agences = realisationsBlocks[realisationsBlocks.indexOf('## Le programme agences') + 1];
 if (!agences || agences.startsWith('#')) throw new Error('content/realisations.md : paragraphe du programme agences introuvable');
-// Bande des réalisations : une vignette par agence du programme (kind: agency) et par bien de la galerie (kind: gallery),
-// photo <id>-01-s.jpg (800 px, design/directions/src/reduire-photos.mjs --petit), ville = dernier segment de l'adresse après
-// la virgule, code postal retiré (→ « Bruxelles » pour wayez-27 et consolation).
-const ville = p => p.address.split(',').pop().trim().replace(/^\d{4}\s+/, '');
-const vignettes = projects.filter(p => p.kind === 'agency' || p.kind === 'gallery').map(p => ({ id: p.id, ville: ville(p), img: `${p.id}-01-s.jpg` }));
-for (const v of vignettes) if (!fs.existsSync(path.join(REPO, 'design/directions/img', v.img))) console.warn('vignette absente :', v.img);
 
 // Les quatre projets de la Home : une ligne chacun (mêmes lignes que la planche A), aperçu photo.
 const four = [
@@ -65,7 +59,7 @@ const four = [
   { id: 'community', line: 'Uccle · 14 unités · Quatorze unités autour d’espaces partagés', img: 'community-05-s.jpg', href: 'projets.html#community' },
 ];
 
-// Structure E (bascule 9 sur « photo ») : les photos candidates de la bascule 9b, en 1800 px (<nom>.jpg) puis 2800 px (<nom>-l.jpg) pour les grands écrans ;
+// Premier écran (structure F, figée le 23/09) : la photo, en 1800 px (<nom>.jpg) puis 2800 px (<nom>-l.jpg) pour les grands écrans ;
 // le srcset porte la largeur réelle de chaque fichier, lue dans l'en-tête JPEG. Les versions se génèrent depuis l'original avec
 // design/directions/src/reduire-photos.mjs --grand --tres-grand ; tant qu'elles manquent, la page se replie sur <nom>-s.jpg (800 px).
 function jpegWidth(file) {
@@ -80,17 +74,16 @@ function jpegWidth(file) {
   }
   return null;
 }
-// Chaque photo déclare son point focal (object-position, posé en style sur l'<img>, vaut aussi sur téléphone) et le côté de l'accroche
-// quand la bascule 9d est sur « auto » (gauche / droite ; build.mjs en tire les règles de la balise <style> du premier écran).
-// La première entrée est le défaut de la bascule 9b. Ne jamais retourner une photo en miroir : on déplace l'accroche, pas l'image.
+// La photo déclare son point focal (object-position, posé en style sur l'<img>, vaut aussi sur téléphone). Figée le 23/09 sur Community 05,
+// accroche à gauche (bascules 9b et 9d retirées ; data-box-03 reste dans design/directions/img/). Le cadrage de Community 05 se choisit
+// avec la bascule temporaire 9c (maquette.css) : la valeur retenue remplacera ce focal, et la bascule disparaîtra.
 const photoCandidates = [
-  { key: 'data-box-03', focal: '50% 18%', accroche: 'gauche', files: ['data-box-03.jpg', 'data-box-03-l.jpg'] },   // la forêt à gauche
-  { key: 'community-05', focal: '50% 50%', accroche: 'droite', files: ['community-05.jpg', 'community-05-l.jpg'] }, // le bardage noir à droite
+  { key: 'community-05', focal: '50% 50%', files: ['community-05.jpg', 'community-05-l.jpg'] },
 ].map(c => {
   const chemin = f => path.join(REPO, 'design/directions/img', f);
   const sources = c.files.filter(f => fs.existsSync(chemin(f)) || (console.warn('photo absente :', f), false)).map(f => ({ file: f, width: jpegWidth(chemin(f)) }));
   if (!sources.length) { console.warn(`${c.key} : repli sur ${c.key}-s.jpg (800 px)`); sources.push({ file: `${c.key}-s.jpg`, width: jpegWidth(chemin(`${c.key}-s.jpg`)) }); }
-  return { key: c.key, focal: c.focal, accroche: c.accroche, sources };
+  return { key: c.key, focal: c.focal, sources };
 });
 
 // ---------- logos ----------
@@ -122,7 +115,7 @@ function head(title) {
 <title>${esc(title.text)}</title>
 ${stateScript}
 <link rel="stylesheet" href="maquette.css">
-${title.page === 'home' ? accrocheAuto() + '\n' : ''}<link rel="icon" href="../../public/favicon.svg">
+<link rel="icon" href="../../public/favicon.svg">
 </head>
 <body>
 ${phiSymbol}`;
@@ -138,30 +131,15 @@ function header(active = '') {
 
 const statsList = () => `<ol class="stats">${stats.map(s => `<li class="stat"><span class="stat__value">${esc(s.value)}</span><span class="stat__label">${esc(s.label)}</span></li>`).join('')}</ol>`;
 
+// Élément de la bande : les anneaux, figés le 23/09 (les deux arcs et « rien » sont retirés).
 function deco() {
-  const arcL = 'M 0 200 A 520 520 0 0 1 180 0', arcR = 'M 420 20 A 520 520 0 0 1 240 220';
   return `<div class="deco" aria-hidden="true">
-    <svg class="deco__svg deco__l deco--arcs" viewBox="0 0 420 220" preserveAspectRatio="xMinYMid slice"><path d="${arcL}" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>
-    <svg class="deco__svg deco__r deco--arcs" viewBox="0 0 420 220" preserveAspectRatio="xMaxYMid slice"><path d="${arcR}" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>
-    <svg class="deco__svg deco__r deco--anneaux" viewBox="0 0 420 220" preserveAspectRatio="xMaxYMid meet"><circle cx="270" cy="110" r="110" fill="none" stroke="currentColor" stroke-width="1"/><circle class="deco__2" cx="270" cy="110" r="150" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+    <svg class="deco__svg deco--anneaux" viewBox="0 0 420 220" preserveAspectRatio="xMaxYMid meet"><circle cx="270" cy="110" r="110" fill="none" stroke="currentColor" stroke-width="1"/><circle class="deco__2" cx="270" cy="110" r="150" fill="none" stroke="currentColor" stroke-width="1"/></svg>
   </div>`;
 }
 
-// Premier écran : structure E (bascule 9, défaut), structure colonnes (?ecran=colonnes) ou structure F (?ecran=photo-bande) — même HTML, le CSS replace
-// les enfants de .hero (display:contents sur .hero__grid, sauf en colonnes) et montre .hero__photo (masqué en structure colonnes : ses images en
-// chargement paresseux n'y sont pas demandées). La bande des chiffres est un enfant de .hero, après le bloc titre/texte/signature : en colonnes et
-// en structure E elle suit son ordre naturel (après les paragraphes) ; en structure F, le CSS la remonte juste après la photo, avant les paragraphes.
-// Bascule 9d sur « auto » (sans attribut data-accroche) : le côté de l'accroche suit la photo affichée, tel que photoCandidates le déclare.
-// Les deux côtés sont décrits par des variables dans maquette.css (--accroche-align, --voile-coin) ; ici, seulement l'aiguillage photo → côté.
-const COTES = { gauche: '--accroche-align:left;--voile-coin:0 0', droite: '--accroche-align:right;--voile-coin:100% 0' };
-function accrocheAuto() {
-  const sel = (c, i) => `html:not([data-accroche])${i === 0 ? `:is(:not([data-photo]),[data-photo="${c.key}"])` : `[data-photo="${c.key}"]`}`;
-  return `<style>/* 9d · accroche « auto » : côté déclaré par photo dans photoCandidates (build.mjs) */\n${photoCandidates.map((c, i) => {
-    if (!COTES[c.accroche]) throw new Error(`${c.key} : côté d'accroche inconnu « ${c.accroche} »`);
-    return `${sel(c, i)}{${COTES[c.accroche]}}`;
-  }).join('\n')}</style>`;
-}
-
+// Premier écran, structure F (figée le 23/09 ; structures E et colonnes retirées) : même HTML qu'avant, le CSS replace les enfants de .hero
+// (display:contents sur .hero__grid) et remonte la bande des chiffres juste après la photo, avant les paragraphes et la signature.
 function lead() {
   return `<section class="hero">
 <div class="hero__photo" aria-hidden="true">
@@ -178,7 +156,7 @@ function lead() {
 
 function chart() {
   return `<section class="section section--chart"><div class="container">
-  <h2 class="h2">${esc(portfolio.title)}</h2>
+  <h2 class="h2 h2--sans">${esc(portfolio.title)}</h2>
   <div class="bars">${portfolio.items.map(i => `<div class="bar"><span class="bar__label">${esc(i.label)}</span><span class="bar__track"><span class="bar__fill" style="width:${i.percent}%"></span></span><span class="bar__value">${i.percent} %</span></div>`).join('')}</div>
 </div></section>`;
 }
@@ -220,25 +198,19 @@ function carteSvg() {
   return `${ouverture}\n${pays}\n${lieux.join('\n')}\n</svg>`;
 }
 
-// Section Réalisations (bascule 15) : la carte (défaut) avec le texte à droite, ou la bande de vignettes qui défile ;
-// les deux sont dans la page, le CSS montre l'une ou l'autre. Indépendante de la bascule 11.
+// Section Réalisations : la carte, avec le texte à droite (figée le 23/09 ; la bande de vignettes et « aucune » sont retirées).
 function autres() {
-  const item = v => `<li class="bande__item"><img src="${IMG}/${v.img}" alt="" loading="lazy" decoding="async"><span class="bande__ville">${esc(v.ville)}</span></li>`;
   return `<section class="section section--autres" id="realisations">
 <div class="container">
   <p class="eyebrow">Réalisations</p>
-  <a class="autres__tous trait" href="projets.html">Toutes les réalisations →</a>
   <div class="carte">
     <div class="carte__fig">${carteSvg()}</div>
     <div class="carte__texte">
-      <h2 class="h2">Vingt adresses, de Haaltert à Welkenraedt.</h2>
+      <h2 class="h2 h2--serif">Vingt adresses, de Haaltert à Welkenraedt.</h2>
       <p>${agences}</p>
       <a class="autres__lien trait" href="projets.html">Toutes les réalisations →</a>
     </div>
   </div>
-</div>
-<div class="bande" aria-label="Seize réalisations en photo">
-  <ul class="bande__piste">${vignettes.map(item).join('')}${vignettes.map(v => item(v).replace('<li class="bande__item">', '<li class="bande__item" aria-hidden="true">')).join('')}</ul>
 </div>
 </section>`;
 }

@@ -1,5 +1,5 @@
 /* Perpetual — maquette du lot 2 : le panneau de bascules, l'état dans l'URL, l'aperçu de la liste des projets.
-   L'état (une valeur par bascule) vit dans la query de l'URL (?ecran=photo&serif=source-serif) ; le hash reste aux ancres.
+   L'état (une valeur par bascule) vit dans la query de l'URL (?cadrage=haut&serif=source-serif) ; le hash reste aux ancres.
    Un script en tête de page pose déjà les attributs data-* avant le premier rendu ; ici on dessine le panneau et on tient l'URL à jour. */
 (function () {
   'use strict';
@@ -11,18 +11,14 @@
   // 5 wordmark (Jost 400, 0,18 em), 6 Φ (bronze), 7 dosage de l'or et 8 surface de la bande (remplacées par le dosage fixe), 11 section projets (liste des 4),
   // 12 roue et 13 anneau (abandonnées), 19 étiquettes des chiffres (gris chaud), 16a position de la signature (malentendu, retiré) ;
   // 15b villes et 15c contour de la carte pleine sont retirés (villes figées sur « toutes », 15c absorbé par 15a) ; 14 logos partenaires (couleur).
+  // Figées le 23/09 : 9 premier écran (structure F), 9b photo (Community 05), 9d accroche (gauche), 10 élément de la bande (anneaux), 16 signature (or),
+  // 18 fond du pied de page (papier, sans filet), 15 réalisations (carte) ; 3 portée de la serif retirée (classes .h2--sans / .h2--serif).
+  // 9c cadrage est temporaire : la valeur retenue remplacera le point focal de community-05 dans photoCandidates (build.mjs).
   var BASCULES = [
     { n: 2, cle: 'serif', titre: 'Serif', groupe: 'Typographie', valeurs: [['newsreader', 'Newsreader'], ['source-serif', 'Source Serif 4']] },
-    { n: 3, cle: 'portee', titre: 'Portée de la serif', groupe: 'Typographie', valeurs: [['rationnee', 'rationnée'], ['partout', 'partout']], note: 'rationnée : titres de section et de chapitre en sans medium' },
     { n: 17, cle: 'graisse', titre: 'Graisse de la serif', groupe: 'Typographie', valeurs: [['400', '400'], ['500', '500']], note: 'accroche et chiffres clés' },
-    { n: 9, cle: 'ecran', titre: 'Premier écran', groupe: 'Premier écran', valeurs: [['photo', 'photo · structure E'], ['colonnes', 'colonnes'], ['photo-bande', 'photo-bande · structure F']], note: 'les quatre chiffres restent dans la bande', pages: ['home'] },
-    { n: '9b', cle: 'photo', titre: 'Photo', groupe: 'Premier écran', parent: { cle: 'ecran', vals: ['photo', 'photo-bande'] }, valeurs: [['data-box-03', 'Data Box 03 · drone'], ['community-05', 'Community 05']], note: 'point focal déclaré par photo dans build.mjs (photoCandidates)', pages: ['home'] },
-    { n: '9d', cle: 'accroche', titre: 'Accroche', groupe: 'Premier écran', parent: { cle: 'ecran', vals: ['photo', 'photo-bande'] }, valeurs: [['auto', 'auto · suit la photo'], ['gauche', 'gauche'], ['droite', 'droite']], note: 'auto : le côté déclaré pour chaque photo dans build.mjs (photoCandidates) ; téléphone inchangé', pages: ['home'] },
-    { n: 10, cle: 'deco', titre: 'Élément de la bande', groupe: 'Or', valeurs: [['arcs', '1a · deux arcs'], ['anneaux', '6 · anneaux'], ['0', 'rien']], pages: ['home'] },
-    { n: 16, cle: 'signature', titre: 'Signature', groupe: 'Or', valeurs: [['or', 'or'], ['anthracite', 'anthracite']], note: 'or = or foncé #8A6B2F, comme les liens', pages: ['home'] },
-    { n: 15, cle: 'autres', titre: 'Réalisations', groupe: 'Réalisations', valeurs: [['carte', 'carte'], ['bande', 'bande'], ['aucune', 'aucune']], pages: ['home'] },
-    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Réalisations', parent: { cle: 'autres', vals: ['carte'] }, valeurs: [['sable', 'sable'], ['pierre', 'pierre'], ['papier-contour', 'papier, contour fin'], ['trait', 'trait']], note: 'sable, pierre : remplissage seul ; papier-contour et trait ajoutent le trait fin (--trait-carte)', pages: ['home'] },
-    { n: 18, cle: 'pied', titre: 'Fond du pied de page', groupe: 'Pied de page', valeurs: [['blanc', 'blanc'], ['papier', 'papier'], ['sable', 'sable']], pages: ['home'] }
+    { n: '9c', cle: 'cadrage', titre: 'Cadrage de Community 05', groupe: 'Premier écran', valeurs: [['centre', 'centre · 50% 50%'], ['haut', 'haut · 50% 20%'], ['bas', 'bas · 50% 75%']], note: 'temporaire : la valeur retenue remplacera le point focal de photoCandidates (build.mjs)', pages: ['home'] },
+    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Réalisations', valeurs: [['sable', 'sable'], ['papier-contour', 'papier, contour fin']], note: 'papier-contour ajoute le trait fin (--trait-carte)', pages: ['home'] }
   ];
   var defauts = {};
   BASCULES.forEach(function (b) { defauts[b.cle] = b.valeurs[0][0]; });
@@ -59,24 +55,7 @@
     });
     var qs = q + (presentation() ? (q ? '&' : '') + 'panneau=off' : '');
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
-    ajusterAccroche();
   }
-
-  // ---- accroche à droite sur la photo (bascule 9d) : text-wrap:balance raccourcit les lignes sans rétrécir la boîte (24ch), qui touche le bord
-  // droit du container alors que le texte s'arrête bien avant ; on ramène la boîte à sa plus longue ligne pour que le texte, aligné à gauche,
-  // arrive au bord. À gauche (et sur téléphone, en colonnes), rien ne change : la largeur posée est retirée.
-  function ajusterAccroche() {
-    var titre = document.querySelector('.hero__title'), s = titre && titre.querySelector('span');
-    if (!s) return;
-    s.style.width = '';
-    if (getComputedStyle(titre).textAlign !== 'right') return;
-    var r = document.createRange(), w = 0;
-    r.selectNodeContents(s);
-    Array.prototype.forEach.call(r.getClientRects(), function (x) { w = Math.max(w, x.width); });
-    if (w) s.style.width = Math.ceil(w) + 1 + 'px';
-  }
-  window.addEventListener('resize', ajusterAccroche);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajusterAccroche);
 
   // ---- panneau ----
   var CSS = '.mq{position:fixed;right:16px;bottom:16px;z-index:1000;width:324px;max-height:min(80vh,calc(100vh - 32px));display:flex;flex-direction:column;background:#fff;color:#26231F;border:1px solid #26231F;font:12px/1.45 system-ui,sans-serif}' +
