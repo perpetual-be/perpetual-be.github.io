@@ -1,7 +1,8 @@
 // Vérifications de la maquette (Playwright + Chromium) : premier écran (structure F), débordement, effet de chaque bascule,
 // valeurs figées et alignement (gel de la Home du 23/09 : signature, espacements, pied de page), en-tête (Φ, wordmark), carte des réalisations,
-// logos partenaires, photo 2800 px, mode présentation, page sans JavaScript, polices, contrastes.
-// Usage, depuis la racine du dépôt : NODE_PATH=$(npm root -g) node design/maquette/src/check.mjs [--page index]
+// logos partenaires, photo 2800 px, mode présentation, page sans JavaScript, polices, contrastes ; puis la fiche The Bank et la vue Réalisations
+// (débordement horizontal, polices, premier écran, bascules 20 et 21, ancres, galerie).
+// Usage, depuis la racine du dépôt : NODE_PATH=$(npm root -g) node design/maquette/src/check.mjs
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -10,8 +11,7 @@ import { createRequire } from 'node:module';
 const { chromium } = createRequire(import.meta.url)('playwright');
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MAQ = path.resolve(HERE, '..');
-const PAGE = (() => { const i = process.argv.indexOf('--page'); return i !== -1 ? process.argv[i + 1] : 'index'; })();
-const URL = 'file://' + path.join(MAQ, PAGE + '.html');
+const URL = page => 'file://' + path.join(MAQ, page + '.html');
 let ko = 0;
 const ok = (cond, msg) => { console.log((cond ? '  ok  ' : '  KO  ') + msg); if (!cond) ko++; };
 
@@ -19,10 +19,10 @@ const ok = (cond, msg) => { console.log((cond ? '  ok  ' : '  KO  ') + msg); if 
 // vient de télécharger côté npm ; s'il est là, on le pointe explicitement plutôt que de retélécharger un navigateur.
 const CHROMIUM_PREINSTALLE = '/opt/pw-browsers/chromium';
 const browser = await chromium.launch(fs.existsSync(CHROMIUM_PREINSTALLE) ? { executablePath: CHROMIUM_PREINSTALLE } : {});
-async function ouvrir(etat, viewport = [1440, 900], options = {}) {
+async function ouvrir(etat, viewport = [1440, 900], options = {}, page = 'index') {
   const ctx = await browser.newContext({ viewport: { width: viewport[0], height: viewport[1] }, reducedMotion: 'reduce', ...options });
   const p = await ctx.newPage();
-  await p.goto(URL + (etat ? '?' + etat : ''), { waitUntil: 'networkidle' });
+  await p.goto(URL(page) + (etat ? '?' + etat : ''), { waitUntil: 'networkidle' });
   await p.evaluate(() => document.fonts.ready);
   return { p, ctx };
 }
@@ -131,7 +131,11 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok((await style(p, '.section--projets', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.four__row').length)) === 4, 'section projets : liste des 4 (bascule 11 figée)');
   ok((await style(p, '.partner__couleur', 'display')) === 'block' && !(await p.evaluate(() => document.querySelector('.partner__encre'))), 'logos partenaires : couleur, figés (plus d’encre inline)');
   const cles = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle));
-  ok(cles.join(' ') === 'cadrage carte', 'panneau : ' + cles.join(' · '));
+  ok(cles.join(' ') === 'cadrage carte chapitres quatre', 'panneau : ' + cles.join(' · '));
+  const liens = await p.evaluate(() => ({ nav: document.querySelector('.site-nav a').getAttribute('href'), plan: document.querySelector('.footer__nav a').getAttribute('href'), tous: document.querySelector('.autres__lien').getAttribute('href'),
+    quatre: [...document.querySelectorAll('.four__row a')].map(a => a.getAttribute('href')) }));
+  ok(liens.nav === 'realisations.html' && liens.plan === 'realisations.html' && liens.tous === 'realisations.html' && liens.quatre.join(' ') === 'realisations.html#ateliers-118 projet-the-bank.html realisations.html#data-box realisations.html#community',
+    'liens : navigation, plan et « Toutes les réalisations → » vers realisations.html ; The Bank vers sa fiche, les trois autres vers leur ancre');
   ok((await p.evaluate(() => [...document.querySelectorAll('.mq__b[data-cle="cadrage"] input')].map(i => i.value).join(' '))) === 'centre haut', 'bascule 9c : centre / haut seulement (« bas » retiré)');
   await ctx.close();
 }
@@ -237,6 +241,132 @@ const contraste = (a, b) => { const [l1, l2] = [lum(a), lum(b)].sort((x, y) => y
 const fonds = { blanc: '#FFFFFF', papier: '#F9F9F6', sable: '#F6F1E6' };
 const encres = [['#26231F', 'anthracite (texte, barres)'], ['#6B655C', 'gris (étiquettes < 18 px)'], ['#9A948A', 'gris clair (réservé ≥ 18 px)'], ['#9A7A3B', 'or mat (chiffres ≥ 40 px)'], ['#8A6B2F', 'or foncé (liens, signature)'], ['#B8975A', 'or clair (filets seulement)'], ['#7A7466', 'gris chaud (logos, étiquettes des chiffres)']];
 for (const [hex, nom] of encres) console.log('  ' + nom.padEnd(30) + Object.entries(fonds).map(([f, h]) => `${f} ${contraste(hex, h)}:1`).join('   '));
+
+// ---------- fiche The Bank et vue Réalisations ----------
+const FICHE = 'projet-the-bank', REAL = 'realisations';
+const familles = ['Newsreader', 'Instrument Sans', 'Jost'];
+async function polices(p, nom) {
+  for (const f of familles) ok(await p.evaluate(async f => { await document.fonts.load(`400 16px "${f}"`); return document.fonts.check(`400 16px "${f}"`); }, f), `${nom} : police chargée en file:// : ${f}`);
+}
+
+console.log('\n8 · Fiche The Bank');
+for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
+  for (const etat of ['', 'chapitres=sans']) {
+    const { p, ctx } = await ouvrir(etat, [w, h], {}, FICHE);
+    ok((await largeur(p)) === 0, `fiche · ${w} · ${etat || 'défaut'} : aucun débordement horizontal`); await ctx.close();
+  }
+}
+{
+  const { p, ctx } = await ouvrir('', [1440, 900], {}, FICHE);
+  await polices(p, 'fiche');
+  const titre = await p.evaluate(() => document.title);
+  ok(titre === 'The Bank — Perpetual', `titre de la page : ${titre}`);
+  ok(await p.evaluate(() => document.querySelector('.site-nav a.is-active') && document.querySelector('.site-nav a.is-active').textContent === 'Réalisations' && document.querySelector('.site-nav a.is-active').getAttribute('href') === 'realisations.html'), 'navigation : « Réalisations » actif, vers realisations.html');
+  const t = await p.evaluate(() => ({ eyebrow: document.querySelector('.page-head .eyebrow').textContent, h1: document.querySelector('.page__titre').textContent, h1fs: getComputedStyle(document.querySelector('.page__titre')).fontSize, h1ff: getComputedStyle(document.querySelector('.page__titre')).fontFamily }));
+  ok(t.eyebrow === 'Liège, rue des Mineurs' && t.h1 === 'The Bank' && t.h1fs === '64px' && t.h1ff.startsWith('Newsreader'), `« ${t.eyebrow} » en eyebrow, « ${t.h1 } » en serif 64 px`);
+  const hero = await rect(p, '.fiche__hero'), faits = await rect(p, '.faits-band'), head = await rect(p, '.page-head');
+  ok(hero.height === 520 && hero.width === 1440 && hero.top >= head.bottom && await p.evaluate(() => /the-bank-03(-l)?\.jpg$/.test(document.querySelector('.fiche__hero img').currentSrc)), `photo hero the-bank-03, pleine largeur, ${hero.height} px de haut`);
+  ok(faits.bottom <= 900, `premier écran à 1440 × 900 : le titre, la photo et la bande de faits tiennent (bande à ${faits.bottom})`);
+  const f = await p.evaluate(() => ({ bande: getComputedStyle(document.querySelector('.faits-band')).backgroundColor, valeurs: [...document.querySelectorAll('.stats--faits .stat__value')].map(v => { const s = getComputedStyle(v); return { t: v.textContent, c: s.color, ff: s.fontFamily, fs: s.fontSize, fw: s.fontWeight }; }),
+    etiquettes: [...document.querySelectorAll('.stats--faits .stat__label')].map(l => ({ t: l.textContent, c: getComputedStyle(l).color })) }));
+  ok(f.bande === PAPIER && f.valeurs.map(v => v.t).join(' · ') === 'Liège · 1 100 m² · Logements & commerce' && f.valeurs.every(v => v.c === OR && v.ff.startsWith('Newsreader') && v.fs === '28px' && v.fw === '400')
+    && f.etiquettes.map(l => l.t).join(' · ') === 'Localisation · Surface · Usage' && f.etiquettes.every(l => l.c === GRIS_CHAUD),
+    'bande de faits : surface papier, valeurs en serif or 28 px (Liège · 1 100 m² · Logements & commerce), étiquettes gris chaud');
+  const ch = await p.evaluate(() => [...document.querySelectorAll('.chapitre')].map(c => { const t = c.querySelector('.chapitre__titre'), s = getComputedStyle(t); return { num: c.querySelector('.chapitre__num').textContent, numColor: getComputedStyle(c.querySelector('.chapitre__num')).color, titre: t.textContent, ff: s.fontFamily, fs: s.fontSize, fw: s.fontWeight, texte: c.querySelector('.chapitre__texte').textContent.length, largeur: Math.round(c.parentElement.getBoundingClientRect().width), left: Math.round(c.getBoundingClientRect().left) }; }));
+  ok(ch.length === 3 && ch.map(c => c.num).join(' ') === '01 02 03' && ch.map(c => c.titre).join(' / ') === 'Ce que c’était / Ce que nous y avons vu / Ce que c’est devenu' && ch.every(c => c.texte > 20 && c.numColor === OR), 'trois chapitres numérotés 01 02 03 (numéros or) avec les textes de data/projects.json');
+  ok(ch.every(c => c.ff.startsWith('Newsreader') && c.fs === '32px' && c.fw === '400'), 'titres de chapitre : serif Newsreader 400, 32 px par défaut (bascule 20)');
+  ok(ch.every(c => c.largeur === 760 && c.left === 160), 'chapitres en colonne de 760 px alignée à gauche');
+  const photos = await p.evaluate(() => [...document.querySelectorAll('.fiche__photos figure')].map(fg => { const r = fg.querySelector('img').getBoundingClientRect(); return { src: fg.querySelector('img').currentSrc.replace(/^.*\//, ''), w: Math.round(r.width), h: Math.round(r.height), legende: fg.querySelector('figcaption').textContent }; }));
+  const place = await p.evaluate(() => { const ch = [...document.querySelectorAll('.chapitre')].map(c => c.getBoundingClientRect().top), ph = document.querySelector('.fiche__photos').getBoundingClientRect().top; return ch[0] < ph && ph < ch[1]; });
+  ok(photos.length === 2 && /^the-bank-01/.test(photos[0].src) && /^the-bank-02/.test(photos[1].src) && photos.every(x => x.h === 440) && photos[0].w < photos[1].w && Math.abs(photos[0].w / photos[1].w - 5 / 7) < 0.03 && photos.every(x => x.legende.length > 5) && place,
+    `photos intercalées entre les chapitres 01 et 02 : the-bank-01 portrait (${photos[0] && photos[0].w} px) et the-bank-02 paysage (${photos[1] && photos[1].w} px), 440 px, légendes`);
+  const suivant = await p.evaluate(() => { const a = document.querySelector('.suivant'); return { href: a.getAttribute('href'), texte: a.querySelector('.eyebrow').textContent + ' — ' + a.querySelector('.suivant__nom').textContent, color: getComputedStyle(a.querySelector('.suivant__nom')).color, bloc: getComputedStyle(a.querySelector('.eyebrow')).display }; });
+  ok(suivant.href === 'realisations.html#data-box' && suivant.texte === 'Projet suivant — Data Box →' && suivant.color === OR_FONCE && suivant.bloc === 'block', `« ${suivant.texte} » → ${suivant.href}, or foncé, l'étiquette au-dessus du nom`);
+  ok(await p.evaluate(() => getComputedStyle(document.querySelector('.site-footer')).backgroundColor === 'rgb(249, 249, 246)' && document.querySelector('.footer__nav a').getAttribute('href') === 'realisations.html' && document.querySelector('.footer__nav a[href="index.html#collectif"]') !== null), 'pied de page papier ; plan vers realisations.html, Collectif vers index.html#collectif');
+  const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '')).join(' · '));
+  ok(panneau === 'cadrage (sans effet) · carte (sans effet) · chapitres · quatre (sans effet)', 'panneau : ' + panneau);
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('chapitres=sans', [1440, 900], {}, FICHE);
+  const t = await p.evaluate(() => [...document.querySelectorAll('.chapitre__titre')].map(t => { const s = getComputedStyle(t); return s.fontFamily.startsWith('"Instrument Sans"') && s.fontSize === '26px' && s.fontWeight === '500'; }));
+  ok(t.length === 3 && t.every(Boolean) && (await style(p, '.page__titre', 'fontFamily')).startsWith('Newsreader') && (await style(p, '.stats--faits .stat__value', 'fontFamily')).startsWith('Newsreader'), 'chapitres=sans : titres de chapitre en Instrument Sans medium 26 px, le titre et les faits restent en serif');
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('chapitres=sans&quatre=cartes');
+  ok((await p.evaluate(() => document.querySelectorAll('.chapitre').length)) === 0 && (await style(p, '.four', 'display')) === 'grid', 'Home : chapitres=sans et quatre=cartes sont sans effet');
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('', [1366, 703], {}, FICHE);
+  const hero = await rect(p, '.fiche__hero'), h1 = await rect(p, '.page__titre');
+  ok(h1.bottom < hero.top && hero.top < 703 - 300, `premier écran à 1366 × 703 : le titre et au moins 300 px de la photo (photo de ${hero.top} à ${hero.bottom})`);
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('', [390, 844], {}, FICHE);
+  ok((await style(p, '.logo__texte', 'display')) === 'none' && (await style(p, '.page__titre', 'fontSize')) === '44px' && (await rect(p, '.fiche__hero')).height === 300, 'mobile : Φ seul, titre 44 px, photo de 300 px');
+  const m = await p.evaluate(() => ({ faits: getComputedStyle(document.querySelector('.stats--faits')).gridTemplateColumns.split(' ').length, photos: getComputedStyle(document.querySelector('.fiche__photos')).gridTemplateColumns.split(' ').length, h: Math.round(document.querySelector('.fiche__photos img').getBoundingClientRect().height), titre: getComputedStyle(document.querySelector('.chapitre__titre')).fontSize, bande: Math.round(document.querySelector('.faits-band').getBoundingClientRect().bottom) }));
+  ok(m.faits === 2 && m.photos === 1 && m.h === 300 && m.titre === '26px', `mobile : faits en 2 × 2, photos en une colonne de 300 px, titres de chapitre 26 px`);
+  ok(m.bande <= 844, `mobile : le titre, la photo et la bande de faits tiennent dans 844 (bande à ${m.bande})`);
+  await ctx.close();
+}
+
+console.log('\n9 · Vue Réalisations');
+for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
+  for (const etat of ['', 'quatre=cartes']) {
+    const { p, ctx } = await ouvrir(etat, [w, h], {}, REAL);
+    ok((await largeur(p)) === 0, `réalisations · ${w} · ${etat || 'défaut'} : aucun débordement horizontal`); await ctx.close();
+  }
+}
+{
+  const { p, ctx } = await ouvrir('', [1440, 900], {}, REAL);
+  await polices(p, 'réalisations');
+  const t = await p.evaluate(() => ({ title: document.title, h1: document.querySelector('.page__titre').textContent, sous: document.querySelector('.page__sous').textContent, actif: document.querySelector('.site-nav a.is-active') && document.querySelector('.site-nav a.is-active').textContent }));
+  ok(t.title === 'Réalisations — Perpetual' && t.h1 === 'Réalisations' && t.actif === 'Réalisations', `titre « ${t.h1} », « ${t.actif} » actif dans la navigation (${t.sous})`);
+  const liste = await p.evaluate(() => ({ four: getComputedStyle(document.querySelector('.section--quatre .four')).display, cartes: getComputedStyle(document.querySelector('.cartes')).display, rows: [...document.querySelectorAll('.section--quatre .four__row')].map(r => (r.id || '—') + ' → ' + r.querySelector('a').getAttribute('href')),
+    apercu: !!document.querySelector('.section--quatre .four__preview img.is-active'), bas: Math.round(document.querySelector('.section--quatre .four').getBoundingClientRect().bottom) }));
+  ok(liste.four === 'grid' && liste.cartes === 'none' && liste.rows.join(' | ') === 'ateliers-118 → realisations.html#ateliers-118 | — → projet-the-bank.html | data-box → realisations.html#data-box | community → realisations.html#community' && liste.apercu,
+    'les 4 projets en liste par défaut (bascule 21), ancres sur les lignes, The Bank vers sa fiche, aperçu photo');
+  ok(liste.bas <= 900, `premier écran à 1440 × 900 : le titre et la liste des 4 tiennent (liste à ${liste.bas})`);
+  ok(await p.evaluate(() => [...document.querySelectorAll('[id]')].map(e => e.id).filter((x, i, a) => a.indexOf(x) !== i).length === 0), 'aucun id en double');
+  const ag = await p.evaluate(() => ({ intro: document.querySelector('.agences__intro').textContent.slice(0, 30), noms: [...document.querySelectorAll('.agence__nom')].map(n => n.textContent), lignes: [...document.querySelectorAll('.agence__ligne')].map(n => n.textContent), ff: getComputedStyle(document.querySelector('.agence__nom')).fontFamily }));
+  ok(ag.noms.join(' · ') === 'Braine-le-Comte · Pont-à-Celles · Jambes · Mettet' && ag.lignes.every(l => /^\d.*m² · /.test(l)) && ag.ff.startsWith('Newsreader') && ag.intro.startsWith('Une agence bancaire fermée'), 'programme agences : intro de content/realisations.md, puis ' + ag.noms.join(' · '));
+  const g = await p.evaluate(() => ({ n: document.querySelectorAll('.galerie__item').length, cols: getComputedStyle(document.querySelector('.galerie')).gridTemplateColumns.split(' ').length, srcs: [...document.querySelectorAll('.galerie__item img')].map(i => i.getAttribute('src').replace(/^.*\//, '')),
+    ratio: (() => { const r = document.querySelector('.galerie__photo').getBoundingClientRect(); return r.width / r.height; })(), noms: [...document.querySelectorAll('.galerie__nom')].map(n => n.textContent), voile: getComputedStyle(document.querySelector('.galerie__voile')).opacity, meta: getComputedStyle(document.querySelector('.galerie__meta')).display,
+    metaTexte: document.querySelector('.galerie__voile').textContent }));
+  ok(g.n === 12 && g.cols === 3 && g.srcs.every(s => /-01-s\.jpg$/.test(s)) && Math.abs(g.ratio - 1.5) < 0.01 && g.noms[0] === '# Bank 24' && g.noms[11] === 'Ode to Joy' && g.voile === '0' && g.meta === 'none' && /^\d.* m² · /.test(g.metaTexte),
+    `galerie : ${g.n} biens en 3 colonnes, photos <id>-01-s.jpg en 3:2, nom sous la photo, « ${g.metaTexte} » caché au repos`);
+  await p.hover('.galerie__item:nth-child(2) .galerie__photo');
+  const hv = await p.evaluate(() => { const it = document.querySelector('.galerie__item:nth-child(2)'); return { voile: getComputedStyle(it.querySelector('.galerie__voile')).opacity, zoom: getComputedStyle(it.querySelector('img')).transform }; });
+  ok(hv.voile === '1' && /^matrix\(1\.035, 0, 0, 1\.035/.test(hv.zoom), `galerie : au survol, surface · usage en surimpression et zoom 1,035 (${hv.zoom})`);
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('quatre=cartes', [1440, 900], {}, REAL);
+  const c = await p.evaluate(() => ({ four: getComputedStyle(document.querySelector('.section--quatre .four')).display, cartes: getComputedStyle(document.querySelector('.cartes')).display, cols: getComputedStyle(document.querySelector('.cartes')).gridTemplateColumns.split(' ').length,
+    items: [...document.querySelectorAll('.cartes__item')].map(i => (i.id || '—') + ' → ' + i.querySelector('a').getAttribute('href')), ratio: (() => { const r = document.querySelector('.cartes__photo').getBoundingClientRect(); return r.width / r.height; })(),
+    noms: [...document.querySelectorAll('.cartes__nom')].map(n => n.textContent), lignes: document.querySelectorAll('.cartes__ligne').length, rowsId: [...document.querySelectorAll('.four__row[id]')].length, doublons: [...document.querySelectorAll('[id]')].map(e => e.id).filter((x, i, a) => a.indexOf(x) !== i).length }));
+  ok(c.four === 'none' && c.cartes === 'grid' && c.cols === 2 && Math.abs(c.ratio - 1.5) < 0.01 && c.noms.join(' · ') === 'Ateliers 118 · The Bank · Data Box · Community' && c.lignes === 4, 'quatre=cartes : la liste disparaît, quatre cartes photo 3:2 en 2 × 2, nom et ligne sous la photo');
+  ok(c.items.join(' | ') === 'ateliers-118 → realisations.html?quatre=cartes#ateliers-118 | — → projet-the-bank.html?quatre=cartes | data-box → realisations.html?quatre=cartes#data-box | community → realisations.html?quatre=cartes#community' && c.rowsId === 0 && c.doublons === 0,
+    'quatre=cartes : les ancres passent sur les cartes (les lignes de la liste les perdent), aucun id en double');
+  await p.hover('.cartes__item:first-child a');
+  ok(/^matrix\(1\.035/.test(await p.evaluate(() => getComputedStyle(document.querySelector('.cartes__item:first-child img')).transform)), 'cartes : zoom 1,035 au survol');
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('', [390, 844], {}, REAL);
+  const m = await p.evaluate(() => ({ cols: getComputedStyle(document.querySelector('.galerie')).gridTemplateColumns.split(' ').length, meta: getComputedStyle(document.querySelector('.galerie__meta')).display, voile: getComputedStyle(document.querySelector('.galerie__voile')).display,
+    agences: getComputedStyle(document.querySelector('.agences')).gridTemplateColumns.split(' ').length, apercu: getComputedStyle(document.querySelector('.section--quatre .four__preview')).display, titre: getComputedStyle(document.querySelector('.page__titre')).fontSize }));
+  ok(m.cols === 1 && m.meta === 'block' && m.voile === 'none' && m.agences === 1 && m.apercu === 'none' && m.titre === '44px', 'mobile : galerie en une colonne avec surface · usage affichés, agences en une colonne, liste sans aperçu, titre 44 px');
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('quatre=cartes', [390, 844], {}, REAL);
+  ok((await style(p, '.cartes', 'gridTemplateColumns')).split(' ').length === 1, 'mobile : cartes en une colonne');
+  await ctx.close();
+}
 
 await browser.close();
 console.log(ko ? `\n${ko} vérification(s) en échec` : '\nTout est vérifié.');

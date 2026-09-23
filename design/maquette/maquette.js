@@ -15,10 +15,12 @@
   // 18 fond du pied de page (papier, sans filet), 15 réalisations (carte) ; 3 portée de la serif retirée (classes .h2--sans / .h2--serif).
   // Gel de la Home (23/09) : 2 serif (Newsreader) et 17 graisse (400) figées ; 9c réduite à centre / haut (« bas » retiré).
   // Sur la Home ne restent que deux décisions reportées : 9c cadrage (temporaire : la valeur retenue remplacera le point focal de community-05
-  // dans photoCandidates, build.mjs) et 15a carte.
+  // dans photoCandidates, build.mjs) et 15a carte. La fiche et la vue Réalisations (23/09) portent une bascule chacune : 20 et 21.
   var BASCULES = [
     { n: '9c', cle: 'cadrage', titre: 'Cadrage de Community 05', groupe: 'Home', valeurs: [['centre', 'centre · 50% 50%'], ['haut', 'haut · 50% 20%']], note: 'décision reportée : la valeur retenue remplacera le point focal de photoCandidates (build.mjs)', pages: ['home'] },
-    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Home', valeurs: [['sable', 'sable'], ['papier-contour', 'papier, contour fin']], note: 'décision reportée : papier-contour ajoute le trait fin (--trait-carte)', pages: ['home'] }
+    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Home', valeurs: [['sable', 'sable'], ['papier-contour', 'papier, contour fin']], note: 'décision reportée : papier-contour ajoute le trait fin (--trait-carte)', pages: ['home'] },
+    { n: 20, cle: 'chapitres', titre: 'Titres de chapitre', groupe: 'Fiche', valeurs: [['serif', 'serif · Newsreader 32 px'], ['sans', 'sans · Instrument Sans medium 26 px']], note: 'la dernière question ouverte sur la portée de la serif', pages: ['fiche'] },
+    { n: 21, cle: 'quatre', titre: '4 projets', groupe: 'Réalisations', valeurs: [['liste', 'liste, comme sur la Home'], ['cartes', 'cartes photo 3:2']], note: 'cartes : nom et ligne sous la photo', pages: ['realisations'] }
   ];
   var defauts = {};
   BASCULES.forEach(function (b) { defauts[b.cle] = b.valeurs[0][0]; });
@@ -46,6 +48,12 @@
     BASCULES.forEach(function (b) {
       if (etat[b.cle] !== defauts[b.cle] && actif(b, etat)) html.setAttribute('data-' + b.cle, etat[b.cle]);
       else html.removeAttribute('data-' + b.cle);
+    });
+    // vue Réalisations, bascule 21 : l'ancre de chaque projet (#ateliers-118, #data-box, #community) vit sur la ligne de la liste (défaut, sans
+    // JavaScript aussi) ou sur la carte, jamais sur les deux — build.mjs pose data-ancre sur l'une et l'autre
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ancre]'), function (el) {
+      var surCarte = el.classList.contains('cartes__item');
+      if ((etat.quatre === 'cartes') === surCarte) el.id = el.getAttribute('data-ancre'); else el.removeAttribute('id');
     });
     var q = query(etat, false);
     // les liens internes portent l'état : la combinaison suit d'une page à l'autre
@@ -95,7 +103,7 @@
   var corps = groupes.map(function (g) {
     return '<div class="mq__groupe"><div class="mq__gtitre">' + g + '</div>' + BASCULES.filter(function (b) { return b.groupe === g; }).map(fieldset).join('') + '</div>';
   }).join('');
-  var pagesHtml = [['index.html', 'home', 'Home'], ['projet-the-bank.html', 'fiche', 'Fiche'], ['projets.html', 'projets', 'Réalisations']].map(function (p) {
+  var pagesHtml = [['index.html', 'home', 'Home'], ['projet-the-bank.html', 'fiche', 'Fiche'], ['realisations.html', 'realisations', 'Réalisations']].map(function (p) {
     return '<a href="' + p[0] + '"' + (p[1] === PAGE ? ' class="is-active"' : '') + '>' + p[2] + '</a>';
   }).join('');
 

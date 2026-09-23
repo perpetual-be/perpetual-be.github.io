@@ -33,9 +33,11 @@
   --surface-piste:var(--sable);--surface-pied:var(--papier);                             /* graphique : piste en sable ; pied de page : papier, sans filet en haut (figé le 23/09) */
   /* typographie */
   --serif:"Newsreader",Georgia,serif;--sans:"Instrument Sans",system-ui,sans-serif;   /* serif figée le 23/09 : Newsreader 400 partout (la seconde serif et la graisse 500 sont retirées) */
-  /* titres de section : deux classes explicites, .h2--sans (--fs-h2) et .h2--serif (--fs-h2-serif) ; --fs-chapitre (titres de chapitre de la fiche) reste à décider sur la fiche */
-  --fs-accroche:52px;--fs-chiffre:58px;--fs-h2:28px;--fs-h2-serif:34px;--fs-chapitre:26px;--fs-texte:17px;--fs-nav:15px;
+  /* titres de section : deux classes explicites, .h2--sans (--fs-h2) et .h2--serif (--fs-h2-serif) ;
+     titres de chapitre de la fiche (bascule 20) : serif --fs-chapitre-serif (défaut) ou sans medium --fs-chapitre */
+  --fs-accroche:52px;--fs-chiffre:58px;--fs-h2:28px;--fs-h2-serif:34px;--fs-chapitre-serif:32px;--fs-chapitre:26px;--fs-texte:17px;--fs-nav:15px;
   --fs-etiquette:13px;--fs-etiquette-chiffre:14px;--fs-signature:24px;--fs-chute:26px;--fs-nom:42px;--fs-ligne:16px;--fs-fait:28px;
+  --fs-titre-page:64px;--fs-suivant:30px;--fs-agence:30px;--fs-carte-nom:32px;   /* fiche et vue Réalisations */
   /* mise en page */
   --max:1200px;--gutter:40px;--bande-haut:44px;--bande-bas:40px;
   /* photo du premier écran : assez basse pour que la bande et ses quatre chiffres tiennent sous elle à 1440 × 900 et 1366 × 703
@@ -149,6 +151,60 @@ ol,ul{list-style:none}
    Logos figés en couleur le 22/09 (bascule 14 retirée) */
 .partner__couleur{display:block;height:calc(var(--logo-h)*var(--logo-echelle));width:auto}
 
+/* fiche projet et vue Réalisations (23/09) : mêmes jetons et composants que la Home */
+.page-head{padding:40px 0 32px}
+.page-head .eyebrow{margin-bottom:14px}
+.page__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-titre-page);line-height:1;letter-spacing:-.015em}
+.page__sous{font-size:var(--fs-ligne);color:var(--c-meta);margin-top:14px}
+/* fiche : photo hero à 520 px, puis la bande de trois faits — le composant de la bande des chiffres (surface papier, valeur en serif or, étiquette gris chaud) */
+.fiche__hero{height:520px;overflow:hidden}
+.fiche__hero img{width:100%;height:100%;object-fit:cover}
+.faits-band{padding:28px 0 26px}
+.stats--faits{display:flex;flex-wrap:wrap}
+.stats--faits .stat{padding:4px 40px 4px 36px}
+.stats--faits .stat:first-child{padding-left:0}
+.stats--faits .stat__value{font-size:var(--fs-fait);line-height:1.1;white-space:nowrap}
+.stats--faits .stat__label{margin-top:6px;font-size:var(--fs-etiquette);max-width:none}
+/* chapitres en colonne de 760 px alignée à gauche ; les deux photos intercalées prennent la largeur du container (5 et 7 colonnes) */
+.chapitres{max-width:760px;padding-top:64px}
+.chapitre{margin-bottom:56px}
+.chapitre__num{font-family:var(--serif);font-size:15px;color:var(--c-num-chapitre);letter-spacing:.06em;margin-bottom:8px}
+.chapitre__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-chapitre-serif);line-height:1.15;letter-spacing:-.01em;margin-bottom:16px}
+.chapitre__texte{max-width:62ch}
+.fiche__photos{display:grid;grid-template-columns:5fr 7fr;gap:24px;margin:8px 0 64px}
+.fiche__photos img{width:100%;height:440px;object-fit:cover}
+.fiche__photos figcaption{font-size:var(--fs-etiquette);color:var(--c-meta);margin-top:10px}
+.suivant{display:block;border-top:1px solid var(--filet);padding:24px 0 72px;margin-top:8px}
+.suivant .eyebrow{display:block;margin-bottom:6px}
+.suivant__nom{display:inline-block;font-family:var(--serif);font-size:var(--fs-suivant);line-height:1.2;color:var(--c-lien);padding-bottom:2px}
+/* vue Réalisations : les 4 projets — la liste de la Home (défaut) ou quatre cartes photo 3:2 (bascule 21) */
+.section--quatre{padding-top:48px}
+.cartes{display:none;grid-template-columns:1fr 1fr;gap:44px 32px}
+.cartes__item a{display:block}
+.cartes__photo{display:block;aspect-ratio:3/2;overflow:hidden;background:var(--surface)}
+.cartes__photo img{width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
+.cartes__item a:hover img{transform:scale(var(--zoom))}
+.cartes__nom{display:inline-block;position:relative;font-family:var(--serif);font-size:var(--fs-carte-nom);line-height:1.1;letter-spacing:-.01em;margin-top:18px;padding-bottom:3px}
+.cartes__nom::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--c-trait);transform:scaleX(0);transform-origin:left;transition:transform .25s}
+.cartes__item a:hover .cartes__nom::after{transform:scaleX(1)}
+.cartes__ligne{display:block;font-size:var(--fs-ligne);color:var(--c-meta);margin-top:6px}
+/* programme agences : l'intro, puis les quatre exemples en liste typographique */
+.agences{display:grid;grid-template-columns:5fr 7fr;gap:64px;align-items:start}
+.agences__intro{max-width:46ch}
+.agences__liste li{border-top:1px solid var(--filet);padding:18px 0 20px}
+.agences__liste li:last-child{border-bottom:1px solid var(--filet)}
+.agence__nom{display:block;font-family:var(--serif);font-size:var(--fs-agence);line-height:1.1;letter-spacing:-.01em}
+.agence__ligne{display:block;font-size:var(--fs-ligne);color:var(--c-meta);margin-top:6px}
+/* galerie : grille 3 colonnes, photos 3:2, nom sous la photo, surface · usage en surimpression au survol, zoom 1,035 */
+.galerie{display:grid;grid-template-columns:repeat(3,1fr);gap:40px 32px}
+.galerie__photo{display:block;position:relative;aspect-ratio:3/2;overflow:hidden;background:var(--surface)}
+.galerie__photo img{width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
+.galerie__item:hover .galerie__photo img{transform:scale(var(--zoom))}
+.galerie__voile{position:absolute;left:0;right:0;bottom:0;padding:44px 20px 16px;color:var(--photo-texte);font-size:14px;line-height:1.4;background:linear-gradient(to top,var(--voile-moyen),transparent);opacity:0;transition:opacity .25s}
+.galerie__item:hover .galerie__voile{opacity:1}
+.galerie__nom{display:block;font-size:16px;font-weight:500;margin-top:12px}
+.galerie__meta{display:none;font-size:14px;color:var(--c-meta);margin-top:2px}
+
 /* pied de page */
 /* resserré le 23/09 : 48 px en haut, 32 px entre la dernière ligne des colonnes et le filet du bas (le gap vertical de la grille, sans marge sur le bloc légal) */
 .site-footer{padding:48px 0 40px;font-size:15px;background:var(--surface-pied)}
@@ -185,13 +241,33 @@ ol,ul{list-style:none}
   .partners{gap:22px 28px}
   .footer__grid{grid-template-columns:1fr;gap:28px}
   .footer__legal{margin-top:4px}
+  /* fiche et vue Réalisations : une colonne, tout affiché */
+  :root{--fs-titre-page:44px;--fs-chapitre-serif:26px;--fs-chapitre:22px;--fs-fait:22px;--fs-suivant:24px;--fs-agence:24px;--fs-carte-nom:28px}
+  .page-head{padding:28px 0 24px}
+  .fiche__hero{height:300px}
+  .faits-band{padding:24px 0 22px}
+  .stats--faits{display:grid;gap:18px 0}
+  .stats--faits .stat{padding:0 12px 0 16px}
+  .stats--faits .stat:nth-child(3){padding-left:0}
+  .stats--faits .stat__value{white-space:normal}
+  .chapitres{padding-top:40px}
+  .chapitre{margin-bottom:40px}
+  .fiche__photos{grid-template-columns:1fr;margin-bottom:40px}
+  .fiche__photos img{height:300px}
+  .suivant{padding-bottom:44px}
+  .section--quatre{padding-top:24px}
+  .cartes{grid-template-columns:1fr;gap:32px}
+  .agences{grid-template-columns:1fr;gap:28px}
+  .galerie{grid-template-columns:1fr;gap:28px}
+  .galerie__voile{display:none}
+  .galerie__meta{display:block}
 }
 /* fenêtre basse (portable 1366 × 768 avec les barres du navigateur) : la bande et ses chiffres tiennent dans 703 px */
 @media (max-height:720px) and (min-width:641px){
   :root{--bande-haut:36px;--bande-bas:32px}
 }
 @media (prefers-reduced-motion:reduce){
-  .trait::after,.four__name::after,.four__preview img,.carte__lab{transition:none}
+  .trait::after,.four__name::after,.four__preview img,.carte__lab,.cartes__nom::after,.cartes__photo img,.galerie__photo img,.galerie__voile{transition:none}
 }
 
 /* ---------- 6. Bascules ---------- */
@@ -201,6 +277,12 @@ ol,ul{list-style:none}
 html[data-cadrage="haut"] .hero__photo img{object-position:50% 20% !important}
 /* 15a · carte : sable (défaut, pays rempli en --surface-carte) / papier-contour (fill papier + trait fin) */
 html[data-carte="papier-contour"] .carte__pays{fill:var(--papier);stroke:var(--trait-carte);stroke-width:1}
+/* 20 · fiche, titres de chapitre : serif (défaut, Newsreader 400, --fs-chapitre-serif 32 px) / sans (Instrument Sans medium, --fs-chapitre 26 px).
+   C'est la dernière question ouverte sur la portée de la serif. */
+html[data-chapitres="sans"] .chapitre__titre{font-family:var(--sans);font-weight:500;font-size:var(--fs-chapitre);letter-spacing:-.01em}
+/* 21 · vue Réalisations, les 4 projets : liste (défaut, la même que sur la Home) / cartes (quatre cartes photo 3:2, nom et ligne sous la photo) */
+html[data-quatre="cartes"] .section--quatre .four{display:none}
+html[data-quatre="cartes"] .cartes{display:grid}
 
 /* ---------- 7. Mobile, premier écran ---------- */
 @media (max-width:640px){

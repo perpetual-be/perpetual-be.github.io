@@ -1,4 +1,4 @@
-// Génère les pages de la maquette du lot 2 (design/maquette/*.html) à partir des données du dépôt.
+// Génère les pages de la maquette du lot 2 (design/maquette/*.html : la Home, la fiche The Bank, la vue Réalisations) à partir des données du dépôt.
 // Exécuter depuis la racine : node design/maquette/src/build.mjs
 // Lit data/*.json, content/home.md, content/collectif.md, content/realisations.md, public/favicon.svg, public/partners/encre/*.svg (hauteurs des logos),
 // design/maquette/src/carte/belgique.{svg,json}. N'écrit que dans design/maquette/.
@@ -24,6 +24,8 @@ const byId = Object.fromEntries(projects.map(p => [p.id, p]));
 // Libellé de l'entrée « réalisations » de la navigation et du plan du pied de page : data/site.json est la source unique (reprise par le site au lot 4).
 const navLabel = href => { const n = site.nav.find(x => x.href === href); if (!n) throw new Error('data/site.json : entrée de navigation ' + href + ' introuvable'); return n.label; };
 const REALISATIONS = navLabel('/realisations');
+const PAGE_REALISATIONS = 'realisations.html';   // la vue « Réalisations » (le brief la nommait « Projets »)
+const PAGE_FICHE = 'projet-the-bank.html';
 
 function frontmatter(md) {
   const m = md.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -51,13 +53,29 @@ const realisationsBlocks = blocks(frontmatter(read('content/realisations.md')).b
 const agences = realisationsBlocks[realisationsBlocks.indexOf('## Le programme agences') + 1];
 if (!agences || agences.startsWith('#')) throw new Error('content/realisations.md : paragraphe du programme agences introuvable');
 
-// Les quatre projets de la Home : une ligne chacun (mêmes lignes que la planche A), aperçu photo.
+// Les quatre projets (Home et vue Réalisations) : une ligne chacun (mêmes lignes que la planche A), aperçu photo (img, portrait 4:5) et photo
+// de carte (carte, 3:2 — Ateliers 118 n'a que sa vue 05, en portrait, dans design/directions/img/ ; elle est recadrée). The Bank pointe vers sa fiche,
+// les trois autres vers leur ancre sur la vue Réalisations.
 const four = [
-  { id: 'ateliers-118', line: 'Molenbeek-Saint-Jean · 1 200 m² · Treize ateliers dans une ancienne usine de colle', img: 'ateliers-118-05-s.jpg', href: 'projets.html#ateliers-118' },
-  { id: 'the-bank', line: 'Liège · 1 100 m² · Une agence devenue bijouterie, Bancontact et logements', img: 'the-bank-01-s.jpg', href: 'projet-the-bank.html' },
-  { id: 'data-box', line: 'Jemelle · 4 200 m² sur un hectare · Un site technique dont l’avenir reste ouvert', img: 'data-box-02-s.jpg', href: 'projets.html#data-box' },
-  { id: 'community', line: 'Uccle · 14 unités · Quatorze unités autour d’espaces partagés', img: 'community-05-s.jpg', href: 'projets.html#community' },
+  { id: 'ateliers-118', line: 'Molenbeek-Saint-Jean · 1 200 m² · Treize ateliers dans une ancienne usine de colle', img: 'ateliers-118-05-s.jpg', carte: 'ateliers-118-05-s.jpg', href: `${PAGE_REALISATIONS}#ateliers-118` },
+  { id: 'the-bank', line: 'Liège · 1 100 m² · Une agence devenue bijouterie, Bancontact et logements', img: 'the-bank-01-s.jpg', carte: 'the-bank-03-s.jpg', href: PAGE_FICHE },
+  { id: 'data-box', line: 'Jemelle · 4 200 m² sur un hectare · Un site technique dont l’avenir reste ouvert', img: 'data-box-02-s.jpg', carte: 'data-box-02-s.jpg', href: `${PAGE_REALISATIONS}#data-box` },
+  { id: 'community', line: 'Uccle · 14 unités · Quatorze unités autour d’espaces partagés', img: 'community-05-s.jpg', carte: 'community-05-s.jpg', href: `${PAGE_REALISATIONS}#community` },
 ];
+// Le programme agences (kind agency, dans l'ordre) et la galerie (kind gallery, dans l'ordre) : data/projects.json.
+const agencesListe = projects.filter(p => p.kind === 'agency').sort((a, b) => a.order - b.order);
+const galerie = projects.filter(p => p.kind === 'gallery').sort((a, b) => a.order - b.order);
+// Fiche The Bank : la bande de trois faits (comme la planche A), les photos intercalées (01 portrait, 02 paysage) et leurs légendes, le projet suivant.
+// Les légendes ne sont pas dans data/projects.json (pas de captions pour the-bank) : elles décrivent la photo, sans rien ajouter, à confirmer au lot 3.
+const bank = byId['the-bank'];
+const fiche = {
+  projet: bank,
+  faits: [['Localisation', 'Liège'], ['Surface', bank.surface], ['Usage', 'Logements & commerce']],
+  hero: 'the-bank-03',
+  photos: [{ key: 'the-bank-01', legende: 'La façade, rue des Mineurs', sizes: '(max-width:640px) 100vw, 460px' }, { key: 'the-bank-02', legende: 'Le point Bancontact', sizes: '(max-width:640px) 100vw, 660px' }],
+  chapitres: [['Ce que c’était', bank.was], ['Ce que nous y avons vu', bank.saw], ['Ce que c’est devenu', bank.became]],
+  suivant: { projet: byId['data-box'], href: `${PAGE_REALISATIONS}#data-box` },
+};
 
 // Premier écran (structure F, figée le 23/09) : la photo, en 1800 px (<nom>.jpg) puis 2800 px (<nom>-l.jpg) pour les grands écrans ;
 // le srcset porte la largeur réelle de chaque fichier, lue dans l'en-tête JPEG. Les versions se génèrent depuis l'original avec
@@ -77,14 +95,21 @@ function jpegWidth(file) {
 // La photo déclare son point focal (object-position, posé en style sur l'<img>, vaut aussi sur téléphone). Figée le 23/09 sur Community 05,
 // accroche à gauche (bascules 9b et 9d retirées ; data-box-03 reste dans design/directions/img/). Le cadrage de Community 05 se choisit
 // avec la bascule temporaire 9c (maquette.css) : la valeur retenue remplacera ce focal, et la bascule disparaîtra.
-const photoCandidates = [
-  { key: 'community-05', focal: '50% 50%', files: ['community-05.jpg', 'community-05-l.jpg'] },
-].map(c => {
+// Sources d'une photo : <clé>.jpg (1800 px) et <clé>-l.jpg (2800 px) quand ils existent, sinon repli sur <clé>-s.jpg (800 px).
+function photoSources(key) {
   const chemin = f => path.join(REPO, 'design/directions/img', f);
-  const sources = c.files.filter(f => fs.existsSync(chemin(f)) || (console.warn('photo absente :', f), false)).map(f => ({ file: f, width: jpegWidth(chemin(f)) }));
-  if (!sources.length) { console.warn(`${c.key} : repli sur ${c.key}-s.jpg (800 px)`); sources.push({ file: `${c.key}-s.jpg`, width: jpegWidth(chemin(`${c.key}-s.jpg`)) }); }
-  return { key: c.key, focal: c.focal, sources };
-});
+  const sources = [`${key}.jpg`, `${key}-l.jpg`].filter(f => fs.existsSync(chemin(f))).map(f => ({ file: f, width: jpegWidth(chemin(f)) }));
+  if (!sources.length) { console.warn(`${key} : repli sur ${key}-s.jpg (800 px)`); sources.push({ file: `${key}-s.jpg`, width: jpegWidth(chemin(`${key}-s.jpg`)) }); }
+  return sources;
+}
+// <img> avec srcset quand plusieurs tailles existent ; attrs : attributs supplémentaires, déjà échappés.
+function photoImg(key, sizes, attrs = '') {
+  const sources = photoSources(key);
+  return `<img src="${IMG}/${sources[0].file}"${sources.length > 1 ? ` srcset="${sources.map(s => `${IMG}/${s.file} ${s.width}w`).join(', ')}" sizes="${sizes}"` : ''} alt="" decoding="async"${attrs}>`;
+}
+const photoCandidates = [
+  { key: 'community-05', focal: '50% 50%' },
+].map(c => ({ key: c.key, focal: c.focal, sources: photoSources(c.key) }));
 
 // ---------- logos ----------
 // Figés en couleur le 22/09 (bascule 14 retirée) : <img> de public/partners/couleur/. La hauteur de chaque logo se calcule à la masse visuelle
@@ -125,7 +150,7 @@ function header(active = '') {
   const a = k => active === k ? ' class="trait is-active"' : ' class="trait"';
   return `<header class="site-header">
   <a class="logo" href="index.html" aria-label="Perpetual">${phi('logo__mark')}<span class="logo__texte">Perpetual</span></a>
-  <nav class="site-nav" aria-label="Navigation"><a href="projets.html"${a('projets')}>${esc(REALISATIONS)}</a><a href="#"${a('engagements')}>Engagements</a><a href="#contact" class="trait">Contact</a></nav>
+  <nav class="site-nav" aria-label="Navigation"><a href="${PAGE_REALISATIONS}"${a('realisations')}>${esc(REALISATIONS)}</a><a href="#"${a('engagements')}>Engagements</a><a href="#contact" class="trait">Contact</a></nav>
 </header>`;
 }
 
@@ -161,17 +186,22 @@ function chart() {
 </div></section>`;
 }
 
-function projets() {
-  const rows = four.map((f, i) => `<li class="four__row${i === 0 ? ' is-active' : ''}" data-index="${i}"><a href="${f.href}"><span class="four__name">${esc(byId[f.id].name)}</span><span class="four__line">${esc(f.line)}</span></a></li>`).join('\n      ');
+// La liste des quatre : sur la Home, et sur la vue Réalisations où chaque ligne porte l'ancre du projet (ancres = true ; The Bank n'en a pas,
+// sa fiche est la cible). data-ancre sert à maquette.js pour déplacer l'ancre sur la carte quand la bascule 21 est sur « cartes ».
+function fourList(ancres = false) {
+  const rows = four.map((f, i) => `<li class="four__row${i === 0 ? ' is-active' : ''}" data-index="${i}"${ancres && f.href !== PAGE_FICHE ? ` id="${f.id}" data-ancre="${f.id}"` : ''}><a href="${f.href}"><span class="four__name">${esc(byId[f.id].name)}</span><span class="four__line">${esc(f.line)}</span></a></li>`).join('\n      ');
   const previews = four.map((f, i) => `<img${i === 0 ? ' class="is-active"' : ' loading="lazy"'} src="${IMG}/${f.img}" alt="" decoding="async">`).join('');
-  return `<section class="section section--projets" id="projets"><div class="container">
-  <p class="eyebrow">Réalisations</p>
-  <div class="four">
+  return `<div class="four">
     <ol class="four__list">
       ${rows}
     </ol>
     <div class="four__preview" aria-hidden="true">${previews}</div>
-  </div>
+  </div>`;
+}
+function projets() {
+  return `<section class="section section--projets" id="projets"><div class="container">
+  <p class="eyebrow">Réalisations</p>
+  ${fourList()}
 </div></section>`;
 }
 
@@ -208,7 +238,7 @@ function autres() {
     <div class="carte__texte">
       <h2 class="h2 h2--serif">Vingt adresses, de Haaltert à Welkenraedt.</h2>
       <p>${agences}</p>
-      <a class="autres__lien trait" href="projets.html">Toutes les réalisations →</a>
+      <a class="autres__lien trait" href="${PAGE_REALISATIONS}">Toutes les réalisations →</a>
     </div>
   </div>
 </div>
@@ -228,7 +258,7 @@ ${partnersHtml}
 function footer() {
   return `<footer class="site-footer" id="contact"><div class="container footer__grid">
   <div class="footer__contact"><p class="footer__name">Julien De Dobbeleer</p><a class="footer__mail" href="mailto:${site.email}">${site.email}</a><p class="footer__addr">${site.name}, ${site.city}</p></div>
-  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="projets.html">${esc(REALISATIONS)}</a><a class="trait" href="#collectif">Collectif</a><a class="trait" href="#">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
+  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="${PAGE_REALISATIONS}">${esc(REALISATIONS)}</a><a class="trait" href="index.html#collectif">Collectif</a><a class="trait" href="#">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
   <blockquote class="footer__quote"><p>« ${site.quote.text} »</p><cite>${site.quote.author}</cite></blockquote>
   <p class="footer__legal">© 2026 ${site.name}</p>
 </div></footer>
@@ -238,9 +268,70 @@ function footer() {
 `;
 }
 
+// ---------- fiche projet (The Bank) ----------
+// Brief §2 et §5 : lieu en eyebrow → titre 64 px → photo hero 520 px → bande de trois faits (même composant que la bande des chiffres de la Home :
+// surface papier, valeur en serif or, étiquette gris chaud) → chapitre 01 → deux photos (01 portrait sur 5 colonnes, 02 paysage sur 7, 440 px,
+// légendes) → chapitres 02 et 03, en colonne de 760 px alignée à gauche → projet suivant → pied de page.
+// Bascule 20 (maquette.css) : titres de chapitre en serif 32 px (défaut) ou en sans medium 26 px.
+function fichePage() {
+  const f = fiche;
+  const chapitre = (i, [titre, texte]) => `<section class="chapitre"><p class="chapitre__num">0${i + 1}</p><h2 class="chapitre__titre">${esc(titre)}</h2><p class="chapitre__texte">${texte}</p></section>`;
+  return `<article class="fiche">
+<div class="container page-head"><p class="eyebrow">${esc(f.projet.location)}</p><h1 class="page__titre">${esc(f.projet.name)}</h1></div>
+<div class="fiche__hero">${photoImg(f.hero, '100vw')}</div>
+<section class="band faits-band" aria-label="En bref"><div class="container"><ol class="stats stats--faits">${f.faits.map(([l, v]) => `<li class="stat"><span class="stat__value">${esc(v)}</span><span class="stat__label">${esc(l)}</span></li>`).join('')}</ol></div></section>
+<div class="container">
+  <div class="chapitres">${chapitre(0, f.chapitres[0])}</div>
+  <div class="fiche__photos">${f.photos.map(ph => `<figure>${photoImg(ph.key, ph.sizes, ' loading="lazy"')}<figcaption>${esc(ph.legende)}</figcaption></figure>`).join('')}</div>
+  <div class="chapitres">${f.chapitres.slice(1).map((c, i) => chapitre(i + 1, c)).join('')}</div>
+  <a class="suivant" href="${f.suivant.href}"><span class="eyebrow">Projet suivant</span><span class="suivant__nom trait">${esc(f.suivant.projet.name)} →</span></a>
+</div>
+</article>`;
+}
+
+// ---------- vue Réalisations ----------
+// Brief §5 : titre → les 4 projets (bascule 21 : la liste de la Home, défaut, ou quatre cartes photo 3:2) → programme agences (intro et les quatre
+// exemples en liste typographique) → galerie en grille 3 colonnes 3:2 (photos <id>-01-s.jpg, nom sous la photo, surface · usage au survol,
+// tout affiché sur téléphone) → pied de page.
+function realisationsPage() {
+  const rmd = frontmatter(read('content/realisations.md'));
+  const sous = (rmd.fm.match(/subtitle:\s*(.+)/) || [])[1];
+  const cartes = four.map(f => `<li class="cartes__item"${f.href !== PAGE_FICHE ? ` data-ancre="${f.id}"` : ''}><a href="${f.href}"><span class="cartes__photo"><img src="${IMG}/${f.carte}" alt="" loading="lazy" decoding="async"></span><span class="cartes__nom">${esc(byId[f.id].name)}</span><span class="cartes__ligne">${esc(f.line)}</span></a></li>`).join('\n    ');
+  const agencesHtml = agencesListe.map(a => `<li><span class="agence__nom">${esc(a.name)}</span><span class="agence__ligne">${esc(a.surface)} · ${esc(a.use)}</span></li>`).join('\n      ');
+  const galerieHtml = galerie.map(g => {
+    const meta = `${esc(g.surface)} · ${esc(g.use)}`;
+    return `<li class="galerie__item"><figure><span class="galerie__photo"><img src="${IMG}/${g.id}-01-s.jpg" alt="" loading="lazy" decoding="async"><span class="galerie__voile" aria-hidden="true">${meta}</span></span><figcaption><span class="galerie__nom">${esc(g.name)}</span><span class="galerie__meta">${meta}</span></figcaption></figure></li>`;
+  }).join('\n    ');
+  return `<div class="container page-head"><h1 class="page__titre">${esc(rmd.fm.match(/title:\s*(.+)/)[1].trim())}</h1>${sous ? `<p class="page__sous">${esc(sous.trim())}</p>` : ''}</div>
+<section class="section section--quatre" id="projets"><div class="container">
+  <p class="eyebrow">Projets détaillés</p>
+  ${fourList(true)}
+  <ol class="cartes">
+    ${cartes}
+  </ol>
+</div></section>
+<section class="section section--agences" id="agences"><div class="container">
+  <p class="eyebrow">Le programme agences</p>
+  <div class="agences">
+    <p class="agences__intro">${agences}</p>
+    <ol class="agences__liste">
+      ${agencesHtml}
+    </ol>
+  </div>
+</div></section>
+<section class="section section--galerie" id="galerie"><div class="container">
+  <p class="eyebrow">Galerie</p>
+  <ul class="galerie">
+    ${galerieHtml}
+  </ul>
+</div></section>`;
+}
+
 // ---------- pages ----------
 const pages = {
   'index.html': () => head({ page: 'home', text: `${site.name} — ${site.tagline}` }) + '\n' + header('') + '\n<main>\n' + lead() + '\n' + chart() + '\n' + projets() + '\n' + autres() + '\n' + collectifBlock() + '\n</main>\n' + footer(),
+  [PAGE_FICHE]: () => head({ page: 'fiche', text: `${fiche.projet.name} — ${site.name}` }) + '\n' + header('realisations') + '\n<main>\n' + fichePage() + '\n</main>\n' + footer(),
+  [PAGE_REALISATIONS]: () => head({ page: 'realisations', text: `${REALISATIONS} — ${site.name}` }) + '\n' + header('realisations') + '\n<main>\n' + realisationsPage() + '\n</main>\n' + footer(),
 };
 
 for (const [name, render] of Object.entries(pages)) {
