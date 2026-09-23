@@ -17,6 +17,8 @@ npm run preview    # sert dist/ pour vérification
 
 Chaque push sur la branche `main` construit le site et le publie sur GitHub Pages (`.github/workflows/deploy.yml`). Aucune étape manuelle.
 
+Les pull requests ouvertes depuis une branche de ce dépôt sont fusionnées automatiquement dans `main` dès que le site se construit sans erreur (`.github/workflows/auto-merge.yml`), puis le site est déployé. Pour garder une PR ouverte (relecture, travail en cours), lui ajouter l'étiquette `no-auto-merge` ; la retirer relance la fusion.
+
 ## Où modifier quoi
 
 | Je veux… | Fichier |
