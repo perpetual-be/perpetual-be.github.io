@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="fr" data-page="realisations">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Réalisations — Agences · miniatures</title>
+<script>(function(){var p=new URLSearchParams(location.search),h=document.documentElement;p.forEach(function(v,k){if(/^[a-z][a-z-]*$/.test(k)&&/^[a-z0-9-]*$/.test(v))h.setAttribute('data-'+k,v)})})();</script>
+<link rel="stylesheet" href="../../maquette/maquette.css">
+<link rel="icon" href="../../../public/favicon.svg">
+<style>
+.prop-badge{position:fixed;left:16px;bottom:16px;z-index:50;display:flex;gap:14px;align-items:center;padding:8px 12px;background:#fff;border:1px solid var(--filet);font:13px/1.2 var(--sans);color:var(--c-meta)}
+.prop-badge b{color:var(--c-texte);font-weight:500}
+.prop-badge a{color:var(--c-texte)}.prop-badge a.is-active{border-bottom:1px solid var(--c-trait)}
+@media print{.prop-badge{display:none}}
+@media (max-width:640px){.prop-badge{left:8px;right:8px;bottom:8px;flex-wrap:wrap;gap:6px 12px;font-size:12px}}
+/* gouttière à gouttière : photos et surfaces pleine largeur, alignées sur le logo et la navigation (§8.5) */
+.large{max-width:1600px;margin:0 auto;padding:0 var(--gutter)}
+.ouv__texte{font-size:var(--fs-texte);line-height:1.5;color:var(--c-texte);max-width:40ch;text-wrap:pretty}
+.eyebrow--sans-marge{margin-bottom:0}
+/* .provisoire : texte ou intitulé provisoire (lot 3), signalé par un title au survol */
+
+.p1-ouv{display:grid;grid-template-columns:7fr 5fr;gap:64px;align-items:end;padding-top:32px;padding-bottom:28px}
+.p1-ouv .ouv__texte{padding-bottom:6px}
+.portraits{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.portrait a{display:block}
+.portrait__photo{display:block;position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--surface)}
+.portrait__photo img{width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
+.portrait a:hover img{transform:scale(var(--zoom))}
+.portrait__voile{position:absolute;left:0;right:0;bottom:0;padding:72px 20px 18px;color:var(--photo-texte);font-size:14px;line-height:1.45;
+  background:linear-gradient(to top,rgba(0,0,0,.66) 0%,rgba(0,0,0,.4) 50%,transparent 100%);opacity:0;transition:opacity .25s}
+.portrait__voile b{display:block;font-weight:500;font-size:15px}
+.portrait a:hover .portrait__voile{opacity:1}
+.portrait__legende{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:12px}
+.portrait__nom{position:relative;font-family:var(--serif);font-size:26px;line-height:1.1;letter-spacing:-.01em;padding-bottom:2px}
+.portrait__nom::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--c-trait);transform:scaleX(0);transform-origin:left;transition:transform .25s}
+.portrait a:hover .portrait__nom::after{transform:scaleX(1)}
+.portrait__lieu{font-size:var(--fs-etiquette);color:var(--c-meta);text-align:right}
+/* programme agences : la bande papier de la Home, l'énoncé de Julien en serif, les quatre agences en photo */
+.p1-agences{background:var(--surface);margin-top:96px;padding:64px 0 60px}
+.p1-agences__tete{display:grid;grid-template-columns:7fr 5fr;gap:64px;align-items:end;margin-bottom:44px}
+.enonce{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.18;letter-spacing:-.01em;max-width:26ch;margin-top:14px}
+.p1-agences__tete .ouv__texte{padding-bottom:4px}
+.vignettes{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.vignette__photo{display:block;aspect-ratio:3/2;overflow:hidden;background:var(--blanc)}
+.vignette__photo img{width:100%;height:100%;object-fit:cover}
+.vignette__nom{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:12px;font-size:15px;font-weight:500}
+.vignette__nom span{font-weight:400;font-size:var(--fs-etiquette);color:var(--c-meta)}
+.vignette__usage{font-size:14px;line-height:1.45;color:var(--c-texte);margin-top:2px;max-width:34ch}
+/* galerie : mosaïque serrée, rien sous les photos ; nom, lieu, surface et usage au survol */
+.p1-galerie{padding-top:96px;padding-bottom:96px}   /* padding vertical seulement : la gouttière reste celle de .large */
+.site-footer>.container{max-width:1600px}   /* proposition : pied de page aligné sur la même grille large */
+.p1-galerie__tete{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:28px}
+.h2-serif{font-family:var(--serif);font-weight:400;font-size:var(--fs-h2-serif);line-height:1.15;letter-spacing:-.01em}
+.mosaique{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tuile{position:relative;overflow:hidden;aspect-ratio:4/3;background:var(--surface)}
+.tuile img{width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
+.tuile:hover img{transform:scale(var(--zoom))}
+.tuile__voile{position:absolute;left:0;right:0;bottom:0;padding:64px 18px 16px;color:var(--photo-texte);font-size:14px;line-height:1.4;
+  background:linear-gradient(to top,rgba(0,0,0,.66) 0%,rgba(0,0,0,.42) 50%,transparent 100%);opacity:0;transition:opacity .25s}
+.tuile:hover .tuile__voile{opacity:1}
+.tuile__nom{display:block;font-family:var(--serif);font-size:22px;line-height:1.15;margin-bottom:4px}
+.tuile__legende{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media (max-width:640px){
+  .p1-ouv{grid-template-columns:1fr;gap:14px;padding-top:24px;padding-bottom:22px}
+  .portraits{grid-template-columns:1fr 1fr;gap:20px 8px}
+  .portrait__voile{display:none}
+  .portrait__legende{display:block;margin-top:8px}
+  .portrait__nom{font-size:21px}
+  .portrait__lieu{display:block;text-align:left;margin-top:2px}
+  .p1-agences{margin-top:56px;padding:44px 0 40px}
+  .p1-agences__tete{grid-template-columns:1fr;gap:16px;margin-bottom:28px}
+  .enonce{font-size:26px}
+  .vignettes{grid-template-columns:1fr 1fr;gap:24px 8px}
+  .vignette__nom{display:block;font-size:14px;margin-top:8px}
+  .vignette__nom span{display:block}
+  .vignette__usage{font-size:13px}
+  .p1-galerie{padding-top:56px;padding-bottom:64px}
+  .p1-galerie__tete{margin-bottom:18px}
+  .mosaique{grid-template-columns:1fr 1fr;gap:20px 8px}
+  .tuile{overflow:visible;aspect-ratio:auto;background:none}
+  .tuile img{aspect-ratio:4/3;height:auto}
+  .tuile__voile{display:none}
+  .tuile__legende{position:static;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal;display:block;margin-top:8px;font-size:13px;line-height:1.4;color:var(--c-meta)}
+  .tuile__legende b{display:block;font-weight:500;font-size:14px;color:var(--c-texte)}
+}
+@media (prefers-reduced-motion:reduce){.portrait__photo img,.tuile img,.portrait__voile,.tuile__voile,.portrait__nom::after{transition:none}}
+
+/* ---- photos d'un bien : piste à accroche, « 1 / 3 » en haut à droite, flèches fines sur la photo (visibles au survol) ---- */
+.bien{position:relative;width:100%;height:100%;overflow:hidden}
+.bien__piste{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;cursor:zoom-in}
+.bien__piste::-webkit-scrollbar{display:none}
+.bien__piste img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start;scroll-snap-stop:always}
+.bien::after{content:"";position:absolute;top:0;right:0;width:120px;height:64px;pointer-events:none;background:radial-gradient(ellipse at 100% 0,rgba(0,0,0,.38) 0%,rgba(0,0,0,.16) 45%,transparent 75%)}   /* le compteur reste lisible sur un ciel clair */
+.bien[data-n="1"]::after{display:none}
+.bien__compteur{position:absolute;z-index:1;top:10px;right:12px;font-size:12px;line-height:1;letter-spacing:.02em;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 0 6px rgba(0,0,0,.6),0 0 1px rgba(0,0,0,.7);pointer-events:none}
+.bien__fleche{position:absolute;top:0;bottom:0;width:52px;display:flex;align-items:center;justify-content:center;background:none;border:0;padding:0;color:#fff;cursor:pointer;opacity:0;transition:opacity .2s}
+.bien__fleche--g{left:0}.bien__fleche--d{right:0}
+.bien__fleche svg{width:13px;height:26px;filter:drop-shadow(0 0 3px rgba(0,0,0,.65))}
+.bien:hover .bien__fleche,.bien:focus-within .bien__fleche{opacity:1}
+.bien[data-n="1"] .bien__compteur,.bien[data-n="1"] .bien__fleche{display:none}
+@media (hover:none){.bien__fleche{display:none}}
+/* vignettes des agences (celles de P1), photo 3:2 */
+.vignette__photo{position:relative}
+/* ---- visionneuse : fond blanc, photo entière, flèches de part et d'autre, légende et compteur dessous ---- */
+.visio{position:fixed;inset:0;z-index:100;background:var(--blanc);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 88px 36px}
+.visio[hidden]{display:none}
+.visio__cadre{position:relative;width:min(100%,calc((100vh - 170px) * 4 / 3));aspect-ratio:4/3}
+.visio__piste{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.visio__piste::-webkit-scrollbar{display:none}
+.visio__piste img{flex:0 0 100%;width:100%;height:100%;object-fit:contain;scroll-snap-align:start;scroll-snap-stop:always}
+.visio__bas{display:flex;justify-content:space-between;align-items:baseline;gap:24px;width:min(100%,calc((100vh - 170px) * 4 / 3));margin-top:14px;font-size:14px;color:var(--c-meta)}
+.visio__bas b{font-weight:500;color:var(--c-texte);margin-right:10px}
+.visio__compteur{font-variant-numeric:tabular-nums;white-space:nowrap}
+.visio__fleche{position:absolute;top:50%;transform:translateY(-50%);width:64px;height:120px;display:flex;align-items:center;justify-content:center;background:none;border:0;color:var(--c-texte);cursor:pointer}
+.visio__fleche svg{width:15px;height:30px}
+.visio__fleche--g{left:12px}.visio__fleche--d{right:12px}
+.visio__fleche[hidden]{display:none}
+.visio__fermer{position:absolute;top:20px;right:28px;background:none;border:0;padding:4px 0;font:500 14px/1 var(--sans);color:var(--c-texte);cursor:pointer}
+body.visio-ouverte{overflow:hidden}
+@media (max-width:640px){
+  .visio{padding:56px 0 24px}
+  .visio__cadre,.visio__bas{width:100%}
+  .visio__bas{padding:0 var(--gutter);flex-wrap:wrap;gap:4px 12px;font-size:13px}
+  .visio__fleche{display:none}
+  .visio__fermer{right:var(--gutter)}
+}
+/* le bloc agences est désormais le dernier de la page */
+.p1-agences{margin-bottom:96px}
+@media (max-width:640px){.p1-agences{margin-bottom:56px}}
+@media (prefers-reduced-motion:reduce){.bien__fleche{transition:none}}
+
+.p1-agences--r{padding:0;background:var(--surface)}
+.p1-agences--r .fond{padding:64px 0 0}
+.mini{padding-top:40px;padding-bottom:56px}
+.mini__tete{display:flex;justify-content:space-between;align-items:baseline;gap:24px;padding-top:22px;border-top:1px solid var(--filet);margin-bottom:14px}
+.mini__liste{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px}
+.mini__btn{display:block;width:100%;background:none;border:0;padding:0;text-align:left;font:inherit;color:inherit;cursor:zoom-in}
+.mini__photo{display:block;aspect-ratio:4/3;overflow:hidden;background:var(--blanc)}
+.mini__photo img{width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
+.mini__btn:hover img,.mini__btn:focus-visible img{transform:scale(1.06)}
+.mini__ville{display:block;font-size:12px;line-height:1.3;margin-top:6px;color:var(--c-texte);overflow-wrap:anywhere}
+.mini__btn:hover .mini__ville{color:var(--c-lien)}
+/* ?mini=dessous : la bande papier s'arrête après les quatre agences ; les miniatures sur blanc */
+html[data-mini="dessous"] .p1-agences--r{background:none}
+html[data-mini="dessous"] .p1-agences--r .fond{background:var(--surface);padding-bottom:60px}
+html[data-mini="dessous"] .mini{padding-top:48px;padding-bottom:0}
+html[data-mini="dessous"] .mini__tete{border-top:0;padding-top:0}
+@media (max-width:640px){
+  .p1-agences--r .fond{padding-top:44px}
+  .mini{padding-top:28px;padding-bottom:40px}
+  .mini__liste{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 8px}
+  .mini__ville{font-size:11px}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="phi" viewBox="0 0 100 104.02"><g transform="translate(0,0) scale(0.100018,0.100019) translate(-0.159759,1040.0) scale(0.1,-0.1)">
+<path d="M2862 10258 l3 -143 135 -8 c199 -11 349 -37 500 -87 360 -119 590
+-349 708 -707 32 -95 78 -343 69 -367 -4 -10 -31 -16 -84 -20 -215 -16 -345
+-28 -418 -36 -132 -16 -237 -31 -285 -40 -25 -5 -74 -14 -110 -20 -409 -74
+-817 -194 -1160 -341 -94 -40 -381 -185 -465 -234 -105 -62 -292 -185 -380
+-249 -617 -451 -1040 -1033 -1235 -1696 -12 -41 -26 -86 -30 -100 -19 -57 -50
+-204 -70 -335 -12 -77 -26 -162 -31 -190 -6 -29 -9 -231 -7 -490 4 -462 9
+-531 59 -765 31 -145 108 -408 149 -505 4 -11 25 -60 45 -110 171 -414 434
+-796 799 -1161 230 -230 357 -334 591 -490 118 -79 150 -98 270 -164 370 -204
+812 -361 1245 -441 123 -22 170 -31 225 -39 196 -31 552 -60 743 -60 108 0
+144 -3 148 -13 6 -16 -21 -200 -42 -282 -23 -94 -35 -125 -96 -255 -137 -288
+-403 -492 -752 -574 -165 -39 -223 -47 -386 -55 l-135 -6 -3 -137 -3 -138
+2131 0 2131 0 -3 137 -3 138 -85 2 c-136 3 -325 29 -450 62 -455 120 -737 411
+-841 870 -18 79 -39 233 -33 242 3 5 67 9 142 9 323 0 654 36 1032 111 218 43
+524 128 645 179 11 4 58 23 105 41 167 64 342 149 550 267 192 110 444 298
+640 480 321 298 568 608 755 948 42 76 125 241 125 249 0 2 13 33 29 67 106
+234 204 601 241 903 6 55 16 110 21 123 12 30 12 684 0 714 -5 13 -14 68 -21
+123 -11 95 -16 128 -42 255 -41 207 -132 509 -193 644 -12 28 -35 80 -51 116
+-163 374 -476 810 -814 1133 -293 281 -636 510 -1015 677 -27 12 -68 30 -90
+40 -155 69 -448 164 -695 225 -172 43 -362 79 -575 110 -181 26 -428 48 -660
+60 -66 3 -123 9 -127 13 -7 7 12 149 31 242 5 25 23 88 40 140 156 486 568
+756 1199 786 l142 7 0 144 0 143 -2130 0 -2131 0 3 -142z m1418 -5069 c0
+-3145 -1 -3309 -17 -3309 -73 0 -410 44 -543 71 -768 153 -1322 520 -1683
+1114 -48 80 -114 211 -174 345 -59 133 -143 414 -182 610 -91 456 -117 868
+-91 1425 45 959 230 1636 571 2087 96 126 265 292 424 414 54 41 193 134 201
+134 3 0 18 8 32 19 37 25 207 113 262 135 41 16 79 32 135 57 46 20 239 80
+350 109 206 53 667 119 708 102 4 -2 7 -1492 7 -3313z m1708 3292 c172 -21
+282 -41 422 -76 382 -96 712 -246 965 -439 383 -292 672 -714 837 -1221 38
+-118 97 -364 121 -506 24 -138 32 -197 59 -444 15 -143 15 -834 0 -1020 -41
+-484 -86 -762 -173 -1080 -96 -350 -254 -673 -439 -900 -147 -180 -401 -390
+-632 -523 -236 -136 -481 -231 -775 -303 -172 -41 -466 -81 -613 -83 l-55 -1
+-3 3304 c-1 2023 2 3307 7 3311 11 6 156 -4 279 -19z"/>
+</g></symbol></svg>
+<header class="site-header">
+  <a class="logo" href="../../maquette/index.html" aria-label="Perpetual"><svg class="logo__mark" aria-hidden="true"><use href="#phi"/></svg><span class="logo__texte">Perpetual</span></a>
+  <nav class="site-nav" aria-label="Navigation"><a href="p1-miniatures.html" class="trait is-active">Réalisations</a><a href="#" class="trait">Engagements</a><a href="#contact" class="trait">Contact</a></nav>
+</header>
+<main>
+<div class="large p1-ouv">
+  <h1 class="page__titre">Réalisations</h1>
+  <p class="ouv__texte provisoire" title="texte provisoire, lot 3">Vingt adresses où l’usage d’un bâtiment a été changé pour le rendre à nouveau pertinent.</p>
+</div>
+<section class="large" id="projets" aria-label="Quatre projets">
+  <ol class="portraits">
+    <li class="portrait"><a href="#"><span class="portrait__photo"><img src="../../directions/img/ateliers-118-05.jpg" srcset="../../directions/img/ateliers-118-05-s.jpg 600w, ../../directions/img/ateliers-118-05.jpg 1350w" sizes="(max-width:640px) 50vw, 25vw" alt="" style="object-position:50% 50%" decoding="async"><span class="portrait__voile" aria-hidden="true"><b>1 200 m²</b>Treize ateliers dans une ancienne usine de colle</span></span><span class="portrait__legende"><span class="portrait__nom">Ateliers 118</span><span class="portrait__lieu">Molenbeek-Saint-Jean</span></span></a></li>
+    <li class="portrait"><a href="../../maquette/projet-the-bank.html"><span class="portrait__photo"><img src="../../directions/img/the-bank-01.jpg" srcset="../../directions/img/the-bank-01-s.jpg 600w, ../../directions/img/the-bank-01.jpg 1350w" sizes="(max-width:640px) 50vw, 25vw" alt="" style="object-position:50% 30%" decoding="async"><span class="portrait__voile" aria-hidden="true"><b>1 100 m²</b>Une agence devenue bijouterie, Bancontact et logements</span></span><span class="portrait__legende"><span class="portrait__nom">The Bank</span><span class="portrait__lieu">Liège</span></span></a></li>
+    <li class="portrait"><a href="#"><span class="portrait__photo"><img src="../../directions/img/data-box-02.jpg" srcset="../../directions/img/data-box-02-s.jpg 800w, ../../directions/img/data-box-02.jpg 1800w" sizes="(max-width:640px) 50vw, 25vw" alt="" style="object-position:50% 50%" decoding="async"><span class="portrait__voile" aria-hidden="true"><b>4 200 m²</b>Un site technique dont l’avenir reste ouvert</span></span><span class="portrait__legende"><span class="portrait__nom">Data Box</span><span class="portrait__lieu">Jemelle</span></span></a></li>
+    <li class="portrait"><a href="#"><span class="portrait__photo"><img src="../../directions/img/community-05.jpg" srcset="../../directions/img/community-05-s.jpg 800w, ../../directions/img/community-05.jpg 1800w" sizes="(max-width:640px) 50vw, 25vw" alt="" style="object-position:62% 50%" decoding="async"><span class="portrait__voile" aria-hidden="true"><b>14 unités</b>Quatorze unités autour d’espaces partagés</span></span><span class="portrait__legende"><span class="portrait__nom">Community</span><span class="portrait__lieu">Uccle</span></span></a></li>
+  </ol>
+</section>
+<section class="p1-agences p1-agences--r" id="agences">
+  <div class="fond"><div class="large">
+  <div class="p1-agences__tete">
+    <div><p class="eyebrow eyebrow--sans-marge">Programme agences</p><h2 class="enonce">Une agence bancaire fermée, c’est plusieurs centaines de mètres carrés vides au cœur d’un quartier.</h2></div>
+    <p class="ouv__texte">Nous maintenons le service — l’accès au cash — sur la surface qui lui suffit, et nous rendons le reste à l’usage.</p>
+  </div>
+  <ul class="vignettes">
+      <li><span class="vignette__photo"><div class="bien" data-bien="0" data-n="2"><div class="bien__piste"><img src="img/bnp-braine-le-comte-01-m.jpg" alt="" loading="lazy" decoding="async"><img src="img/bnp-braine-le-comte-03-m.jpg" alt="" loading="lazy" decoding="async"></div><span class="bien__compteur" aria-hidden="true">1 / 2</span><button type="button" class="bien__fleche bien__fleche--g" aria-label="Photo précédente"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M12 2 2 14l10 12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button><button type="button" class="bien__fleche bien__fleche--d" aria-label="Photo suivante"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M2 2l10 12L2 26" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></div></span><p class="vignette__nom">Braine-le-Comte<span>600 m²</span></p><p class="vignette__usage">Point Bancontact et service finance de la commune</p></li>
+      <li><span class="vignette__photo"><div class="bien" data-bien="1" data-n="2"><div class="bien__piste"><img src="img/bnp-pont-a-celles-01-m.jpg" alt="" loading="lazy" decoding="async"><img src="img/bnp-pont-a-celles-02-m.jpg" alt="" loading="lazy" decoding="async"></div><span class="bien__compteur" aria-hidden="true">1 / 2</span><button type="button" class="bien__fleche bien__fleche--g" aria-label="Photo précédente"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M12 2 2 14l10 12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button><button type="button" class="bien__fleche bien__fleche--d" aria-label="Photo suivante"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M2 2l10 12L2 26" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></div></span><p class="vignette__nom">Pont-à-Celles<span>250 m²</span></p><p class="vignette__usage">Point Bancontact et auto-école</p></li>
+      <li><span class="vignette__photo"><div class="bien" data-bien="2" data-n="2"><div class="bien__piste"><img src="img/bnp-jambes-01-m.jpg" alt="" loading="lazy" decoding="async"><img src="img/bnp-jambes-02-m.jpg" alt="" loading="lazy" decoding="async"></div><span class="bien__compteur" aria-hidden="true">1 / 2</span><button type="button" class="bien__fleche bien__fleche--g" aria-label="Photo précédente"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M12 2 2 14l10 12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button><button type="button" class="bien__fleche bien__fleche--d" aria-label="Photo suivante"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M2 2l10 12L2 26" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></div></span><p class="vignette__nom">Jambes<span>400 m²</span></p><p class="vignette__usage">Point Bancontact, école de danse et commerce de proximité</p></li>
+      <li><span class="vignette__photo"><div class="bien" data-bien="3" data-n="2"><div class="bien__piste"><img src="img/belfius-mettet-03-m.jpg" alt="" loading="lazy" decoding="async"><img src="img/belfius-mettet-05-m.jpg" alt="" loading="lazy" decoding="async"></div><span class="bien__compteur" aria-hidden="true">1 / 2</span><button type="button" class="bien__fleche bien__fleche--g" aria-label="Photo précédente"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M12 2 2 14l10 12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button><button type="button" class="bien__fleche bien__fleche--d" aria-label="Photo suivante"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M2 2l10 12L2 26" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></div></span><p class="vignette__nom">Mettet<span>600 m²</span></p><p class="vignette__usage">Point Bancontact et quatre logements</p></li>
+  </ul>
+  </div></div>
+  <div class="large mini">
+    <div class="mini__tete"><p class="eyebrow eyebrow--sans-marge provisoire" title="intitulé provisoire, lot 3">Et douze autres agences</p></div>
+    <ul class="mini__liste">
+      <li><button type="button" class="mini__btn" data-ouvrir="4" aria-label="Braine-l’Alleud, 110 m², Commerce — voir les photos"><span class="mini__photo"><img src="img/belfius-braine-l-alleud-01-m.jpg" alt="" loading="lazy" decoding="async"></span><span class="mini__ville">Braine-l’Alleud</span></button></li>
+      <li><button type="button" class="mini__btn" data-ouvrir="5" aria-label="Bois-de-Villers, 60 m², Commerce — voir les photos"><span class="mini__photo"><img src="img/bnp-bois-de-villers-02-m.jpg" alt="" loading="lazy" decoding="async"></span><span class="mini__ville">Bois-de-Villers</span></button></li>
+      <li><button type="button" class="mini__btn" data-ouvrir="6" aria-label="Belgrade (Namur), 130 m², Commerces — voir les photos"><span class="mini__photo"><img src="img/ing-belgrade-01-m.jpg" alt="" loading="lazy" decoding="async"></span><span class="mini__ville">Belgrade (Namur)</span></button></li>
+      <li><button type="button" class="mini__btn" data-ouvrir="7" aria-label="Haaltert, 250 m², Logement, bureau et commerce — voir les photos"><span class="mini__photo"><img src="img/ing-haaltert-01-m.jpg" alt="" loading="lazy" decoding="async"></span><span class="mini__ville">Haaltert</span></button></li>
+      <li><button type="button" class="mini__btn" data-ouvrir="8" aria-label="Landen, 350 m², Logements et commerce — voir les photos"><span class="mini__photo"><img src="img/ing-landen-01-m.jpg" alt="" loading="lazy" decoding="async"></span><span class="mini__ville">Landen</span></button></li>
+      <li><button type="button" class="mini__btn" data-ouvrir="9" aria-label="Tervuren, 320 m², Commerces et parkings — voir les photos"><span class="mini__photo"><img src="img/ing-tervuren-01-m.jpg" alt="" loading="lazy" decoding="async"></span><span class="mini__ville">Tervuren</span></button></li>
+      <li><button type="button" class="mini__btn" data-ouvrir="10" aria-label="Perwez, 60 m², Commerce — voir les photos"><span class="mini__photo"><img src="img/perwez-02-m.jpg" alt="" loading="lazy" decoding="async"></span><span class="mini__ville">Perwez</span></button></li>
+      <li><button type="button" class="mini__btn" data-ouvrir="11" aria-label="Welkenraedt, 120 m², Commerce — voir les photos"><span class="mini__photo"><img src="img/ing-welkenraedt-01-m.jpg" alt="" loading="lazy" decoding="async"></span><span class="mini__ville">Welkenraedt</span></button></li>
+      <li><button type="button" class="mini__btn" data-ouvrir="12" aria-label="Gilly, 450 m², Logements et commerces — voir les photos"><span class="mini__photo"><img src="img/gilly-01-m.jpg" alt="" loading="lazy" decoding="async"></span><span class="mini__ville">Gilly</span></button></li>
+      <li><button type="button" class="mini__btn" data-ouvrir="13" aria-label="Anderlecht, 230 m², Commerce et atelier — voir les photos"><span class="mini__photo"><img src="img/wayez-27-01-m.jpg" alt="" loading="lazy" decoding="async"></span><span class="mini__ville">Anderlecht</span></button></li>
+      <li><button type="button" class="mini__btn" data-ouvrir="14" aria-label="Schaerbeek, 700 m², Logements et équipement public — voir les photos"><span class="mini__photo"><img src="img/consolation-01-m.jpg" alt="" loading="lazy" decoding="async"></span><span class="mini__ville">Schaerbeek</span></button></li>
+      <li><button type="button" class="mini__btn" data-ouvrir="15" aria-label="Waremme, 110 m², Commerce — voir les photos"><span class="mini__photo"><img src="img/waremme-03-m.jpg" alt="" loading="lazy" decoding="async"></span><span class="mini__ville">Waremme</span></button></li>
+    </ul>
+  </div>
+</section>
+<div class="visio" hidden role="dialog" aria-modal="true" aria-label="Photos du bien">
+  <button type="button" class="visio__fermer trait" data-fermer>Fermer</button>
+  <button type="button" class="visio__fleche visio__fleche--g" data-v-prec aria-label="Photo précédente"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M12 2 2 14l10 12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+  <div class="visio__cadre"><div class="visio__piste" tabindex="0"></div></div>
+  <button type="button" class="visio__fleche visio__fleche--d" data-v-suiv aria-label="Photo suivante"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M2 2l10 12L2 26" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+  <p class="visio__bas"><span class="visio__legende"></span><span class="visio__compteur"></span></p>
+</div>
+</main>
+<footer class="site-footer" id="contact"><div class="container footer__grid">
+  <div class="footer__contact"><p class="footer__name">Julien De Dobbeleer</p><a class="footer__mail" href="mailto:julien@perpetual.be">julien@perpetual.be</a><p class="footer__addr">Perpetual, 1030 Bruxelles</p></div>
+  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="../../maquette/realisations.html">Réalisations</a><a class="trait" href="../../maquette/index.html#collectif">Collectif</a><a class="trait" href="#">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
+  <blockquote class="footer__quote"><p>« Le véritable voyage de découverte ne consiste pas à chercher de nouveaux paysages, mais à avoir de nouveaux yeux. »</p><cite>Marcel Proust</cite></blockquote>
+  <p class="footer__legal">© 2026 Perpetual</p>
+</div></footer>
+<nav class="prop-badge" aria-label="Propositions"><b>Réalisations</b><a href="p1.html">P1 · Quatre portraits</a><a href="p2.html">P2 · Nom sur la photo</a><a href="p1-miniatures.html" class="is-active">Agences · miniatures</a><a href="p1-defilement.html">Agences · défilement</a><a href="../../maquette/realisations.html">actuelle</a><span style="color:var(--filet)">|</span><span>miniatures :</span><a href="p1-miniatures.html" data-bascule="dans">dans la bande</a><a href="p1-miniatures.html?mini=dessous" data-bascule="dessous">dessous</a><script>(function(){var m=document.documentElement.getAttribute("data-mini")||"dans";document.querySelectorAll("[data-bascule]").forEach(function(a){if(a.getAttribute("data-bascule")===m)a.classList.add("is-active")})})();</script></nav>
+<script>window.BIENS=[{"ville": "Braine-le-Comte", "surface": "600 m²", "usage": "Point Bancontact et service finance de la commune", "l": ["img/bnp-braine-le-comte-01-l.jpg", "img/bnp-braine-le-comte-03-l.jpg"]}, {"ville": "Pont-à-Celles", "surface": "250 m²", "usage": "Point Bancontact et auto-école", "l": ["img/bnp-pont-a-celles-01-l.jpg", "img/bnp-pont-a-celles-02-l.jpg"]}, {"ville": "Jambes", "surface": "400 m²", "usage": "Point Bancontact, école de danse et commerce de proximité", "l": ["img/bnp-jambes-01-l.jpg", "img/bnp-jambes-02-l.jpg"]}, {"ville": "Mettet", "surface": "600 m²", "usage": "Point Bancontact et quatre logements", "l": ["img/belfius-mettet-03-l.jpg", "img/belfius-mettet-05-l.jpg"]}, {"ville": "Braine-l’Alleud", "surface": "110 m²", "usage": "Commerce", "l": ["img/belfius-braine-l-alleud-01-l.jpg", "img/belfius-braine-l-alleud-02-l.jpg", "img/belfius-braine-l-alleud-03-l.jpg", "img/belfius-braine-l-alleud-04-l.jpg"]}, {"ville": "Bois-de-Villers", "surface": "60 m²", "usage": "Commerce", "l": ["img/bnp-bois-de-villers-02-l.jpg", "img/bnp-bois-de-villers-01-l.jpg"]}, {"ville": "Belgrade (Namur)", "surface": "130 m²", "usage": "Commerces", "l": ["img/ing-belgrade-01-l.jpg", "img/ing-belgrade-02-l.jpg"]}, {"ville": "Haaltert", "surface": "250 m²", "usage": "Logement, bureau et commerce", "l": ["img/ing-haaltert-01-l.jpg", "img/ing-haaltert-03-l.jpg"]}, {"ville": "Landen", "surface": "350 m²", "usage": "Logements et commerce", "l": ["img/ing-landen-01-l.jpg", "img/ing-landen-02-l.jpg", "img/ing-landen-03-l.jpg"]}, {"ville": "Tervuren", "surface": "320 m²", "usage": "Commerces et parkings", "l": ["img/ing-tervuren-01-l.jpg", "img/ing-tervuren-02-l.jpg", "img/ing-tervuren-03-l.jpg"]}, {"ville": "Perwez", "surface": "60 m²", "usage": "Commerce", "l": ["img/perwez-02-l.jpg", "img/perwez-01-l.jpg"]}, {"ville": "Welkenraedt", "surface": "120 m²", "usage": "Commerce", "l": ["img/ing-welkenraedt-01-l.jpg", "img/ing-welkenraedt-02-l.jpg"]}, {"ville": "Gilly", "surface": "450 m²", "usage": "Logements et commerces", "l": ["img/gilly-01-l.jpg"]}, {"ville": "Anderlecht", "surface": "230 m²", "usage": "Commerce et atelier", "l": ["img/wayez-27-01-l.jpg", "img/wayez-27-02-l.jpg", "img/wayez-27-03-l.jpg"]}, {"ville": "Schaerbeek", "surface": "700 m²", "usage": "Logements et équipement public", "l": ["img/consolation-01-l.jpg", "img/consolation-02-l.jpg"]}, {"ville": "Waremme", "surface": "110 m²", "usage": "Commerce", "l": ["img/waremme-03-l.jpg", "img/waremme-04-l.jpg", "img/waremme-01-l.jpg"]}];</script><script>
+(function(){
+  var BIENS = window.BIENS, doux = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function indice(piste){ return Math.round(piste.scrollLeft / piste.clientWidth) }
+  function aller(piste, i, n){ i = (i + n) % n; piste.scrollTo({ left: i * piste.clientWidth, behavior: doux ? 'smooth' : 'auto' }) }
+  // photos d'un bien, sur la vignette
+  document.querySelectorAll('.bien').forEach(function(b){
+    var piste = b.querySelector('.bien__piste'), n = +b.getAttribute('data-n'), cpt = b.querySelector('.bien__compteur'), t;
+    function maj(){ cpt.textContent = (indice(piste) + 1) + ' / ' + n }
+    piste.addEventListener('scroll', function(){ clearTimeout(t); t = setTimeout(maj, 60) }, { passive: true });
+    b.querySelector('.bien__fleche--g').addEventListener('click', function(e){ e.stopPropagation(); aller(piste, indice(piste) - 1, n) });
+    b.querySelector('.bien__fleche--d').addEventListener('click', function(e){ e.stopPropagation(); aller(piste, indice(piste) + 1, n) });
+    piste.addEventListener('click', function(){ ouvrir(+b.getAttribute('data-bien'), indice(piste)) });
+    maj();
+  });
+  document.querySelectorAll('[data-ouvrir]').forEach(function(el){ el.addEventListener('click', function(){ ouvrir(+el.getAttribute('data-ouvrir'), 0) }) });
+  // visionneuse
+  var v = document.querySelector('.visio'), vp = v.querySelector('.visio__piste'), vl = v.querySelector('.visio__legende'), vc = v.querySelector('.visio__compteur'),
+      vg = v.querySelector('[data-v-prec]'), vd = v.querySelector('[data-v-suiv]'), courant = null, retour = null, tv;
+  function vmaj(){ var n = courant.l.length; vc.textContent = n > 1 ? (indice(vp) + 1) + ' / ' + n : '' }
+  function ouvrir(k, depart){
+    courant = BIENS[k]; retour = document.activeElement;
+    vp.innerHTML = courant.l.map(function(s){ return '<img src="' + s + '" alt="" decoding="async">' }).join('');
+    vl.innerHTML = '<b>' + courant.ville + '</b>' + courant.surface + ' · ' + courant.usage;
+    vg.hidden = vd.hidden = courant.l.length < 2;
+    v.hidden = false; document.body.classList.add('visio-ouverte');
+    vp.scrollLeft = (depart || 0) * vp.clientWidth; vmaj(); v.querySelector('[data-fermer]').focus();
+  }
+  function fermer(){ v.hidden = true; document.body.classList.remove('visio-ouverte'); if (retour) retour.focus() }
+  vp.addEventListener('scroll', function(){ clearTimeout(tv); tv = setTimeout(vmaj, 60) }, { passive: true });
+  vg.addEventListener('click', function(){ aller(vp, indice(vp) - 1, courant.l.length) });
+  vd.addEventListener('click', function(){ aller(vp, indice(vp) + 1, courant.l.length) });
+  v.querySelector('[data-fermer]').addEventListener('click', fermer);
+  v.addEventListener('click', function(e){ if (e.target === v) fermer() });
+  document.addEventListener('keydown', function(e){
+    if (v.hidden) return;
+    if (e.key === 'Escape') fermer();
+    if (e.key === 'ArrowRight') aller(vp, indice(vp) + 1, courant.l.length);
+    if (e.key === 'ArrowLeft') aller(vp, indice(vp) - 1, courant.l.length);
+  });
+})();
+</script>
+</body>
+</html>
