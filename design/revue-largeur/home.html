@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="fr" data-page="home">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Home · grille large</title>
+<script>(function(){var p=new URLSearchParams(location.search),h=document.documentElement;p.forEach(function(v,k){if(/^[a-z][a-z-]*$/.test(k)&&/^[a-z0-9-]*$/.test(v))h.setAttribute('data-'+k,v)})})();</script>
+<link rel="stylesheet" href="../maquette/maquette.css">
+<link rel="icon" href="../../public/favicon.svg">
+
+<style>
+/* Grille large (décisions d170925a et d170926c) : le contenu va de gouttière à gouttière, 1 600 px au plus,
+   comme l'en-tête et la vue Réalisations ; les textes gardent une mesure lisible. */
+html:not([data-largeur="actuelle"]) .container{max-width:var(--max-large)}
+html:not([data-largeur="actuelle"]) .hero__title,html:not([data-largeur="actuelle"]) .hero__text{max-width:var(--max-large)}
+/* deux colonnes de paragraphes : la seconde reste calée sur le 3e chiffre (50 % + 28 px) ;
+   chaque paragraphe garde ~70 caractères au lieu de s'étirer sur toute la colonne */
+html:not([data-largeur="actuelle"]) .hero__text p{max-width:34em}
+/* liste des 4 : l'aperçu garde sa taille (440 × 550) et se cale au bord droit du contenu */
+html:not([data-largeur="actuelle"]) .four__preview{width:100%;max-width:440px;justify-self:end}
+/* ?liste=pres (défaut) : la liste occupe tout l'espace jusqu'à l'aperçu, 64 px d'écart comme avant */
+@media (min-width:641px){
+  html:not([data-largeur="actuelle"]):not([data-liste="bord"]) .four{grid-template-columns:minmax(0,1fr) 440px;gap:64px}
+}
+/* Collectif — ?collectif=deux (défaut) : deux colonnes comme l'accroche, la chute sous la colonne de droite ;
+   ?collectif=enonce : première phrase en énoncé serif à gauche, le reste à droite (comme le programme agences) ;
+   ?collectif=seul : une colonne de 64 ch, comme dans la première version du prototype */
+@media (min-width:641px){
+  html:not([data-largeur="actuelle"]):not([data-collectif="enonce"]):not([data-collectif="seul"]) .collectif__text{max-width:none;columns:2;column-gap:56px}
+  html:not([data-largeur="actuelle"]):not([data-collectif="enonce"]):not([data-collectif="seul"]) .collectif__text p{max-width:34em;break-inside:avoid}
+  html:not([data-largeur="actuelle"]):not([data-collectif="enonce"]):not([data-collectif="seul"]) .collectif__text p:nth-child(4){break-before:column}
+  html:not([data-largeur="actuelle"])[data-collectif="enonce"] .collectif__text{max-width:none;display:grid;grid-template-columns:1fr 1fr;column-gap:56px;align-items:start}
+  html:not([data-largeur="actuelle"])[data-collectif="enonce"] .collectif__text p{grid-column:2;max-width:34em}
+  html:not([data-largeur="actuelle"])[data-collectif="enonce"] .collectif__text p:first-child{grid-column:1;grid-row:1 / span 5;font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.18;letter-spacing:-.01em;max-width:22ch;margin:0}
+}
+/* carte : deux moitiés, le texte commence sur la même verticale que la 2e colonne de paragraphes */
+@media (min-width:641px){
+  html:not([data-largeur="actuelle"]) .carte{grid-template-columns:1fr 1fr;gap:56px}
+  html:not([data-largeur="actuelle"]) .carte__fig{max-width:640px}
+}
+/* logos partenaires : répartis sur toute la largeur de la grille, comme ils l'étaient sur 1 200 px */
+@media (min-width:641px){ html:not([data-largeur="actuelle"]) .partners{justify-content:space-between} }
+/* pied de page : sur la grille large, comme sur Réalisations */
+html:not([data-largeur="actuelle"]) .site-footer>.container{max-width:var(--max-large)}
+
+.prop-badge{position:fixed;left:12px;bottom:12px;z-index:9999;display:flex;gap:10px;align-items:center;padding:7px 12px;background:#fff;border:1px solid #E4E0D8;font:13px/1.3 var(--sans);color:var(--c-texte)}
+.prop-badge a{color:var(--c-meta);text-decoration:none}
+.prop-badge a.is-active{color:var(--c-texte);font-weight:500;border-bottom:1px solid currentColor}
+html[data-panneau="off"] .prop-badge{display:none}
+@media (max-width:640px){.prop-badge{left:8px;right:8px;bottom:8px;font-size:12px;flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="phi" viewBox="0 0 100 104.02"><g transform="translate(0,0) scale(0.100018,0.100019) translate(-0.159759,1040.0) scale(0.1,-0.1)">
+<path d="M2862 10258 l3 -143 135 -8 c199 -11 349 -37 500 -87 360 -119 590
+-349 708 -707 32 -95 78 -343 69 -367 -4 -10 -31 -16 -84 -20 -215 -16 -345
+-28 -418 -36 -132 -16 -237 -31 -285 -40 -25 -5 -74 -14 -110 -20 -409 -74
+-817 -194 -1160 -341 -94 -40 -381 -185 -465 -234 -105 -62 -292 -185 -380
+-249 -617 -451 -1040 -1033 -1235 -1696 -12 -41 -26 -86 -30 -100 -19 -57 -50
+-204 -70 -335 -12 -77 -26 -162 -31 -190 -6 -29 -9 -231 -7 -490 4 -462 9
+-531 59 -765 31 -145 108 -408 149 -505 4 -11 25 -60 45 -110 171 -414 434
+-796 799 -1161 230 -230 357 -334 591 -490 118 -79 150 -98 270 -164 370 -204
+812 -361 1245 -441 123 -22 170 -31 225 -39 196 -31 552 -60 743 -60 108 0
+144 -3 148 -13 6 -16 -21 -200 -42 -282 -23 -94 -35 -125 -96 -255 -137 -288
+-403 -492 -752 -574 -165 -39 -223 -47 -386 -55 l-135 -6 -3 -137 -3 -138
+2131 0 2131 0 -3 137 -3 138 -85 2 c-136 3 -325 29 -450 62 -455 120 -737 411
+-841 870 -18 79 -39 233 -33 242 3 5 67 9 142 9 323 0 654 36 1032 111 218 43
+524 128 645 179 11 4 58 23 105 41 167 64 342 149 550 267 192 110 444 298
+640 480 321 298 568 608 755 948 42 76 125 241 125 249 0 2 13 33 29 67 106
+234 204 601 241 903 6 55 16 110 21 123 12 30 12 684 0 714 -5 13 -14 68 -21
+123 -11 95 -16 128 -42 255 -41 207 -132 509 -193 644 -12 28 -35 80 -51 116
+-163 374 -476 810 -814 1133 -293 281 -636 510 -1015 677 -27 12 -68 30 -90
+40 -155 69 -448 164 -695 225 -172 43 -362 79 -575 110 -181 26 -428 48 -660
+60 -66 3 -123 9 -127 13 -7 7 12 149 31 242 5 25 23 88 40 140 156 486 568
+756 1199 786 l142 7 0 144 0 143 -2130 0 -2131 0 3 -142z m1418 -5069 c0
+-3145 -1 -3309 -17 -3309 -73 0 -410 44 -543 71 -768 153 -1322 520 -1683
+1114 -48 80 -114 211 -174 345 -59 133 -143 414 -182 610 -91 456 -117 868
+-91 1425 45 959 230 1636 571 2087 96 126 265 292 424 414 54 41 193 134 201
+134 3 0 18 8 32 19 37 25 207 113 262 135 41 16 79 32 135 57 46 20 239 80
+350 109 206 53 667 119 708 102 4 -2 7 -1492 7 -3313z m1708 3292 c172 -21
+282 -41 422 -76 382 -96 712 -246 965 -439 383 -292 672 -714 837 -1221 38
+-118 97 -364 121 -506 24 -138 32 -197 59 -444 15 -143 15 -834 0 -1020 -41
+-484 -86 -762 -173 -1080 -96 -350 -254 -673 -439 -900 -147 -180 -401 -390
+-632 -523 -236 -136 -481 -231 -775 -303 -172 -41 -466 -81 -613 -83 l-55 -1
+-3 3304 c-1 2023 2 3307 7 3311 11 6 156 -4 279 -19z"/>
+</g></symbol></svg>
+<header class="site-header">
+  <a class="logo" href="../maquette/index.html" aria-label="Perpetual"><svg class="logo__mark" aria-hidden="true"><use href="#phi"/></svg><span class="logo__texte">Perpetual</span></a>
+  <nav class="site-nav" aria-label="Navigation"><a href="../maquette/realisations.html" class="trait">Réalisations</a><a href="#" class="trait">Engagements</a><a href="#contact" class="trait">Contact</a></nav>
+</header>
+<main>
+<section class="hero">
+<div class="hero__photo" aria-hidden="true">
+  <img data-photo="community-05" style="object-position:50% 50%" src="../directions/img/community-05.jpg" srcset="../directions/img/community-05.jpg 1800w, ../directions/img/community-05-l.jpg 2800w" sizes="100vw" alt="" loading="lazy" decoding="async">
+</div>
+<div class="container hero__grid">
+  <h1 class="hero__title"><span>Le trait d’union entre les idées et le capital.</span></h1>
+  <div class="hero__text"><p>Le monde change. Ce n’est pas une mauvaise passe, c’est un changement de paradigme. Le commerce de détail se meurt, celui du service et de l’usage se développe. On vit et on travaille autrement, ensemble. Les infrastructures ne se privatisent plus : elles se partagent.</p><div class="hero__col"><p>Notre attention se porte là où l’usage d’un bâtiment peut être changé pour le rendre à nouveau pertinent — en phase avec les enjeux sociaux et économiques d’aujourd’hui.</p><p class="signature">Everything is already inside.</p></div></div>
+</div>
+<section class="band stats-band" aria-label="Chiffres clés"><div class="deco" aria-hidden="true">
+    <svg class="deco__svg deco--anneaux" viewBox="0 0 420 220" preserveAspectRatio="xMaxYMid meet"><circle cx="270" cy="110" r="110" fill="none" stroke="currentColor" stroke-width="1"/><circle class="deco__2" cx="270" cy="110" r="150" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+  </div><div class="container"><ol class="stats"><li class="stat"><span class="stat__value">2002</span><span class="stat__label">Actifs depuis</span></li><li class="stat"><span class="stat__value">30+</span><span class="stat__label">Agences bancaires transformées en quatre ans</span></li><li class="stat"><span class="stat__value">19</span><span class="stat__label">Jours entre chaque bien livré</span></li><li class="stat"><span class="stat__value">24</span><span class="stat__label">Projets en cours</span></li></ol></div></section>
+</section>
+<section class="section section--chart"><div class="container">
+  <h2 class="h2 h2--sans">11 150 m² en cours de transformation</h2>
+  <div class="bars"><div class="bar"><span class="bar__label">Industrial</span><span class="bar__track"><span class="bar__fill" style="width:41%"></span></span><span class="bar__value">41 %</span></div><div class="bar"><span class="bar__label">Residential</span><span class="bar__track"><span class="bar__fill" style="width:34%"></span></span><span class="bar__value">34 %</span></div><div class="bar"><span class="bar__label">Retail</span><span class="bar__track"><span class="bar__fill" style="width:25%"></span></span><span class="bar__value">25 %</span></div></div>
+</div></section>
+<section class="section section--projets" id="projets"><div class="container">
+  <p class="eyebrow">Réalisations</p>
+  <div class="four">
+    <ol class="four__list">
+      <li class="four__row is-active" data-index="0"><a href="../maquette/realisations.html#ateliers-118"><span class="four__name">Ateliers 118</span><span class="four__line">Molenbeek-Saint-Jean · 1 200 m² · Treize ateliers dans une ancienne usine de colle</span></a></li>
+      <li class="four__row" data-index="1"><a href="../maquette/projet-the-bank.html"><span class="four__name">The Bank</span><span class="four__line">Liège · 1 100 m² · Une agence devenue bijouterie, Bancontact et logements</span></a></li>
+      <li class="four__row" data-index="2"><a href="../maquette/realisations.html#data-box"><span class="four__name">Data Box</span><span class="four__line">Jemelle · 4 200 m² sur un hectare · Un site technique dont l’avenir reste ouvert</span></a></li>
+      <li class="four__row" data-index="3"><a href="../maquette/realisations.html#community"><span class="four__name">Community</span><span class="four__line">Uccle · 14 unités · Quatorze unités autour d’espaces partagés</span></a></li>
+    </ol>
+    <div class="four__preview" aria-hidden="true"><img class="is-active" src="../directions/img/ateliers-118-05-s.jpg" srcset="../directions/img/ateliers-118-05-s.jpg 600w, ../directions/img/ateliers-118-05.jpg 1350w" sizes="(max-width:1280px) calc((100vw - 144px) * 5 / 12), 440px" alt="" decoding="async"><img loading="lazy" src="../directions/img/the-bank-01-s.jpg" srcset="../directions/img/the-bank-01-s.jpg 600w, ../directions/img/the-bank-01.jpg 1350w" sizes="(max-width:1280px) calc((100vw - 144px) * 5 / 12), 440px" alt="" decoding="async"><img loading="lazy" src="../directions/img/data-box-02-s.jpg" srcset="../directions/img/data-box-02-s.jpg 800w, ../directions/img/data-box-02.jpg 1800w" sizes="(max-width:1280px) calc(((100vw - 144px) * 5 / 12) * 2.222), 978px" alt="" decoding="async"><img loading="lazy" src="../directions/img/community-05-s.jpg" srcset="../directions/img/community-05-s.jpg 800w, ../directions/img/community-05.jpg 1800w" sizes="(max-width:1280px) calc(((100vw - 144px) * 5 / 12) * 1.667), 733px" alt="" decoding="async"></div>
+  </div>
+</div></section>
+<section class="section section--autres" id="realisations">
+<div class="container">
+  <p class="eyebrow">Réalisations</p>
+  <div class="carte">
+    <div class="carte__fig"><svg xmlns="http://www.w3.org/2000/svg" class="carte__svg" viewBox="0 0 520 440" role="img" aria-label="Carte des réalisations Perpetual en Belgique">
+<path class="carte__pays" d="M14.0 100.9L16.8 98.9L21.4 97.2L38.8 84.3L65.5 68.6L91.2 52.0L119.8 42.8L120.7 50.6L120.2 55.7L120.2 60.1L122.1 65.2L125.3 68.6L126.2 69.0L129.0 70.3L133.1 71.0L139.1 70.0L139.5 67.9L139.1 65.6L139.5 63.2L140.9 61.8L142.7 61.5L144.6 61.1L149.6 60.1L152.9 59.8L156.1 60.5L171.7 65.6L174.0 67.3L174.9 69.6L174.5 72.0L174.9 74.1L176.8 76.4L178.2 77.1L193.3 76.8L196.5 76.1L202.1 71.3L218.2 63.5L224.1 58.8L229.2 52.0L230.1 49.9L231.0 45.2L231.0 44.2L231.0 44.5L233.8 46.5L234.7 48.6L235.6 52.3L237.5 54.7L239.8 56.7L241.6 58.8L242.1 60.1L242.1 61.1L241.6 62.8L241.1 64.2L240.7 64.5L242.1 63.9L243.0 62.5L244.8 58.8L240.7 57.1L239.8 56.1L239.3 54.4L239.3 49.9L238.8 47.9L237.9 46.2L236.1 44.2L238.8 44.2L239.8 44.2L244.4 46.5L247.1 47.6L253.1 47.9L255.4 46.5L255.9 43.1L255.4 41.1L252.2 37.7L251.3 36.0L251.3 34.0L252.2 32.3L252.6 30.9L250.8 29.2L257.7 25.5L264.6 22.8L268.3 22.4L269.7 22.8L271.0 24.1L270.6 27.5L269.7 30.2L269.2 32.3L272.0 34.0L273.3 34.0L277.0 33.3L281.2 34.3L283.5 34.3L284.8 33.6L286.2 32.6L296.3 20.7L300.5 18.7L302.3 18.7L304.6 19.7L306.9 21.1L307.8 22.8L308.3 25.8L307.4 28.5L306.9 31.6L307.8 35.0L302.3 32.6L300.9 32.6L300.0 35.3L302.8 36.3L312.0 36.7L314.3 37.4L318.9 39.4L321.6 38.7L324.8 35.7L328.1 31.6L329.9 28.5L330.8 26.2L331.3 24.1L332.2 22.8L334.0 22.4L334.5 22.8L338.2 25.5L340.9 30.2L340.5 33.6L339.1 36.7L338.6 41.1L339.1 43.1L343.7 47.9L344.1 49.6L345.5 54.0L346.4 55.4L348.3 56.4L353.3 56.1L355.6 56.4L357.9 59.1L357.9 66.2L360.2 66.9L361.2 66.6L365.3 65.6L380.0 66.2L382.8 65.2L388.3 61.5L390.6 60.5L393.3 60.8L396.6 62.5L398.9 65.6L399.8 69.6L400.2 74.1L401.2 74.7L403.0 76.4L410.4 78.8L412.2 79.8L413.1 81.2L414.5 82.2L416.8 82.2L422.3 81.2L423.7 81.5L426.0 82.6L428.8 86.3L430.1 87.7L434.3 86.6L436.6 87.0L437.5 89.4L437.9 90.4L436.1 92.1L435.6 94.4L438.4 97.5L437.5 98.2L436.1 98.9L434.7 99.2L433.3 98.9L433.8 100.2L433.8 100.9L434.3 101.9L433.3 104.6L432.4 106.0L431.5 107.4L430.1 106.0L429.2 106.7L428.3 108.7L428.3 111.4L429.7 113.5L427.8 118.6L422.8 126.4L425.5 125.7L426.9 125.7L428.3 126.4L426.5 129.1L424.6 133.5L422.8 136.2L422.3 136.6L420.5 137.3L419.1 137.6L409.9 148.1L410.4 152.6L412.2 155.6L414.5 157.0L415.4 157.6L418.2 159.0L420.0 159.3L419.6 161.7L418.6 166.5L420.9 167.8L422.3 168.2L423.7 167.8L424.2 166.8L425.5 164.8L426.5 164.1L427.8 164.4L430.6 167.2L432.0 168.2L443.0 167.8L444.4 168.5L445.8 168.9L455.0 169.2L457.7 168.5L457.3 169.2L457.3 169.5L457.3 169.9L457.7 170.2L459.6 171.2L459.6 173.3L459.1 175.3L459.6 177.0L461.4 177.4L466.5 175.7L468.8 176.0L471.1 178.4L478.9 190.3L477.0 191.6L478.4 194.3L481.2 195.7L489.9 196.0L490.4 197.1L489.4 199.1L488.1 200.8L488.1 201.5L485.3 203.2L481.2 206.6L478.9 210.3L480.7 213.0L479.8 214.4L480.3 215.4L481.2 215.8L482.5 215.8L481.6 217.8L482.5 218.5L483.5 220.8L484.8 221.9L485.8 221.9L490.4 220.5L490.4 220.2L490.8 220.2L491.3 220.2L491.3 220.5L493.6 221.5L499.1 222.5L501.4 222.9L500.0 224.2L499.6 225.9L500.0 227.6L500.5 229.7L501.9 231.4L502.8 231.7L503.2 232.4L502.8 235.8L502.3 240.6L501.4 243.3L501.4 245.7L506.0 253.5L506.0 254.5L506.0 256.2L504.6 257.9L500.9 258.6L499.6 258.2L497.7 257.5L496.3 257.5L495.0 258.6L493.6 259.9L492.7 262.0L492.2 264.0L493.1 265.7L490.8 268.1L485.3 269.4L482.5 270.8L481.2 272.8L478.4 274.9L477.0 276.6L478.9 278.3L479.3 280.7L479.3 283.0L478.4 284.7L477.5 285.4L475.2 285.7L473.8 286.4L473.8 287.1L473.4 289.5L472.9 290.2L474.3 291.5L474.7 292.5L474.3 293.9L473.4 295.3L471.5 294.6L471.1 292.9L471.1 290.8L470.6 289.1L469.2 287.4L467.8 287.8L467.4 288.5L466.0 289.1L463.2 289.8L461.9 289.5L461.4 289.1L460.0 288.8L459.1 287.1L458.6 285.4L458.2 284.4L455.9 286.1L453.1 286.4L452.2 288.1L451.7 290.8L450.8 293.9L449.0 295.9L443.9 298.0L442.1 300.0L441.6 301.4L441.2 304.8L440.7 306.1L440.2 307.2L438.4 308.9L437.5 310.2L437.5 312.3L437.5 314.3L437.5 316.0L436.6 317.0L433.8 318.0L432.9 319.0L432.9 321.8L433.8 323.1L434.3 324.1L432.9 326.9L432.0 327.9L430.1 328.2L429.2 328.9L428.3 330.3L427.4 331.3L427.4 332.3L426.9 333.7L422.3 341.5L421.9 343.5L423.2 344.2L426.0 346.2L427.4 348.3L424.2 347.9L424.2 348.9L423.7 349.6L423.7 350.0L423.2 350.6L424.6 352.0L423.2 353.0L422.3 354.7L422.8 357.1L423.7 359.8L424.6 362.2L426.0 362.9L427.4 362.9L429.2 363.9L430.1 365.3L432.9 371.4L433.3 372.4L433.3 375.1L433.3 375.5L434.3 376.1L436.1 376.8L436.6 377.2L437.5 377.5L438.4 377.2L439.3 377.2L439.8 378.2L439.8 378.9L440.2 379.9L439.3 380.5L438.9 381.6L438.9 382.6L438.9 383.9L438.4 384.6L437.9 385.3L438.4 386.7L439.3 387.3L442.1 387.7L443.0 388.4L443.5 391.4L443.0 393.1L441.6 394.1L440.7 395.5L438.9 400.3L437.9 402.3L436.6 403.7L438.9 404.7L437.5 408.1L434.7 411.1L431.5 412.5L430.1 412.1L427.4 410.5L426.0 410.1L424.6 411.1L422.8 413.2L421.4 413.8L418.6 413.5L415.9 412.1L412.7 411.5L409.9 413.2L408.1 415.2L408.1 416.6L407.6 417.6L405.8 417.6L404.4 417.2L400.2 415.5L397.9 416.6L394.7 419.3L391.5 421.3L388.7 420.3L387.8 418.6L388.3 416.9L388.7 414.9L388.7 412.8L387.8 411.1L381.9 399.6L380.5 398.2L379.6 397.5L375.4 395.8L374.0 395.2L373.1 394.8L372.7 395.5L372.2 396.5L371.7 397.5L370.8 397.9L368.5 397.5L368.1 396.5L367.6 394.8L368.1 391.8L369.0 391.1L369.4 390.4L369.0 387.3L366.2 384.3L363.5 381.6L360.7 381.9L355.2 383.3L352.0 382.6L349.7 380.9L347.8 378.9L342.3 370.7L340.9 369.3L336.3 368.0L334.0 366.6L329.0 361.9L326.7 360.5L323.9 360.5L318.4 362.5L315.6 362.9L312.4 362.5L311.0 360.8L311.0 353.4L311.0 352.3L309.7 350.3L309.7 349.3L309.7 347.9L310.6 346.6L311.0 345.6L312.0 343.2L312.4 341.5L312.9 339.8L312.9 337.1L310.6 333.3L304.6 330.9L302.8 327.9L303.7 324.8L308.3 312.3L308.3 310.2L308.3 308.5L308.3 306.8L311.0 301.4L311.5 301.0L312.9 302.7L313.3 299.0L313.8 294.9L314.3 291.5L312.9 289.8L309.2 290.8L307.4 290.2L306.9 287.1L303.7 288.8L289.9 302.7L289.0 304.4L289.0 306.1L289.0 307.5L289.4 308.5L289.9 309.9L289.0 316.3L288.0 319.4L286.7 321.8L285.3 322.8L279.8 323.5L262.3 332.6L258.2 333.3L257.2 333.0L238.4 327.5L230.6 328.9L228.3 328.9L226.9 328.6L219.5 324.5L220.5 324.8L220.5 321.8L220.0 318.7L219.1 318.4L219.5 316.0L220.5 314.6L221.4 313.3L223.7 311.2L226.4 309.2L229.7 307.5L229.7 306.1L228.7 304.4L227.8 302.7L226.0 293.9L224.6 293.2L223.2 293.6L220.5 294.6L219.1 293.9L219.1 290.2L221.8 282.0L222.3 278.3L222.8 276.9L224.1 274.9L227.4 272.5L228.7 271.1L228.7 268.8L227.8 267.7L226.4 266.0L224.6 265.0L223.7 264.7L221.8 265.4L221.8 266.7L222.3 268.1L221.4 269.1L218.6 267.7L215.4 260.3L212.6 257.9L209.9 256.2L205.7 251.4L203.4 250.4L200.7 250.8L192.4 254.1L189.6 254.1L187.3 253.1L185.1 251.4L182.3 250.1L177.2 249.4L171.7 249.7L169.9 250.4L169.0 251.8L166.7 255.5L165.7 257.2L165.7 257.9L164.8 258.2L164.4 258.2L163.9 259.6L159.8 255.5L158.4 247.0L158.4 237.8L157.5 230.0L155.2 226.3L152.9 223.6L150.1 222.2L146.9 221.5L138.6 221.5L137.2 220.5L138.6 218.1L138.6 216.4L137.7 215.4L135.9 215.1L134.0 215.1L133.1 216.1L131.7 217.1L129.9 218.5L124.4 220.5L121.1 221.2L118.8 220.5L113.3 217.5L111.5 216.1L109.6 213.7L109.2 211.3L108.7 204.9L105.5 193.7L104.6 187.6L106.4 184.5L104.6 179.4L103.7 177.7L101.8 177.0L100.4 177.0L99.1 175.7L97.7 171.9L95.8 168.5L93.5 164.8L91.7 162.7L88.5 161.7L77.9 165.1L71.5 167.2L68.3 168.9L66.0 171.6L62.3 178.0L60.4 179.4L58.6 179.1L58.1 178.7L48.0 174.0L45.3 171.9L44.8 170.9L43.0 166.8L42.5 165.5L37.5 160.7L36.5 159.3L36.5 158.0L35.6 157.0L34.2 156.0L32.9 156.0L30.6 156.3L29.6 156.0L27.3 155.6L26.4 155.3L26.0 154.3L25.0 151.5L24.1 150.9L22.7 150.2L22.3 149.5L22.3 148.5L23.2 146.4L23.7 145.1L20.9 136.2L21.8 134.2L24.6 131.5L25.5 130.1L25.0 126.0L23.2 123.3L18.6 118.2L17.2 114.2L15.8 105.3L14.0 100.9Z"/>
+<g class="carte__lieu" data-lieu="Liège"><circle class="carte__pt" cx="402.9" cy="192.2" r="4.5"><title>Liège</title></circle><text class="carte__lab" x="412.9" y="196.2" text-anchor="start" data-rang="1">Liège</text></g>
+<g class="carte__lieu" data-lieu="Jemelle"><circle class="carte__pt" cx="364.2" cy="286.8" r="4.5"><title>Jemelle</title></circle><text class="carte__lab" x="374.2" y="290.8" text-anchor="start" data-rang="1">Jemelle</text></g>
+<g class="carte__lieu" data-lieu="Braine-le-Comte"><circle class="carte__pt" cx="220.3" cy="197" r="4.5"><title>Braine-le-Comte</title></circle><text class="carte__lab" x="206.3" y="207" text-anchor="end">Braine-le-Comte</text></g>
+<g class="carte__lieu" data-lieu="Pont-à-Celles"><circle class="carte__pt" cx="249.4" cy="218" r="4.5"><title>Pont-à-Celles</title></circle><text class="carte__lab" x="233.4" y="232" text-anchor="end">Pont-à-Celles</text></g>
+<g class="carte__lieu" data-lieu="Jambes"><circle class="carte__pt" cx="313.9" cy="228" r="4.5"><title>Jambes</title></circle><text class="carte__lab" x="327.9" y="222" text-anchor="start">Jambes</text></g>
+<g class="carte__lieu" data-lieu="Mettet"><circle class="carte__pt" cx="287.5" cy="255" r="4.5"><title>Mettet</title></circle><text class="carte__lab" x="277.5" y="271" text-anchor="end">Mettet</text></g>
+<g class="carte__lieu" data-lieu="Waremme"><circle class="carte__pt" cx="363.1" cy="179.3" r="4.5"><title>Waremme</title></circle><text class="carte__lab" x="354.1" y="183.3" text-anchor="end">Waremme</text></g>
+<g class="carte__lieu" data-lieu="Gilly"><circle class="carte__pt" cx="264.1" cy="235.1" r="4.5"><title>Gilly</title></circle><text class="carte__lab" x="252.1" y="253.1" text-anchor="end">Gilly</text></g>
+<g class="carte__lieu" data-lieu="Tervuren"><circle class="carte__pt" cx="268.8" cy="154" r="4.5"><title>Tervuren</title></circle><text class="carte__lab" x="272.8" y="143" text-anchor="start">Tervuren</text></g>
+<g class="carte__lieu" data-lieu="Landen"><circle class="carte__pt" cx="340.5" cy="168.3" r="4.5"><title>Landen</title></circle><text class="carte__lab" x="340.5" y="159.3" text-anchor="middle">Landen</text></g>
+<g class="carte__lieu" data-lieu="Haaltert"><circle class="carte__pt" cx="202.8" cy="137.3" r="4.5"><title>Haaltert</title></circle><text class="carte__lab" x="194.8" y="131.3" text-anchor="end">Haaltert</text></g>
+<g class="carte__lieu" data-lieu="Welkenraedt"><circle class="carte__pt" cx="458.2" cy="186.8" r="4.5"><title>Welkenraedt</title></circle><text class="carte__lab" x="458.2" y="177.8" text-anchor="middle">Welkenraedt</text></g>
+<g class="carte__lieu" data-lieu="Perwez"><circle class="carte__pt" cx="306.6" cy="193.2" r="4.5"><title>Perwez</title></circle><text class="carte__lab" x="315.6" y="197.2" text-anchor="start">Perwez</text></g>
+<g class="carte__lieu" data-lieu="Belgrade"><circle class="carte__pt" cx="307.5" cy="225" r="4.5"><title>Belgrade</title></circle><text class="carte__lab" x="307.5" y="214" text-anchor="end">Belgrade</text></g>
+<g class="carte__lieu" data-lieu="Bois-de-Villers"><circle class="carte__pt" cx="309.2" cy="242.1" r="4.5"><title>Bois-de-Villers</title></circle><text class="carte__lab" x="325.2" y="256.1" text-anchor="start">Bois-de-Villers</text></g>
+<g class="carte__lieu" data-lieu="Braine-l’Alleud"><circle class="carte__pt" cx="249.8" cy="182.2" r="4.5"><title>Braine-l’Alleud</title></circle><text class="carte__lab" x="235.8" y="168.2" text-anchor="end">Braine-l’Alleud</text></g>
+<g class="carte__lieu" data-lieu="Bruxelles"><circle class="carte__pt" cx="246" cy="150.8" r="6.5"><title>Bruxelles</title></circle><text class="carte__lab carte__lab--groupe" x="246.0" y="138.8" text-anchor="middle" data-rang="1">Bruxelles</text></g>
+</svg></div>
+    <div class="carte__texte">
+      <h2 class="h2 h2--serif">Vingt adresses, de Haaltert à Welkenraedt.</h2>
+      <p>Une agence bancaire fermée, c’est plusieurs centaines de mètres carrés vides au cœur d’un quartier. Nous maintenons le service — l’accès au cash — sur la surface qui lui suffit, et nous rendons le reste à l’usage.</p>
+      <a class="autres__lien trait" href="../maquette/realisations.html">Toutes les réalisations →</a>
+    </div>
+  </div>
+</div>
+</section>
+<section class="section section--collectif" id="collectif"><div class="container">
+  <p class="eyebrow">Collectif</p>
+  <div class="collectif__text"><p>Nous n’avons aucun salarié. Une cinquantaine de personnes travaillent régulièrement avec nous.</p><p>Au cœur, trois associés aux compétences complémentaires.</p><p>Autour : des architectes choisis pour leur région et leur style, des géomètres, des avocats spécialisés, des agents immobiliers, un réseau d’apporteurs d’affaires, des entreprises générales de construction et les corps de métier spécialisés qui les accompagnent, des gestionnaires, des investisseurs privés qui nous font confiance.</p><p>Cette organisation nous permet de traiter avec des institutions, des groupes et des autorités publiques — avec la souplesse d’une structure légère.</p><p class="chute">Personne n’est tenu de revenir. Tous reviennent.</p></div>
+  <ul class="partners" aria-label="Partenaires">
+<li class="partner" style="--logo-h:42px" title="ASAP"><img class="partner__couleur" src="../../public/partners/couleur/asap.svg" alt="ASAP" loading="lazy"></li>
+<li class="partner" style="--logo-h:34px" title="Batopin"><img class="partner__couleur" src="../../public/partners/couleur/batopin.svg" alt="Batopin" loading="lazy"></li>
+<li class="partner" style="--logo-h:35px" title="CN Architecture"><img class="partner__couleur" src="../../public/partners/couleur/cn-architecture.svg" alt="CN Architecture" loading="lazy"></li>
+<li class="partner" style="--logo-h:34px" title="Felis &amp; Associés"><img class="partner__couleur" src="../../public/partners/couleur/felis-associes.svg" alt="Felis &amp; Associés" loading="lazy"></li>
+<li class="partner" style="--logo-h:34px" title="Menuisol"><img class="partner__couleur" src="../../public/partners/couleur/menuisol.svg" alt="Menuisol" loading="lazy"></li>
+<li class="partner" style="--logo-h:49px" title="Property Lab"><img class="partner__couleur" src="../../public/partners/couleur/property-lab.svg" alt="Property Lab" loading="lazy"></li>
+<li class="partner" style="--logo-h:60px" title="Synopsis"><img class="partner__couleur" src="../../public/partners/couleur/synopsis.svg" alt="Synopsis" loading="lazy"></li>
+<li class="partner" style="--logo-h:34px" title="Zekaj Construct"><img class="partner__couleur" src="../../public/partners/couleur/zekaj-construct.svg" alt="Zekaj Construct" loading="lazy"></li>
+  </ul>
+</div></section>
+</main>
+<footer class="site-footer" id="contact"><div class="container footer__grid">
+  <div class="footer__contact"><p class="footer__name">Julien De Dobbeleer</p><a class="footer__mail" href="mailto:julien@perpetual.be">julien@perpetual.be</a><p class="footer__addr">Perpetual, 1030 Bruxelles</p></div>
+  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="../maquette/realisations.html">Réalisations</a><a class="trait" href="../maquette/index.html#collectif">Collectif</a><a class="trait" href="#">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
+  <blockquote class="footer__quote"><p>« Le véritable voyage de découverte ne consiste pas à chercher de nouveaux paysages, mais à avoir de nouveaux yeux. »</p><cite>Marcel Proust</cite></blockquote>
+  <p class="footer__legal">© 2026 Perpetual</p>
+</div></footer>
+<script src="../maquette/maquette.js" defer></script>
+
+<div class="prop-badge" aria-label="Comparaison des largeurs">
+  <span>Home</span>
+  <a href="home.html" data-l="large">grille large</a>
+  <a href="home.html?largeur=actuelle" data-l="actuelle">grille actuelle (1 200 px)</a>
+  <span style="color:#C9C3B8">|</span><span>liste :</span>
+  <a href="#" data-q="liste" data-v="pres">photo près</a><a href="#" data-q="liste" data-v="bord">photo au bord</a>
+  <span style="color:#C9C3B8">|</span><span>collectif :</span>
+  <a href="#" data-q="collectif" data-v="deux">deux colonnes</a><a href="#" data-q="collectif" data-v="enonce">énoncé</a><a href="#" data-q="collectif" data-v="seul">une colonne</a>
+</div>
+<script>(function(){var l=document.documentElement.getAttribute("data-largeur")==="actuelle"?"actuelle":"large";document.querySelectorAll(".prop-badge [data-l]").forEach(function(a){if(a.getAttribute("data-l")===l)a.classList.add("is-active")});
+var h=document.documentElement,D={liste:"pres",collectif:"deux"};
+document.querySelectorAll(".prop-badge [data-q]").forEach(function(a){var k=a.getAttribute("data-q"),v=a.getAttribute("data-v");if((h.getAttribute("data-"+k)||D[k])===v)a.classList.add("is-active");
+a.addEventListener("click",function(e){e.preventDefault();var p=new URLSearchParams(location.search);if(v===D[k])p.delete(k);else p.set(k,v);var q=p.toString();location.href=location.pathname+(q?"?"+q:"")})})})();</script>
+</body>
+</html>

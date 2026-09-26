@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Bank — P6 · The Bank</title>
+<title>The Bank — Perpetual</title>
 <script>(function(){var p=new URLSearchParams(location.search),h=document.documentElement;p.forEach(function(v,k){if(/^[a-z][a-z-]*$/.test(k)&&/^[a-z0-9-]*$/.test(v))h.setAttribute('data-'+k,v)})})();</script>
 <link rel="stylesheet" href="../../maquette/maquette.css">
 <link rel="icon" href="../../../public/favicon.svg">
@@ -16,71 +16,62 @@
 
 .prop-badge{flex-wrap:wrap;max-width:calc(100vw - 32px)}
 .prop-badge .sep{color:var(--filet)}
-.prop-badge [data-param].is-active{border-bottom:1px solid var(--c-trait)}
-/* titre et région */
+/* grille : marge = celle du container de 1200 px (en % de la page, donc barre de défilement comprise) | texte | photo au bord droit */
+.p6-corps{display:grid;grid-template-columns:max(var(--gutter), calc((100% - var(--max)) / 2 + var(--gutter))) minmax(0,1fr) var(--p6-w);align-items:start}
+.p6-corps--paysage{--p6-w:50%;--p6-ratio:2100/1694}
+.p6-corps--carre{--p6-w:40%;--p6-ratio:1/1}
+.p6-gauche{grid-column:2;padding:24px 64px 0 0}
 .p6-titre .eyebrow{margin-bottom:8px}
-/* les infos : valeurs en sans (plus de serif à côté du titre), étiquette dessous (défaut) ou avant */
-.p6-faits{display:flex;flex-wrap:wrap;gap:12px 0}
+/* les infos : valeurs en sans (or foncé), étiquette dessous */
+.p6-faits{display:flex;flex-wrap:wrap;gap:12px 0;margin-top:22px}
 .p6-fait{display:flex;flex-direction:column;gap:3px;padding:0 22px;border-left:1px solid var(--filet)}
 .p6-fait:first-child{padding-left:0;border-left:0}
 .p6-fait__v{font-family:var(--sans);font-weight:500;font-size:17px;line-height:1.25;color:var(--or-fonce);white-space:nowrap}
 .p6-fait__l{font-size:13px;line-height:1.3;color:var(--c-etiquette-chiffre)}
-html[data-etiquettes="avant"] .p6-fait{flex-direction:row;align-items:baseline;gap:9px}
-html[data-etiquettes="avant"] .p6-fait__l{order:-1}
-/* à côté de la photo, la colonne est étroite : en « avant », les trois infos s'empilent en petite fiche (étiquette | valeur) */
-html[data-etiquettes="avant"]:not([data-mise="bande"]) .p6-gauche .p6-faits{flex-direction:column;gap:5px}
-html[data-etiquettes="avant"]:not([data-mise="bande"]) .p6-gauche .p6-fait{padding:0;border-left:0}
-html[data-etiquettes="avant"]:not([data-mise="bande"]) .p6-gauche .p6-fait__l{min-width:96px}
-/* mise « haut » (défaut) : pas de bande ; la photo part du haut, au bord droit ; à sa gauche le titre, les infos, les chapitres */
-.p6-haut-seul{display:block}.p6-bande-seul{display:none}
-html[data-mise="bande"] .p6-haut-seul{display:none}html[data-mise="bande"] .p6-bande-seul{display:block}
-.p6-corps{display:grid;grid-template-columns:1fr var(--p6-w);align-items:start}
-.p6-corps--paysage{--p6-w:50vw;--p6-ratio:2100/1694}
-.p6-corps--carre{--p6-w:40vw;--p6-ratio:1/1}
-.p6-gauche{padding:24px 64px 0 max(var(--gutter), calc((100vw - var(--max)) / 2 + var(--gutter)))}
-.p6-gauche .p6-faits{margin-top:22px}
 .p6-chapitres{display:flex;flex-direction:column;gap:34px;margin-top:44px}
 .p6-chapitres .chapitre{margin:0;max-width:52ch}
-.p6-photo{margin:0;width:var(--p6-w);aspect-ratio:var(--p6-ratio);overflow:hidden}
-.p6-photo img{width:100%;height:100%;object-fit:cover}
-/* mise « bande » (la version d'Axel du 26/09, avec les nouvelles infos) : titre, fine bande papier, puis la photo et les chapitres */
-.p6-titre-bande{padding-top:24px;padding-bottom:22px}
-.p6-bande{padding:14px 0 13px}
-html[data-mise="bande"] .p6-corps{padding-top:40px}
-html[data-mise="bande"] .p6-gauche{padding-top:0}
-html[data-mise="bande"] .p6-chapitres{margin-top:0}
+.p6-photo{grid-column:3;margin:0;width:100%;position:relative;overflow:hidden}
+.p6-photo::before{content:"";display:block;aspect-ratio:var(--p6-ratio)}   /* hauteur du cadre ; l'image le remplit */
+.p6-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* à discuter (26/09) : quand le texte est plus long que la photo. B : la photo s'allonge jusqu'au bas du texte ; C : elle reste en place pendant qu'on lit la fin */
+html[data-haut="allongee"] .p6-photo{align-self:stretch}
+html[data-haut="suit"] .p6-photo{position:sticky;top:0}
+.prop-badge .ligne{flex-basis:100%;height:0}
 /* les autres photos : mosaïque justifiée, format de chaque photo respecté, rangées alternées haute / basse (script) */
 .p6-autres{padding-top:88px;padding-bottom:72px}
 .p6-autres .eyebrow{margin-bottom:18px}
 .p6-mosaique{display:flex;flex-wrap:wrap;gap:16px}
-html[data-rangee="2"] .p6-mosaique{max-width:760px}
 .p6-mosaique::after{content:"";flex-grow:999}
 .p6-tuile{flex-grow:var(--r);flex-basis:calc(var(--r) * 260px);margin:0;overflow:hidden;cursor:zoom-in;background:var(--surface)}
 .p6-tuile img{display:block;width:100%;aspect-ratio:var(--r);height:auto;object-fit:cover;transition:transform var(--zoom-duree) ease}
 .p6-tuile:hover img{transform:scale(var(--zoom))}
-.p6-mosaique.est-placee .p6-tuile{flex:none}
+.p6-mosaique.est-placee{flex-wrap:nowrap;flex-direction:column}
 .p6-mosaique.est-placee::after{display:none}
+.p6-rang{display:flex;gap:16px}
+.p6-mosaique.est-placee .p6-tuile{flex:none}
 .p6-boite{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(20,18,15,.9);cursor:zoom-out}
 .p6-boite.ouverte{display:flex}
 .p6-boite img{max-width:90vw;max-height:82vh;object-fit:contain}
 .p6-boite p{position:absolute;left:0;right:0;bottom:22px;text-align:center;color:#fff;font-size:14px}
+/* projet précédent / suivant, en boucle */
+.p6-voisins{display:flex;justify-content:space-between;gap:32px;border-top:1px solid var(--filet);padding:24px 0 72px}
+.p6-voisin{display:block}
+.p6-voisin .eyebrow{display:block;margin-bottom:6px}
+.p6-voisin--suiv{text-align:right}
 @media (max-width:640px){
   .p6-corps{grid-template-columns:1fr}
   .p6-gauche{display:contents}
   .p6-gauche .p6-titre{order:1;padding:28px var(--gutter) 0}
-  .p6-gauche .p6-faits{order:2;margin:18px var(--gutter) 24px}
-  .p6-photo{order:3;width:100%}
-  .p6-chapitres{order:4;margin:36px var(--gutter) 0;gap:32px}
-  html[data-mise="bande"] .p6-corps{padding-top:0}
-  html[data-mise="bande"] .p6-chapitres{margin-top:36px}
-  .p6-titre-bande{padding-top:28px;padding-bottom:20px}
-  .p6-faits{display:grid;grid-template-columns:auto 1fr;gap:14px 0}
+  .p6-gauche .p6-faits{order:2;margin:18px var(--gutter) 24px;display:grid;grid-template-columns:auto 1fr;gap:14px 0}
   .p6-fait{padding:0 16px}
   .p6-fait:nth-child(3){grid-column:1/-1;padding-left:0;border-left:0}
   .p6-fait__v{font-size:16px}
+  .p6-photo,html[data-haut] .p6-photo{order:3;grid-column:1;align-self:start;position:relative}
+  .p6-chapitres{order:4;margin:36px var(--gutter) 0;gap:32px}
   .p6-autres{padding-top:56px;padding-bottom:44px}
-  .p6-mosaique{gap:10px}
-  html[data-rangee="2"] .p6-mosaique{max-width:none}
+  .p6-mosaique,.p6-rang{gap:10px}
+  .p6-voisins{padding-bottom:44px;gap:16px}
+  .p6-voisin .suivant__nom{font-size:20px}
 }
 @media (prefers-reduced-motion:reduce){.p6-tuile img{transition:none}}
 </style>
@@ -125,16 +116,12 @@ html[data-rangee="2"] .p6-mosaique{max-width:760px}
 </header>
 <main>
 <article class="fiche p6">
-<div class="p6-bande-seul" aria-hidden="true">
-  <div class="container p6-titre-bande"><div class="p6-titre"><p class="eyebrow">Liège</p><p class="page__titre">The Bank</p></div></div>
-  <section class="band p6-bande"><div class="container"><ol class="p6-faits" aria-label="En bref"><li class="p6-fait"><span class="p6-fait__v">Centre-ville</span><span class="p6-fait__l">Localisation</span></li><li class="p6-fait"><span class="p6-fait__v">1 100 m²</span><span class="p6-fait__l">Surface</span></li><li class="p6-fait"><span class="p6-fait__v">Logements &amp; commerce</span><span class="p6-fait__l">Usage</span></li></ol></div></section>
-</div>
 <div class="p6-corps p6-corps--paysage">
-  <div class="p6-gauche"><div class="p6-haut-seul"><div class="p6-titre"><p class="eyebrow">Liège</p><h1 class="page__titre">The Bank</h1></div><ol class="p6-faits" aria-label="En bref"><li class="p6-fait"><span class="p6-fait__v">Centre-ville</span><span class="p6-fait__l">Localisation</span></li><li class="p6-fait"><span class="p6-fait__v">1 100 m²</span><span class="p6-fait__l">Surface</span></li><li class="p6-fait"><span class="p6-fait__v">Logements &amp; commerce</span><span class="p6-fait__l">Usage</span></li></ol></div><div class="p6-chapitres"><section class="chapitre"><p class="chapitre__num">01</p><h2 class="chapitre__titre">Ce que c’était</h2><p class="chapitre__texte">Une agence bancaire de 1 100 m², au cœur de Liège.</p></section><section class="chapitre"><p class="chapitre__num">02</p><h2 class="chapitre__titre">Ce que nous y avons vu</h2><p class="chapitre__texte">Une surface unique qui pouvait en accueillir trois. Le service bancaire maintenu sur ce qu’il lui faut, une vitrine rendue au commerce, et les niveaux supérieurs libérés pour l’habitat.</p></section><section class="chapitre"><p class="chapitre__num">03</p><h2 class="chapitre__titre">Ce que c’est devenu</h2><p class="chapitre__texte">Une bijouterie de 160 m², un point Bancontact de 60 m², et un projet de logements de standing. Vendu.</p></section></div></div>
-  <figure class="p6-photo"><img src="img/the-bank-01-facade-m.jpg" srcset="img/the-bank-01-facade-m.jpg 1200w, img/the-bank-01-facade.jpg 2100w" sizes="(max-width:640px) 100vw, 50vw" alt="" decoding="async" style="object-position:50% 100%"></figure>
+  <div class="p6-gauche"><div class="p6-titre"><p class="eyebrow">Liège</p><h1 class="page__titre">The Bank</h1></div><ol class="p6-faits" aria-label="En bref"><li class="p6-fait"><span class="p6-fait__v">Centre-ville</span><span class="p6-fait__l">Localisation</span></li><li class="p6-fait"><span class="p6-fait__v">1 100 m²</span><span class="p6-fait__l">Surface</span></li><li class="p6-fait"><span class="p6-fait__v">Logements &amp; commerce</span><span class="p6-fait__l">Usage</span></li></ol><div class="p6-chapitres"><section class="chapitre"><p class="chapitre__num">01</p><h2 class="chapitre__titre">Ce que c’était</h2><p class="chapitre__texte">Une agence bancaire de 1 100 m², au cœur de Liège.</p></section><section class="chapitre"><p class="chapitre__num">02</p><h2 class="chapitre__titre">Ce que nous y avons vu</h2><p class="chapitre__texte">Une surface unique qui pouvait en accueillir trois. Le service bancaire maintenu sur ce qu’il lui faut, une vitrine rendue au commerce, et les niveaux supérieurs libérés pour l’habitat.</p></section><section class="chapitre"><p class="chapitre__num">03</p><h2 class="chapitre__titre">Ce que c’est devenu</h2><p class="chapitre__texte">Une bijouterie de 160 m², un point Bancontact de 60 m², et un projet de logements de standing. Vendu.</p></section></div></div>
+  <figure class="p6-photo"><img src="../../directions/img/the-bank-02.jpg" alt="" decoding="async" style="object-position:50% 50%"></figure>
 </div>
-<div class="container p6-autres"><p class="eyebrow">Photos</p><div class="p6-mosaique"><figure class="p6-tuile" style="--r:1.3333" data-r="1.3333" data-legende="Le point Bancontact, l’extérieur"><img src="../../directions/img/the-bank-02.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:1.3333" data-r="1.3333" data-legende="Le point Bancontact, l’intérieur"><img src="../../directions/img/the-bank-03.jpg" alt="" loading="lazy" decoding="async"></figure></div></div>
-<div class="container"><a class="suivant" href="../../maquette/realisations.html"><span class="eyebrow">Projet suivant</span><span class="suivant__nom trait">Data Box →</span></a></div>
+<div class="container p6-autres"><p class="eyebrow">Photos</p><div class="p6-mosaique"><figure class="p6-tuile" style="--r:1.3333" data-r="1.3333" data-legende="Le point Bancontact, l’intérieur"><img src="../../directions/img/the-bank-03.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:1.2397" data-r="1.2397" data-legende="La façade"><img src="img/the-bank-01-facade-m.jpg" alt="" loading="lazy" decoding="async"></figure></div></div>
+<div class="container"><nav class="p6-voisins" aria-label="Autres projets"><a class="p6-voisin p6-voisin--prec" href="p6-ateliers-118.html"><span class="eyebrow">Projet précédent</span><span class="suivant__nom trait">← Ateliers 118</span></a><a class="p6-voisin p6-voisin--suiv" href="p6-data-box.html"><span class="eyebrow">Projet suivant</span><span class="suivant__nom trait">Data Box →</span></a></nav></div>
 <div class="p6-boite" aria-hidden="true"><img alt=""><p></p></div>
 </article>
 </main>
@@ -145,35 +132,34 @@ html[data-rangee="2"] .p6-mosaique{max-width:760px}
   <p class="footer__legal">© 2026 Perpetual</p>
 </div></footer>
 
-<nav class="prop-badge" aria-label="Propositions"><b>Fiches</b><a href="p4.html" class="">P4</a><a href="p6.html" class="is-active">P6 · The Bank</a><a href="p6-community.html" class="">P6 · Community</a><a href="p6-ateliers-118.html" class="">P6 · Ateliers 118</a><span class="sep">|</span><span>mise en page :</span><a data-param="mise" data-valeur="">photo en haut</a><a data-param="mise" data-valeur="bande">titre puis bande</a><span class="sep">|</span><span>étiquettes :</span><a data-param="etiquettes" data-valeur="">dessous</a><a data-param="etiquettes" data-valeur="avant">avant</a><span class="sep">|</span><a href="../selection/index.html">sélection des photos</a><a href="../../maquette/projet-the-bank.html">actuelle</a></nav>
+<nav class="prop-badge" aria-label="Fiches"><b>P6</b><a data-fiche href="p6-ateliers-118.html" class="">Ateliers 118</a><a data-fiche href="p6.html" class="is-active">The Bank</a><a data-fiche href="p6-data-box.html" class="">Data Box</a><a data-fiche href="p6-community.html" class="">Community</a><span class="sep">|</span><a href="../selection/index.html">sélection des photos</a><a href="../../maquette/projet-the-bank.html">actuelle</a><span class="ligne"></span><b>Texte plus long que la photo</b><a data-haut="" href="?">A · telle quelle</a><a data-haut="allongee" href="?haut=allongee">B · photo allongée</a><a data-haut="suit" href="?haut=suit">C · photo qui suit</a></nav>
 <script>
 (function(){
-  /* bandeau : chaque réglage garde les autres */
-  document.querySelectorAll('.prop-badge [data-param]').forEach(function(a){
-    var u=new URL(location.href), k=a.dataset.param, v=a.dataset.valeur;
-    if(v) u.searchParams.set(k,v); else u.searchParams.delete(k);
-    a.href=u.pathname.split('/').pop()+u.search;
-    var cur=new URLSearchParams(location.search).get(k)||'';
-    if(cur===(v||'')) a.classList.add('is-active');
-  });
+  var h=document.documentElement.getAttribute('data-haut')||'', q=h?'?haut='+h:'';
+  document.querySelectorAll('.prop-badge a[data-haut]').forEach(function(a){a.classList.toggle('is-active', a.getAttribute('data-haut')===h)});
+  if(q) document.querySelectorAll('.prop-badge a[data-fiche], .p6-voisin').forEach(function(a){a.setAttribute('href', a.getAttribute('href')+q)});
+})();
+(function(){
   var m=document.querySelector('.p6-mosaique'); if(!m) return;
   var tuiles=[].slice.call(m.querySelectorAll('.p6-tuile'));
-  var maxN0=+(document.documentElement.getAttribute('data-rangee')||0)||99;
   function placer(){
-    var W=m.clientWidth, g=parseFloat(getComputedStyle(m).columnGap)||16, petit=innerWidth<641, maxN=petit?2:maxN0;
+    /* chaque rangée devient un bloc à part (plus de retour à la ligne possible), largeur mesurée au sous-pixel */
+    m.classList.remove('est-placee'); tuiles.forEach(function(t){m.appendChild(t)}); [].slice.call(m.querySelectorAll('.p6-rang')).forEach(function(r){r.remove()});
+    var W=m.getBoundingClientRect().width-0.5, g=parseFloat(getComputedStyle(m).columnGap)||16, petit=innerWidth<641, maxN=petit?2:99;
     var hauts=petit?[210,150]:[440,280];               /* rangées alternées : haute, basse */
     var i=0, rang=0;
     while(i<tuiles.length){
       var cible=hauts[rang%2], somme=0, j=i;
       while(j<tuiles.length && j-i<maxN){ somme+=+tuiles[j].dataset.r; j++; if(somme*cible+(j-i-1)*g>=W) break; }
       var n=j-i, h=(W-(n-1)*g)/somme;
-      if(j>=tuiles.length && n<maxN && h>cible*1.25){ h=cible; }   /* dernière rangée incomplète : pas d'agrandissement démesuré */
-      for(var k=i;k<j;k++){ var t=tuiles[k]; t.style.width=(+t.dataset.r*h)+'px'; t.style.height=h+'px'; t.querySelector('img').style.height=h+'px'; }
-      i=j; rang++;
+      if(j>=tuiles.length && n<maxN){ if(petit) h=Math.min(h,cible*2); else if(h>cible*1.25) h=cible; }   /* dernière rangée incomplète : pas d'agrandissement démesuré (sur mobile, une photo seule prend la largeur si elle reste raisonnable) */
+      var r=document.createElement('div'); r.className='p6-rang';
+      for(var k=i;k<j;k++){ var t=tuiles[k], w=Math.floor(+t.dataset.r*h*100)/100; t.style.width=w+'px'; t.style.height=h+'px'; t.querySelector('img').style.height=h+'px'; r.appendChild(t); }
+      m.appendChild(r); i=j; rang++;
     }
     m.classList.add('est-placee');
   }
-  placer(); var to; window.addEventListener('resize',function(){clearTimeout(to); to=setTimeout(placer,80)});
+  placer(); var to, lw=innerWidth; window.addEventListener('resize',function(){ if(innerWidth===lw) return; lw=innerWidth; clearTimeout(to); to=setTimeout(placer,80)});
   var boite=document.querySelector('.p6-boite'), cur=0;
   function montrer(k){cur=(k+tuiles.length)%tuiles.length; var t=tuiles[cur]; boite.querySelector('img').src=t.querySelector('img').currentSrc||t.querySelector('img').src; boite.querySelector('p').textContent=t.dataset.legende+'  ·  '+(cur+1)+' / '+tuiles.length; boite.classList.add('ouverte')}
   tuiles.forEach(function(t,k){t.addEventListener('click',function(){montrer(k)})});

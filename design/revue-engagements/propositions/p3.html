@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="fr" data-page="engagements">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Engagements — Perpetual</title>
+<script>(function(){var p=new URLSearchParams(location.search),h=document.documentElement;p.forEach(function(v,k){if(/^[a-z][a-z-]*$/.test(k)&&/^[a-z0-9-]*$/.test(v))h.setAttribute('data-'+k,v)})})();</script>
+<link rel="stylesheet" href="../../maquette/maquette.css">
+<link rel="icon" href="../../../public/favicon.svg">
+<style>
+/* page Engagements — commun aux trois propositions */
+html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:400;letter-spacing:-.028em;line-height:1.02}   /* comme Réalisations : titre de page en sans léger */
+.eng-ouv{padding-top:32px;padding-bottom:30px}
+.eng-ouv .ouv__texte{margin-top:14px;max-width:none}
+.eng-texte p{margin-bottom:16px;max-width:62ch;text-wrap:pretty}
+.eng-texte p:last-child{margin-bottom:0}
+/* lien dans un paragraphe : le texte reste anthracite, un filet or clair permanent dessous (comme le mail du pied de page), or au survol */
+.lien-texte{border-bottom:1px solid var(--c-trait-fin);transition:border-color .2s}
+.lien-texte:hover,.lien-texte:focus-visible{border-bottom-color:var(--c-trait)}
+.visuellement-masque{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* l'œuvre : jamais recadrée par le CSS (object-fit), jamais agrandie au-delà de ~440 px (fichier de 933 px) ; pas un lien, pas de zoom */
+.oeuvre{margin:0}
+.oeuvre img{width:100%;height:auto}
+.oeuvre__img--recadree{display:none}
+html[data-oeuvre="recadree"] .oeuvre__img--recadree{display:block}
+html[data-oeuvre="recadree"] .oeuvre__img--atelier{display:none}
+.cartel{margin-top:12px;font-size:var(--fs-etiquette);line-height:1.45;color:var(--c-meta)}
+.cartel b{display:block;font-weight:500;font-size:14px;color:var(--c-texte)}
+.cartel__detail{display:block}
+html[data-legende="courte"] .cartel__detail{display:none}
+/* bandeau des propositions (maquette seulement) */
+.prop-badge{position:fixed;left:16px;bottom:16px;z-index:50;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;max-width:calc(100vw - 32px);padding:8px 12px;background:#fff;border:1px solid var(--filet);font:13px/1.3 var(--sans);color:var(--c-meta)}
+.prop-badge b{color:var(--c-texte);font-weight:500}
+.prop-badge a{color:var(--c-texte)}
+.prop-badge a.is-active{border-bottom:1px solid var(--c-trait)}
+.prop-badge .sep{color:var(--filet)}
+html[data-panneau="off"] .prop-badge{display:none}
+@media print{.prop-badge{display:none}}
+@media (max-width:640px){.prop-badge{font-size:12px;gap:4px 10px;padding:6px 10px;left:8px;bottom:8px;max-width:calc(100vw - 16px)}}
+
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:0 64px;padding-top:12px;padding-bottom:80px}
+.duo__bloc{border-top:1px solid var(--filet);padding-top:26px}
+.eng3 .verbe{font-family:var(--serif);font-weight:400;font-size:var(--fs-h2-serif);line-height:1.15;letter-spacing:-.01em;margin-bottom:20px}
+.soutenir{display:grid;grid-template-columns:5fr 7fr;gap:0 64px;align-items:center;border-top:1px solid var(--filet);padding-top:48px;padding-bottom:96px}
+.cimaise{background:var(--surface);padding:44px 48px 36px}
+.cimaise .oeuvre{max-width:340px;margin:0 auto}
+.cimaise .cartel{margin-top:16px}
+@media (max-width:640px){
+  .duo{grid-template-columns:1fr;gap:40px;padding-bottom:48px}
+  .duo__bloc{padding-top:22px}
+  .soutenir{grid-template-columns:1fr;gap:28px;padding-top:22px;padding-bottom:56px}
+  .soutenir__texte{order:1}
+  .cimaise{order:2;padding:28px 24px 22px}
+  .cimaise .oeuvre{max-width:none}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="phi" viewBox="0 0 100 104.02"><g transform="translate(0,0) scale(0.100018,0.100019) translate(-0.159759,1040.0) scale(0.1,-0.1)">
+<path d="M2862 10258 l3 -143 135 -8 c199 -11 349 -37 500 -87 360 -119 590
+-349 708 -707 32 -95 78 -343 69 -367 -4 -10 -31 -16 -84 -20 -215 -16 -345
+-28 -418 -36 -132 -16 -237 -31 -285 -40 -25 -5 -74 -14 -110 -20 -409 -74
+-817 -194 -1160 -341 -94 -40 -381 -185 -465 -234 -105 -62 -292 -185 -380
+-249 -617 -451 -1040 -1033 -1235 -1696 -12 -41 -26 -86 -30 -100 -19 -57 -50
+-204 -70 -335 -12 -77 -26 -162 -31 -190 -6 -29 -9 -231 -7 -490 4 -462 9
+-531 59 -765 31 -145 108 -408 149 -505 4 -11 25 -60 45 -110 171 -414 434
+-796 799 -1161 230 -230 357 -334 591 -490 118 -79 150 -98 270 -164 370 -204
+812 -361 1245 -441 123 -22 170 -31 225 -39 196 -31 552 -60 743 -60 108 0
+144 -3 148 -13 6 -16 -21 -200 -42 -282 -23 -94 -35 -125 -96 -255 -137 -288
+-403 -492 -752 -574 -165 -39 -223 -47 -386 -55 l-135 -6 -3 -137 -3 -138
+2131 0 2131 0 -3 137 -3 138 -85 2 c-136 3 -325 29 -450 62 -455 120 -737 411
+-841 870 -18 79 -39 233 -33 242 3 5 67 9 142 9 323 0 654 36 1032 111 218 43
+524 128 645 179 11 4 58 23 105 41 167 64 342 149 550 267 192 110 444 298
+640 480 321 298 568 608 755 948 42 76 125 241 125 249 0 2 13 33 29 67 106
+234 204 601 241 903 6 55 16 110 21 123 12 30 12 684 0 714 -5 13 -14 68 -21
+123 -11 95 -16 128 -42 255 -41 207 -132 509 -193 644 -12 28 -35 80 -51 116
+-163 374 -476 810 -814 1133 -293 281 -636 510 -1015 677 -27 12 -68 30 -90
+40 -155 69 -448 164 -695 225 -172 43 -362 79 -575 110 -181 26 -428 48 -660
+60 -66 3 -123 9 -127 13 -7 7 12 149 31 242 5 25 23 88 40 140 156 486 568
+756 1199 786 l142 7 0 144 0 143 -2130 0 -2131 0 3 -142z m1418 -5069 c0
+-3145 -1 -3309 -17 -3309 -73 0 -410 44 -543 71 -768 153 -1322 520 -1683
+1114 -48 80 -114 211 -174 345 -59 133 -143 414 -182 610 -91 456 -117 868
+-91 1425 45 959 230 1636 571 2087 96 126 265 292 424 414 54 41 193 134 201
+134 3 0 18 8 32 19 37 25 207 113 262 135 41 16 79 32 135 57 46 20 239 80
+350 109 206 53 667 119 708 102 4 -2 7 -1492 7 -3313z m1708 3292 c172 -21
+282 -41 422 -76 382 -96 712 -246 965 -439 383 -292 672 -714 837 -1221 38
+-118 97 -364 121 -506 24 -138 32 -197 59 -444 15 -143 15 -834 0 -1020 -41
+-484 -86 -762 -173 -1080 -96 -350 -254 -673 -439 -900 -147 -180 -401 -390
+-632 -523 -236 -136 -481 -231 -775 -303 -172 -41 -466 -81 -613 -83 l-55 -1
+-3 3304 c-1 2023 2 3307 7 3311 11 6 156 -4 279 -19z"/>
+</g></symbol></svg>
+<header class="site-header">
+  <a class="logo" href="../../maquette/index.html" aria-label="Perpetual"><svg class="logo__mark" aria-hidden="true"><use href="#phi"/></svg><span class="logo__texte">Perpetual</span></a>
+  <nav class="site-nav" aria-label="Navigation"><a href="../../maquette/realisations.html" class="trait">Réalisations</a><a href="p3.html" class="trait is-active" aria-current="page">Engagements</a><a href="#contact" class="trait">Contact</a></nav>
+</header>
+<main>
+<div class="container eng-ouv"><h1 class="page__titre">Engagements</h1><p class="ouv__texte">Trois engagements — aider, transmettre, soutenir</p></div><div class="container eng3"><div class="duo"><section class="duo__bloc" id="aider"><h2 class="verbe">Aider</h2><div class="eng-texte"><p>Depuis 2016, nous consacrons du temps et de l’énergie à aider ponctuellement des familles, des associations et des ONG confrontées à une problématique immobilière. À titre bénévole.</p><p>Ce n’est pas leur métier. Elles portent des causes, elles gèrent un patrimoine reçu, elles font face à une situation qu’elles n’ont pas choisie — et se retrouvent à devoir parler une langue qui n’est pas la leur.</p><p>Le temps donné là ne se compte pas et ne sert aucun projet.</p><p>Cela fait partie de ce que nous sommes. <a class="lien-texte" href="#contact">Écrivez-nous</a> — une conversation suffit souvent.</p></div></section><section class="duo__bloc" id="transmettre"><h2 class="verbe">Transmettre</h2><div class="eng-texte"><p>Depuis 2021, Julien De Dobbeleer est professeur invité à la Faculté d’architecture La Cambre-Horta de l’ULB, dans le cadre du cours de déontologie.</p><p>Quelques heures par an, face aux étudiants de dernière année, au moment où ils quittent l’école. Comment vivre de ce métier sans renoncer à ses idées — et donner à celles-ci les moyens d’aboutir.</p></div></section></div><section class="soutenir" id="soutenir"><div class="cimaise"><figure class="oeuvre"><img class="oeuvre__img oeuvre__img--atelier" src="img/ines-reddah-2024.jpg" width="933" height="1244" alt="Peinture d’Ines Reddah, 2024 : deux grands visages ronds cernés de bleu et de rose, entourés de traits verticaux de couleur." decoding="async"><img class="oeuvre__img oeuvre__img--recadree" src="img/ines-reddah-2024-recadree.jpg" width="870" height="1132" alt="Peinture d’Ines Reddah, 2024 : deux grands visages ronds cernés de bleu et de rose, entourés de traits verticaux de couleur." decoding="async"><figcaption class="cartel"><b>Ines Reddah, 2024</b><span class="cartel__detail">Feutres et acrylique, 65 × 82 cm</span></figcaption></figure></div><div class="soutenir__texte"><h2 class="verbe">Soutenir</h2><div class="eng-texte"><p>Le <a class="lien-texte" href="https://creahmbxl.be" target="_blank" rel="noopener">Créahmbxl<span class="visuellement-masque"> (nouvel onglet)</span></a> est un laboratoire d’art. Ses salles débordent de sons, de couleurs et de gestes. On y peint, on y sculpte, on y danse, on y joue — et on y travaille dur.</p><p>Ce sont de vrais artistes. Ils ont une œuvre, un univers, une obstination, et ils exposent en Belgique et à l’étranger. Rien de ce qui se fait là n’est décoratif ou thérapeutique : c’est de l’art, au sens le plus entier du mot.</p><p>Nous mettons en place avec eux un soutien logistique et financier de longue durée.</p></div></div></section></div>
+</main>
+<footer class="site-footer" id="contact"><div class="container footer__grid">
+  <div class="footer__contact"><p class="footer__name">Julien De Dobbeleer</p><a class="footer__mail" href="mailto:julien@perpetual.be">julien@perpetual.be</a><p class="footer__addr">Perpetual, 1030 Bruxelles</p></div>
+  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="../../maquette/realisations.html">Réalisations</a><a class="trait" href="../../maquette/index.html#collectif">Collectif</a><a class="trait" href="p3.html">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
+  <blockquote class="footer__quote"><p>« Le véritable voyage de découverte ne consiste pas à chercher de nouveaux paysages, mais à avoir de nouveaux yeux. »</p><cite>Marcel Proust</cite></blockquote>
+  <p class="footer__legal">© 2026 Perpetual</p>
+</div></footer>
+<nav class="prop-badge" aria-label="Propositions"><a data-page="p1.html" href="p1.html" class="">P1 · Registre</a><a data-page="p2.html" href="p2.html" class="">P2 · Colonne et œuvre</a><a data-page="p3.html" href="p3.html" class="is-active">P3 · Deux temps</a><span class="sep">|</span>œuvre :<a data-cle="oeuvre" data-val="atelier" data-defaut="atelier" href="#">telle quelle</a><a data-cle="oeuvre" data-val="recadree" data-defaut="atelier" href="#">recadrée</a><span class="sep">|</span>légende :<a data-cle="legende" data-val="cartel" data-defaut="cartel" href="#">cartel</a><a data-cle="legende" data-val="courte" data-defaut="cartel" href="#">courte</a></nav>
+<script>
+/* bandeau : garder les réglages (?oeuvre=…&legende=…) d'une proposition à l'autre */
+(function(){
+  var h=document.documentElement, q=new URLSearchParams(location.search);
+  [].forEach.call(document.querySelectorAll('.prop-badge a[data-cle]'),function(a){
+    var c=a.dataset.cle, v=a.dataset.val, courant=h.getAttribute('data-'+c)||a.dataset.defaut;
+    if(courant===v) a.classList.add('is-active');
+    var p=new URLSearchParams(q); if(v===a.dataset.defaut) p.delete(c); else p.set(c,v);
+    var s=p.toString(); a.href=location.pathname.split('/').pop()+(s?'?'+s:'');
+  });
+  [].forEach.call(document.querySelectorAll('.prop-badge a[data-page]'),function(a){
+    var s=q.toString(); a.href=a.dataset.page+(s?'?'+s:'');
+  });
+})();
+</script>
+</body>
+</html>
