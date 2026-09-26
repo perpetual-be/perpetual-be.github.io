@@ -1,6 +1,6 @@
 # Message à coller dans Claude Code — page Engagements (Cowork, 26/09)
 
-À envoyer **après** les messages « pied de page », « fiche P6 » et « gel de la Home » (`claude/perpetual-maquette.md` §6), un à la fois. Espace sous l'œuvre : 72 px par défaut — si Axel choisit 48 ou 32 dans le bandeau de `p1.html`, remplacer la valeur au point 1 (et 44 → 32 ou 24 au téléphone).
+À envoyer **après** les messages « pied de page », « fiche P6 » et « gel de la Home » (`claude/perpetual-maquette.md` §6), un à la fois. Espace sous l'œuvre : 72 px (44 au téléphone), confirmé par Axel le 26/09. Pour l'envoyer, le plus simple : dans Claude Code, « Lis design/revue-engagements/MESSAGE-claude-code-engagements.md et applique le message du bloc de code. » — ou copier-coller le seul contenu du bloc de code.
 
 ```
 Page Engagements (Cowork, 26/09). Lire d'abord design/maquette/BRIEF.md et design/maquette/src/README.md.
