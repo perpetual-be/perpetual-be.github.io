@@ -1,6 +1,7 @@
 // Vérifications de la maquette (Playwright + Chromium) : premier écran (structure F), débordement, effet de chaque bascule,
-// valeurs figées et alignement (gel de la Home du 23/09 : signature, espacements, pied de page), en-tête (Φ, wordmark, limite de 1600 px), carte des réalisations,
-// logos partenaires, photo 2800 px, srcset de l'aperçu des 4, mode présentation, page sans JavaScript, polices, contrastes ; puis la fiche The Bank
+// valeurs figées et alignement (gel de la Home du 23/09 : signature, espacements, pied de page), en-tête (Φ, wordmark, limite de 1600 px) et pied de page
+// sur la même grille (les trois pages), carte des réalisations, logos partenaires, photo 2800 px, srcset de l'aperçu des 4, mode présentation,
+// page sans JavaScript, polices, contrastes ; puis la fiche The Bank
 // (débordement horizontal, polices, gouttière du titre, premier écran et photo de tête, titres de chapitre, paire de photos, rythme) et la vue Réalisations,
 // proposition P2 (débordement et erreurs, alignement sur la grille large, ouverture, blocs des 4 projets, programme agences, rangée en boucle, photos d'un bien,
 // visionneuse, bascules 22 et 23, mobile, sans JavaScript).
@@ -197,6 +198,16 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   const hd = await p.evaluate(() => ({ w: Math.round(document.querySelector('.site-header').getBoundingClientRect().width), logo: Math.round(document.querySelector('.logo').getBoundingClientRect().left), nav: Math.round(document.querySelector('.site-nav').getBoundingClientRect().right) }));
   ok(hd.w === 1600 && hd.logo === 200 && hd.nav === 1720, `en-tête à 1920 : limité à 1600 px (${hd.w}), logo à ${hd.logo} px, liens jusqu'à ${hd.nav} px`);
   await ctx.close();
+}
+// pied de page (Cowork, 26/09) : sur la grille large comme l'en-tête, sur les trois pages, quelle que soit la grille du contenu — le contact commence
+// au x du logo, le bord droit (le filet du bas, sur toute la largeur de la grille) tombe sur celui de la navigation
+for (const page of ['index', 'projet-the-bank', 'realisations']) {
+  for (const [w, h] of [[1920, 1080], [1521, 705], [390, 844]]) {
+    const { p, ctx } = await ouvrir('', [w, h], {}, page);
+    const x = await p.evaluate(() => { const r = s => document.querySelector(s).getBoundingClientRect(); return { logo: Math.round(r('.logo').left), nav: Math.round(r('.site-nav').right), contact: Math.round(r('.footer__contact').left), filet: Math.round(r('.footer__legal').right) }; });
+    ok(x.contact === x.logo && x.filet === x.nav, `${page} · ${w} × ${h} : pied de page sur la grille de l'en-tête — contact à ${x.contact} px (logo à ${x.logo}), bord droit à ${x.filet} px (navigation jusqu'à ${x.nav})`);
+    await ctx.close();
+  }
 }
 {
   const { p, ctx } = await ouvrir('', [390, 844]);
