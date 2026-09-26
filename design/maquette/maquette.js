@@ -1,6 +1,6 @@
 /* Perpetual — maquette du lot 2 : le panneau de bascules, l'état dans l'URL, l'aperçu de la liste des projets (Home), et sur la vue Réalisations
    la rangée des agences en boucle, les photos de chaque bien et la visionneuse (revue du 26/09, repris de la proposition P2).
-   L'état (une valeur par bascule) vit dans la query de l'URL (?cadrage=haut&carte=papier-contour) ; le hash reste aux ancres.
+   L'état (une valeur par bascule) vit dans la query de l'URL (?papier=tout&bas=anciens) ; le hash reste aux ancres.
    Un script en tête de page pose déjà les attributs data-* avant le premier rendu ; ici on dessine le panneau et on tient l'URL à jour. */
 (function () {
   'use strict';
@@ -15,13 +15,11 @@
   // Figées le 23/09 : 9 premier écran (structure F), 9b photo (Community 05), 9d accroche (gauche), 10 élément de la bande (anneaux), 16 signature (or),
   // 18 fond du pied de page (papier, sans filet), 15 réalisations (carte) ; 3 portée de la serif retirée (classes .h2--sans / .h2--serif).
   // Gel de la Home (23/09) : 2 serif (Newsreader) et 17 graisse (400) figées ; 9c réduite à centre / haut (« bas » retiré).
-  // Sur la Home ne restent que deux décisions reportées : 9c cadrage (temporaire : la valeur retenue remplacera le point focal de community-05
-  // dans photoCandidates, build.mjs) et 15a carte. La 20 (fiche, titres de chapitre) est figée sur « sans »
+  // Home entièrement figée le 26/09 : 9c cadrage sur « haut » (50% 20%, le point focal de community-05 dans photoCandidates, build.mjs) et 15a carte
+  // sur « sable » ; plus aucune bascule sur la Home. La 20 (fiche, titres de chapitre) est figée sur « sans »
   // (revue de la fiche, 23/09). Vue Réalisations (revue du 26/09, la proposition P2 remplace les cartes et la bascule 21) : 22 fond papier du programme
   // agences et 23 bas de page, la V1 en défaut, la V2 en réserve.
   var BASCULES = [
-    { n: '9c', cle: 'cadrage', titre: 'Cadrage de Community 05', groupe: 'Home', valeurs: [['centre', 'centre · 50% 50%'], ['haut', 'haut · 50% 20%']], note: 'décision reportée : la valeur retenue remplacera le point focal de photoCandidates (build.mjs)', pages: ['home'] },
-    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Home', valeurs: [['sable', 'sable'], ['papier-contour', 'papier, contour fin']], note: 'décision reportée : papier-contour ajoute le trait fin (--trait-carte)', pages: ['home'] },
     { n: '22', cle: 'papier', titre: 'Programme agences, fond papier', groupe: 'Réalisations', valeurs: [['enonce', 'énoncé seul'], ['tout', 'toute la section']], note: 'toute la section : puis 32 px de blanc avant le pied de page', pages: ['realisations'] },
     { n: '23', cle: 'bas', titre: 'Bas de page', groupe: 'Réalisations', valeurs: [['rien', 'rien'], ['anciens', 'anciens projets']], note: 'en réserve : les projets de l’ancien site, à confirmer avec Julien', pages: ['realisations'] }
   ];
