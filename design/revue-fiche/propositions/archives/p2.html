@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Bank — P3 Photo d’abord</title>
+<title>The Bank — P2 Grande photo, triptyque</title>
 <script>(function(){var p=new URLSearchParams(location.search),h=document.documentElement;p.forEach(function(v,k){if(/^[a-z][a-z-]*$/.test(k)&&/^[a-z0-9-]*$/.test(v))h.setAttribute('data-'+k,v)})})();</script>
-<link rel="stylesheet" href="../../maquette/maquette.css">
-<link rel="icon" href="../../../public/favicon.svg">
+<link rel="stylesheet" href="../../../maquette/maquette.css">
+<link rel="icon" href="../../../../public/favicon.svg">
 <style>
 .prop-badge{position:fixed;left:16px;bottom:16px;z-index:50;display:flex;gap:14px;align-items:center;padding:8px 12px;background:#fff;border:1px solid var(--filet);font:13px/1.2 var(--sans);color:var(--c-meta)}
 .prop-badge b{color:var(--c-texte);font-weight:500}
@@ -14,16 +14,19 @@
 @media print{.prop-badge{display:none}}
 .suivant{margin-top:0}
 
-.p3-hero{height:clamp(420px,calc(100vh - 76px),820px);overflow:hidden}
-.p3-hero img{width:100%;height:100%;object-fit:cover;object-position:50% 100%}
-.p3-titre{padding-top:40px;padding-bottom:32px}
-.p3 .chapitres{padding-top:64px}
-.p3 .fiche__photos{padding:8px 0 72px}
+.p2-titre{padding-top:16px;padding-bottom:28px}
+.p2-hero{height:clamp(480px,calc(100vh - 76px - 108px),760px);overflow:hidden}
+.p2-hero img{width:100%;height:100%;object-fit:cover;object-position:50% 100%}
+.p2-chapitres{display:grid;grid-template-columns:repeat(3,1fr);gap:48px;padding:72px 0 64px}
+.p2-chapitres .chapitre{margin:0;padding-top:20px;border-top:1px solid var(--filet)}
+.p2-chapitres .chapitre__titre{font-size:24px}
+.p2 .fiche__photos{padding:0 0 72px}
 @media (max-width:640px){
-  .p3-hero{height:auto;aspect-ratio:2100/1694}
-  .p3-titre{padding-top:28px;padding-bottom:24px}
-  .p3 .chapitres{padding-top:40px}
-  .p3 .fiche__photos{padding-bottom:44px}
+  .p2-titre{padding-top:28px;padding-bottom:24px}
+  .p2-hero{height:auto;aspect-ratio:2100/1694}
+  .p2-chapitres{grid-template-columns:1fr;gap:32px;padding:40px 0}
+  .p2-chapitres .chapitre__titre{font-size:22px}
+  .p2 .fiche__photos{padding-bottom:44px}
 }
 </style>
 </head>
@@ -62,28 +65,28 @@
 -3 3304 c-1 2023 2 3307 7 3311 11 6 156 -4 279 -19z"/>
 </g></symbol></svg>
 <header class="site-header">
-  <a class="logo" href="../../maquette/index.html" aria-label="Perpetual"><svg class="logo__mark" aria-hidden="true"><use href="#phi"/></svg><span class="logo__texte">Perpetual</span></a>
-  <nav class="site-nav" aria-label="Navigation"><a href="../../maquette/realisations.html" class="trait is-active">Réalisations</a><a href="#" class="trait">Engagements</a><a href="#contact" class="trait">Contact</a></nav>
+  <a class="logo" href="../../../maquette/index.html" aria-label="Perpetual"><svg class="logo__mark" aria-hidden="true"><use href="#phi"/></svg><span class="logo__texte">Perpetual</span></a>
+  <nav class="site-nav" aria-label="Navigation"><a href="../../../maquette/realisations.html" class="trait is-active">Réalisations</a><a href="#" class="trait">Engagements</a><a href="#contact" class="trait">Contact</a></nav>
 </header>
 <main>
-<article class="fiche p3">
-<div class="p3-hero"><img src="img/the-bank-01-facade.jpg" srcset="img/the-bank-01-facade-m.jpg 1200w, img/the-bank-01-facade.jpg 2100w" sizes="100vw" alt="" decoding="async"></div>
-<div class="container p3-titre"><h1 class="page__titre">The Bank</h1></div>
+<article class="fiche p2">
+<div class="container p2-titre"><h1 class="page__titre">The Bank</h1></div>
+<div class="p2-hero"><img src="../img/the-bank-01-facade.jpg" srcset="../img/the-bank-01-facade-m.jpg 1200w, ../img/the-bank-01-facade.jpg 2100w" sizes="100vw" alt="" decoding="async"></div>
 <section class="band faits-band" aria-label="En bref"><div class="container"><ol class="stats stats--faits"><li class="stat"><span class="stat__value">Liège</span><span class="stat__label">Localisation</span></li><li class="stat"><span class="stat__value">1 100 m²</span><span class="stat__label">Surface</span></li><li class="stat"><span class="stat__value">Logements &amp; commerce</span><span class="stat__label">Usage</span></li></ol></div></section>
 <div class="container">
-  <div class="chapitres"><section class="chapitre"><p class="chapitre__num">01</p><h2 class="chapitre__titre">Ce que c’était</h2><p class="chapitre__texte">Une agence bancaire de 1 100 m², au cœur de Liège.</p></section><section class="chapitre"><p class="chapitre__num">02</p><h2 class="chapitre__titre">Ce que nous y avons vu</h2><p class="chapitre__texte">Une surface unique qui pouvait en accueillir trois. Le service bancaire maintenu sur ce qu’il lui faut, une vitrine rendue au commerce, et les niveaux supérieurs libérés pour l’habitat.</p></section><section class="chapitre"><p class="chapitre__num">03</p><h2 class="chapitre__titre">Ce que c’est devenu</h2><p class="chapitre__texte">Une bijouterie de 160 m², un point Bancontact de 60 m², et un projet de logements de standing. Vendu.</p></section></div>
-  <div class="fiche__photos"><figure><img src="../../directions/img/the-bank-02.jpg" alt="" decoding="async"><figcaption>Le point Bancontact, l’extérieur</figcaption></figure><figure><img src="../../directions/img/the-bank-03.jpg" srcset="../../directions/img/the-bank-03.jpg 1800w, ../../directions/img/the-bank-03-l.jpg 2800w" sizes="(max-width:640px) 100vw, 640px" alt="" decoding="async"><figcaption>Le point Bancontact, l’intérieur</figcaption></figure></div>
-  <a class="suivant" href="../../maquette/realisations.html#data-box"><span class="eyebrow">Projet suivant</span><span class="suivant__nom trait">Data Box →</span></a>
+  <div class="p2-chapitres"><section class="chapitre"><p class="chapitre__num">01</p><h2 class="chapitre__titre">Ce que c’était</h2><p class="chapitre__texte">Une agence bancaire de 1 100 m², au cœur de Liège.</p></section><section class="chapitre"><p class="chapitre__num">02</p><h2 class="chapitre__titre">Ce que nous y avons vu</h2><p class="chapitre__texte">Une surface unique qui pouvait en accueillir trois. Le service bancaire maintenu sur ce qu’il lui faut, une vitrine rendue au commerce, et les niveaux supérieurs libérés pour l’habitat.</p></section><section class="chapitre"><p class="chapitre__num">03</p><h2 class="chapitre__titre">Ce que c’est devenu</h2><p class="chapitre__texte">Une bijouterie de 160 m², un point Bancontact de 60 m², et un projet de logements de standing. Vendu.</p></section></div>
+  <div class="fiche__photos"><figure><img src="../../../directions/img/the-bank-02.jpg" alt="" decoding="async"><figcaption>Le point Bancontact, l’extérieur</figcaption></figure><figure><img src="../../../directions/img/the-bank-03.jpg" srcset="../../../directions/img/the-bank-03.jpg 1800w, ../../../directions/img/the-bank-03-l.jpg 2800w" sizes="(max-width:640px) 100vw, 640px" alt="" decoding="async"><figcaption>Le point Bancontact, l’intérieur</figcaption></figure></div>
+  <a class="suivant" href="../../../maquette/realisations.html#data-box"><span class="eyebrow">Projet suivant</span><span class="suivant__nom trait">Data Box →</span></a>
 </div>
 </article>
 </main>
 <footer class="site-footer" id="contact"><div class="container footer__grid">
   <div class="footer__contact"><p class="footer__name">Julien De Dobbeleer</p><a class="footer__mail" href="mailto:julien@perpetual.be">julien@perpetual.be</a><p class="footer__addr">Perpetual, 1030 Bruxelles</p></div>
-  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="../../maquette/realisations.html">Réalisations</a><a class="trait" href="../../maquette/index.html#collectif">Collectif</a><a class="trait" href="#">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
+  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="../../../maquette/realisations.html">Réalisations</a><a class="trait" href="../../../maquette/index.html#collectif">Collectif</a><a class="trait" href="#">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
   <blockquote class="footer__quote"><p>« Le véritable voyage de découverte ne consiste pas à chercher de nouveaux paysages, mais à avoir de nouveaux yeux. »</p><cite>Marcel Proust</cite></blockquote>
   <p class="footer__legal">© 2026 Perpetual</p>
 </div></footer>
 
-<nav class="prop-badge" aria-label="Propositions"><b>Fiche The Bank</b><a href="p1.html" class="">P1 · Façade entière</a><a href="p2.html" class="">P2 · Grande photo, triptyque</a><a href="p3.html" class="is-active">P3 · Photo d’abord</a><a href="p4.html" class="">P4 · Bande et photos qui défilent</a><a href="../../maquette/projet-the-bank.html">actuelle</a></nav>
+<nav class="prop-badge" aria-label="Propositions"><b>Fiche The Bank</b><a href="p1.html" class="">P1 · Façade entière</a><a href="p2.html" class="is-active">P2 · Grande photo, triptyque</a><a href="p3.html" class="">P3 · Photo d’abord</a><a href="p4.html" class="">P4 · Bande et photos qui défilent</a><a href="../../../maquette/projet-the-bank.html">actuelle</a></nav>
 </body>
 </html>

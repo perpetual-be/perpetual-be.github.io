@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sélection des photos — fiches projet</title>
+<link rel="stylesheet" href="../../maquette/maquette.css">
+<link rel="icon" href="../../../public/favicon.svg">
+<style>
+body{background:#fff}
+.sel{max-width:1320px;margin:0 auto;padding:40px 32px 120px}
+.sel h1{font-family:var(--serif);font-weight:400;font-size:44px;line-height:1.1;margin-bottom:12px}
+.sel .intro{max-width:78ch;color:var(--c-texte);margin-bottom:8px}
+.sel .intro li{margin:4px 0 4px 20px;list-style:disc}
+.projet{margin-top:56px;padding-top:24px;border-top:1px solid var(--filet)}
+.projet__tete{display:flex;align-items:baseline;gap:20px;flex-wrap:wrap;margin-bottom:14px}
+.projet__nom{font-family:var(--serif);font-size:32px;font-weight:400}
+.projet__meta{font-size:14px;color:var(--c-meta)}
+.projet__compte{font-size:14px;font-weight:500}
+.projet__compte.plein{color:var(--or-fonce)}
+.choix{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;min-height:92px;padding:12px;background:var(--papier);margin-bottom:18px}
+.choix:empty::before{content:"Aucune photo choisie : clique sur « choisir » sous les photos.";font-size:14px;color:var(--c-meta);align-self:center}
+.choix__item{width:112px;font-size:12px;color:var(--c-meta)}
+.choix__item img{width:112px;height:76px;object-fit:cover;display:block;margin-bottom:4px}
+.choix__item.un img{outline:2px solid var(--or);outline-offset:-2px}
+.choix__rang{font-weight:600;color:var(--c-texte)}
+.choix__outils{display:flex;gap:10px;margin-top:2px}
+.choix__outils a{color:var(--c-texte);cursor:pointer}
+.grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:22px 18px}
+.vign{position:relative}
+.vign__img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;background:#f1f0ec;cursor:zoom-in}
+.vign.pris .vign__img{outline:3px solid var(--or);outline-offset:-3px}
+.vign__rang{position:absolute;top:8px;left:8px;min-width:30px;height:30px;padding:0 8px;background:var(--or-fonce);color:#fff;font:600 14px/30px var(--sans);text-align:center;display:none}
+.vign.pris .vign__rang{display:block}
+.vign__ligne{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-size:14px}
+.vign__n{font-weight:600}
+.vign__choisir{color:var(--c-texte);cursor:pointer;border-bottom:1px solid var(--c-trait-fin)}
+.vign.pris .vign__choisir{color:var(--or-fonce)}
+.vign__note{font-size:13.5px;margin-top:4px}
+.vign__def{font-size:12.5px;color:var(--c-meta);margin-top:2px}
+.export{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--filet);padding:14px 32px;display:flex;gap:16px;align-items:center;z-index:5}
+.export textarea{flex:1;height:64px;font:13px/1.4 var(--sans);padding:8px;border:1px solid var(--filet);resize:vertical}
+.export a{cursor:pointer;color:var(--c-texte);border-bottom:1px solid var(--c-trait);white-space:nowrap}
+.export .msg{font-size:13px;color:var(--or-fonce);min-width:120px}
+.boite{position:fixed;inset:0;background:rgba(20,18,15,.88);display:none;align-items:center;justify-content:center;z-index:20;cursor:zoom-out}
+.boite.ouverte{display:flex}
+.boite img{max-width:92vw;max-height:84vh;object-fit:contain}
+.boite p{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#fff;font-size:14px}
+.alerte{font-size:13px;color:var(--or-fonce);margin-left:auto}
+</style>
+</head>
+<body>
+<main class="sel">
+<h1>Sélection des photos — fiches projet</h1>
+<div class="intro">
+<p>Les photos des quatre projets phares, telles que reçues (dossier WeTransfer, <em>02 Photos</em>). Pour chaque projet :</p>
+<ul>
+<li>clique sur <strong>choisir</strong> sous les photos, dans l'ordre voulu, <strong>8 au plus</strong> ;</li>
+<li>la <strong>n° 1</strong> est la photo du projet : en tête de la fiche, dans la liste de la Home et sur la carte de la page Réalisations ;</li>
+<li>dans la bande papier, ← et → changent l'ordre, × retire la photo ; un clic sur une photo l'agrandit ;</li>
+<li>quand c'est fait, copie le texte en bas de page et colle-le dans Cowork.</li>
+</ul>
+<p class="projet__meta">Pré-remplis : The Bank (ses trois photos) et Data Box (les deux vues retenues le 14/09). « ≈ n » signale une photo presque identique à la n° n. La sélection reste enregistrée dans ce navigateur.</p>
+</div>
+<div id="projets"></div>
+</main>
+<div class="export"><textarea id="texte" readonly aria-label="Sélection à copier"></textarea><a id="copier">copier la sélection</a><span class="msg" id="msg"></span></div>
+<div class="boite" id="boite"><img alt=""><p></p></div>
+<script>
+var PROJETS = [{"id": "the-bank", "nom": "The Bank", "photos": [{"n": 1, "fichier": "the-bank-01.jpg", "img": "img/the-bank__the-bank-01.jpg", "w": 2508, "h": 3344, "o": "portrait", "note": "Façade (aspect « peint » en très grand, voir la revue)", "def": "très bonne"}, {"n": 2, "fichier": "the-bank-02.jpg", "img": "img/the-bank__the-bank-02.jpg", "w": 2896, "h": 2172, "o": "paysage", "note": "Point Bancontact, extérieur", "def": "très bonne"}, {"n": 3, "fichier": "the-bank-03.jpg", "img": "img/the-bank__the-bank-03.jpg", "w": 2896, "h": 2172, "o": "paysage", "note": "Point Bancontact, intérieur", "def": "très bonne"}], "defaut": [0, 1, 2]}, {"id": "ateliers-118", "nom": "Ateliers 118", "photos": [{"n": 1, "fichier": "ateliers-118-01.jpg", "img": "img/ateliers-118__ateliers-118-01.jpg", "w": 2508, "h": 3344, "o": "portrait", "note": "Façade sur rue", "def": "très bonne"}, {"n": 2, "fichier": "ateliers-118-02.jpg", "img": "img/ateliers-118__ateliers-118-02.jpg", "w": 2156, "h": 2876, "o": "portrait", "note": "Grand plateau, couloir central", "def": "très bonne"}, {"n": 3, "fichier": "ateliers-118-03.jpg", "img": "img/ateliers-118__ateliers-118-03.jpg", "w": 2172, "h": 2896, "o": "portrait", "note": "Porte de garage, texte au mur", "def": "très bonne"}, {"n": 4, "fichier": "ateliers-118-04.jpg", "img": "img/ateliers-118__ateliers-118-04.jpg", "w": 2172, "h": 2896, "o": "portrait", "note": "Atelier d’artiste", "def": "très bonne"}, {"n": 5, "fichier": "ateliers-118-05.jpg", "img": "img/ateliers-118__ateliers-118-05.jpg", "w": 2508, "h": 3344, "o": "portrait", "note": "Vue depuis le toit", "def": "très bonne"}], "defaut": []}, {"id": "community", "nom": "Community", "photos": [{"n": 1, "fichier": "community-01.jpg", "img": "img/community__community-01.jpg", "w": 1080, "h": 720, "o": "paysage", "note": "Chambre", "def": "juste suffisante dans le cadre, douce sur écran Retina"}, {"n": 2, "fichier": "community-02.jpg", "img": "img/community__community-02.jpg", "w": 1080, "h": 720, "o": "paysage", "note": "Chambre", "def": "juste suffisante dans le cadre, douce sur écran Retina"}, {"n": 3, "fichier": "community-03.jpg", "img": "img/community__community-03.jpg", "w": 1080, "h": 720, "o": "paysage", "note": "Salle de bain", "def": "juste suffisante dans le cadre, douce sur écran Retina"}, {"n": 4, "fichier": "community-04.jpg", "img": "img/community__community-04.jpg", "w": 1080, "h": 720, "o": "paysage", "note": "Chambre", "def": "juste suffisante dans le cadre, douce sur écran Retina"}, {"n": 5, "fichier": "community-05.jpg", "img": "img/community__community-05.jpg", "w": 3344, "h": 2508, "o": "paysage", "note": "Terrasse et jardin", "def": "très bonne"}, {"n": 6, "fichier": "community-06.jpg", "img": "img/community__community-06.jpg", "w": 3344, "h": 2508, "o": "paysage", "note": "Terrasse ≈ 5", "def": "très bonne"}, {"n": 7, "fichier": "community-07.jpg", "img": "img/community__community-07.jpg", "w": 3344, "h": 2508, "o": "paysage", "note": "Jardin le long du bâtiment", "def": "très bonne"}, {"n": 8, "fichier": "community-08.jpg", "img": "img/community__community-08.jpg", "w": 3344, "h": 2508, "o": "paysage", "note": "Espace commun, grande table", "def": "très bonne"}, {"n": 9, "fichier": "community-09.jpg", "img": "img/community__community-09.jpg", "w": 3344, "h": 2508, "o": "paysage", "note": "Espace commun ≈ 8", "def": "très bonne"}, {"n": 10, "fichier": "community-10.jpg", "img": "img/community__community-10.jpg", "w": 3344, "h": 2508, "o": "paysage", "note": "Salon commun", "def": "très bonne"}, {"n": 11, "fichier": "community-11.jpg", "img": "img/community__community-11.jpg", "w": 1080, "h": 720, "o": "paysage", "note": "Studio", "def": "juste suffisante dans le cadre, douce sur écran Retina"}, {"n": 12, "fichier": "community-12.jpg", "img": "img/community__community-12.jpg", "w": 1080, "h": 720, "o": "paysage", "note": "Cuisine", "def": "juste suffisante dans le cadre, douce sur écran Retina"}, {"n": 13, "fichier": "community-13.jpg", "img": "img/community__community-13.jpg", "w": 1080, "h": 720, "o": "paysage", "note": "Salle de douche", "def": "juste suffisante dans le cadre, douce sur écran Retina"}, {"n": 14, "fichier": "community-14.png", "img": "img/community__community-14.jpg", "w": 1536, "h": 1024, "o": "paysage", "note": "Cour pavée", "def": "bonne dans le cadre"}, {"n": 15, "fichier": "community-15.png", "img": "img/community__community-15.jpg", "w": 1536, "h": 1024, "o": "paysage", "note": "Cour pavée, autre angle", "def": "bonne dans le cadre"}, {"n": 16, "fichier": "community-16.png", "img": "img/community__community-16.jpg", "w": 1536, "h": 1024, "o": "paysage", "note": "L’immeuble depuis le parc", "def": "bonne dans le cadre"}], "defaut": []}, {"id": "data-box", "nom": "Data Box", "photos": [{"n": 1, "fichier": "data-box-01.jpg.JPG", "img": "img/data-box__data-box-01.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Vue aérienne large (retenue le 14/09)", "def": "très bonne"}, {"n": 2, "fichier": "data-box-02.jpg.JPG", "img": "img/data-box__data-box-02.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Prise basse (retenue le 14/09)", "def": "très bonne"}, {"n": 3, "fichier": "dji_fly_20260830_161008_0063_1788102734855_photo.JPG", "img": "img/data-box__dji_fly_20260830_161008_0063_1788102734855_photo.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Drone, oblique rapprochée", "def": "très bonne"}, {"n": 4, "fichier": "dji_fly_20260830_161022_0064_1788102731453_photo.JPG", "img": "img/data-box__dji_fly_20260830_161022_0064_1788102731453_photo.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Drone ≈ 3", "def": "très bonne"}, {"n": 5, "fichier": "dji_fly_20260830_161050_0065_1788102728952_photo.JPG", "img": "img/data-box__dji_fly_20260830_161050_0065_1788102728952_photo.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Drone, vue du dessus", "def": "très bonne"}, {"n": 6, "fichier": "dji_fly_20260830_161056_0066_1788102725790_photo.JPG", "img": "img/data-box__dji_fly_20260830_161056_0066_1788102725790_photo.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Drone ≈ 5", "def": "très bonne"}, {"n": 7, "fichier": "dji_fly_20260830_161508_0068_1788102633507_photo.JPG", "img": "img/data-box__dji_fly_20260830_161508_0068_1788102633507_photo.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Drone, vue large avec les voies", "def": "très bonne"}, {"n": 8, "fichier": "dji_fly_20260830_161514_0069_1788102629831_photo.JPG", "img": "img/data-box__dji_fly_20260830_161514_0069_1788102629831_photo.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Drone ≈ 7", "def": "très bonne"}, {"n": 9, "fichier": "dji_fly_20260830_161620_0071_1788102618576_photo.JPG", "img": "img/data-box__dji_fly_20260830_161620_0071_1788102618576_photo.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Drone, oblique", "def": "très bonne"}, {"n": 10, "fichier": "dji_fly_20260830_161632_0072_1788102614329_photo.JPG", "img": "img/data-box__dji_fly_20260830_161632_0072_1788102614329_photo.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Drone ≈ 9", "def": "très bonne"}, {"n": 11, "fichier": "dji_fly_20260830_161724_0073_1788102611239_photo.JPG", "img": "img/data-box__dji_fly_20260830_161724_0073_1788102611239_photo.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Drone, l’autre côté", "def": "très bonne"}, {"n": 12, "fichier": "dji_fly_20260830_161738_0074_1788102608272_photo.JPG", "img": "img/data-box__dji_fly_20260830_161738_0074_1788102608272_photo.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Drone ≈ 11", "def": "très bonne"}, {"n": 13, "fichier": "dji_fly_20260830_161802_0075_1788102603815_photo.JPG", "img": "img/data-box__dji_fly_20260830_161802_0075_1788102603815_photo.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Drone, vue large, l’autre côté", "def": "très bonne"}, {"n": 14, "fichier": "dji_fly_20260830_161856_0076_1788102599255_photo.JPG", "img": "img/data-box__dji_fly_20260830_161856_0076_1788102599255_photo.jpg", "w": 8064, "h": 4536, "o": "paysage", "note": "Drone, les bâtiments de près", "def": "très bonne"}], "defaut": [0, 1]}];
+var CLE = 'perpetual-selection-photos-v1', MAX = 8;
+var etat = {};
+try { etat = JSON.parse(localStorage.getItem(CLE) || '{}') || {}; } catch (e) { etat = {}; }
+PROJETS.forEach(function (p) { if (!Array.isArray(etat[p.id])) etat[p.id] = p.defaut.slice(); });
+function garder() { try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch (e) {} }
+function el(t, c, txt) { var e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; }
+var boite = document.getElementById('boite');
+boite.addEventListener('click', function () { boite.classList.remove('ouverte'); });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') boite.classList.remove('ouverte'); });
+function agrandir(p, ph) { boite.querySelector('img').src = ph.img; boite.querySelector('p').textContent = p.nom + ' · n° ' + ph.n + ' · ' + ph.note + ' · ' + ph.w + ' × ' + ph.h + ' · ' + ph.fichier; boite.classList.add('ouverte'); }
+function rendre() {
+  var racine = document.getElementById('projets'); racine.innerHTML = '';
+  PROJETS.forEach(function (p) {
+    var sel = etat[p.id];
+    var s = el('section', 'projet'); s.id = p.id;
+    var t = el('div', 'projet__tete');
+    t.appendChild(el('h2', 'projet__nom', p.nom));
+    var orient = p.photos.every(function (x) { return x.o === 'portrait'; }) ? 'toutes en portrait' : p.photos.every(function (x) { return x.o === 'paysage'; }) ? 'toutes en paysage' : 'portrait et paysage';
+    t.appendChild(el('span', 'projet__meta', p.photos.length + ' photos · ' + orient));
+    t.appendChild(el('span', 'projet__compte' + (sel.length >= MAX ? ' plein' : ''), 'sélection : ' + sel.length + ' / ' + Math.min(MAX, p.photos.length)));
+    var al = el('span', 'alerte'); al.id = 'alerte-' + p.id; t.appendChild(al);
+    s.appendChild(t);
+    var choix = el('div', 'choix');
+    sel.forEach(function (idx, r) {
+      var ph = p.photos[idx], it = el('div', 'choix__item' + (r === 0 ? ' un' : ''));
+      var im = el('img'); im.src = ph.img; im.alt = ''; it.appendChild(im);
+      var l = el('div'); l.appendChild(el('span', 'choix__rang', (r + 1) + '. ')); l.appendChild(document.createTextNode('n° ' + ph.n + (r === 0 ? ' · photo du projet' : ''))); it.appendChild(l);
+      var o = el('div', 'choix__outils');
+      [['←', -1], ['→', 1]].forEach(function (a) { var x = el('a', null, a[0]); x.title = a[1] < 0 ? 'avancer' : 'reculer'; x.onclick = function () { var j = r + a[1]; if (j < 0 || j >= sel.length) return; sel.splice(j, 0, sel.splice(r, 1)[0]); garder(); rendre(); }; o.appendChild(x); });
+      var x = el('a', null, '×'); x.title = 'retirer'; x.onclick = function () { sel.splice(r, 1); garder(); rendre(); }; o.appendChild(x);
+      it.appendChild(o); choix.appendChild(it);
+    });
+    s.appendChild(choix);
+    var g = el('div', 'grille');
+    p.photos.forEach(function (ph, idx) {
+      var r = sel.indexOf(idx), c = el('div', 'vign' + (r >= 0 ? ' pris' : ''));
+      var im = el('img', 'vign__img'); im.src = ph.img; im.alt = p.nom + ' n° ' + ph.n; im.loading = 'lazy'; im.onclick = function () { agrandir(p, ph); }; c.appendChild(im);
+      c.appendChild(el('span', 'vign__rang', r >= 0 ? String(r + 1) : ''));
+      var li = el('div', 'vign__ligne'); li.appendChild(el('span', 'vign__n', 'n° ' + ph.n + ' · ' + ph.w + ' × ' + ph.h));
+      var ch = el('a', 'vign__choisir', r >= 0 ? 'retirer' : 'choisir');
+      ch.onclick = function () {
+        var k = sel.indexOf(idx);
+        if (k >= 0) sel.splice(k, 1);
+        else if (sel.length >= MAX) { document.getElementById('alerte-' + p.id).textContent = '8 photos au plus : retire-en une d\'abord.'; return; }
+        else sel.push(idx);
+        garder(); rendre();
+      };
+      li.appendChild(ch); c.appendChild(li);
+      c.appendChild(el('div', 'vign__note', ph.note));
+      c.appendChild(el('div', 'vign__def', 'définition : ' + ph.def));
+      g.appendChild(c);
+    });
+    s.appendChild(g); racine.appendChild(s);
+  });
+  var lignes = ['Sélection des photos des fiches projet (planche du 26/09)'];
+  PROJETS.forEach(function (p) {
+    var sel = etat[p.id];
+    lignes.push(p.nom + ' : ' + (sel.length ? sel.map(function (i, r) { return (r + 1) + '. n° ' + p.photos[i].n + ' (' + p.photos[i].fichier + ')'; }).join(' ; ') : 'rien de choisi'));
+  });
+  document.getElementById('texte').value = lignes.join('\n');
+}
+document.getElementById('copier').onclick = function () {
+  var t = document.getElementById('texte'), m = document.getElementById('msg');
+  function ok() { m.textContent = 'copié'; setTimeout(function () { m.textContent = ''; }, 1800); }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t.value).then(ok, function () { t.select(); document.execCommand('copy'); ok(); });
+  else { t.select(); document.execCommand('copy'); ok(); }
+};
+rendre();
+</script>
+</body>
+</html>

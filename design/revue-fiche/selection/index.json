@@ -1,0 +1,314 @@
+{
+ "the-bank": [
+  {
+   "fichier": "the-bank-01.jpg",
+   "vignette": "img/the-bank__the-bank-01.jpg",
+   "w": 2508,
+   "h": 3344,
+   "orientation": "portrait",
+   "ko": 3397
+  },
+  {
+   "fichier": "the-bank-02.jpg",
+   "vignette": "img/the-bank__the-bank-02.jpg",
+   "w": 2896,
+   "h": 2172,
+   "orientation": "paysage",
+   "ko": 2988
+  },
+  {
+   "fichier": "the-bank-03.jpg",
+   "vignette": "img/the-bank__the-bank-03.jpg",
+   "w": 2896,
+   "h": 2172,
+   "orientation": "paysage",
+   "ko": 1641
+  }
+ ],
+ "ateliers-118": [
+  {
+   "fichier": "ateliers-118-01.jpg",
+   "vignette": "img/ateliers-118__ateliers-118-01.jpg",
+   "w": 2508,
+   "h": 3344,
+   "orientation": "portrait",
+   "ko": 3405
+  },
+  {
+   "fichier": "ateliers-118-02.jpg",
+   "vignette": "img/ateliers-118__ateliers-118-02.jpg",
+   "w": 2156,
+   "h": 2876,
+   "orientation": "portrait",
+   "ko": 1475
+  },
+  {
+   "fichier": "ateliers-118-03.jpg",
+   "vignette": "img/ateliers-118__ateliers-118-03.jpg",
+   "w": 2172,
+   "h": 2896,
+   "orientation": "portrait",
+   "ko": 2375
+  },
+  {
+   "fichier": "ateliers-118-04.jpg",
+   "vignette": "img/ateliers-118__ateliers-118-04.jpg",
+   "w": 2172,
+   "h": 2896,
+   "orientation": "portrait",
+   "ko": 1981
+  },
+  {
+   "fichier": "ateliers-118-05.jpg",
+   "vignette": "img/ateliers-118__ateliers-118-05.jpg",
+   "w": 2508,
+   "h": 3344,
+   "orientation": "portrait",
+   "ko": 2731
+  }
+ ],
+ "community": [
+  {
+   "fichier": "community-01.jpg",
+   "vignette": "img/community__community-01.jpg",
+   "w": 1080,
+   "h": 720,
+   "orientation": "paysage",
+   "ko": 161
+  },
+  {
+   "fichier": "community-02.jpg",
+   "vignette": "img/community__community-02.jpg",
+   "w": 1080,
+   "h": 720,
+   "orientation": "paysage",
+   "ko": 175
+  },
+  {
+   "fichier": "community-03.jpg",
+   "vignette": "img/community__community-03.jpg",
+   "w": 1080,
+   "h": 720,
+   "orientation": "paysage",
+   "ko": 151
+  },
+  {
+   "fichier": "community-04.jpg",
+   "vignette": "img/community__community-04.jpg",
+   "w": 1080,
+   "h": 720,
+   "orientation": "paysage",
+   "ko": 336
+  },
+  {
+   "fichier": "community-05.jpg",
+   "vignette": "img/community__community-05.jpg",
+   "w": 3344,
+   "h": 2508,
+   "orientation": "paysage",
+   "ko": 2526
+  },
+  {
+   "fichier": "community-06.jpg",
+   "vignette": "img/community__community-06.jpg",
+   "w": 3344,
+   "h": 2508,
+   "orientation": "paysage",
+   "ko": 2503
+  },
+  {
+   "fichier": "community-07.jpg",
+   "vignette": "img/community__community-07.jpg",
+   "w": 3344,
+   "h": 2508,
+   "orientation": "paysage",
+   "ko": 3077
+  },
+  {
+   "fichier": "community-08.jpg",
+   "vignette": "img/community__community-08.jpg",
+   "w": 3344,
+   "h": 2508,
+   "orientation": "paysage",
+   "ko": 2859
+  },
+  {
+   "fichier": "community-09.jpg",
+   "vignette": "img/community__community-09.jpg",
+   "w": 3344,
+   "h": 2508,
+   "orientation": "paysage",
+   "ko": 2123
+  },
+  {
+   "fichier": "community-10.jpg",
+   "vignette": "img/community__community-10.jpg",
+   "w": 3344,
+   "h": 2508,
+   "orientation": "paysage",
+   "ko": 3105
+  },
+  {
+   "fichier": "community-11.jpg",
+   "vignette": "img/community__community-11.jpg",
+   "w": 1080,
+   "h": 720,
+   "orientation": "paysage",
+   "ko": 261
+  },
+  {
+   "fichier": "community-12.jpg",
+   "vignette": "img/community__community-12.jpg",
+   "w": 1080,
+   "h": 720,
+   "orientation": "paysage",
+   "ko": 105
+  },
+  {
+   "fichier": "community-13.jpg",
+   "vignette": "img/community__community-13.jpg",
+   "w": 1080,
+   "h": 720,
+   "orientation": "paysage",
+   "ko": 155
+  },
+  {
+   "fichier": "community-14.png",
+   "vignette": "img/community__community-14.jpg",
+   "w": 1536,
+   "h": 1024,
+   "orientation": "paysage",
+   "ko": 2950
+  },
+  {
+   "fichier": "community-15.png",
+   "vignette": "img/community__community-15.jpg",
+   "w": 1536,
+   "h": 1024,
+   "orientation": "paysage",
+   "ko": 3044
+  },
+  {
+   "fichier": "community-16.png",
+   "vignette": "img/community__community-16.jpg",
+   "w": 1536,
+   "h": 1024,
+   "orientation": "paysage",
+   "ko": 4150
+  }
+ ],
+ "data-box": [
+  {
+   "fichier": "data-box-01.jpg.JPG",
+   "vignette": "img/data-box__data-box-01.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 30036
+  },
+  {
+   "fichier": "data-box-02.jpg.JPG",
+   "vignette": "img/data-box__data-box-02.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 25660
+  },
+  {
+   "fichier": "dji_fly_20260830_161008_0063_1788102734855_photo.JPG",
+   "vignette": "img/data-box__dji_fly_20260830_161008_0063_1788102734855_photo.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 27168
+  },
+  {
+   "fichier": "dji_fly_20260830_161022_0064_1788102731453_photo.JPG",
+   "vignette": "img/data-box__dji_fly_20260830_161022_0064_1788102731453_photo.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 27572
+  },
+  {
+   "fichier": "dji_fly_20260830_161050_0065_1788102728952_photo.JPG",
+   "vignette": "img/data-box__dji_fly_20260830_161050_0065_1788102728952_photo.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 27232
+  },
+  {
+   "fichier": "dji_fly_20260830_161056_0066_1788102725790_photo.JPG",
+   "vignette": "img/data-box__dji_fly_20260830_161056_0066_1788102725790_photo.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 27328
+  },
+  {
+   "fichier": "dji_fly_20260830_161508_0068_1788102633507_photo.JPG",
+   "vignette": "img/data-box__dji_fly_20260830_161508_0068_1788102633507_photo.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 30380
+  },
+  {
+   "fichier": "dji_fly_20260830_161514_0069_1788102629831_photo.JPG",
+   "vignette": "img/data-box__dji_fly_20260830_161514_0069_1788102629831_photo.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 30308
+  },
+  {
+   "fichier": "dji_fly_20260830_161620_0071_1788102618576_photo.JPG",
+   "vignette": "img/data-box__dji_fly_20260830_161620_0071_1788102618576_photo.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 29256
+  },
+  {
+   "fichier": "dji_fly_20260830_161632_0072_1788102614329_photo.JPG",
+   "vignette": "img/data-box__dji_fly_20260830_161632_0072_1788102614329_photo.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 29640
+  },
+  {
+   "fichier": "dji_fly_20260830_161724_0073_1788102611239_photo.JPG",
+   "vignette": "img/data-box__dji_fly_20260830_161724_0073_1788102611239_photo.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 27972
+  },
+  {
+   "fichier": "dji_fly_20260830_161738_0074_1788102608272_photo.JPG",
+   "vignette": "img/data-box__dji_fly_20260830_161738_0074_1788102608272_photo.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 27624
+  },
+  {
+   "fichier": "dji_fly_20260830_161802_0075_1788102603815_photo.JPG",
+   "vignette": "img/data-box__dji_fly_20260830_161802_0075_1788102603815_photo.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 30968
+  },
+  {
+   "fichier": "dji_fly_20260830_161856_0076_1788102599255_photo.JPG",
+   "vignette": "img/data-box__dji_fly_20260830_161856_0076_1788102599255_photo.jpg",
+   "w": 8064,
+   "h": 4536,
+   "orientation": "paysage",
+   "ko": 31304
+  }
+ ]
+}
