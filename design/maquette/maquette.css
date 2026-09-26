@@ -37,9 +37,10 @@
      titres de chapitre de la fiche : sans medium --fs-chapitre (bascule 20 figée sur « sans », revue de la fiche du 23/09) */
   --fs-accroche:52px;--fs-chiffre:58px;--fs-h2:28px;--fs-h2-serif:34px;--fs-chapitre:26px;--fs-texte:17px;--fs-nav:15px;
   --fs-etiquette:13px;--fs-etiquette-chiffre:14px;--fs-signature:24px;--fs-chute:26px;--fs-nom:42px;--fs-ligne:16px;--fs-fait:28px;
-  --fs-titre-page:64px;--fs-suivant:30px;--fs-agence:30px;--fs-carte-nom:32px;   /* fiche et vue Réalisations */
+  --fs-titre-page:64px;--fs-suivant:30px;   /* fiche et vue Réalisations */
   /* mise en page */
   --max:1200px;--gutter:40px;--bande-haut:44px;--bande-bas:40px;
+  --max-large:1600px;   /* grille large, gouttières comprises (26/09) : l'en-tête et la vue Réalisations ; la Home et la fiche y passeront plus tard */
   /* photo du premier écran : assez basse pour que la bande et ses quatre chiffres tiennent sous elle à 1440 × 900 et 1366 × 703
      (en-tête 76 px + bande ~176 px dans la fenêtre basse ⇒ ~360 px restent pour la photo) */
   --photo-hauteur:clamp(320px,calc(100vh - 270px),560px);--photo-haut:64px;
@@ -54,6 +55,7 @@ a{color:inherit;text-decoration:none}
 img{display:block;max-width:100%}
 ol,ul{list-style:none}
 .container{max-width:var(--max);margin:0 auto;padding:0 var(--gutter)}
+.large{max-width:var(--max-large);margin:0 auto;padding:0 var(--gutter)}   /* gouttière à gouttière : photos et surfaces de la grille large, alignées sur le logo et la navigation */
 .eyebrow{font-size:var(--fs-etiquette);color:var(--c-meta);margin-bottom:22px;letter-spacing:.01em}
 .h2{line-height:1.15;letter-spacing:-.01em;margin-bottom:28px}
 .h2--sans{font-family:var(--sans);font-weight:500;font-size:var(--fs-h2)}      /* titre du graphique */
@@ -67,8 +69,9 @@ ol,ul{list-style:none}
 .trait:hover::after,.trait.is-active::after{transform:scaleX(1)}
 
 /* ---------- 4. Composants ---------- */
-/* en-tête : pleine largeur, logo et liens aux marges de la fenêtre ; le contenu texte reste sur --max */
-.site-header{display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:76px;padding:0 var(--gutter)}
+/* en-tête : logo et liens aux marges de la grille large, la même limite que le contenu large (--max-large, gouttière comprise ; 26/09) — rien ne change
+   sous ~1 680 px de fenêtre, au-delà logo et navigation restent alignés sur le contenu large au lieu de coller aux bords ; le contenu texte reste sur --max */
+.site-header{display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:76px;max-width:var(--max-large);margin-left:auto;margin-right:auto;padding:0 var(--gutter)}
 .logo{display:inline-flex;align-items:center;gap:15px;color:var(--c-texte)}
 .logo__mark{width:19px;height:20px;color:var(--c-phi);fill:currentColor;flex:none;position:relative;top:1px}
 /* wordmark figé : Jost 400, capitales, interlettrage 0,18 em, hauteur de capitale calée sur l'ancien tracé — même règle à toutes les largeurs */
@@ -151,13 +154,11 @@ ol,ul{list-style:none}
    Logos figés en couleur le 22/09 (bascule 14 retirée) */
 .partner__couleur{display:block;height:calc(var(--logo-h)*var(--logo-echelle));width:auto}
 
-/* fiche projet et vue Réalisations (23/09) : mêmes jetons et composants que la Home.
+/* fiche projet (23/09) : mêmes jetons et composants que la Home.
    .page-head est un .container : ne poser que padding-top / padding-bottom, le padding latéral (la gouttière) reste celui de .container (revue du 23/09) */
 .page-head{padding-top:40px;padding-bottom:32px}
 .page-head .eyebrow{margin-bottom:14px}
 .page__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-titre-page);line-height:1;letter-spacing:-.015em}
-.page__sous{font-size:var(--fs-ligne);color:var(--c-meta);margin-top:14px}
-.page__sous a{padding-bottom:1px}   /* vue Réalisations : les trois éléments du sous-titre sont des liens (trait) vers #projets, #agences, #galerie */
 /* fiche : photo hero (the-bank-01), puis la bande de trois faits — le composant de la bande des chiffres (surface papier, valeur en serif or, étiquette gris chaud).
    Revue de la fiche (23/09) : au-dessus de 640 px, en-tête de page resserré (12 / 24 px, eyebrow à 8 px) et photo calée sur la fenêtre, pour que la bande
    tienne sous la photo : 570 px à 1440 × 900 (bande jusqu'à ~892), 373 px à 1366 × 703 (bande jusqu'à ~695). Point focal en variables sur l'<img>
@@ -187,38 +188,98 @@ ol,ul{list-style:none}
 .suivant{display:block;border-top:1px solid var(--filet);padding:24px 0 72px;margin-top:8px}
 .suivant .eyebrow{display:block;margin-bottom:6px}
 .suivant__nom{display:inline-block;font-family:var(--serif);font-size:var(--fs-suivant);line-height:1.2;color:var(--c-lien);padding-bottom:2px}
-/* vue Réalisations : les 4 projets en quatre cartes photo 3:2, 2 × 2 (bascule 21 figée sur « cartes » le 23/09 ; la liste des 4 reste sur la Home) ;
-   chaque carte porte l'ancre de son projet (id), srcset 800 / 1800 px */
-.section--quatre{padding-top:48px}
-.cartes{display:grid;grid-template-columns:1fr 1fr;gap:44px 32px}
-.cartes__item a{display:block}
-.cartes__photo{display:block;aspect-ratio:3/2;overflow:hidden;background:var(--surface)}
-.cartes__photo img{width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
-.cartes__item a:hover img{transform:scale(var(--zoom))}
-.cartes__nom{display:inline-block;position:relative;font-family:var(--serif);font-size:var(--fs-carte-nom);line-height:1.1;letter-spacing:-.01em;margin-top:18px;padding-bottom:3px}
-.cartes__nom::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--c-trait);transform:scaleX(0);transform-origin:left;transition:transform .25s}
-.cartes__item a:hover .cartes__nom::after{transform:scaleX(1)}
-.cartes__ligne{display:block;font-size:var(--fs-ligne);color:var(--c-meta);margin-top:6px;text-wrap:pretty}
-/* programme agences : l'intro, puis les quatre exemples en liste typographique */
-.agences{display:grid;grid-template-columns:5fr 7fr;gap:64px;align-items:start}
-.agences__intro{max-width:46ch}
-.agences__liste li{border-top:1px solid var(--filet);padding:18px 0 20px}
-.agences__liste li:last-child{border-bottom:1px solid var(--filet)}
-.agence__nom{display:block;font-family:var(--serif);font-size:var(--fs-agence);line-height:1.1;letter-spacing:-.01em}
-.agence__ligne{display:block;font-size:var(--fs-ligne);color:var(--c-meta);margin-top:6px}
-/* galerie : grille 3 colonnes, photos 3:2, nom sous la photo ; au survol, le voile porte le lieu (.galerie__lieu, 15 px medium) puis « surface · usage » (14 px),
-   zoom 1,035. Voile renforcé (revue du 23/09) : 4,8:1 au pire (Perwez) pour le blanc sur le dégradé, contre 3,6:1 avant.
-   .galerie__meta (« Perwez · 60 m² · Commerce ») est affichée sur téléphone ; au-dessus de 640 px elle reste dans la page, masquée visuellement (clip) :
-   le voile est aria-hidden, un lecteur d'écran n'aurait sinon que le nom. */
-.galerie{display:grid;grid-template-columns:repeat(3,1fr);gap:40px 32px}
-.galerie__photo{display:block;position:relative;aspect-ratio:3/2;overflow:hidden;background:var(--surface)}
-.galerie__photo img{width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
-.galerie__item:hover .galerie__photo img{transform:scale(var(--zoom))}
-.galerie__voile{position:absolute;left:0;right:0;bottom:0;padding:56px 20px 16px;color:var(--photo-texte);font-size:14px;line-height:1.4;background:linear-gradient(to top,rgba(0,0,0,.64) 0%,rgba(0,0,0,.42) 50%,transparent 100%);opacity:0;transition:opacity .25s}
-.galerie__item:hover .galerie__voile{opacity:1}
-.galerie__lieu{display:block;font-size:15px;font-weight:500}
-.galerie__nom{display:block;font-size:16px;font-weight:500;margin-top:12px}
-.galerie__meta{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;font-size:14px;color:var(--c-meta);margin-top:2px}
+/* vue Réalisations (revue du 26/09, proposition P2 retenue), sur la grille large : le titre en sans léger — la fiche garde la serif, qui prolonge le nom
+   des projets posé sur les photos —, la phrase d'ouverture sur une ligne ; le pied de page s'aligne sur la grille large.
+   .provisoire : texte ou intitulé provisoire (lot 3), signalé par un title au survol */
+html[data-page="realisations"] .page__titre{font-family:var(--sans);font-weight:400;letter-spacing:-.028em;line-height:1.02}
+html[data-page="realisations"] .site-footer>.container{max-width:var(--max-large)}
+.p2-ouv{padding-top:32px;padding-bottom:30px}
+.ouv__texte{font-size:var(--fs-texte);line-height:1.5;color:var(--c-texte);max-width:40ch;text-wrap:pretty}
+.p2-ouv .ouv__texte{margin-top:14px;max-width:none}
+.eyebrow--sans-marge{margin-bottom:0}
+.enonce{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.18;letter-spacing:-.01em;max-width:26ch;margin-top:14px}
+/* les quatre projets : deux rangées de blocs photo, 7/5 puis 5/7, hauteur calée sur la fenêtre ; le nom en serif blanc sur un dégradé, en bas à gauche ;
+   au survol et au focus, les trois faits (Lieu / Surface / Usage). Seule The Bank est un lien, et seule sa photo zoome (1,035 : photos cliquables seulement) ;
+   les trois autres blocs gardent leur id (ancres) et un tabindex, pour que leurs faits s'affichent au focus */
+.alt{display:grid;gap:14px}
+.alt__rang{display:grid;gap:14px;height:clamp(340px,calc(100vh - 262px),540px)}
+.alt__rang--a{grid-template-columns:7fr 5fr}
+.alt__rang--b{grid-template-columns:5fr 7fr}
+.bloc{position:relative;display:block;overflow:hidden;color:var(--photo-texte);background:var(--surface)}
+.bloc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}   /* object-position : blocFocal, posé en style par build.mjs */
+a.bloc:hover img{transform:scale(var(--zoom))}
+.bloc::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,.58) 0%,rgba(0,0,0,.26) 32%,transparent 58%);transition:background .3s}
+.bloc:hover::after,.bloc:focus-visible::after{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.4) 40%,transparent 72%)}
+.bloc__texte{position:absolute;left:28px;right:28px;bottom:24px;z-index:1}
+.bloc__nom{display:block;font-family:var(--serif);font-size:38px;line-height:1.05;letter-spacing:-.012em}
+.bloc__faits{display:flex;gap:0 40px;flex-wrap:wrap;max-height:0;opacity:0;overflow:hidden;transition:max-height .35s ease,opacity .3s,margin .35s}
+.bloc:hover .bloc__faits,.bloc:focus-visible .bloc__faits{max-height:90px;opacity:1;margin-top:18px}
+@media (max-width:1240px){.bloc:hover .bloc__faits,.bloc:focus-visible .bloc__faits{max-height:180px}}   /* sous ~1 230 px, les trois faits passent sur deux ou trois lignes : rien n'est rogné */
+.fait__et{display:block;font-size:12px;opacity:.82}
+.fait__val{display:block;font-family:var(--serif);font-size:21px;line-height:1.2;margin-top:2px}
+.bloc__mobile{display:none}
+/* programme agences : l'énoncé sur papier (eyebrow, la première phrase du paragraphe en serif à gauche, la suite à droite, grille 7/5 alignée en bas),
+   puis la rangée des seize biens sur blanc ; bascule 22 : papier sur toute la section */
+.bloc-agences{margin-top:56px}
+.bloc-agences__bande{background:var(--surface);padding:56px 0 52px}
+.bloc-agences__tete{display:grid;grid-template-columns:7fr 5fr;gap:64px;align-items:end}
+.bloc-agences__tete .ouv__texte{padding-bottom:4px}
+.bloc-agences__defil{padding-top:44px;padding-bottom:88px}
+/* la rangée : quatre vignettes visibles, en boucle (maquette.js : un jeu de clones avant et après, recentrage invisible en fin de défilement) ;
+   sous la rangée, un filet, « 1–4 / 16 » à gauche et ← → à droite */
+.defil__piste{display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.defil__piste::-webkit-scrollbar{display:none}
+.defil__piste>li{flex:0 0 calc((100% - 72px) / 4);min-width:0;scroll-snap-align:start}
+.defil__nav{display:flex;justify-content:space-between;align-items:baseline;margin-top:22px;padding-top:14px;border-top:1px solid var(--filet);font-size:var(--fs-etiquette);color:var(--c-meta)}
+.defil__compteur{font-variant-numeric:tabular-nums}
+.defil__fleches{display:flex;gap:22px}
+.defil__fleches a{font-size:17px;line-height:1;color:var(--c-texte);padding-bottom:2px}
+/* vignette : photo 3:2 ; dessous, la ville, la surface à droite, puis l'usage */
+.vignette__photo{display:block;position:relative;aspect-ratio:3/2;overflow:hidden;background:var(--blanc)}
+.vignette__nom{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:12px;font-size:15px;font-weight:500}
+.vignette__nom span{font-weight:400;font-size:var(--fs-etiquette);color:var(--c-meta)}
+.vignette__usage{font-size:14px;line-height:1.45;color:var(--c-texte);margin-top:2px;max-width:34ch}
+/* les photos d'un bien, sur sa vignette : piste à accroche, en boucle ; « 1 / n » en haut à droite sur un léger voile dans le coin, flèches fines aux bords
+   au survol ; rien s'il n'y a qu'une photo ; clic sur la photo → visionneuse */
+.bien{position:relative;width:100%;height:100%;overflow:hidden}
+.bien__piste{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;cursor:zoom-in}
+.bien__piste::-webkit-scrollbar{display:none}
+.bien__piste img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start;scroll-snap-stop:always}
+.bien::after{content:"";position:absolute;top:0;right:0;width:120px;height:64px;pointer-events:none;background:radial-gradient(ellipse at 100% 0,rgba(0,0,0,.38) 0%,rgba(0,0,0,.16) 45%,transparent 75%)}   /* le compteur reste lisible sur un ciel clair */
+.bien[data-n="1"]::after{display:none}
+.bien__compteur{position:absolute;z-index:1;top:10px;right:12px;font-size:12px;line-height:1;letter-spacing:.02em;color:var(--photo-texte);font-variant-numeric:tabular-nums;text-shadow:0 0 6px rgba(0,0,0,.6),0 0 1px rgba(0,0,0,.7);pointer-events:none}
+.bien__fleche{position:absolute;top:0;bottom:0;width:52px;display:flex;align-items:center;justify-content:center;background:none;border:0;padding:0;color:var(--photo-texte);cursor:pointer;opacity:0;transition:opacity .2s}
+.bien__fleche--g{left:0}.bien__fleche--d{right:0}
+.bien__fleche svg{width:13px;height:26px;filter:drop-shadow(0 0 3px rgba(0,0,0,.65))}
+.bien:hover .bien__fleche,.bien:focus-within .bien__fleche{opacity:1}
+.bien[data-n="1"] .bien__compteur,.bien[data-n="1"] .bien__fleche{display:none}
+/* au doigt, la rangée défile ; les photos d'un bien se parcourent dans la visionneuse (un seul geste par zone) */
+@media (hover:none){.bien__fleche{display:none}.defil .bien__piste{overflow-x:hidden}}
+/* visionneuse : fond blanc, photo entière (contain) dans un cadre 4:3, flèches de part et d'autre, la ville puis « surface · usage » et « 1 / n » dessous ;
+   « Fermer », Échap, flèches du clavier */
+.visio{position:fixed;inset:0;z-index:100;background:var(--blanc);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 88px 36px}
+.visio[hidden]{display:none}
+.visio__cadre{position:relative;width:min(100%,calc((100vh - 170px) * 4 / 3));aspect-ratio:4/3}
+.visio__piste{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.visio__piste::-webkit-scrollbar{display:none}
+.visio__piste img{flex:0 0 100%;width:100%;height:100%;object-fit:contain;scroll-snap-align:start;scroll-snap-stop:always}
+.visio__bas{display:flex;justify-content:space-between;align-items:baseline;gap:24px;width:min(100%,calc((100vh - 170px) * 4 / 3));margin-top:14px;font-size:14px;color:var(--c-meta)}
+.visio__bas b{font-weight:500;color:var(--c-texte);margin-right:10px}
+.visio__compteur{font-variant-numeric:tabular-nums;white-space:nowrap}
+.visio__fleche{position:absolute;top:50%;transform:translateY(-50%);width:64px;height:120px;display:flex;align-items:center;justify-content:center;background:none;border:0;color:var(--c-texte);cursor:pointer}
+.visio__fleche svg{width:15px;height:30px}
+.visio__fleche--g{left:12px}.visio__fleche--d{right:12px}
+.visio__fleche[hidden]{display:none}
+.visio__fermer{position:absolute;top:20px;right:28px;background:none;border:0;padding:4px 0;font:500 14px/1 var(--sans);color:var(--c-texte);cursor:pointer}
+body.visio-ouverte{overflow:hidden}
+/* en réserve (bascule 23) : les projets de l'ancien site, sur blanc, en quatre colonnes à filets — nom en serif 24 px, lieu · surface, usage */
+.anciens{display:none}
+.anciens__tete{display:grid;grid-template-columns:7fr 5fr;gap:64px;align-items:end;margin-bottom:32px}
+.anciens__liste{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 32px}
+.ancien{border-top:1px solid var(--filet);padding:16px 0 26px}
+.ancien__nom{font-family:var(--serif);font-size:24px;line-height:1.15;letter-spacing:-.005em}
+.ancien__lieu{font-size:var(--fs-etiquette);color:var(--c-meta);margin-top:4px}
+.ancien__usage{font-size:15px;line-height:1.45;margin-top:8px;max-width:30ch;text-wrap:pretty}
 
 /* pied de page */
 /* resserré le 23/09 : 48 px en haut, 32 px entre la dernière ligne des colonnes et le filet du bas (le gap vertical de la grille, sans marge sur le bloc légal) */
@@ -257,7 +318,7 @@ ol,ul{list-style:none}
   .footer__grid{grid-template-columns:1fr;gap:28px}
   .footer__legal{margin-top:4px}
   /* fiche et vue Réalisations : une colonne, tout affiché */
-  :root{--fs-titre-page:44px;--fs-chapitre:22px;--fs-fait:22px;--fs-suivant:24px;--fs-agence:24px;--fs-carte-nom:28px}
+  :root{--fs-titre-page:44px;--fs-chapitre:22px;--fs-fait:22px;--fs-suivant:24px}
   .page-head{padding-top:28px;padding-bottom:24px}
   .fiche__hero{height:300px}
   .fiche__hero img{object-position:var(--focal-mobile)}
@@ -271,19 +332,43 @@ ol,ul{list-style:none}
   .fiche__photos{grid-template-columns:1fr}
   .fiche__photos img{height:300px}
   .suivant{padding-bottom:44px}
-  .section--quatre{padding-top:24px}
-  .cartes{grid-template-columns:1fr;gap:32px}
-  .agences{grid-template-columns:1fr;gap:28px}
-  .galerie{grid-template-columns:1fr;gap:28px}
-  .galerie__voile{display:none}
-  .galerie__meta{position:static;width:auto;height:auto;overflow:visible;clip:auto;clip-path:none;white-space:normal;display:block}
+  /* vue Réalisations : un bloc par ligne en 4:3, nom 28 px, « Lieu · surface » dessous, faits masqués ; une vignette à 78 % de large et le bord de la suivante,
+     la ville puis la surface puis l'usage ; au doigt, la rangée défile, les photos d'un bien se parcourent dans la visionneuse */
+  .p2-ouv{padding-top:24px;padding-bottom:22px}
+  .alt__rang{height:auto;grid-template-columns:1fr}
+  .alt__rang .bloc{aspect-ratio:4/3}
+  .bloc__nom{font-size:28px}
+  .bloc__faits{display:none}
+  .bloc__mobile{display:block;font-size:14px;margin-top:6px}
+  .alt .bloc::after{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.36) 38%,transparent 64%)}
+  .bloc__texte{left:18px;right:18px;bottom:16px}
+  .bloc-agences{margin-top:40px}
+  .bloc-agences__bande{padding:40px 0 36px}
+  .bloc-agences__tete{grid-template-columns:1fr;gap:16px}
+  .enonce{font-size:26px}
+  .bloc-agences__defil{padding-top:28px;padding-bottom:56px}
+  .defil__piste{gap:12px}
+  .defil__piste>li{flex-basis:78%}
+  .defil .bien__piste{overflow-x:hidden;scroll-snap-type:none}
+  .vignette__nom{display:block;font-size:14px;margin-top:8px}
+  .vignette__nom span{display:block}
+  .vignette__usage{font-size:13px}
+  .visio{padding:56px 0 24px}
+  .visio__cadre,.visio__bas{width:100%}
+  .visio__bas{padding:0 var(--gutter);flex-wrap:wrap;gap:4px 12px;font-size:13px}
+  .visio__fleche{display:none}
+  .visio__fermer{right:var(--gutter)}
+  .anciens__tete{grid-template-columns:1fr;gap:12px;margin-bottom:20px}
+  .anciens__liste{grid-template-columns:1fr 1fr;gap:0 16px}
+  .ancien__nom{font-size:20px}
+  .ancien__usage{font-size:14px}
 }
 /* fenêtre basse (portable 1366 × 768 avec les barres du navigateur) : la bande et ses chiffres tiennent dans 703 px */
 @media (max-height:720px) and (min-width:641px){
   :root{--bande-haut:36px;--bande-bas:32px}
 }
 @media (prefers-reduced-motion:reduce){
-  .trait::after,.four__name::after,.four__preview img,.carte__lab,.cartes__nom::after,.cartes__photo img,.galerie__photo img,.galerie__voile{transition:none}
+  .trait::after,.four__name::after,.four__preview img,.carte__lab,.bloc img,.bloc::after,.bloc__faits,.bien__fleche{transition:none}
 }
 
 /* ---------- 6. Bascules ---------- */
@@ -294,7 +379,22 @@ html[data-cadrage="haut"] .hero__photo img{object-position:50% 20% !important}
 /* 15a · carte : sable (défaut, pays rempli en --surface-carte) / papier-contour (fill papier + trait fin) */
 html[data-carte="papier-contour"] .carte__pays{fill:var(--papier);stroke:var(--trait-carte);stroke-width:1}
 /* 20 · fiche, titres de chapitre : figée sur « sans » (revue de la fiche, 23/09) : .chapitre__titre et .chapitre__num, plus haut. */
-/* 21 · vue Réalisations, les 4 projets : figée sur « cartes » le 23/09 (.cartes, plus haut) ; la liste des 4 n'est plus générée sur cette page. */
+/* 22 · vue Réalisations, programme agences, fond papier : énoncé seul (défaut, .bloc-agences__bande) / toute la section (papier sur toute la section,
+   puis 32 px de blanc avant le pied de page, 20 au téléphone) */
+html[data-papier="tout"] .bloc-agences{background:var(--surface);margin-bottom:32px}
+html[data-papier="tout"] .bloc-agences__bande{background:none;padding-bottom:44px}
+html[data-papier="tout"] .bloc-agences__defil{padding-top:0;padding-bottom:56px}
+/* 23 · vue Réalisations, bas de page : rien (défaut) / anciens projets (en réserve, à confirmer avec Julien : .anciens, sur blanc, sous la section agences) */
+html[data-bas="anciens"] .anciens{display:block;padding-top:8px;padding-bottom:96px}
+html[data-bas="anciens"][data-papier="tout"] .bloc-agences{margin-bottom:0}
+html[data-bas="anciens"][data-papier="tout"] .anciens{padding-top:88px}
+@media (max-width:640px){
+  html[data-papier="tout"] .bloc-agences{margin-bottom:20px}
+  html[data-papier="tout"] .bloc-agences__bande{padding-bottom:28px}
+  html[data-papier="tout"] .bloc-agences__defil{padding-bottom:40px}
+  html[data-bas="anciens"] .anciens{padding-bottom:64px}
+  html[data-bas="anciens"][data-papier="tout"] .anciens{padding-top:56px}
+}
 
 /* ---------- 7. Mobile, premier écran ---------- */
 @media (max-width:640px){

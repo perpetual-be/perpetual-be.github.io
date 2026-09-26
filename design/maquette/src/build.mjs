@@ -52,21 +52,47 @@ const collectif = { paragraphs: collectifBlocks.slice(0, -1), chute: collectifBl
 const realisationsBlocks = blocks(frontmatter(read('content/realisations.md')).body);
 const agences = realisationsBlocks[realisationsBlocks.indexOf('## Le programme agences') + 1];
 if (!agences || agences.startsWith('#')) throw new Error('content/realisations.md : paragraphe du programme agences introuvable');
+// Vue Réalisations (revue du 26/09) : le même paragraphe, coupé à la première phrase — l'énoncé en serif à gauche, la suite à droite.
+const [enonce, enonceSuite] = (agences.match(/^(.+?[.!?])\s+(.+)$/s) || []).slice(1);
+if (!enonceSuite) throw new Error('content/realisations.md : le paragraphe du programme agences doit compter au moins deux phrases');
 
-// Les quatre projets : une ligne chacun (mêmes lignes que la planche A), la photo de l'aperçu de la liste de la Home (img, cadre portrait 4:5) et la photo
-// de carte de la vue Réalisations (carte, cadre 3:2 — Ateliers 118 n'a que sa vue 05, en portrait, dans design/directions/img/ ; elle est recadrée).
-// Les deux sont des clés de photo : <clé>-s.jpg (800 px) et <clé>.jpg (1800 px) en srcset (photoImgPetit). Retours revue du 23/09 : la carte The Bank
-// montre la façade (the-bank-01), point focal 50% 60% posé en style sur l'<img> (carteFocal, comme photoCandidates) ; la fiche la prend aussi en tête depuis la revue de la fiche.
-// The Bank pointe vers sa fiche, les trois autres vers leur ancre sur la vue Réalisations (l'id de leur carte).
+// Les quatre projets : une ligne chacun (mêmes lignes que la planche A) et la photo de l'aperçu de la liste de la Home (img, cadre portrait 4:5) ;
+// sur la vue Réalisations (revue du 26/09), la photo du bloc (bloc, point focal blocFocal posé en style sur l'<img>, comme photoCandidates) et les trois
+// faits du survol, lieu, surface et usage (provisoires, lot 3 ; pour The Bank la ville seule, l'adresse exacte n'est pas publiée).
+// Les photos sont des clés : <clé>-s.jpg (800 px) et <clé>.jpg (1800 px) en srcset (photoImgPetit).
+// The Bank pointe vers sa fiche — c'est le seul bloc cliquable de la vue Réalisations —, les trois autres vers leur ancre sur la vue Réalisations (l'id de leur bloc).
 const four = [
-  { id: 'ateliers-118', line: 'Molenbeek-Saint-Jean · 1 200 m² · Treize ateliers dans une ancienne usine de colle', img: 'ateliers-118-05', carte: 'ateliers-118-05', href: `${PAGE_REALISATIONS}#ateliers-118` },
-  { id: 'the-bank', line: 'Liège · 1 100 m² · Une agence devenue bijouterie, Bancontact et logements', img: 'the-bank-01', carte: 'the-bank-01', carteFocal: '50% 60%', href: PAGE_FICHE },
-  { id: 'data-box', line: 'Jemelle · 4 200 m² sur un hectare · Un site technique dont l’avenir reste ouvert', img: 'data-box-02', carte: 'data-box-02', href: `${PAGE_REALISATIONS}#data-box` },
-  { id: 'community', line: 'Uccle · 14 unités · Quatorze unités autour d’espaces partagés', img: 'community-05', carte: 'community-05', href: `${PAGE_REALISATIONS}#community` },
+  { id: 'ateliers-118', line: 'Molenbeek-Saint-Jean · 1 200 m² · Treize ateliers dans une ancienne usine de colle', img: 'ateliers-118-05', bloc: 'ateliers-118-05', blocFocal: '50% 55%', lieu: 'Molenbeek-Saint-Jean', surface: '1 200 m²', usage: 'Ateliers', href: `${PAGE_REALISATIONS}#ateliers-118` },
+  { id: 'the-bank', line: 'Liège · 1 100 m² · Une agence devenue bijouterie, Bancontact et logements', img: 'the-bank-01', bloc: 'the-bank-01', blocFocal: '50% 40%', lieu: 'Liège', surface: '1 100 m²', usage: 'Logements & commerce', href: PAGE_FICHE },
+  { id: 'data-box', line: 'Jemelle · 4 200 m² sur un hectare · Un site technique dont l’avenir reste ouvert', img: 'data-box-02', bloc: 'data-box-02', blocFocal: '50% 55%', lieu: 'Jemelle', surface: '4 200 m²', usage: 'Site technique', href: `${PAGE_REALISATIONS}#data-box` },
+  { id: 'community', line: 'Uccle · 14 unités · Quatorze unités autour d’espaces partagés', img: 'community-05', bloc: 'community-05', blocFocal: '50% 50%', lieu: 'Uccle', surface: '14 unités', usage: 'Co-living', href: `${PAGE_REALISATIONS}#community` },
 ];
-// Le programme agences (kind agency, dans l'ordre) et la galerie (kind gallery, dans l'ordre) : data/projects.json.
-const agencesListe = projects.filter(p => p.kind === 'agency').sort((a, b) => a.order - b.order);
-const galerie = projects.filter(p => p.kind === 'gallery').sort((a, b) => a.order - b.order);
+// Vue Réalisations : les quatre blocs en deux rangées, 7fr / 5fr puis 5fr / 7fr (.alt__rang--a, .alt__rang--b).
+const rangees = [[['community', 7], ['ateliers-118', 5]], [['the-bank', 5], ['data-box', 7]]];
+// Le programme agences, vue Réalisations : la rangée des seize biens, kind agency dans l'ordre puis kind gallery dans l'ordre (data/projects.json).
+// La ville est le nom d'une agence, le lieu d'un bien de la galerie ; ses photos sont son champ selection (clés <id>-NN, dans l'ordre d'affichage,
+// la première sur la vignette au repos), <id>-01 à défaut.
+const parOrdre = kind => projects.filter(p => p.kind === kind).sort((a, b) => a.order - b.order);
+const biens = [...parOrdre('agency'), ...parOrdre('gallery')].map(p => {
+  const photos = p.selection && p.selection.length ? p.selection : [`${p.id}-01`];
+  const etrangere = photos.find(k => !k.startsWith(p.id + '-'));
+  if (etrangere) throw new Error(`data/projects.json : ${p.id}, selection — ${etrangere} n'est pas une photo de ce bien`);
+  return { ville: p.kind === 'agency' ? p.name : p.location, surface: p.surface, usage: p.use, photos };
+});
+// Réserve, à confirmer avec Julien : les projets de l'ancien site (bascule 23, « anciens projets » ; masqués par défaut).
+const ANCIENS = [
+  { nom: 'Serhieux', lieu: 'Seraing', surface: '7 200 m²', usage: 'Valorisation et vente d’un bien à un organisme public' },
+  { nom: 'Le petit Julien', lieu: 'Bruxelles', surface: '90 m²', usage: 'Restauration d’un immeuble classé en micro-hôtel de quatre chambres' },
+  { nom: 'Brosse', lieu: 'Forest', surface: '800 m²', usage: 'Rafraîchissement et division d’un ancien atelier de brosses' },
+  { nom: 'Robin-sur-les-Bois', lieu: 'Saint-Georges-sur-Meuse', surface: '5 200 m²', usage: 'Conversion d’un établissement d’hébergement et construction de logements' },
+  { nom: 'Stéphanie', lieu: 'Bruxelles', surface: '250 m²', usage: 'Démolition et reconstruction d’un immeuble de logements collectifs' },
+  { nom: 'Omalius', lieu: 'Méan', surface: '3 200 m²', usage: 'Transformation en logements à loyers modérés' },
+  { nom: 'Ixelles', lieu: 'Ixelles', surface: '500 m²', usage: 'Deux maisons unifamiliales entièrement restaurées' },
+  { nom: 'Batar', lieu: 'Bruxelles', surface: '45 m²', usage: 'Ouverture d’un bar à pistolets' },
+  { nom: 'Maître', lieu: 'Forest', surface: '500 m²', usage: 'Réorganisation d’une maison unifamiliale en co-living' },
+  { nom: 'Meuhh', lieu: 'Méan', surface: '3,2 ha', usage: 'Urbanisation d’un ensemble de terrains à bâtir' },
+  { nom: 'Genval', lieu: 'Genval', surface: '180 m²', usage: 'Rénovation complète d’une maison unifamiliale dans un style contemporain' },
+];
 // Fiche The Bank : la photo de tête et son point focal, la bande de trois faits (comme la planche A), la paire de photos intercalée et ses légendes, le projet suivant.
 // Revue de la fiche (23/09) : la façade (the-bank-01) passe en tête ; son point focal est posé en variables sur l'<img> (--focal au-dessus de 640 px :
 // le bas de l'image juste au-dessus de la voiture, de 1280 à 1920 px de large ; --focal-mobile à 390 : toute la façade), lues par .fiche__hero img.
@@ -113,31 +139,44 @@ function photoImg(key, sizes, attrs = '') {
   const sources = photoSources(key);
   return `<img src="${IMG}/${sources[0].file}"${sources.length > 1 ? ` srcset="${sources.map(s => `${IMG}/${s.file} ${s.width}w`).join(', ')}" sizes="${sizes}"` : ''} alt="" decoding="async"${attrs}>`;
 }
-// Photos des cartes de la vue Réalisations et de l'aperçu de la liste des 4 (Home) : <clé>-s.jpg (800 px) et <clé>.jpg (1800 px) en srcset, avec la largeur
-// réelle de chaque fichier — les cartes font 544 × 363 et l'aperçu 440 × 550 à 1440, le 800 px seul y est agrandi sur les écrans 2× (et Data Box 02, 800 × 450,
-// même sur un écran 1×). Tant que le 1800 px manque, l'<img> n'a que le 800 px et build.mjs le signale : le produire avec
-// node design/directions/src/reduire-photos.mjs --grand <original.jpg> (Ateliers 118 : ateliers-118-05.jpg), puis rebâtir.
+// Photos de l'aperçu de la liste des 4 (Home) et de la vue Réalisations (blocs des 4 projets, vignettes des agences) : <clé>-s.jpg (800 px) et <clé>.jpg
+// (1800 px) en srcset, avec la largeur réelle de chaque fichier — l'aperçu fait 440 × 550 à 1440, le 800 px seul y est agrandi sur les écrans 2× (et Data Box 02,
+// 800 × 450, même sur un écran 1×). Tant que le 1800 px manque, l'<img> n'a que le 800 px et build.mjs le signale : le produire avec
+// node design/directions/src/reduire-photos.mjs --grand <original.jpg>, puis rebâtir. Un <clé>.jpg plus petit que 1800 px (tiré d'une planche, pas de
+// l'original) est signalé aussi, en fin de construction.
+const sousGrand = new Set();
 function photoSourcesPetit(key) {
   const chemin = f => path.join(REPO, 'design/directions/img', f);
   const sources = [`${key}-s.jpg`, `${key}.jpg`].filter(f => fs.existsSync(chemin(f))).map(f => ({ file: f, ...jpegSize(chemin(f)) }));
   if (!sources.length) throw new Error(`${key} : aucune photo réduite dans design/directions/img/`);
   if (sources.length < 2) console.warn(`${key} : pas de version 1800 px (${key}.jpg), srcset réduit au 800 px — reduire-photos.mjs --grand`);
+  else if (Math.max(sources[1].width, sources[1].height) < 1800) sousGrand.add(`${key} (${Math.max(sources[1].width, sources[1].height)} px)`);
   return sources;
 }
 // sizes : le navigateur choisit la source sur la largeur affichée seule ; en object-fit: cover, une photo plus large que son cadre (ratio largeur/hauteur
 // `cadre`) est calée sur la hauteur et a besoin de cadre × (ratio de la photo ÷ ratio du cadre) pixels de large (Data Box 02, 16:9 dans l'aperçu 4:5 :
-// 2,2 × la largeur). Chaque terme de `sizes` ([media, largeur]) est multiplié par ce facteur, lu sur la photo elle-même.
+// 2,2 × la largeur). Chaque terme de `sizes` ([media, largeur]) est multiplié par ce facteur, lu sur la photo elle-même. cadre null : les termes portent
+// déjà la contrainte de hauteur (blocs de la vue Réalisations, dont le cadre change de forme avec la fenêtre, sizesBloc), rien n'est multiplié.
 function photoImgPetit(key, cadre, sizes, attrs = '') {
   const sources = photoSourcesPetit(key);
-  const k = Math.max(1, (sources[0].width / sources[0].height) / cadre);
+  const k = cadre ? Math.max(1, (sources[0].width / sources[0].height) / cadre) : 1;
   const facteur = expr => /^\d+px$/.test(expr) ? `${Math.round(parseFloat(expr) * k)}px` : k === 1 ? `calc(${expr})` : `calc((${expr}) * ${k.toFixed(3)})`;
   const sz = sizes.map(([media, w]) => (media ? `${media} ` : '') + facteur(w)).join(', ');
   return `<img${attrs} src="${IMG}/${sources[0].file}"${sources.length > 1 ? ` srcset="${sources.map(s => `${IMG}/${s.file} ${s.width}w`).join(', ')}" sizes="${sz}"` : ''} alt="" decoding="async">`;
 }
-// Largeur affichée : aperçu de la liste = 5/12 du container moins la gouttière de 64 px (440 px à partir de 1280 px de fenêtre ; masqué sous 641 px) ;
-// carte = la moitié du container moins la gouttière de 32 px (544 px à partir de 1280 ; pleine largeur sur téléphone).
+// Largeur affichée : aperçu de la liste = 5/12 du container moins la gouttière de 64 px (440 px à partir de 1280 px de fenêtre ; masqué sous 641 px).
+// Vue Réalisations, sur la grille large (1600 px, gouttières comprises) : vignette = le quart de la rangée moins trois écarts de 24 px (362 px à partir
+// de 1600 ; 78 % de la rangée sur téléphone).
 const SIZES_APERCU = [['(max-width:1280px)', '(100vw - 144px) * 5 / 12'], ['', '440px']];
-const SIZES_CARTE = [['(max-width:640px)', '100vw - 40px'], ['(max-width:1280px)', '(100vw - 112px) / 2'], ['', '544px']];
+const SIZES_VIGNETTE = [['(max-width:640px)', '(100vw - 40px) * .78'], ['(max-width:1600px)', '(100vw - 152px) / 4'], ['', '362px']];
+// Bloc de la vue Réalisations : sa largeur suit la fenêtre (7/12 ou 5/12 de la rangée moins l'écart de 14 px, 879 et 628 px à partir de 1600 px) et sa
+// hauteur aussi (clamp(340px, 100vh − 262px, 540px)) : son cadre change de forme, un facteur fixe ne suffit pas. En object-fit: cover, la photo a besoin
+// de la plus grande des deux largeurs, celle du cadre ou la hauteur × son propre ratio ; sur téléphone, un cadre 4:3 pleine largeur.
+function sizesBloc(key, fr) {
+  const [s] = photoSourcesPetit(key), ratio = s.width / s.height, telephone = Math.max(1, ratio / (4 / 3));
+  return [['(max-width:640px)', telephone === 1 ? '100vw - 40px' : `(100vw - 40px) * ${telephone.toFixed(3)}`],
+    ['', `max((min(100vw, 1600px) - 94px) * ${fr} / 12, clamp(340px, 100vh - 262px, 540px) * ${ratio.toFixed(3)})`]];
+}
 const photoCandidates = [
   { key: 'community-05', focal: '50% 50%' },
 ].map(c => ({ key: c.key, focal: c.focal, sources: photoSources(c.key) }));
@@ -217,7 +256,7 @@ function chart() {
 </div></section>`;
 }
 
-// La liste des quatre, sur la Home (depuis le 23/09 la vue Réalisations a ses cartes) : l'aperçu photo suit la ligne survolée (maquette.js),
+// La liste des quatre, sur la Home (la vue Réalisations a ses blocs photo depuis le 26/09) : l'aperçu photo suit la ligne survolée (maquette.js),
 // 800 / 1800 px en srcset (photoImgPetit, cadre 4:5).
 function fourList() {
   const rows = four.map((f, i) => `<li class="four__row${i === 0 ? ' is-active' : ''}" data-index="${i}"><a href="${f.href}"><span class="four__name">${esc(byId[f.id].name)}</span><span class="four__line">${esc(f.line)}</span></a></li>`).join('\n      ');
@@ -321,47 +360,66 @@ function fichePage() {
 }
 
 // ---------- vue Réalisations ----------
-// Brief §5, retours revue du 23/09 : titre et sous-titre (frontmatter de content/realisations.md ; ses trois éléments sont des liens vers #projets, #agences,
-// #galerie) → « Projets détaillés » : quatre cartes photo 3:2 en 2 × 2 (bascule 21 figée sur « cartes », la liste reste sur la Home ; l'ancre de chaque
-// projet est l'id de sa carte, The Bank pointe vers sa fiche) → programme agences (intro et les quatre exemples en liste typographique) → galerie en grille
-// 3 colonnes 3:2 (photos <id>-01-s.jpg, nom sous la photo ; au survol, le voile porte le lieu puis « surface · usage » — le standard de Julien,
-// « Localisation · Surface · Usage », content/realisations.md ; .galerie__meta reprend les trois, affichée sur téléphone et masquée visuellement au-dessus,
-// pour les lecteurs d'écran, le voile étant aria-hidden) → pied de page.
+// Revue du 26/09, proposition P2 retenue (design/revue-realisations/propositions/p2-defilement.html), sur la grille large (.large, 1600 px gouttières
+// comprises) : l'ouverture — le titre en sans léger, puis la phrase du subtitle de content/realisations.md (provisoire, lot 3), sur une ligne —
+// → les quatre projets en deux rangées de blocs photo (nom en serif sur la photo, Lieu / Surface / Usage au survol et au focus ; seule The Bank est un lien,
+// les trois autres gardent leur id, ancre de la Home et du « Projet suivant » de la fiche) → le programme agences : l'énoncé sur papier (eyebrow, première
+// phrase en serif à gauche, la suite à droite), puis la rangée des seize biens, quatre visibles, en boucle, chacun avec ses photos et la visionneuse
+// (maquette.js, qui lit window.BIENS : ville, surface, usage et photos 1800 px, déjà échappés pour innerHTML) → en réserve (bascule 23), les projets de
+// l'ancien site → pied de page. La piste des photos d'un bien a un tabindex="-1" : Chromium rend focalisable un conteneur qui défile, et ses clones
+// (aria-hidden) seraient sinon autant d'arrêts de tabulation invisibles ; au clavier, les photos se parcourent avec les flèches du bien.
+const FLECHE_G = '<svg viewBox="0 0 14 28" aria-hidden="true"><path d="M12 2 2 14l10 12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
+const FLECHE_D = '<svg viewBox="0 0 14 28" aria-hidden="true"><path d="M2 2l10 12L2 26" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
 function realisationsPage() {
   const rmd = frontmatter(read('content/realisations.md'));
-  const sous = (rmd.fm.match(/subtitle:\s*(.+)/) || [])[1];
-  const sousCibles = ['#projets', '#agences', '#galerie'];
-  const sousParts = sous ? sous.trim().split(' · ') : [];
-  if (sous && sousParts.length !== sousCibles.length) throw new Error('content/realisations.md : le sous-titre doit avoir trois éléments séparés par « · » (' + sousParts.length + ' trouvés)');
-  const sousHtml = sousParts.map((t, i) => `<a class="trait" href="${sousCibles[i]}">${esc(t)}</a>`).join(' · ');
-  const cartes = four.map(f => `<li class="cartes__item"${f.href !== PAGE_FICHE ? ` id="${f.id}"` : ''}><a href="${f.href}"><span class="cartes__photo">${photoImgPetit(f.carte, 3 / 2, SIZES_CARTE, ` loading="lazy"${f.carteFocal ? ` style="object-position:${f.carteFocal}"` : ''}`)}</span><span class="cartes__nom">${esc(byId[f.id].name)}</span><span class="cartes__ligne">${esc(f.line)}</span></a></li>`).join('\n    ');
-  const agencesHtml = agencesListe.map(a => `<li><span class="agence__nom">${esc(a.name)}</span><span class="agence__ligne">${esc(a.surface)} · ${esc(a.use)}</span></li>`).join('\n      ');
-  const galerieHtml = galerie.map(g => {
-    const detail = `${esc(g.surface)} · ${esc(g.use)}`;
-    return `<li class="galerie__item"><figure><span class="galerie__photo"><img src="${IMG}/${g.id}-01-s.jpg" alt="" loading="lazy" decoding="async"><span class="galerie__voile" aria-hidden="true"><span class="galerie__lieu">${esc(g.location)}</span>${detail}</span></span><figcaption><span class="galerie__nom">${esc(g.name)}</span><span class="galerie__meta">${esc(g.location)} · ${detail}</span></figcaption></figure></li>`;
-  }).join('\n    ');
-  return `<div class="container page-head"><h1 class="page__titre">${esc(rmd.fm.match(/title:\s*(.+)/)[1].trim())}</h1>${sous ? `<p class="page__sous">${sousHtml}</p>` : ''}</div>
-<section class="section section--quatre" id="projets"><div class="container">
-  <p class="eyebrow">Projets détaillés</p>
-  <ol class="cartes">
-    ${cartes}
-  </ol>
-</div></section>
-<section class="section section--agences" id="agences"><div class="container">
-  <p class="eyebrow">Le programme agences</p>
-  <div class="agences">
-    <p class="agences__intro">${agences}</p>
-    <ol class="agences__liste">
-      ${agencesHtml}
-    </ol>
-  </div>
-</div></section>
-<section class="section section--galerie" id="galerie"><div class="container">
-  <p class="eyebrow">Galerie</p>
-  <ul class="galerie">
-    ${galerieHtml}
+  const phrase = (rmd.fm.match(/subtitle:\s*(.+)/) || [])[1];
+  const fait = (etiquette, valeur) => `<span><span class="fait__et">${etiquette}</span><span class="fait__val">${esc(valeur)}</span></span>`;
+  const bloc = ([id, fr]) => {
+    const f = four.find(x => x.id === id);
+    const contenu = photoImgPetit(f.bloc, null, sizesBloc(f.bloc, fr), ` style="object-position:${f.blocFocal}"`)
+      + `<span class="bloc__texte"><span class="bloc__nom">${esc(byId[id].name)}</span><span class="bloc__faits">${fait('Lieu', f.lieu)}${fait('Surface', f.surface)}${fait('Usage', f.usage)}</span><span class="bloc__mobile">${esc(f.lieu)} · ${esc(f.surface)}</span></span>`;
+    // un bloc non cliquable reste atteignable au clavier (tabindex) : ses faits s'affichent au focus comme au survol
+    return f.href === PAGE_FICHE ? `<a class="bloc" href="${f.href}">${contenu}</a>` : `<div class="bloc" id="${id}" tabindex="0">${contenu}</div>`;
+  };
+  const rangeesHtml = rangees.map((r, i) => `<div class="alt__rang alt__rang--${'ab'[i]}">${r.map(bloc).join('')}</div>`).join('\n  ');
+  const vignettes = biens.map((b, k) => `<li><div class="vignette__photo"><div class="bien" data-bien="${k}" data-n="${b.photos.length}"><div class="bien__piste" tabindex="-1">${b.photos.map(c => photoImgPetit(c, 3 / 2, SIZES_VIGNETTE, ' loading="lazy"')).join('')}</div>`
+    + `<span class="bien__compteur" aria-hidden="true">1 / ${b.photos.length}</span><button type="button" class="bien__fleche bien__fleche--g" aria-label="Photo précédente">${FLECHE_G}</button><button type="button" class="bien__fleche bien__fleche--d" aria-label="Photo suivante">${FLECHE_D}</button></div></div>`
+    + `<p class="vignette__nom">${esc(b.ville)}<span>${esc(b.surface)}</span></p><p class="vignette__usage">${esc(b.usage)}</p></li>`).join('\n      ');
+  const grande = c => fs.existsSync(path.join(REPO, 'design/directions/img', `${c}.jpg`)) ? `${c}.jpg` : `${c}-s.jpg`;
+  const BIENS = biens.map(b => ({ ville: esc(b.ville), surface: esc(b.surface), usage: esc(b.usage), l: b.photos.map(c => `${IMG}/${grande(c)}`) }));
+  const anciens = ANCIENS.map(a => `<li class="ancien"><p class="ancien__nom">${esc(a.nom)}</p><p class="ancien__lieu">${esc(a.lieu)} · ${esc(a.surface)}</p><p class="ancien__usage">${esc(a.usage)}</p></li>`).join('\n    ');
+  return `<div class="large p2-ouv">
+  <h1 class="page__titre">${esc(rmd.fm.match(/title:\s*(.+)/)[1].trim())}</h1>${phrase ? `\n  <p class="ouv__texte provisoire" title="texte provisoire, lot 3">${esc(phrase.trim())}</p>` : ''}
+</div>
+<section class="large alt" id="projets" aria-label="Quatre projets">
+  ${rangeesHtml}
+</section>
+<section class="bloc-agences" id="agences">
+  <div class="bloc-agences__bande"><div class="large bloc-agences__tete">
+    <div><p class="eyebrow eyebrow--sans-marge">Programme agences</p><h2 class="enonce">${enonce}</h2></div>
+    <p class="ouv__texte">${enonceSuite}</p>
+  </div></div>
+  <div class="large bloc-agences__defil"><div class="defil">
+    <ul class="defil__piste" tabindex="0" aria-label="${biens.length} agences">
+      ${vignettes}
+    </ul>
+    <div class="defil__nav"><span class="defil__compteur">1–4 / ${biens.length}</span><span class="defil__fleches"><a href="#" class="trait" data-d-prec aria-label="Agences précédentes">←</a><a href="#" class="trait" data-d-suiv aria-label="Agences suivantes">→</a></span></div>
+  </div></div>
+</section>
+<section class="large anciens" id="autres" aria-label="Autres réalisations">
+  <div class="anciens__tete"><div><p class="eyebrow eyebrow--sans-marge">Autres réalisations</p><h2 class="enonce provisoire" title="intitulé provisoire">Et, depuis 2002, des projets de toutes tailles.</h2></div></div>
+  <ul class="anciens__liste">
+    ${anciens}
   </ul>
-</div></section>`;
+</section>
+<div class="visio" hidden role="dialog" aria-modal="true" aria-label="Photos du bien">
+  <button type="button" class="visio__fermer trait" data-fermer>Fermer</button>
+  <button type="button" class="visio__fleche visio__fleche--g" data-v-prec aria-label="Photo précédente">${FLECHE_G}</button>
+  <div class="visio__cadre"><div class="visio__piste" tabindex="0"></div></div>
+  <button type="button" class="visio__fleche visio__fleche--d" data-v-suiv aria-label="Photo suivante">${FLECHE_D}</button>
+  <p class="visio__bas"><span class="visio__legende"></span><span class="visio__compteur"></span></p>
+</div>
+<script>window.BIENS=${JSON.stringify(BIENS)};</script>`;
 }
 
 // ---------- pages ----------
@@ -376,3 +434,4 @@ for (const [name, render] of Object.entries(pages)) {
   fs.writeFileSync(path.join(OUT, name), html);
   console.log('écrit', name, Math.round(html.length / 1024) + ' Ko');
 }
+if (sousGrand.size) console.warn(`${sousGrand.size} photos sans leur version 1800 px (<clé>.jpg plus petit, tiré d'une planche) — à produire depuis les originaux, reduire-photos.mjs --petit --grand, puis rebâtir : ${[...sousGrand].join(', ')}`);

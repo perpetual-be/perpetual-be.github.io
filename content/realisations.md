@@ -1,6 +1,6 @@
 ---
 title: Réalisations
-subtitle: Quatre projets détaillés · Le programme agences · Galerie
+subtitle: Vingt adresses où l’usage d’un bâtiment a été changé pour le rendre à nouveau pertinent.
 description: Quatre projets détaillés, le programme agences bancaires et la galerie des réalisations de Perpetual.
 ---
 
