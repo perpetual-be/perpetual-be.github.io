@@ -27,6 +27,13 @@
       "ateliers-118-03.jpg",
       "ateliers-118-04.jpg",
       "ateliers-118-05.jpg"
+    ],
+    "selection": [
+      "ateliers-118-01",
+      "ateliers-118-02",
+      "ateliers-118-05",
+      "ateliers-118-03",
+      "ateliers-118-04"
     ]
   },
   {
@@ -45,6 +52,11 @@
       "the-bank-01.jpg",
       "the-bank-02.jpg",
       "the-bank-03.jpg"
+    ],
+    "selection": [
+      "the-bank-01",
+      "the-bank-02",
+      "the-bank-03"
     ]
   },
   {
@@ -69,6 +81,14 @@
     "photos": [
       "data-box-01.jpg",
       "data-box-02.jpg"
+    ],
+    "selection": [
+      "data-box-03",
+      "data-box-04",
+      "data-box-02",
+      "data-box-05",
+      "data-box-06",
+      "data-box-07"
     ]
   },
   {
@@ -108,6 +128,19 @@
       "community-14.png",
       "community-15.png",
       "community-16.png"
+    ],
+    "selection": [
+      "community-05",
+      "community-10",
+      "community-14",
+      "community-11",
+      "community-13",
+      "community-06",
+      "community-07",
+      "community-09",
+      "community-04",
+      "community-15",
+      "community-16"
     ]
   },
   {
