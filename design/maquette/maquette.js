@@ -1,5 +1,6 @@
-/* Perpetual — maquette du lot 2 : le panneau de bascules, l'état dans l'URL, l'aperçu de la liste des projets (Home), et sur la vue Réalisations
-   la rangée des agences en boucle, les photos de chaque bien et la visionneuse (revue du 26/09, repris de la proposition P2).
+/* Perpetual — maquette du lot 2 : le panneau de bascules, l'état dans l'URL, l'aperçu de la liste des projets (Home), sur les fiches la mosaïque des
+   photos (P6, 26/09), et sur la vue Réalisations la rangée des agences en boucle, les photos de chaque bien et la visionneuse (revue du 26/09, repris de
+   la proposition P2) — la même visionneuse s'ouvre sur les photos de la mosaïque d'une fiche.
    L'état (une valeur par bascule) vit dans la query de l'URL (?papier=tout&bas=anciens) ; le hash reste aux ancres.
    Un script en tête de page pose déjà les attributs data-* avant le premier rendu ; ici on dessine le panneau et on tient l'URL à jour. */
 (function () {
@@ -205,7 +206,52 @@
   });
 })();
 
-// ---- vue Réalisations : la rangée des agences, les photos de chaque bien, la visionneuse (repris tel quel de la proposition P2, revue du 26/09) ----
+// ---- fiches (P6, 26/09) : la mosaïque des photos, script de la référence (design/revue-fiche/propositions/p6.html) ----
+// Rangées justifiées au format de chaque photo (data-r : son ratio), construites chacune comme un bloc (.fiche__rang : plus de retour à la ligne possible),
+// la largeur mesurée au sous-pixel moins 0,5 px, les largeurs arrondies vers le bas. Hauteurs cibles alternées 440 / 280 px, multipliées par
+// max(1, largeur de la mosaïque / 1 120) sur la grille large : le même nombre de photos par rangée qu'à 1 200 px. Au téléphone, 210 / 150 px et deux photos
+// au plus par rangée. Dernière rangée incomplète : pas d'agrandissement au-delà de 1,25 × la cible sur ordinateur (elle garde alors la cible), jusqu'à
+// 2 × au téléphone. Chaque <img> reçoit un sizes égal à la largeur de sa tuile. Recalcul quand la largeur de la mosaïque change (fenêtre, barre de
+// défilement), jamais sur la hauteur seule. Le clic sur une tuile ouvre la visionneuse (plus bas).
+(function () {
+  var m = document.querySelector('.fiche__mosaique');
+  if (!m) return;
+  var tuiles = Array.prototype.slice.call(m.querySelectorAll('.fiche__tuile'));
+  function placer() {
+    m.classList.remove('est-placee');
+    tuiles.forEach(function (t) { m.appendChild(t); });
+    Array.prototype.forEach.call(m.querySelectorAll('.fiche__rang'), function (r) { r.remove(); });
+    var W = m.getBoundingClientRect().width - 0.5, g = parseFloat(getComputedStyle(m).columnGap) || 16, petit = innerWidth < 641, maxN = petit ? 2 : 99;
+    var f = petit ? 1 : Math.max(1, W / 1120), hauts = petit ? [210, 150] : [440 * f, 280 * f];
+    var i = 0, rang = 0;
+    while (i < tuiles.length) {
+      var cible = hauts[rang % 2], somme = 0, j = i;
+      while (j < tuiles.length && j - i < maxN) { somme += +tuiles[j].getAttribute('data-r'); j++; if (somme * cible + (j - i - 1) * g >= W) break; }
+      var n = j - i, h = (W - (n - 1) * g) / somme;
+      if (j >= tuiles.length && n < maxN) { if (petit) h = Math.min(h, cible * 2); else if (h > cible * 1.25) h = cible; }
+      var r = document.createElement('div');
+      r.className = 'fiche__rang';
+      for (var k = i; k < j; k++) {
+        var t = tuiles[k], w = Math.floor(+t.getAttribute('data-r') * h * 100) / 100, img = t.querySelector('img');
+        t.style.width = w + 'px'; t.style.height = h + 'px'; img.style.height = h + 'px'; img.sizes = w + 'px';
+        r.appendChild(t);
+      }
+      m.appendChild(r); i = j; rang++;
+    }
+    m.classList.add('est-placee');
+  }
+  placer();
+  var largeur = m.getBoundingClientRect().width, attente;
+  new ResizeObserver(function () {
+    var l = m.getBoundingClientRect().width;
+    if (l === largeur) return;
+    largeur = l; clearTimeout(attente); attente = setTimeout(placer, 80);
+  }).observe(m);
+})();
+
+// ---- vue Réalisations : la rangée des agences, les photos de chaque bien, la visionneuse (repris de la proposition P2, revue du 26/09) ----
+// Seul ajout depuis, la P6 (26/09) : la visionneuse reçoit un album (ses photos, et la ville, la surface et l'usage d'un bien) et s'ouvre aussi sur la
+// mosaïque d'une fiche — le compteur seul, pas de légende (section 4).
 (function(){
   if (!document.querySelector('.visio')) return;
   var BIENS = window.BIENS, doux = !matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -276,17 +322,17 @@
     var bb = new Boucle(b.querySelector('.bien__piste'), function(i){ cptb.textContent = (i + 1) + ' / ' + n });
     b.querySelector('.bien__fleche--g').addEventListener('click', function(e){ e.stopPropagation(); bb.aller(-1) });
     b.querySelector('.bien__fleche--d').addEventListener('click', function(e){ e.stopPropagation(); bb.aller(1) });
-    b.querySelector('.bien__piste').addEventListener('click', function(){ ouvrir(+b.getAttribute('data-bien'), bb.courant) });
+    b.querySelector('.bien__piste').addEventListener('click', function(){ ouvrir(BIENS[+b.getAttribute('data-bien')], bb.courant) });
   });
 
-  // 3. la visionneuse
+  // 3. la visionneuse, sur un album : ses photos (l) et, pour un bien, la ville, la surface et l'usage (la légende) ; sans ville, le compteur seul
   var v = document.querySelector('.visio'), vl = v.querySelector('.visio__legende'), vc = v.querySelector('.visio__compteur'),
       vg = v.querySelector('[data-v-prec]'), vd = v.querySelector('[data-v-suiv]'), vb = null, retour = null;
-  function ouvrir(k, depart){
-    var b = BIENS[k], n = b.l.length, ancienne = v.querySelector('.visio__piste'), vp = ancienne.cloneNode(false);
+  function ouvrir(b, depart){
+    var n = b.l.length, ancienne = v.querySelector('.visio__piste'), vp = ancienne.cloneNode(false);
     ancienne.replaceWith(vp); retour = document.activeElement;
     vp.innerHTML = b.l.map(function(s){ return '<img src="' + s + '" alt="" decoding="async">' }).join('');
-    vl.innerHTML = '<b>' + b.ville + '</b>' + b.surface + ' · ' + b.usage;
+    vl.innerHTML = b.ville ? '<b>' + b.ville + '</b>' + b.surface + ' · ' + b.usage : '';
     vg.hidden = vd.hidden = n < 2;
     v.hidden = false; document.body.classList.add('visio-ouverte');
     vb = new Boucle(vp, function(i){ vc.textContent = n > 1 ? (i + 1) + ' / ' + n : '' });
@@ -294,7 +340,13 @@
     v.querySelector('[data-fermer]').focus();
   }
   function fermer(){ v.hidden = true; document.body.classList.remove('visio-ouverte'); if (retour) retour.focus() }
-  document.querySelectorAll('[data-ouvrir]').forEach(function(el){ el.addEventListener('click', function(){ ouvrir(+el.getAttribute('data-ouvrir'), 0) }) });
+  document.querySelectorAll('[data-ouvrir]').forEach(function(el){ el.addEventListener('click', function(){ ouvrir(BIENS[+el.getAttribute('data-ouvrir')], 0) }) });
+  // 4. les fiches (P6, 26/09) : chaque tuile de la mosaïque ouvre la visionneuse sur sa photo (<clé>.jpg, data-grande), le compteur seul (« 3 / 10 »)
+  var tuiles = document.querySelectorAll('.fiche__agrandir');
+  if (tuiles.length) {
+    var album = { l: Array.prototype.map.call(tuiles, function(t){ return t.getAttribute('data-grande') }) };
+    tuiles.forEach(function(t, i){ t.addEventListener('click', function(){ ouvrir(album, i) }) });
+  }
   vg.addEventListener('click', function(){ vb.aller(-1) });
   vd.addEventListener('click', function(){ vb.aller(1) });
   v.querySelector('[data-fermer]').addEventListener('click', fermer);
@@ -308,7 +360,7 @@
 })();
 
 // La visionneuse est modale (aria-modal) : tant qu'elle est ouverte, Tab et Maj+Tab restent dans ses commandes visibles — la page, sous le fond blanc,
-// n'est plus atteignable au clavier. Ajout à la proposition P2, dont le script ci-dessus reste tel quel.
+// n'est plus atteignable au clavier. Ajout à la proposition P2, dont le script ci-dessus ne change, depuis, que pour recevoir un album (P6). Vaut aussi sur les fiches.
 (function () {
   var v = document.querySelector('.visio');
   if (!v) return;
