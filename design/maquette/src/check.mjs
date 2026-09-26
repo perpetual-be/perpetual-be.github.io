@@ -1,4 +1,4 @@
-// Vérifications de la maquette (Playwright + Chromium) : premier écran (structure F), débordement, effet de chaque bascule,
+// Vérifications de la maquette (Playwright + Chromium) : premier écran (structure F), débordement, paramètres des bascules retirées sans effet,
 // valeurs figées et alignement (gel de la Home du 23/09 : signature, espacements, pied de page), en-tête (Φ, wordmark, limite de 1600 px), pied de page
 // sur le container de 1 200 px (les trois pages), carte des réalisations, logos partenaires, photo 2800 px, srcset de l'aperçu des 4, mode présentation,
 // page sans JavaScript, polices, contrastes ; puis la fiche The Bank
@@ -76,52 +76,41 @@ function verifierSrcset(liste, nom) {
 
 // la palette, telle que Chromium la rend
 const ANTHRACITE = 'rgb(38, 35, 31)', GRIS = 'rgb(107, 101, 92)', GRIS_CHAUD = 'rgb(122, 116, 102)', OR = 'rgb(154, 122, 59)', OR_FONCE = 'rgb(138, 107, 47)', OR_CLAIR = 'rgb(184, 151, 90)',
-  BRONZE = 'rgb(104, 78, 30)', PAPIER = 'rgb(249, 249, 246)', SABLE = 'rgb(246, 241, 230)', BLANC = 'rgb(255, 255, 255)', OR_DECO = 'rgb(201, 181, 138)', TRAIT_CARTE = 'rgb(214, 208, 196)';
+  BRONZE = 'rgb(104, 78, 30)', PAPIER = 'rgb(249, 249, 246)', SABLE = 'rgb(246, 241, 230)', BLANC = 'rgb(255, 255, 255)', OR_DECO = 'rgb(201, 181, 138)';
 
 console.log('\n1 · Premier écran — structure F : la photo porte l’accroche, la bande et ses quatre chiffres tiennent dans 900 à 1440 et dans 703 à 1366');
 for (const [w, h] of [[1440, 900], [1366, 703]]) {
-  for (const etat of ['', 'cadrage=haut']) {
-    const { p, ctx } = await ouvrir(etat, [w, h]);
-    const attendu = Math.min(560, Math.max(320, h - 270)), gauche = (w - 1200) / 2 + 40;
-    const photo = await rect(p, '.hero__photo'), titre = await rect(p, '.hero__title span'), texte = await rect(p, '.hero__text'), sig = await rect(p, '.signature'), bande = await rect(p, '.stats-band');
-    const nom = `${w}×${h} · ${etat || 'défaut'}`;
-    ok(photo.top === 76 && photo.height === attendu && photo.width === w, `${nom} · photo pleine largeur sous l’en-tête, ${photo.height} px de haut (clamp → ${attendu})`);
-    ok(titre.left === gauche && Math.abs(titre.top - (photo.top + 64)) <= 4 && titre.bottom < photo.bottom - 100 && (await style(p, '.hero__title', 'color')) === BLANC, `${nom} · accroche en blanc, en haut à gauche du container (x ${titre.left}, y ${titre.top})`);
-    const par = await p.evaluate(() => [...document.querySelectorAll('.hero__text p:not(.signature)')].map(e => { const r = e.getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left) }; }));
-    ok(bande.top >= photo.bottom && texte.top >= bande.bottom && par.length === 2 && par[1].left > par[0].left && par[1].top === par[0].top && (await style(p, '.hero__text', 'gridTemplateColumns')).split(' ').length === 2,
-      `${nom} · la bande vient juste après la photo, puis les paragraphes en deux colonnes`);
-    ok(sig.left === par[1].left && sig.top >= par[1].bottom + 8 && sig.top <= par[1].bottom + 32 && sig.bottom <= texte.bottom, `${nom} · la signature est dans la colonne de droite, sous le second paragraphe (${sig.top - par[1].bottom} px dessous)`);
-    const chiffres = await p.evaluate(() => [...document.querySelectorAll('.stat__value')].map(s => Math.round(s.getBoundingClientRect().bottom)));
-    ok(bande.bottom <= h && chiffres.every(b => b <= h), `${nom} · la bande et ses quatre chiffres tiennent entièrement dans l’écran (bande à ${bande.bottom}, chiffres à ${chiffres.join(', ')})`);
-    await ctx.close();
-  }
+  const { p, ctx } = await ouvrir('', [w, h]);
+  const attendu = Math.min(560, Math.max(320, h - 270)), gauche = (w - 1200) / 2 + 40;
+  const photo = await rect(p, '.hero__photo'), titre = await rect(p, '.hero__title span'), texte = await rect(p, '.hero__text'), sig = await rect(p, '.signature'), bande = await rect(p, '.stats-band');
+  const nom = `${w}×${h}`;
+  ok(photo.top === 76 && photo.height === attendu && photo.width === w, `${nom} · photo pleine largeur sous l’en-tête, ${photo.height} px de haut (clamp → ${attendu})`);
+  ok(titre.left === gauche && Math.abs(titre.top - (photo.top + 64)) <= 4 && titre.bottom < photo.bottom - 100 && (await style(p, '.hero__title', 'color')) === BLANC, `${nom} · accroche en blanc, en haut à gauche du container (x ${titre.left}, y ${titre.top})`);
+  const par = await p.evaluate(() => [...document.querySelectorAll('.hero__text p:not(.signature)')].map(e => { const r = e.getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left) }; }));
+  ok(bande.top >= photo.bottom && texte.top >= bande.bottom && par.length === 2 && par[1].left > par[0].left && par[1].top === par[0].top && (await style(p, '.hero__text', 'gridTemplateColumns')).split(' ').length === 2,
+    `${nom} · la bande vient juste après la photo, puis les paragraphes en deux colonnes`);
+  ok(sig.left === par[1].left && sig.top >= par[1].bottom + 8 && sig.top <= par[1].bottom + 32 && sig.bottom <= texte.bottom, `${nom} · la signature est dans la colonne de droite, sous le second paragraphe (${sig.top - par[1].bottom} px dessous)`);
+  const chiffres = await p.evaluate(() => [...document.querySelectorAll('.stat__value')].map(s => Math.round(s.getBoundingClientRect().bottom)));
+  ok(bande.bottom <= h && chiffres.every(b => b <= h), `${nom} · la bande et ses quatre chiffres tiennent entièrement dans l’écran (bande à ${bande.bottom}, chiffres à ${chiffres.join(', ')})`);
+  await ctx.close();
 }
 
 console.log('\n2 · Aucun débordement horizontal');
 for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
-  for (const etat of ['', 'cadrage=haut', 'carte=papier-contour']) {
-    const { p, ctx } = await ouvrir(etat, [w, h]);
-    ok((await largeur(p)) === 0, `${w} · ${etat || 'défaut'}`); await ctx.close();
-  }
+  const { p, ctx } = await ouvrir('', [w, h]);
+  ok((await largeur(p)) === 0, `${w} × ${h}`); await ctx.close();
 }
 
-console.log('\n3 · Chaque valeur de chaque bascule change le rendu');
-const tests = [
-  ['cadrage=haut', p => style(p, '.hero__photo img', 'objectPosition').then(v => v === '50% 20%'), 'cadrage=haut : Community 05 en 50% 20%'],
-  ['carte=papier-contour', async p => (await style(p, '.carte__pays', 'fill')) === PAPIER && (await style(p, '.carte__pays', 'stroke')) === TRAIT_CARTE && (await style(p, '.carte__pays', 'strokeWidth')) === '1px'],
-];
-for (const [etat, test, libelle] of tests) {
-  const { p, ctx } = await ouvrir(etat);
-  let res = false; try { res = await test(p); } catch (e) { res = false; }
-  ok(res, libelle || etat); await ctx.close();
-}
+console.log('\n3 · Plus aucune bascule sur la Home (9c et 15a figées le 26/09) : les paramètres des bascules retirées sont sans effet');
 {
-  // les bascules retirées le 23/09 (dont le gel de la Home : serif, graisse, cadrage=bas) : un paramètre resté dans une URL ne change plus rien
-  const { p, ctx } = await ouvrir('ecran=colonnes&photo=data-box-03&accroche=droite&deco=arcs&signature=anthracite&autres=bande&pied=blanc&portee=partout&serif=source-serif&graisse=500&cadrage=bas');
+  // les bascules retirées le 23/09 (dont le gel de la Home : serif, graisse, cadrage=bas) et le 26/09 (9c cadrage, 15a carte) : un paramètre resté dans
+  // une URL ne change plus rien (répété, le script d'état garde sa dernière valeur : ici data-cadrage="centre")
+  const { p, ctx } = await ouvrir('ecran=colonnes&photo=data-box-03&accroche=droite&deco=arcs&signature=anthracite&autres=bande&pied=blanc&portee=partout&serif=source-serif&graisse=500&cadrage=bas&cadrage=haut&cadrage=centre&carte=papier-contour');
   ok((await style(p, '.hero__photo', 'display')) === 'block' && ['left', 'start'].includes(await style(p, '.hero__title', 'textAlign')) && (await p.evaluate(() => document.querySelectorAll('.deco__svg').length)) === 1
     && (await style(p, '.signature', 'color')) === OR_FONCE && (await style(p, '.carte', 'display')) === 'grid' && (await style(p, '.site-footer', 'backgroundColor')) === PAPIER && (await style(p, '.h2--sans', 'fontWeight')) === '500'
-    && (await style(p, '.hero__title', 'fontFamily')).startsWith('Newsreader') && (await style(p, '.hero__title', 'fontWeight')) === '400' && (await style(p, '.stat__value', 'fontWeight')) === '400' && (await style(p, '.hero__photo img', 'objectPosition')) === '50% 50%',
-    'paramètres des bascules retirées (ecran, photo, accroche, deco, signature, autres, pied, portee, serif, graisse, cadrage=bas) : sans effet');
+    && (await style(p, '.hero__title', 'fontFamily')).startsWith('Newsreader') && (await style(p, '.hero__title', 'fontWeight')) === '400' && (await style(p, '.stat__value', 'fontWeight')) === '400' && (await style(p, '.hero__photo img', 'objectPosition')) === '50% 20%'
+    && (await style(p, '.carte__pays', 'fill')) === SABLE && (await style(p, '.carte__pays', 'stroke')) === 'none',
+    'paramètres des bascules retirées (ecran, photo, accroche, deco, signature, autres, pied, portee, serif, graisse, cadrage=bas / haut / centre, carte=papier-contour) : sans effet');
   await ctx.close();
 }
 
@@ -153,7 +142,7 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   const deco = await p.evaluate(() => [...document.querySelectorAll('.deco__svg')].map(s => ({ cls: s.getAttribute('class'), display: getComputedStyle(s).display, color: getComputedStyle(s).color, cercles: s.querySelectorAll('circle').length })));
   ok(deco.length === 1 && /deco--anneaux/.test(deco[0].cls) && deco[0].display === 'block' && deco[0].color === OR_DECO && deco[0].cercles === 2, 'élément de la bande : anneaux, figés, or #C9B58A (les arcs ne sont plus dans la page)');
   ok((await style(p, '.bar__fill', 'backgroundColor')) === ANTHRACITE && (await style(p, '.bar__track', 'backgroundColor')) === SABLE, 'graphique : barres anthracite sur piste sable (--surface-piste détachée de --surface)');
-  ok((await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pays', 'fill')) === SABLE && (await style(p, '.carte__pays', 'stroke')) === 'none', 'carte : points anthracite, fond du pays sable par défaut (bascule 15a)');
+  ok((await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pays', 'fill')) === SABLE && (await style(p, '.carte__pays', 'stroke')) === 'none', 'carte : points anthracite, fond du pays sable (figé le 26/09)');
   ok((await style(p, '.site-footer', 'backgroundColor')) === PAPIER && (await style(p, '.site-footer', 'borderTopStyle')) === 'none', 'pied de page : fond papier, sans filet en haut (figé)');
   ok((await style(p, '.autres__lien', 'color')) === OR_FONCE && (await p.evaluate(() => document.querySelector('.autres__lien').textContent)) === 'Toutes les réalisations →', 'lien « Toutes les réalisations → » : or foncé');
   const libelles = await p.evaluate(() => ({ nav: document.querySelector('.site-nav a').textContent, plan: document.querySelector('.footer__nav a').textContent, liste: document.querySelector('.section--projets .eyebrow').textContent, carte: document.querySelector('.section--autres .eyebrow').textContent,
@@ -162,7 +151,7 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok(libelles.nav === siteNav && libelles.plan === siteNav && libelles.liste === 'Réalisations' && libelles.carte === 'Réalisations' && libelles.chiffre && libelles.onglet === 'Home · Fiche · Réalisations',
     `libellés : navigation et plan « ${libelles.nav} » (data/site.json), liste des 4 « ${libelles.liste} », « Projets en cours » inchangé, onglets ${libelles.onglet}`);
   const photos = await p.evaluate(() => [...document.querySelectorAll('.hero__photo img')].map(i => ({ key: i.dataset.photo, display: getComputedStyle(i).display, focal: getComputedStyle(i).objectPosition })));
-  ok(photos.length === 1 && photos[0].key === 'community-05' && photos[0].display === 'block' && photos[0].focal === '50% 50%', `photo du premier écran : Community 05 seule, cadrage centre par défaut (${photos.map(x => x.focal).join(' · ')})`);
+  ok(photos.length === 1 && photos[0].key === 'community-05' && photos[0].display === 'block' && photos[0].focal === '50% 20%', `photo du premier écran : Community 05 seule, cadrage haut, figé le 26/09 (${photos.map(x => x.focal).join(' · ')})`);
   ok(['left', 'start'].includes(await style(p, '.hero__title', 'textAlign')) && /at 0(px)? 0(px)?,/.test(await p.evaluate(() => getComputedStyle(document.querySelector('.hero__photo'), '::after').backgroundImage)) && !(await p.evaluate(() => [...document.querySelectorAll('head style')].some(s => /9d/.test(s.textContent)))), 'accroche à gauche, voile depuis le coin haut-gauche (plus d’aiguillage photo → côté dans la page)');
   ok((await style(p, '.footer__mail', 'color')) === ANTHRACITE && (await style(p, '.footer__mail', 'borderBottom')) === `1px solid ${OR_CLAIR}`, 'mail du pied de page : anthracite, souligné (--c-mail distinct de --c-lien)');
   ok((await style(p, '.signature', 'color')) === OR_FONCE && (await style(p, '.signature', 'fontStyle')) === 'italic', 'signature : or (or foncé), figée, italique');
@@ -176,7 +165,7 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok((await style(p, '.partner__couleur', 'display')) === 'block' && !(await p.evaluate(() => document.querySelector('.partner__encre'))), 'logos partenaires : couleur, figés (plus d’encre inline)');
   const cles = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle));
   const inactives = await p.evaluate(() => [...document.querySelectorAll('.mq__b.is-inactif')].map(f => f.dataset.cle));
-  ok(cles.join(' ') === 'cadrage carte papier bas' && inactives.join(' ') === 'papier bas', 'panneau : ' + cles.join(' · ') + ' (20 et 21 retirées ; 22 et 23, vue Réalisations, sans effet sur la Home)');
+  ok(cles.join(' ') === 'papier bas' && inactives.join(' ') === 'papier bas', 'panneau : ' + cles.join(' · ') + ' (9c et 15a figées le 26/09, 20 et 21 retirées ; 22 et 23, vue Réalisations, sans effet sur la Home)');
   ok(await pretty(p, '.four__line'), 'liste des 4 : text-wrap: pretty sur les lignes');
   // aperçu de la liste des 4 : srcset 800 / 1800 px (revue du 23/09) ; à 1×, aucune photo agrandie — Data Box 02 (800 × 450, cadre 440 × 550) reçoit le 1800 px
   const apercu = await photosImg(p, '.four__preview img');
@@ -189,7 +178,6 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
     quatre: [...document.querySelectorAll('.four__row a')].map(a => a.getAttribute('href')) }));
   ok(liens.nav === 'realisations.html' && liens.plan === 'realisations.html' && liens.tous === 'realisations.html' && liens.quatre.join(' ') === 'realisations.html#ateliers-118 projet-the-bank.html realisations.html#data-box realisations.html#community',
     'liens : navigation, plan et « Toutes les réalisations → » vers realisations.html ; The Bank vers sa fiche, les trois autres vers leur ancre');
-  ok((await p.evaluate(() => [...document.querySelectorAll('.mq__b[data-cle="cadrage"] input')].map(i => i.value).join(' '))) === 'centre haut', 'bascule 9c : centre / haut seulement (« bas » retiré)');
   await ctx.close();
 }
 {
@@ -238,7 +226,7 @@ console.log('\n5 · Réalisations : la carte');
   ok(c.bxl.length === 1 && c.bxl[0] === '6.5' && c.autres.length === 16 && c.autres.every(r => r === '4.5'), 'carte : Bruxelles = un seul point r 6,5, les seize autres r 4,5');
   ok(c.rang1.length === 3, 'carte : étiquettes de rang 1 — ' + c.rang1.join(' · '));
   ok(c.fig <= 600, `carte : SVG ${c.fig} px de large (600 max)`);
-  ok((await style(p, '.carte__pays', 'fill')) === SABLE && (await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pt', 'stroke')) === BLANC && (await style(p, '.carte__lab', 'fill')) === GRIS && (await style(p, '.carte__lab--groupe', 'fill')) === ANTHRACITE, 'carte : pays sable par défaut (bascule 15a), points anthracite à liseré blanc, étiquettes gris chaud, Bruxelles anthracite');
+  ok((await style(p, '.carte__pays', 'fill')) === SABLE && (await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pt', 'stroke')) === BLANC && (await style(p, '.carte__lab', 'fill')) === GRIS && (await style(p, '.carte__lab--groupe', 'fill')) === ANTHRACITE, 'carte : fond du pays sable (figé le 26/09), points anthracite à liseré blanc, étiquettes gris chaud, Bruxelles anthracite');
   const centre = await p.evaluate(() => {
     const fig = document.querySelector('.carte__fig').getBoundingClientRect(), texte = document.querySelector('.carte__texte').getBoundingClientRect();
     return Math.abs((fig.top + fig.bottom) / 2 - (texte.top + texte.bottom) / 2);
@@ -297,7 +285,7 @@ console.log('\n6 · Logos partenaires, photo 2800 px, présentation, sans JavaSc
 }
 {
   const { p, ctx } = await ouvrir('', [1440, 900], { javaScriptEnabled: false });
-  ok(await p.evaluate(() => !document.querySelector('.mq') && !!document.querySelector('.four__preview img.is-active') && getComputedStyle(document.querySelector('.stats-band')).backgroundColor === 'rgb(249, 249, 246)' && getComputedStyle(document.querySelector('.hero__photo img')).objectPosition === '50% 50%'), 'sans JavaScript : la page est la combinaison retenue, sans panneau'); await ctx.close();
+  ok(await p.evaluate(() => !document.querySelector('.mq') && !!document.querySelector('.four__preview img.is-active') && getComputedStyle(document.querySelector('.stats-band')).backgroundColor === 'rgb(249, 249, 246)' && getComputedStyle(document.querySelector('.hero__photo img')).objectPosition === '50% 20%'), 'sans JavaScript : la page est la combinaison retenue, sans panneau'); await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('');
@@ -368,7 +356,7 @@ for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
   ok(suivant.href === 'realisations.html#data-box' && suivant.texte === 'Projet suivant — Data Box →' && suivant.color === OR_FONCE && suivant.bloc === 'block', `« ${suivant.texte} » → ${suivant.href}, or foncé, l'étiquette au-dessus du nom`);
   ok(await p.evaluate(() => getComputedStyle(document.querySelector('.site-footer')).backgroundColor === 'rgb(249, 249, 246)' && document.querySelector('.footer__nav a').getAttribute('href') === 'realisations.html' && document.querySelector('.footer__nav a[href="index.html#collectif"]') !== null), 'pied de page papier ; plan vers realisations.html, Collectif vers index.html#collectif');
   const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '')).join(' · '));
-  ok(panneau === 'cadrage (sans effet) · carte (sans effet) · papier (sans effet) · bas (sans effet)', 'panneau : ' + panneau + ' (bascule 20 retirée)');
+  ok(panneau === 'papier (sans effet) · bas (sans effet)', 'panneau : ' + panneau + ' (bascule 20 retirée)');
   await ctx.close();
 }
 // gouttière du titre de page (revue du 23/09) : .page-head est un .container, son padding latéral doit rester celui de .container
@@ -541,7 +529,7 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   ok(parOrdre('agency').map(x => x.use).join(' | ') === USAGES.join(' | ') && v.items.slice(0, 4).map(i => i.usage).join(' | ') === USAGES.join(' | ') && !donnees.some(x => /Bancontact/.test(x.use || '')) && v.items.every(i => !/Bancontact/.test(i.usage)),
     'usages des 4 agences sans « Point Bancontact » (data/projects.json et page) : ' + USAGES.join(' · '));
   const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '') + ' [' + [...f.querySelectorAll('input')].map(i => i.value).join(' / ') + ']').join(' · '));
-  ok(panneau === 'cadrage (sans effet) [centre / haut] · carte (sans effet) [sable / papier-contour] · papier [enonce / tout] · bas [rien / anciens]', 'panneau : ' + panneau + ' (22 et 23 : la V1 en défaut)');
+  ok(panneau === 'papier [enonce / tout] · bas [rien / anciens]', 'panneau : ' + panneau + ' (22 et 23 : la V1 en défaut)');
   await p.click('.mq__b[data-cle="papier"] label[for="mq-papier-tout"]');
   ok((await p.evaluate(() => document.documentElement.dataset.papier + ' ' + location.search)) === 'tout ?papier=tout', 'panneau : « toute la section » pose data-papier="tout" et ?papier=tout');
   await ctx.close();

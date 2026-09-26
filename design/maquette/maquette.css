@@ -13,7 +13,7 @@
   /* palette */
   --blanc:#FFFFFF;--anthracite:#26231F;--gris:#6B655C;--gris-clair:#9A948A;--gris-chaud:#7A7466;--filet:#E6E1D6;
   --or:#9A7A3B;--or-fonce:#8A6B2F;--or-clair:#B8975A;--bronze:#684E1E;
-  --sable:#F6F1E6;--papier:#F9F9F6;--trait-carte:#D6D0C4;
+  --sable:#F6F1E6;--papier:#F9F9F6;
   --or-deco:#C9B58A;--or-deco-2:#D9C9A3;
   --photo-texte:#FFFFFF;--voile-fort:rgba(0,0,0,.72);--voile-moyen:rgba(0,0,0,.55);--voile-leger:rgba(0,0,0,.12);
   /* rôles — le dosage figé le 22/09 ; les composants ne lisent que ceux-ci */
@@ -29,7 +29,7 @@
   --c-num-chapitre:var(--or-fonce);                       /* numéros de chapitre : or foncé (5,0:1 à 15 px ; l'or mat n'y fait que 4,0:1), revue de la fiche */
   --c-phi:var(--bronze);--c-wordmark:var(--anthracite);
   --c-deco:var(--or-deco);--c-deco-2:var(--or-deco-2);    /* élément de la bande (anneaux) : or */
-  --surface:var(--papier);--surface-bande:var(--surface);--surface-carte:var(--sable);   /* bande : papier ; fond du pays (carte), détaché de --surface : sable, pour se lire malgré ses bords irréguliers */
+  --surface:var(--papier);--surface-bande:var(--surface);--surface-carte:var(--sable);   /* bande : papier ; fond du pays (carte) : sable, figé le 26/09 (bascule 15a retirée), pour se lire malgré ses bords irréguliers */
   --surface-piste:var(--sable);--surface-pied:var(--papier);                             /* graphique : piste en sable ; pied de page : papier, sans filet en haut (figé le 23/09) */
   /* typographie */
   --serif:"Newsreader",Georgia,serif;--sans:"Instrument Sans",system-ui,sans-serif;   /* serif figée le 23/09 : Newsreader 400 partout (la seconde serif et la graisse 500 sont retirées) */
@@ -375,12 +375,6 @@ body.visio-ouverte{overflow:hidden}
 }
 
 /* ---------- 6. Bascules ---------- */
-/* Home gelée le 23/09 : il ne reste que deux décisions reportées, 9c et 15a (2 serif et 17 graisse sont figées sur Newsreader 400). */
-/* 9c · cadrage de Community 05, temporaire : centre (défaut, le point focal de photoCandidates, 50% 50%) / haut (50% 20%) ; « bas » retiré.
-   !important parce que le point focal est posé en style sur l'<img> ; la valeur retenue remplacera celle de photoCandidates et la bascule disparaîtra */
-html[data-cadrage="haut"] .hero__photo img{object-position:50% 20% !important}
-/* 15a · carte : sable (défaut, pays rempli en --surface-carte) / papier-contour (fill papier + trait fin) */
-html[data-carte="papier-contour"] .carte__pays{fill:var(--papier);stroke:var(--trait-carte);stroke-width:1}
 /* 20 · fiche, titres de chapitre : figée sur « sans » (revue de la fiche, 23/09) : .chapitre__titre et .chapitre__num, plus haut. */
 /* 22 · vue Réalisations, programme agences, fond papier : énoncé seul (défaut, .bloc-agences__bande) / toute la section (papier sur toute la section,
    puis 32 px de blanc avant le pied de page, 20 au téléphone) */

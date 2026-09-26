@@ -125,8 +125,9 @@ function jpegSize(file) {
 }
 const jpegWidth = file => jpegSize(file).width;
 // La photo déclare son point focal (object-position, posé en style sur l'<img>, vaut aussi sur téléphone). Figée le 23/09 sur Community 05,
-// accroche à gauche (bascules 9b et 9d retirées ; data-box-03 reste dans design/directions/img/). Le cadrage de Community 05 se choisit
-// avec la bascule temporaire 9c (maquette.css) : la valeur retenue remplacera ce focal, et la bascule disparaîtra.
+// accroche à gauche (bascules 9b et 9d retirées ; data-box-03 reste dans design/directions/img/). Plus de bascule 9c : cadrage figé le 26/09 sur
+// « haut », 50% 20%, pour le premier écran de la Home seulement (le blocFocal de community-05 dans four, vue Réalisations, reste 50% 50%).
+// Sur téléphone, pas d'exception : Community 05 (4:3) est calée sur la hauteur du cadre de 390 × 420, le point focal vertical n'y change rien.
 // Sources d'une photo : <clé>.jpg (1800 px) et <clé>-l.jpg (2800 px) quand ils existent, sinon repli sur <clé>-s.jpg (800 px).
 function photoSources(key) {
   const chemin = f => path.join(REPO, 'design/directions/img', f);
@@ -178,7 +179,7 @@ function sizesBloc(key, fr) {
     ['', `max((min(100vw, 1600px) - 94px) * ${fr} / 12, clamp(340px, 100vh - 262px, 540px) * ${ratio.toFixed(3)})`]];
 }
 const photoCandidates = [
-  { key: 'community-05', focal: '50% 50%' },
+  { key: 'community-05', focal: '50% 20%' },
 ].map(c => ({ key: c.key, focal: c.focal, sources: photoSources(c.key) }));
 
 // ---------- logos ----------
