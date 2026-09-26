@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ateliers 118 — Perpetual</title>
+<title>The Bank — Perpetual · grille large</title>
 <script>(function(){var p=new URLSearchParams(location.search),h=document.documentElement;p.forEach(function(v,k){if(/^[a-z][a-z-]*$/.test(k)&&/^[a-z0-9-]*$/.test(v))h.setAttribute('data-'+k,v)})})();</script>
-<link rel="stylesheet" href="../../maquette/maquette.css">
-<link rel="icon" href="../../../public/favicon.svg">
+<link rel="stylesheet" href="../maquette/maquette.css">
+<link rel="icon" href="../../public/favicon.svg">
 <style>
 .prop-badge{position:fixed;left:16px;bottom:16px;z-index:50;display:flex;gap:14px;align-items:center;padding:8px 12px;background:#fff;border:1px solid var(--filet);font:13px/1.2 var(--sans);color:var(--c-meta)}
 .prop-badge b{color:var(--c-texte);font-weight:500}
@@ -16,10 +16,8 @@
 
 .prop-badge{flex-wrap:wrap;max-width:calc(100vw - 32px)}
 .prop-badge .sep{color:var(--filet)}
-/* grille large (décision d'Axel du 26/09 au soir, perpetual-largeur.md §3) : marge = celle de la grille de 1 600 px (--max-large),
-   en % de la page, donc barre de défilement comprise ; le texte part du bord du logo | texte | photo au bord droit */
-.p6-corps{display:grid;grid-template-columns:max(var(--gutter), calc((100% - var(--max-large)) / 2 + var(--gutter))) minmax(0,1fr) var(--p6-w);align-items:start}
-/* le pied de page reste sur le container de 1 200 px, comme sur la Home (Axel, 26/09 au soir) : seuls la mosaïque et les voisins passent sur la grille large */
+/* grille : marge = celle du container de 1200 px (en % de la page, donc barre de défilement comprise) | texte | photo au bord droit */
+.p6-corps{display:grid;grid-template-columns:max(var(--gutter), calc((100% - var(--max)) / 2 + var(--gutter))) minmax(0,1fr) var(--p6-w);align-items:start}
 .p6-corps--paysage{--p6-w:50%;--p6-ratio:2100/1694}
 .p6-corps--carre{--p6-w:40%;--p6-ratio:1/1}
 .p6-gauche{grid-column:2;padding:24px 64px 0 0}
@@ -32,10 +30,13 @@
 .p6-fait__l{font-size:13px;line-height:1.3;color:var(--c-etiquette-chiffre)}
 .p6-chapitres{display:flex;flex-direction:column;gap:34px;margin-top:44px}
 .p6-chapitres .chapitre{margin:0;max-width:52ch}
-.p6-photo{grid-column:3;margin:0;width:100%;position:sticky;top:0;overflow:hidden}   /* option C retenue (26/09) : quand le texte est plus long, la photo reste en place pendant qu'on lit la fin, puis tout repart ensemble */
+.p6-photo{grid-column:3;margin:0;width:100%;position:relative;overflow:hidden}
 .p6-photo::before{content:"";display:block;aspect-ratio:var(--p6-ratio)}   /* hauteur du cadre ; l'image le remplit */
 .p6-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-
+/* à discuter (26/09) : quand le texte est plus long que la photo. B : la photo s'allonge jusqu'au bas du texte ; C : elle reste en place pendant qu'on lit la fin */
+html[data-haut="allongee"] .p6-photo{align-self:stretch}
+html[data-haut="suit"] .p6-photo{position:sticky;top:0}
+.prop-badge .ligne{flex-basis:100%;height:0}
 /* les autres photos : mosaïque justifiée, format de chaque photo respecté, rangées alternées haute / basse (script) */
 .p6-autres{padding-top:88px;padding-bottom:72px}
 .p6-autres .eyebrow{margin-bottom:18px}
@@ -65,7 +66,7 @@
   .p6-fait{padding:0 16px}
   .p6-fait:nth-child(3){grid-column:1/-1;padding-left:0;border-left:0}
   .p6-fait__v{font-size:16px}
-  .p6-photo{order:3;grid-column:1;position:relative}
+  .p6-photo,html[data-haut] .p6-photo{order:3;grid-column:1;align-self:start;position:relative}
   .p6-chapitres{order:4;margin:36px var(--gutter) 0;gap:32px}
   .p6-autres{padding-top:56px;padding-bottom:44px}
   .p6-mosaique,.p6-rang{gap:10px}
@@ -73,6 +74,17 @@
   .p6-voisin .suivant__nom{font-size:20px}
 }
 @media (prefers-reduced-motion:reduce){.p6-tuile img{transition:none}}
+</style>
+<script>(function(){var h=document.documentElement;if(!h.hasAttribute("data-haut"))h.setAttribute("data-haut","suit")})();</script>
+
+<style>
+/* Fiche P6 sur la grille large (26/09 au soir, test demandé par Axel) : la colonne de marge est calculée sur --max-large
+   au lieu de --max ; la mosaïque et les voisins passent sur 1 600 px ; le pied de page reste sur le container de 1 200 px, comme partout. La grande photo au bord droit ne change pas. */
+@media (min-width:641px){
+  html:not([data-largeur="actuelle"]) .p6-corps{grid-template-columns:max(var(--gutter), calc((100% - var(--max-large)) / 2 + var(--gutter))) minmax(0,1fr) var(--p6-w)}
+  html:not([data-largeur="actuelle"]) main .container{max-width:var(--max-large)}   /* mosaïque et voisins ; le pied de page reste sur 1 200 px (Axel, 26/09) */
+}
+html[data-panneau="off"] .prop-badge{display:none}
 </style>
 </head>
 <body>
@@ -110,29 +122,34 @@
 -3 3304 c-1 2023 2 3307 7 3311 11 6 156 -4 279 -19z"/>
 </g></symbol></svg>
 <header class="site-header">
-  <a class="logo" href="../../maquette/index.html" aria-label="Perpetual"><svg class="logo__mark" aria-hidden="true"><use href="#phi"/></svg><span class="logo__texte">Perpetual</span></a>
-  <nav class="site-nav" aria-label="Navigation"><a href="../../maquette/realisations.html" class="trait is-active">Réalisations</a><a href="#" class="trait">Engagements</a><a href="#contact" class="trait">Contact</a></nav>
+  <a class="logo" href="../maquette/index.html" aria-label="Perpetual"><svg class="logo__mark" aria-hidden="true"><use href="#phi"/></svg><span class="logo__texte">Perpetual</span></a>
+  <nav class="site-nav" aria-label="Navigation"><a href="../maquette/realisations.html" class="trait is-active">Réalisations</a><a href="#" class="trait">Engagements</a><a href="#contact" class="trait">Contact</a></nav>
 </header>
 <main>
 <article class="fiche p6">
-<div class="p6-corps p6-corps--carre">
-  <div class="p6-gauche"><div class="p6-titre"><p class="eyebrow">Bruxelles</p><h1 class="page__titre">Ateliers 118</h1></div><ol class="p6-faits" aria-label="En bref"><li class="p6-fait"><span class="p6-fait__v">Molenbeek-Saint-Jean</span><span class="p6-fait__l">Localisation</span></li><li class="p6-fait"><span class="p6-fait__v">1 200 m²</span><span class="p6-fait__l">Surface</span></li><li class="p6-fait"><span class="p6-fait__v">Ateliers</span><span class="p6-fait__l">Usage</span></li></ol><div class="p6-chapitres"><section class="chapitre"><p class="chapitre__num">01</p><h2 class="chapitre__titre">Ce que c’était</h2><p class="chapitre__texte">Une usine de colle construite dans les années 1950, devenue entrepôt à vin pendant trois décennies. Un bâtiment qui avait déjà survécu à deux vies.</p></section><section class="chapitre"><p class="chapitre__num">02</p><h2 class="chapitre__titre">Ce que nous y avons vu</h2><p class="chapitre__texte">De la lumière, des volumes, et des infrastructures trop coûteuses pour un seul occupant — donc à partager. Tout était déjà là ; il suffisait de le mettre dans le bon ordre.</p></section><section class="chapitre"><p class="chapitre__num">03</p><h2 class="chapitre__titre">Ce que c’est devenu</h2><p class="chapitre__texte">Acheté en 2016, rénové de fond en comble : isolation des façades, 300 m² de production solaire. Aujourd’hui treize ateliers de 30 à 300 m² où des artisans, des artistes, des indépendants et de petites entreprises développent leur activité — et parfois leur rêve.</p></section></div></div>
-  <figure class="p6-photo"><img src="img/ateliers-118-01-tete.jpg" alt="" decoding="async" style="object-position:50% 0%"></figure>
+<div class="p6-corps p6-corps--paysage">
+  <div class="p6-gauche"><div class="p6-titre"><p class="eyebrow">Liège</p><h1 class="page__titre">The Bank</h1></div><ol class="p6-faits" aria-label="En bref"><li class="p6-fait"><span class="p6-fait__v">Centre-ville</span><span class="p6-fait__l">Localisation</span></li><li class="p6-fait"><span class="p6-fait__v">1 100 m²</span><span class="p6-fait__l">Surface</span></li><li class="p6-fait"><span class="p6-fait__v">Logements &amp; commerce</span><span class="p6-fait__l">Usage</span></li></ol><div class="p6-chapitres"><section class="chapitre"><p class="chapitre__num">01</p><h2 class="chapitre__titre">Ce que c’était</h2><p class="chapitre__texte">Une agence bancaire de 1 100 m², au cœur de Liège.</p></section><section class="chapitre"><p class="chapitre__num">02</p><h2 class="chapitre__titre">Ce que nous y avons vu</h2><p class="chapitre__texte">Une surface unique qui pouvait en accueillir trois. Le service bancaire maintenu sur ce qu’il lui faut, une vitrine rendue au commerce, et les niveaux supérieurs libérés pour l’habitat.</p></section><section class="chapitre"><p class="chapitre__num">03</p><h2 class="chapitre__titre">Ce que c’est devenu</h2><p class="chapitre__texte">Une bijouterie de 160 m², un point Bancontact de 60 m², et un projet de logements de standing. Vendu.</p></section></div></div>
+  <figure class="p6-photo"><img src="../revue-fiche/propositions/img/the-bank-01-facade-m.jpg" srcset="../revue-fiche/propositions/img/the-bank-01-facade-m.jpg 1200w, ../revue-fiche/propositions/img/the-bank-01-facade.jpg 2100w" sizes="(max-width:640px) 100vw, 50vw" alt="" decoding="async" style="object-position:50% 100%"></figure>
 </div>
-<div class="large p6-autres"><p class="eyebrow">Photos</p><div class="p6-mosaique"><figure class="p6-tuile" style="--r:0.7497" data-r="0.7497"><img src="../selection/img/ateliers-118__ateliers-118-02.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:0.7500" data-r="0.7500"><img src="../selection/img/ateliers-118__ateliers-118-05.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:0.7500" data-r="0.7500"><img src="../selection/img/ateliers-118__ateliers-118-03.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:0.7500" data-r="0.7500"><img src="../selection/img/ateliers-118__ateliers-118-04.jpg" alt="" loading="lazy" decoding="async"></figure></div></div>
-<div class="large"><nav class="p6-voisins" aria-label="Autres projets"><a class="p6-voisin p6-voisin--prec" href="p6-community.html"><span class="eyebrow">Projet précédent</span><span class="suivant__nom trait">← Community</span></a><a class="p6-voisin p6-voisin--suiv" href="p6.html"><span class="eyebrow">Projet suivant</span><span class="suivant__nom trait">The Bank →</span></a></nav></div>
+<div class="container p6-autres"><p class="eyebrow">Photos</p><div class="p6-mosaique"><figure class="p6-tuile" style="--r:1.3333" data-r="1.3333"><img src="../directions/img/the-bank-02.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:1.3333" data-r="1.3333"><img src="../directions/img/the-bank-03.jpg" alt="" loading="lazy" decoding="async"></figure></div></div>
+<div class="container"><nav class="p6-voisins" aria-label="Autres projets"><a class="p6-voisin p6-voisin--prec" href="fiche-ateliers-118.html"><span class="eyebrow">Projet précédent</span><span class="suivant__nom trait">← Ateliers 118</span></a><a class="p6-voisin p6-voisin--suiv" href="fiche-data-box.html"><span class="eyebrow">Projet suivant</span><span class="suivant__nom trait">Data Box →</span></a></nav></div>
 <div class="p6-boite" aria-hidden="true"><img alt=""><p></p></div>
 </article>
 </main>
 <footer class="site-footer" id="contact"><div class="container footer__grid">
   <div class="footer__contact"><p class="footer__name">Julien De Dobbeleer</p><a class="footer__mail" href="mailto:julien@perpetual.be">julien@perpetual.be</a><p class="footer__addr">Perpetual, 1030 Bruxelles</p></div>
-  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="../../maquette/realisations.html">Réalisations</a><a class="trait" href="../../maquette/index.html#collectif">Collectif</a><a class="trait" href="#">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
+  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="../maquette/realisations.html">Réalisations</a><a class="trait" href="../maquette/index.html#collectif">Collectif</a><a class="trait" href="#">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
   <blockquote class="footer__quote"><p>« Le véritable voyage de découverte ne consiste pas à chercher de nouveaux paysages, mais à avoir de nouveaux yeux. »</p><cite>Marcel Proust</cite></blockquote>
   <p class="footer__legal">© 2026 Perpetual</p>
 </div></footer>
 
-<nav class="prop-badge" aria-label="Fiches"><b>P6</b><a data-fiche href="p6-ateliers-118.html" class="is-active">Ateliers 118</a><a data-fiche href="p6.html" class="">The Bank</a><a data-fiche href="p6-data-box.html" class="">Data Box</a><a data-fiche href="p6-community.html" class="">Community</a><span class="sep">|</span><a href="../selection/index.html">sélection des photos</a><a href="../../maquette/projet-the-bank.html">actuelle</a></nav>
+<nav class="prop-badge" aria-label="Fiches"><b>P6</b><a data-fiche href="fiche-ateliers-118.html" class="">Ateliers 118</a><a data-fiche href="fiche-the-bank.html" class="is-active">The Bank</a><a data-fiche href="fiche-data-box.html" class="">Data Box</a><a data-fiche href="fiche-community.html" class="">Community</a><span class="sep">|</span><a href="../revue-fiche/selection/index.html">sélection des photos</a><a href="../maquette/projet-the-bank.html">actuelle</a><span class="ligne"></span><b>Texte plus long que la photo</b><a data-haut="a" href="?haut=a">A · telle quelle</a><a data-haut="allongee" href="?haut=allongee">B · photo allongée</a><a data-haut="suit" href="?haut=suit">C · photo qui suit</a><span class="ligne"></span><b>Largeur</b><a data-larg="large" href="#">grille large</a><a data-larg="actuelle" href="#">grille 1 200 px (P6 actuelle)</a><span class="sep">|</span><a href="realisations.html?largeur=large">Réalisations</a><a href="home.html?largeur=actuelle">Home</a></nav>
 <script>
+(function(){
+  var h=document.documentElement.getAttribute('data-haut')||'', q=h?'?haut='+h:'';
+  document.querySelectorAll('.prop-badge a[data-haut]').forEach(function(a){a.classList.toggle('is-active', a.getAttribute('data-haut')===h)});
+  if(q) document.querySelectorAll('.prop-badge a[data-fiche], .p6-voisin').forEach(function(a){a.setAttribute('href', a.getAttribute('href')+q)});
+})();
 (function(){
   var m=document.querySelector('.p6-mosaique'); if(!m) return;
   var tuiles=[].slice.call(m.querySelectorAll('.p6-tuile'));
@@ -140,7 +157,7 @@
     /* chaque rangée devient un bloc à part (plus de retour à la ligne possible), largeur mesurée au sous-pixel */
     m.classList.remove('est-placee'); tuiles.forEach(function(t){m.appendChild(t)}); [].slice.call(m.querySelectorAll('.p6-rang')).forEach(function(r){r.remove()});
     var W=m.getBoundingClientRect().width-0.5, g=parseFloat(getComputedStyle(m).columnGap)||16, petit=innerWidth<641, maxN=petit?2:99;
-    var f=petit?1:Math.max(1,W/1120), hauts=petit?[210,150]:[440*f,280*f];   /* rangées alternées haute / basse ; grille large : même rythme qu'à 1 200 px (même nombre de photos par rangée) */
+    var f=document.documentElement.getAttribute("data-largeur")==="actuelle"?1:Math.max(1,W/1120), hauts=petit?[210,150]:[440*f,280*f];   /* grille large : même rythme qu'à 1 200 px */               /* rangées alternées : haute, basse */
     var i=0, rang=0;
     while(i<tuiles.length){
       var cible=hauts[rang%2], somme=0, j=i;
@@ -162,5 +179,13 @@
     if(e.key==='Escape') boite.classList.remove('ouverte'); if(e.key==='ArrowRight') montrer(cur+1); if(e.key==='ArrowLeft') montrer(cur-1); });
 })();
 </script>
+
+<script>(function(){
+  var h=document.documentElement,q=location.search,cur=h.getAttribute("data-largeur")==="actuelle"?"actuelle":"large";
+  /* les liens entre fiches gardent tous les réglages */
+  document.querySelectorAll(".prop-badge a[data-fiche], .p6-voisin").forEach(function(a){a.setAttribute("href",a.getAttribute("href").split("?")[0]+q)});
+  document.querySelectorAll(".prop-badge a[data-larg]").forEach(function(a){var v=a.getAttribute("data-larg");a.classList.toggle("is-active",v===cur);
+    a.addEventListener("click",function(e){e.preventDefault();var p=new URLSearchParams(location.search);if(v==="actuelle")p.set("largeur","actuelle");else p.delete("largeur");var s=p.toString();location.href=location.pathname+(s?"?"+s:"")})});
+})();</script>
 </body>
 </html>

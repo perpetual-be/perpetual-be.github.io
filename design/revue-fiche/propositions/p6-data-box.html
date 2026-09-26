@@ -16,8 +16,10 @@
 
 .prop-badge{flex-wrap:wrap;max-width:calc(100vw - 32px)}
 .prop-badge .sep{color:var(--filet)}
-/* grille : marge = celle du container de 1200 px (en % de la page, donc barre de défilement comprise) | texte | photo au bord droit */
-.p6-corps{display:grid;grid-template-columns:max(var(--gutter), calc((100% - var(--max)) / 2 + var(--gutter))) minmax(0,1fr) var(--p6-w);align-items:start}
+/* grille large (décision d'Axel du 26/09 au soir, perpetual-largeur.md §3) : marge = celle de la grille de 1 600 px (--max-large),
+   en % de la page, donc barre de défilement comprise ; le texte part du bord du logo | texte | photo au bord droit */
+.p6-corps{display:grid;grid-template-columns:max(var(--gutter), calc((100% - var(--max-large)) / 2 + var(--gutter))) minmax(0,1fr) var(--p6-w);align-items:start}
+/* le pied de page reste sur le container de 1 200 px, comme sur la Home (Axel, 26/09 au soir) : seuls la mosaïque et les voisins passent sur la grille large */
 .p6-corps--paysage{--p6-w:50%;--p6-ratio:2100/1694}
 .p6-corps--carre{--p6-w:40%;--p6-ratio:1/1}
 .p6-gauche{grid-column:2;padding:24px 64px 0 0}
@@ -30,13 +32,10 @@
 .p6-fait__l{font-size:13px;line-height:1.3;color:var(--c-etiquette-chiffre)}
 .p6-chapitres{display:flex;flex-direction:column;gap:34px;margin-top:44px}
 .p6-chapitres .chapitre{margin:0;max-width:52ch}
-.p6-photo{grid-column:3;margin:0;width:100%;position:relative;overflow:hidden}
+.p6-photo{grid-column:3;margin:0;width:100%;position:sticky;top:0;overflow:hidden}   /* option C retenue (26/09) : quand le texte est plus long, la photo reste en place pendant qu'on lit la fin, puis tout repart ensemble */
 .p6-photo::before{content:"";display:block;aspect-ratio:var(--p6-ratio)}   /* hauteur du cadre ; l'image le remplit */
 .p6-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-/* à discuter (26/09) : quand le texte est plus long que la photo. B : la photo s'allonge jusqu'au bas du texte ; C : elle reste en place pendant qu'on lit la fin */
-html[data-haut="allongee"] .p6-photo{align-self:stretch}
-html[data-haut="suit"] .p6-photo{position:sticky;top:0}
-.prop-badge .ligne{flex-basis:100%;height:0}
+
 /* les autres photos : mosaïque justifiée, format de chaque photo respecté, rangées alternées haute / basse (script) */
 .p6-autres{padding-top:88px;padding-bottom:72px}
 .p6-autres .eyebrow{margin-bottom:18px}
@@ -66,7 +65,7 @@ html[data-haut="suit"] .p6-photo{position:sticky;top:0}
   .p6-fait{padding:0 16px}
   .p6-fait:nth-child(3){grid-column:1/-1;padding-left:0;border-left:0}
   .p6-fait__v{font-size:16px}
-  .p6-photo,html[data-haut] .p6-photo{order:3;grid-column:1;align-self:start;position:relative}
+  .p6-photo{order:3;grid-column:1;position:relative}
   .p6-chapitres{order:4;margin:36px var(--gutter) 0;gap:32px}
   .p6-autres{padding-top:56px;padding-bottom:44px}
   .p6-mosaique,.p6-rang{gap:10px}
@@ -118,10 +117,10 @@ html[data-haut="suit"] .p6-photo{position:sticky;top:0}
 <article class="fiche p6">
 <div class="p6-corps p6-corps--paysage">
   <div class="p6-gauche"><div class="p6-titre"><p class="eyebrow">Rochefort</p><h1 class="page__titre">Data Box</h1></div><ol class="p6-faits" aria-label="En bref"><li class="p6-fait"><span class="p6-fait__v">Jemelle</span><span class="p6-fait__l">Localisation</span></li><li class="p6-fait"><span class="p6-fait__v">4 200 m²</span><span class="p6-fait__l">Surface</span></li><li class="p6-fait"><span class="p6-fait__v">Site technique</span><span class="p6-fait__l">Usage</span></li></ol><div class="p6-chapitres"><section class="chapitre"><p class="chapitre__num">01</p><h2 class="chapitre__titre">Ce que c’était</h2><p class="chapitre__texte">Un site technique construit pour un seul usage, occupé par un opérateur télécom.</p></section><section class="chapitre"><p class="chapitre__num">02</p><h2 class="chapitre__titre">Ce que nous y avons vu</h2><p class="chapitre__texte">Du temps. Le bâtiment reste occupé par Proximus jusqu’en 2031. Nos manières de travailler changent vite : décider aujourd’hui de ce que ce lieu sera dans six ans serait la seule erreur.</p></section><section class="chapitre"><p class="chapitre__num">03</p><h2 class="chapitre__titre">Ce que c’est devenu</h2><p class="chapitre__texte">Un site sécurisé jusqu’en 2031, dont la destination future reste ouverte.</p></section></div></div>
-  <figure class="p6-photo"><img src="img/data-box-02-tete.jpg" alt="" decoding="async" style="object-position:50% 50%"></figure>
+  <figure class="p6-photo"><img src="img/data-box-0068-tete.jpg" alt="" decoding="async" style="object-position:60% 50%"></figure>
 </div>
-<div class="container p6-autres"><p class="eyebrow">Photos</p><div class="p6-mosaique"><figure class="p6-tuile" style="--r:1.7778" data-r="1.7778" data-legende="Les bâtiments, vus du drone"><img src="../selection/img/data-box__dji_fly_20260830_161856_0076_1788102599255_photo.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:1.7778" data-r="1.7778" data-legende="Vue oblique du site"><img src="../selection/img/data-box__dji_fly_20260830_161008_0063_1788102734855_photo.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:1.7778" data-r="1.7778" data-legende="Le site dans son environnement, avec les voies"><img src="../selection/img/data-box__dji_fly_20260830_161508_0068_1788102633507_photo.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:1.7778" data-r="1.7778" data-legende="L’autre côté du site"><img src="../selection/img/data-box__dji_fly_20260830_161724_0073_1788102611239_photo.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:1.7778" data-r="1.7778" data-legende="Le site vu du dessus, entre les bois et les voies"><img src="../selection/img/data-box__dji_fly_20260830_161802_0075_1788102603815_photo.jpg" alt="" loading="lazy" decoding="async"></figure></div></div>
-<div class="container"><nav class="p6-voisins" aria-label="Autres projets"><a class="p6-voisin p6-voisin--prec" href="p6.html"><span class="eyebrow">Projet précédent</span><span class="suivant__nom trait">← The Bank</span></a><a class="p6-voisin p6-voisin--suiv" href="p6-community.html"><span class="eyebrow">Projet suivant</span><span class="suivant__nom trait">Community →</span></a></nav></div>
+<div class="large p6-autres"><p class="eyebrow">Photos</p><div class="p6-mosaique"><figure class="p6-tuile" style="--r:1.7778" data-r="1.7778"><img src="../selection/img/data-box__dji_fly_20260830_161802_0075_1788102603815_photo.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:1.7778" data-r="1.7778"><img src="../selection/img/data-box__data-box-02.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:1.7778" data-r="1.7778"><img src="../selection/img/data-box__dji_fly_20260830_161008_0063_1788102734855_photo.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:1.7778" data-r="1.7778"><img src="../selection/img/data-box__dji_fly_20260830_161856_0076_1788102599255_photo.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:1.7778" data-r="1.7778"><img src="../selection/img/data-box__dji_fly_20260830_161724_0073_1788102611239_photo.jpg" alt="" loading="lazy" decoding="async"></figure></div></div>
+<div class="large"><nav class="p6-voisins" aria-label="Autres projets"><a class="p6-voisin p6-voisin--prec" href="p6.html"><span class="eyebrow">Projet précédent</span><span class="suivant__nom trait">← The Bank</span></a><a class="p6-voisin p6-voisin--suiv" href="p6-community.html"><span class="eyebrow">Projet suivant</span><span class="suivant__nom trait">Community →</span></a></nav></div>
 <div class="p6-boite" aria-hidden="true"><img alt=""><p></p></div>
 </article>
 </main>
@@ -132,13 +131,8 @@ html[data-haut="suit"] .p6-photo{position:sticky;top:0}
   <p class="footer__legal">© 2026 Perpetual</p>
 </div></footer>
 
-<nav class="prop-badge" aria-label="Fiches"><b>P6</b><a data-fiche href="p6-ateliers-118.html" class="">Ateliers 118</a><a data-fiche href="p6.html" class="">The Bank</a><a data-fiche href="p6-data-box.html" class="is-active">Data Box</a><a data-fiche href="p6-community.html" class="">Community</a><span class="sep">|</span><a href="../selection/index.html">sélection des photos</a><a href="../../maquette/projet-the-bank.html">actuelle</a><span class="ligne"></span><b>Texte plus long que la photo</b><a data-haut="" href="?">A · telle quelle</a><a data-haut="allongee" href="?haut=allongee">B · photo allongée</a><a data-haut="suit" href="?haut=suit">C · photo qui suit</a></nav>
+<nav class="prop-badge" aria-label="Fiches"><b>P6</b><a data-fiche href="p6-ateliers-118.html" class="">Ateliers 118</a><a data-fiche href="p6.html" class="">The Bank</a><a data-fiche href="p6-data-box.html" class="is-active">Data Box</a><a data-fiche href="p6-community.html" class="">Community</a><span class="sep">|</span><a href="../selection/index.html">sélection des photos</a><a href="../../maquette/projet-the-bank.html">actuelle</a></nav>
 <script>
-(function(){
-  var h=document.documentElement.getAttribute('data-haut')||'', q=h?'?haut='+h:'';
-  document.querySelectorAll('.prop-badge a[data-haut]').forEach(function(a){a.classList.toggle('is-active', a.getAttribute('data-haut')===h)});
-  if(q) document.querySelectorAll('.prop-badge a[data-fiche], .p6-voisin').forEach(function(a){a.setAttribute('href', a.getAttribute('href')+q)});
-})();
 (function(){
   var m=document.querySelector('.p6-mosaique'); if(!m) return;
   var tuiles=[].slice.call(m.querySelectorAll('.p6-tuile'));
@@ -146,7 +140,7 @@ html[data-haut="suit"] .p6-photo{position:sticky;top:0}
     /* chaque rangée devient un bloc à part (plus de retour à la ligne possible), largeur mesurée au sous-pixel */
     m.classList.remove('est-placee'); tuiles.forEach(function(t){m.appendChild(t)}); [].slice.call(m.querySelectorAll('.p6-rang')).forEach(function(r){r.remove()});
     var W=m.getBoundingClientRect().width-0.5, g=parseFloat(getComputedStyle(m).columnGap)||16, petit=innerWidth<641, maxN=petit?2:99;
-    var hauts=petit?[210,150]:[440,280];               /* rangées alternées : haute, basse */
+    var f=petit?1:Math.max(1,W/1120), hauts=petit?[210,150]:[440*f,280*f];   /* rangées alternées haute / basse ; grille large : même rythme qu'à 1 200 px (même nombre de photos par rangée) */
     var i=0, rang=0;
     while(i<tuiles.length){
       var cible=hauts[rang%2], somme=0, j=i;
@@ -161,7 +155,7 @@ html[data-haut="suit"] .p6-photo{position:sticky;top:0}
   }
   placer(); var to, lw=innerWidth; window.addEventListener('resize',function(){ if(innerWidth===lw) return; lw=innerWidth; clearTimeout(to); to=setTimeout(placer,80)});
   var boite=document.querySelector('.p6-boite'), cur=0;
-  function montrer(k){cur=(k+tuiles.length)%tuiles.length; var t=tuiles[cur]; boite.querySelector('img').src=t.querySelector('img').currentSrc||t.querySelector('img').src; boite.querySelector('p').textContent=t.dataset.legende+'  ·  '+(cur+1)+' / '+tuiles.length; boite.classList.add('ouverte')}
+  function montrer(k){cur=(k+tuiles.length)%tuiles.length; var t=tuiles[cur]; boite.querySelector('img').src=t.querySelector('img').currentSrc||t.querySelector('img').src; boite.querySelector('p').textContent=(cur+1)+' / '+tuiles.length;   /* pas de légendes (Axel, 26/09) : le compteur seul */ boite.classList.add('ouverte')}
   tuiles.forEach(function(t,k){t.addEventListener('click',function(){montrer(k)})});
   boite.addEventListener('click',function(){boite.classList.remove('ouverte')});
   document.addEventListener('keydown',function(e){ if(!boite.classList.contains('ouverte')) return;

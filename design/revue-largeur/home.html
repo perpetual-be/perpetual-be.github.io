@@ -9,45 +9,51 @@
 <link rel="icon" href="../../public/favicon.svg">
 
 <style>
-/* Grille large (décisions d170925a et d170926c) : le contenu va de gouttière à gouttière, 1 600 px au plus,
+/* Grille large (décisions d170925a, d170926c, d170926h) : le contenu va de gouttière à gouttière, 1 600 px au plus,
    comme l'en-tête et la vue Réalisations ; les textes gardent une mesure lisible. */
 html:not([data-largeur="actuelle"]) .container{max-width:var(--max-large)}
 html:not([data-largeur="actuelle"]) .hero__title,html:not([data-largeur="actuelle"]) .hero__text{max-width:var(--max-large)}
-/* deux colonnes de paragraphes : la seconde reste calée sur le 3e chiffre (50 % + 28 px) ;
-   chaque paragraphe garde ~70 caractères au lieu de s'étirer sur toute la colonne */
 html:not([data-largeur="actuelle"]) .hero__text p{max-width:34em}
-/* liste des 4 : l'aperçu garde sa taille (440 × 550) et se cale au bord droit du contenu */
-html:not([data-largeur="actuelle"]) .four__preview{width:100%;max-width:440px;justify-self:end}
-/* ?liste=pres (défaut) : la liste occupe tout l'espace jusqu'à l'aperçu, 64 px d'écart comme avant */
-@media (min-width:641px){
-  html:not([data-largeur="actuelle"]):not([data-liste="bord"]) .four{grid-template-columns:minmax(0,1fr) 440px;gap:64px}
-}
-/* Collectif — ?collectif=deux (défaut) : deux colonnes comme l'accroche, la chute sous la colonne de droite ;
-   ?collectif=enonce : première phrase en énoncé serif à gauche, le reste à droite (comme le programme agences) ;
-   ?collectif=seul : une colonne de 64 ch, comme dans la première version du prototype */
-@media (min-width:641px){
-  html:not([data-largeur="actuelle"]):not([data-collectif="enonce"]):not([data-collectif="seul"]) .collectif__text{max-width:none;columns:2;column-gap:56px}
-  html:not([data-largeur="actuelle"]):not([data-collectif="enonce"]):not([data-collectif="seul"]) .collectif__text p{max-width:34em;break-inside:avoid}
-  html:not([data-largeur="actuelle"]):not([data-collectif="enonce"]):not([data-collectif="seul"]) .collectif__text p:nth-child(4){break-before:column}
-  html:not([data-largeur="actuelle"])[data-collectif="enonce"] .collectif__text{max-width:none;display:grid;grid-template-columns:1fr 1fr;column-gap:56px;align-items:start}
-  html:not([data-largeur="actuelle"])[data-collectif="enonce"] .collectif__text p{grid-column:2;max-width:34em}
-  html:not([data-largeur="actuelle"])[data-collectif="enonce"] .collectif__text p:first-child{grid-column:1;grid-row:1 / span 5;font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.18;letter-spacing:-.01em;max-width:22ch;margin:0}
-}
-/* carte : deux moitiés, le texte commence sur la même verticale que la 2e colonne de paragraphes */
-@media (min-width:641px){
-  html:not([data-largeur="actuelle"]) .carte{grid-template-columns:1fr 1fr;gap:56px}
-  html:not([data-largeur="actuelle"]) .carte__fig{max-width:640px}
-}
-/* logos partenaires : répartis sur toute la largeur de la grille, comme ils l'étaient sur 1 200 px */
-@media (min-width:641px){ html:not([data-largeur="actuelle"]) .partners{justify-content:space-between} }
-/* pied de page : sur la grille large, comme sur Réalisations */
 html:not([data-largeur="actuelle"]) .site-footer>.container{max-width:var(--max-large)}
+@media (min-width:641px){
+  /* Chiffres — ?chiffres=dix (défaut) : les 4 chiffres sur 10 colonnes de 12, les 2 dernières laissées aux anneaux ;
+     la « seconde colonne » de la page (paragraphes, texte de la carte, Collectif) démarre sur le 3e chiffre (5/12 + 28 px).
+     ?chiffres=larges : les 4 chiffres sur toute la largeur, seconde colonne à 50 % + 28 px (prototype précédent). */
+  html:not([data-largeur="actuelle"]):not([data-chiffres="larges"]) .stats{max-width:calc(100% * 10 / 12)}
+  html:not([data-largeur="actuelle"]):not([data-chiffres="larges"]) .hero__text{grid-template-columns:calc(100% * 5 / 12 - 27px) minmax(0,1fr)}
+  html:not([data-largeur="actuelle"]):not([data-chiffres="larges"]) .carte{grid-template-columns:calc(100% * 5 / 12 - 27px) minmax(0,1fr);gap:56px}
+  html:not([data-largeur="actuelle"])[data-chiffres="larges"] .carte{grid-template-columns:1fr 1fr;gap:56px}
+  html:not([data-largeur="actuelle"])[data-chiffres="larges"] .carte__fig{max-width:640px}
 
-.prop-badge{position:fixed;left:12px;bottom:12px;z-index:9999;display:flex;gap:10px;align-items:center;padding:7px 12px;background:#fff;border:1px solid #E4E0D8;font:13px/1.3 var(--sans);color:var(--c-texte)}
+  /* Liste des 4 — ?liste=haute (défaut) : l'aperçu garde sa largeur (440 px) et va d'un filet à l'autre de la section, au bord droit du contenu ;
+     ?liste=fenetre : idem, jusqu'au bord de la fenêtre ; ?liste=pres : 440 × 550, collé à la liste (64 px). */
+  html:not([data-largeur="actuelle"]) .four{grid-template-columns:minmax(0,1fr) 440px;gap:64px}
+  html:not([data-largeur="actuelle"]) .four__preview{width:100%;max-width:440px;justify-self:end}
+  html:not([data-largeur="actuelle"]):not([data-liste="pres"]) .section--projets{position:relative}
+  html:not([data-largeur="actuelle"]):not([data-liste="pres"]) .four__preview{position:absolute;top:0;bottom:0;height:auto;aspect-ratio:auto;max-width:none;
+      right:max(var(--gutter), calc((100% - var(--max-large)) / 2 + var(--gutter)));width:440px}
+  html:not([data-largeur="actuelle"])[data-liste="fenetre"] .four__preview{right:0;width:calc(440px + max(var(--gutter), calc((100% - var(--max-large)) / 2 + var(--gutter))))}
+
+  /* Collectif — ?collectif=enonce (défaut, choix d'Axel du 26/09) : première phrase en énoncé serif à gauche, le reste à droite,
+     comme le programme agences de Réalisations ; ?collectif=deux : deux colonnes, la chute sous la colonne de droite. */
+  html:not([data-largeur="actuelle"]):not([data-collectif="deux"]) .collectif__text{max-width:none;display:grid;grid-template-columns:1fr 1fr;column-gap:56px;align-items:start}
+  html:not([data-largeur="actuelle"]):not([data-collectif="deux"]):not([data-chiffres="larges"]) .collectif__text{grid-template-columns:calc(100% * 5 / 12 - 27px) minmax(0,1fr)}
+  html:not([data-largeur="actuelle"]):not([data-collectif="deux"]) .collectif__text p{grid-column:2;max-width:34em}
+  html:not([data-largeur="actuelle"]):not([data-collectif="deux"]) .collectif__text p:first-child{grid-column:1;grid-row:1 / span 5;font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.18;letter-spacing:-.01em;max-width:22ch;margin:0}
+  html:not([data-largeur="actuelle"])[data-collectif="deux"] .collectif__text{max-width:none;columns:2;column-gap:56px}
+  html:not([data-largeur="actuelle"])[data-collectif="deux"] .collectif__text p{max-width:34em;break-inside:avoid}
+  html:not([data-largeur="actuelle"])[data-collectif="deux"] .collectif__text p:nth-child(4){break-before:column}
+
+  /* logos partenaires : répartis sur toute la largeur de la grille */
+  html:not([data-largeur="actuelle"]) .partners{justify-content:space-between}
+}
+
+.prop-badge{position:fixed;left:12px;bottom:12px;z-index:9999;display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:calc(100vw - 24px);padding:7px 12px;background:#fff;border:1px solid #E4E0D8;font:13px/1.3 var(--sans);color:var(--c-texte)}
 .prop-badge a{color:var(--c-meta);text-decoration:none}
 .prop-badge a.is-active{color:var(--c-texte);font-weight:500;border-bottom:1px solid currentColor}
+.prop-badge .sep{color:#C9C3B8}
 html[data-panneau="off"] .prop-badge{display:none}
-@media (max-width:640px){.prop-badge{left:8px;right:8px;bottom:8px;font-size:12px;flex-wrap:wrap}}
+@media (max-width:640px){.prop-badge{left:8px;right:8px;bottom:8px;font-size:12px}}
 </style>
 </head>
 <body>
@@ -174,16 +180,18 @@ html[data-panneau="off"] .prop-badge{display:none}
 
 <div class="prop-badge" aria-label="Comparaison des largeurs">
   <span>Home</span>
-  <a href="home.html" data-l="large">grille large</a>
-  <a href="home.html?largeur=actuelle" data-l="actuelle">grille actuelle (1 200 px)</a>
-  <span style="color:#C9C3B8">|</span><span>liste :</span>
-  <a href="#" data-q="liste" data-v="pres">photo près</a><a href="#" data-q="liste" data-v="bord">photo au bord</a>
-  <span style="color:#C9C3B8">|</span><span>collectif :</span>
-  <a href="#" data-q="collectif" data-v="deux">deux colonnes</a><a href="#" data-q="collectif" data-v="enonce">énoncé</a><a href="#" data-q="collectif" data-v="seul">une colonne</a>
+  <a href="#" data-l="large">grille large</a><a href="#" data-l="actuelle">grille actuelle (1 200 px)</a>
+  <span class="sep">|</span><span>chiffres :</span>
+  <a href="#" data-q="chiffres" data-v="dix">sur 10 colonnes</a><a href="#" data-q="chiffres" data-v="larges">toute la largeur</a>
+  <span class="sep">|</span><span>liste :</span>
+  <a href="#" data-q="liste" data-v="haute">photo haute</a><a href="#" data-q="liste" data-v="fenetre">jusqu’au bord de la fenêtre</a><a href="#" data-q="liste" data-v="pres">440 × 550</a>
+  <span class="sep">|</span><span>collectif :</span>
+  <a href="#" data-q="collectif" data-v="enonce">énoncé</a><a href="#" data-q="collectif" data-v="deux">deux colonnes</a>
 </div>
-<script>(function(){var l=document.documentElement.getAttribute("data-largeur")==="actuelle"?"actuelle":"large";document.querySelectorAll(".prop-badge [data-l]").forEach(function(a){if(a.getAttribute("data-l")===l)a.classList.add("is-active")});
-var h=document.documentElement,D={liste:"pres",collectif:"deux"};
-document.querySelectorAll(".prop-badge [data-q]").forEach(function(a){var k=a.getAttribute("data-q"),v=a.getAttribute("data-v");if((h.getAttribute("data-"+k)||D[k])===v)a.classList.add("is-active");
-a.addEventListener("click",function(e){e.preventDefault();var p=new URLSearchParams(location.search);if(v===D[k])p.delete(k);else p.set(k,v);var q=p.toString();location.href=location.pathname+(q?"?"+q:"")})})})();</script>
+<script>(function(){var h=document.documentElement,D={largeur:"large",chiffres:"dix",liste:"haute",collectif:"enonce"};
+function lien(a,k,v){if((h.getAttribute("data-"+k)||D[k])===v)a.classList.add("is-active");
+a.addEventListener("click",function(e){e.preventDefault();var p=new URLSearchParams(location.search);if(v===D[k])p.delete(k);else p.set(k,v);var q=p.toString();location.href=location.pathname+(q?"?"+q:"")})}
+document.querySelectorAll(".prop-badge [data-l]").forEach(function(a){lien(a,"largeur",a.getAttribute("data-l"))});
+document.querySelectorAll(".prop-badge [data-q]").forEach(function(a){lien(a,a.getAttribute("data-q"),a.getAttribute("data-v"))})})();</script>
 </body>
 </html>
