@@ -1,8 +1,9 @@
 // Vérifications de la maquette (Playwright + Chromium) : premier écran (structure F), débordement, effet de chaque bascule,
-// valeurs figées et alignement (gel de la Home du 23/09 : signature, espacements, pied de page), en-tête (Φ, wordmark), carte des réalisations,
-// logos partenaires, photo 2800 px, srcset de l'aperçu des 4, mode présentation, page sans JavaScript, polices, contrastes ; puis la fiche The Bank et la vue
-// Réalisations (débordement horizontal, polices, gouttière du titre, premier écran et photo de tête, titres de chapitre, paire de photos, rythme, cartes et leurs ancres, srcset et agrandissement des photos,
-// sous-titre en liens, programme agences, galerie — ordre, lieu, voile — et mobile).
+// valeurs figées et alignement (gel de la Home du 23/09 : signature, espacements, pied de page), en-tête (Φ, wordmark, limite de 1600 px), carte des réalisations,
+// logos partenaires, photo 2800 px, srcset de l'aperçu des 4, mode présentation, page sans JavaScript, polices, contrastes ; puis la fiche The Bank
+// (débordement horizontal, polices, gouttière du titre, premier écran et photo de tête, titres de chapitre, paire de photos, rythme) et la vue Réalisations,
+// proposition P2 (débordement et erreurs, alignement sur la grille large, ouverture, blocs des 4 projets, programme agences, rangée en boucle, photos d'un bien,
+// visionneuse, bascules 22 et 23, mobile, sans JavaScript).
 // Usage, depuis la racine du dépôt : NODE_PATH=$(npm root -g) node design/maquette/src/check.mjs
 import path from 'node:path';
 import fs from 'node:fs';
@@ -23,16 +24,19 @@ const browser = await chromium.launch(fs.existsSync(CHROMIUM_PREINSTALLE) ? { ex
 async function ouvrir(etat, viewport = [1440, 900], options = {}, page = 'index') {
   const ctx = await browser.newContext({ viewport: { width: viewport[0], height: viewport[1] }, reducedMotion: 'reduce', ...options });
   const p = await ctx.newPage();
+  const erreurs = [];   // erreurs de script et de console (un fichier manquant en file:// en est une)
+  p.on('pageerror', e => erreurs.push(e.message));
+  p.on('console', m => { if (m.type() === 'error') erreurs.push(m.text()); });
   await p.goto(URL(page) + (etat ? '?' + etat : ''), { waitUntil: 'networkidle' });
   await p.evaluate(() => document.fonts.ready);
-  return { p, ctx };
+  return { p, ctx, erreurs };
 }
 const style = (p, sel, prop) => p.evaluate(([s, pr]) => { const el = document.querySelector(s); return el ? getComputedStyle(el)[pr] : null; }, [sel, prop]);
 const rect = (p, sel) => p.evaluate(s => { const el = document.querySelector(s); if (!el) return null; const r = el.getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width), height: Math.round(r.height) }; }, sel);
 const largeur = (p) => p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 // text-wrap: pretty — Chromium l'expose en text-wrap (raccourci) ou text-wrap-style selon la version
 const pretty = (p, sel) => p.evaluate(s => { const c = getComputedStyle(document.querySelector(s)); return c.textWrapStyle === 'pretty' || c.textWrap === 'pretty'; }, sel);
-// Photos des cartes (vue Réalisations) et de l'aperçu de la liste des 4 (Home) : clé (<clé>-s.jpg → clé), srcset, sizes, source servie, point focal posé en style,
+// Photos des blocs des 4 projets (vue Réalisations) et de l'aperçu de la liste des 4 (Home) : clé (<clé>-s.jpg → clé), srcset, sizes, source servie, point focal posé en style,
 // cadre (boîte de mise en page, insensible au zoom du survol) et l'échelle du rendu en object-fit: cover à 1× — max(cadre ÷ pixels du fichier servi) sur les deux axes,
 // > 1 = photo agrandie. Les pixels sont lus dans l'en-tête JPEG du fichier servi : naturalWidth est corrigé de la densité sur une <img srcset>, il ne convient pas.
 // Les images paresseuses sont amenées à l'écran et attendues.
@@ -64,7 +68,7 @@ function verifierSrcset(liste, nom) {
   for (const i of liste) {
     const grand = fs.existsSync(path.join(IMG_DIR, `${i.cle}.jpg`));
     ok(grand, `${nom} : ${i.cle}.jpg (1800 px) présent dans design/directions/img/` + (grand ? '' : ` — à produire : node design/directions/src/reduire-photos.mjs --grand <original ${i.cle}.jpg>, puis rebâtir`));
-    if (grand) ok(new RegExp(`^[^,]*/${i.cle}-s\\.jpg \\d+w, [^,]*/${i.cle}\\.jpg \\d+w$`).test(i.srcset) && /px$/.test(i.sizes), `${nom} : ${i.cle} — srcset 800w / 1800w et sizes (${i.sizes})`);
+    if (grand) ok(new RegExp(`^[^,]*/${i.cle}-s\\.jpg \\d+w, [^,]*/${i.cle}\\.jpg \\d+w$`).test(i.srcset) && /(px|\))$/.test(i.sizes), `${nom} : ${i.cle} — srcset 800w / 1800w et sizes (${i.sizes})`);
     else ok(!i.srcset && !i.sizes, `${nom} : ${i.cle} — sans 1800 px, l'<img> n'a que le 800 px (pas de srcset)`);
   }
 }
@@ -170,7 +174,8 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok((await style(p, '.section--projets', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.four__row').length)) === 4, 'section projets : liste des 4 (bascule 11 figée)');
   ok((await style(p, '.partner__couleur', 'display')) === 'block' && !(await p.evaluate(() => document.querySelector('.partner__encre'))), 'logos partenaires : couleur, figés (plus d’encre inline)');
   const cles = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle));
-  ok(cles.join(' ') === 'cadrage carte', 'panneau : ' + cles.join(' · ') + ' (20 et 21 retirées)');
+  const inactives = await p.evaluate(() => [...document.querySelectorAll('.mq__b.is-inactif')].map(f => f.dataset.cle));
+  ok(cles.join(' ') === 'cadrage carte papier bas' && inactives.join(' ') === 'papier bas', 'panneau : ' + cles.join(' · ') + ' (20 et 21 retirées ; 22 et 23, vue Réalisations, sans effet sur la Home)');
   ok(await pretty(p, '.four__line'), 'liste des 4 : text-wrap: pretty sur les lignes');
   // aperçu de la liste des 4 : srcset 800 / 1800 px (revue du 23/09) ; à 1×, aucune photo agrandie — Data Box 02 (800 × 450, cadre 440 × 550) reçoit le 1800 px
   const apercu = await photosImg(p, '.four__preview img');
@@ -184,6 +189,13 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok(liens.nav === 'realisations.html' && liens.plan === 'realisations.html' && liens.tous === 'realisations.html' && liens.quatre.join(' ') === 'realisations.html#ateliers-118 projet-the-bank.html realisations.html#data-box realisations.html#community',
     'liens : navigation, plan et « Toutes les réalisations → » vers realisations.html ; The Bank vers sa fiche, les trois autres vers leur ancre');
   ok((await p.evaluate(() => [...document.querySelectorAll('.mq__b[data-cle="cadrage"] input')].map(i => i.value).join(' '))) === 'centre haut', 'bascule 9c : centre / haut seulement (« bas » retiré)');
+  await ctx.close();
+}
+{
+  // en-tête (26/09) : la même limite que le contenu large, 1600 px gouttière comprise — pleine largeur jusqu'à 1600 px de fenêtre, centré au-delà
+  const { p, ctx } = await ouvrir('', [1920, 1080]);
+  const hd = await p.evaluate(() => ({ w: Math.round(document.querySelector('.site-header').getBoundingClientRect().width), logo: Math.round(document.querySelector('.logo').getBoundingClientRect().left), nav: Math.round(document.querySelector('.site-nav').getBoundingClientRect().right) }));
+  ok(hd.w === 1600 && hd.logo === 200 && hd.nav === 1720, `en-tête à 1920 : limité à 1600 px (${hd.w}), logo à ${hd.logo} px, liens jusqu'à ${hd.nav} px`);
   await ctx.close();
 }
 {
@@ -344,17 +356,16 @@ for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
   ok(suivant.href === 'realisations.html#data-box' && suivant.texte === 'Projet suivant — Data Box →' && suivant.color === OR_FONCE && suivant.bloc === 'block', `« ${suivant.texte} » → ${suivant.href}, or foncé, l'étiquette au-dessus du nom`);
   ok(await p.evaluate(() => getComputedStyle(document.querySelector('.site-footer')).backgroundColor === 'rgb(249, 249, 246)' && document.querySelector('.footer__nav a').getAttribute('href') === 'realisations.html' && document.querySelector('.footer__nav a[href="index.html#collectif"]') !== null), 'pied de page papier ; plan vers realisations.html, Collectif vers index.html#collectif');
   const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '')).join(' · '));
-  ok(panneau === 'cadrage (sans effet) · carte (sans effet)', 'panneau : ' + panneau + ' (bascule 20 retirée)');
+  ok(panneau === 'cadrage (sans effet) · carte (sans effet) · papier (sans effet) · bas (sans effet)', 'panneau : ' + panneau + ' (bascule 20 retirée)');
   await ctx.close();
 }
 // gouttière du titre de page (revue du 23/09) : .page-head est un .container, son padding latéral doit rester celui de .container
+// (la vue Réalisations n'a plus de .page-head : son alignement sur la grille large est vérifié en 9)
 for (const [w, h] of [[1440, 900], [390, 844]]) {
-  for (const page of [FICHE, REAL]) {
-    const { p, ctx } = await ouvrir('', [w, h], {}, page);
-    const g = await p.evaluate(() => ({ titre: Math.round(document.querySelector('.page__titre').getBoundingClientRect().left), eyebrow: Math.round(document.querySelector('.eyebrow').getBoundingClientRect().left), pad: getComputedStyle(document.querySelector('.page-head')).paddingLeft }));
-    ok(g.titre === g.eyebrow && g.titre === (w === 1440 ? 160 : 20), `${page} · ${w} : .page__titre au même x que la première .eyebrow (${g.titre} = ${g.eyebrow}, padding latéral ${g.pad})`);
-    await ctx.close();
-  }
+  const { p, ctx } = await ouvrir('', [w, h], {}, FICHE);
+  const g = await p.evaluate(() => ({ titre: Math.round(document.querySelector('.page__titre').getBoundingClientRect().left), eyebrow: Math.round(document.querySelector('.eyebrow').getBoundingClientRect().left), pad: getComputedStyle(document.querySelector('.page-head')).paddingLeft }));
+  ok(g.titre === g.eyebrow && g.titre === (w === 1440 ? 160 : 20), `${FICHE} · ${w} : .page__titre au même x que la première .eyebrow (${g.titre} = ${g.eyebrow}, padding latéral ${g.pad})`);
+  await ctx.close();
 }
 // citation du pied de page : espaces insécables (U+00A0) après « et avant », sur les trois pages
 for (const page of ['index', FICHE, REAL]) {
@@ -393,82 +404,308 @@ for (const page of ['index', FICHE, REAL]) {
   await ctx.close();
 }
 
-console.log('\n9 · Vue Réalisations');
-for (const [w, h] of [[1440, 900], [1366, 703], [390, 844]]) {
-  const { p, ctx } = await ouvrir('', [w, h], {}, REAL);
-  ok((await largeur(p)) === 0, `réalisations · ${w} : aucun débordement horizontal`); await ctx.close();
-}
+console.log('\n9 · Vue Réalisations (proposition P2, revue du 26/09)');
 const donnees = JSON.parse(fs.readFileSync(path.resolve(MAQ, '../../data/projects.json'), 'utf8'));
-const galerieAttendue = donnees.filter(x => x.kind === 'gallery').sort((a, b) => a.order - b.order);
+const parOrdre = kind => donnees.filter(x => x.kind === kind).sort((a, b) => a.order - b.order);
+// la rangée : kind agency dans l'ordre, puis kind gallery dans l'ordre ; la ville est le nom d'une agence, le lieu d'un bien de la galerie ; les photos, son champ selection
+const biensAttendus = [...parOrdre('agency'), ...parOrdre('gallery')].map(x => ({ ville: x.kind === 'agency' ? x.name : x.location, surface: x.surface, usage: x.use, photos: x.selection && x.selection.length ? x.selection : [`${x.id}-01`] }));
+const VILLES = biensAttendus.map(b => b.ville);
+const realMd = fs.readFileSync(path.resolve(MAQ, '../../content/realisations.md'), 'utf8').replace(/\r\n?/g, '\n');
+const phraseAttendue = realMd.match(/subtitle:\s*(.+)/)[1].trim();
+const paragrapheAgences = realMd.split('## Le programme agences')[1].replace(/<!--[\s\S]*?-->/g, '').trim().split(/\n\s*\n/)[0].trim();
+const TRANSPARENT = 'rgba(0, 0, 0, 0)';
+// parcourir la page, puis charger toutes les images, y compris celles de la rangée, hors champ sur le côté (loading="lazy") : un fichier manquant
+// remonte en erreur de console
+const parcourir = p => p.evaluate(async () => {
+  const h = document.documentElement.scrollHeight; for (let y = 0; y < h; y += 500) { window.scrollTo(0, y); await new Promise(r => setTimeout(r, 30)); } window.scrollTo(0, 0);
+  const imgs = [...document.images]; imgs.forEach(i => { i.loading = 'eager'; });
+  await Promise.all(imgs.map(i => i.complete ? null : new Promise(r => { i.addEventListener('load', r, { once: true }); i.addEventListener('error', r, { once: true }); setTimeout(r, 5000); })));
+});
+{
+  // chaque fichier cité par la page existe : src et srcset, et les photos 1800 px de la visionneuse (window.BIENS), que la page ne charge qu'à l'ouverture
+  const html = fs.readFileSync(path.join(MAQ, REAL + '.html'), 'utf8');
+  const biens = JSON.parse(html.match(/window\.BIENS=(\[.*?\]);<\/script>/)[1]);
+  const cites = new Set([...html.matchAll(/(?:src|srcset)="([^"]+)"/g)].flatMap(m => m[1].split(',').map(x => x.trim().split(' ')[0])).concat(biens.flatMap(b => b.l)).filter(u => /\.jpg$/.test(u)));
+  const manquants = [...cites].filter(u => !fs.existsSync(path.resolve(MAQ, u)));
+  const attendues = 2 * (biensAttendus.reduce((n, b) => n + b.photos.length, 0) + 4);   // 800 et 1800 px de chaque vue des biens et des 4 blocs
+  ok(cites.size === attendues && !manquants.length, `réalisations : les ${cites.size} photos citées par la page (src, srcset, visionneuse ; ${attendues} attendues) existent` + (manquants.length ? ' — manquent : ' + manquants.join(', ') : ''));
+}
+for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
+  const { p, ctx, erreurs } = await ouvrir('', [w, h], {}, REAL);
+  await parcourir(p);
+  await p.waitForLoadState('networkidle');
+  const deb = await largeur(p);
+  ok(deb === 0 && !erreurs.length, `réalisations · ${w} × ${h} : aucun débordement horizontal (${deb} px), aucune erreur` + (erreurs.length ? ' — ' + erreurs.join(' | ') : ''));
+  if (w > 640) {
+    const r = await p.evaluate(() => [...document.querySelectorAll('.alt__rang')].map(r => { const b = [...r.children].map(c => c.getBoundingClientRect()); return { h: Math.round(r.getBoundingClientRect().height), l: b.map(x => Math.round(x.width)), gap: Math.round(b[1].left - b[0].right), bas: r.getBoundingClientRect().bottom, haut: r.getBoundingClientRect().top }; }));
+    const attendu = Math.min(540, Math.max(340, h - 262)), ecart = Math.round(r[1].haut - r[0].bas);
+    ok(r.length === 2 && r.every(x => x.h === attendu && x.gap === 14) && ecart === 14 && Math.abs(r[0].l[0] / r[0].l[1] - 7 / 5) < 0.02 && Math.abs(r[1].l[1] / r[1].l[0] - 7 / 5) < 0.02,
+      `${w} × ${h} : deux rangées, 7/5 puis 5/7 (${r.map(x => x.l.join(' / ')).join(', ')}), ${r[0].h} px de haut (clamp → ${attendu}), écarts de 14 px`);
+  }
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('', [1920, 1080], {}, REAL);
+  const x = await p.evaluate(() => { const l = s => Math.round(document.querySelector(s).getBoundingClientRect().left), r = s => Math.round(document.querySelector(s).getBoundingClientRect().right);
+    return { logo: l('.logo'), titre: l('.page__titre'), photo: l('.bloc'), rangee: l('.defil__piste'), eyebrow: l('.bloc-agences .eyebrow'), pied: l('.footer__contact'), nav: r('.site-nav'), photoD: r('.alt__rang--a .bloc:last-child'), rangeeD: r('.defil__piste') }; });
+  ok(x.logo === 200 && x.titre === 200 && x.photo === 200 && x.rangee === 200, `1920 : le logo, le titre, la première photo et la rangée commencent au même x (${x.logo}, ${x.titre}, ${x.photo}, ${x.rangee})`);
+  ok(x.eyebrow === 200 && x.pied === 200 && x.nav === 1720 && x.photoD === 1720 && x.rangeeD === 1720, `1920 : « Programme agences » et le pied de page sur la même grille (x ${x.eyebrow}, ${x.pied}) ; la navigation finit avec les photos et la rangée (${x.nav}, ${x.photoD}, ${x.rangeeD})`);
+  const blocs = await photosImg(p, '.bloc img');
+  ok(blocs.every(i => i.echelle <= 1), `blocs à 1920 × 1080, 1× : aucune photo agrandie (${blocs.map(i => `${i.cle} ${i.w}×${i.h} ← ${i.pixels} ×${i.echelle}`).join(', ')})`);
+  await ctx.close();
+}
+{
+  const lignes = [];
+  for (const w of [1025, 1280, 1440, 1521, 1920]) {
+    const { p, ctx } = await ouvrir('', [w, 900], {}, REAL);
+    lignes.push(await p.evaluate(() => { const e = document.querySelector('.p2-ouv .ouv__texte'), r = document.createRange(); r.selectNodeContents(e); return new Set([...r.getClientRects()].map(x => Math.round(x.top))).size; }));
+    await ctx.close();
+  }
+  ok(lignes.every(n => n === 1), `la phrase d'ouverture tient sur une ligne au-dessus de 1024 px (1025, 1280, 1440, 1521, 1920 : ${lignes.join(', ')} ligne(s))`);
+}
 {
   const { p, ctx } = await ouvrir('', [1440, 900], {}, REAL);
   await polices(p, 'réalisations');
-  const t = await p.evaluate(() => ({ title: document.title, h1: document.querySelector('.page__titre').textContent, sous: document.querySelector('.page__sous').textContent, actif: document.querySelector('.site-nav a.is-active') && document.querySelector('.site-nav a.is-active').textContent,
-    liens: [...document.querySelectorAll('.page__sous a')].map(a => a.className + ' ' + a.getAttribute('href') + (document.querySelector(a.getAttribute('href')) ? '' : ' (cible absente)')) }));
-  ok(t.title === 'Réalisations — Perpetual' && t.h1 === 'Réalisations' && t.actif === 'Réalisations', `titre « ${t.h1} », « ${t.actif} » actif dans la navigation (${t.sous})`);
-  ok(t.liens.join(' | ') === 'trait #projets | trait #agences | trait #galerie', 'sous-titre : trois liens (trait) vers #projets, #agences, #galerie — ' + t.liens.join(' | '));
-  await p.hover('.page__sous a:nth-child(2)');
-  ok((await p.evaluate(() => getComputedStyle(document.querySelector('.page__sous a:nth-child(2)'), '::after').transform)) === 'matrix(1, 0, 0, 1, 0, 0)', 'sous-titre : le trait glisse au survol');
-  const c = await p.evaluate(() => ({ four: !!document.querySelector('.section--quatre .four, .section--quatre .four__row'), cartes: getComputedStyle(document.querySelector('.cartes')).display, cols: getComputedStyle(document.querySelector('.cartes')).gridTemplateColumns.split(' ').length,
-    items: [...document.querySelectorAll('.cartes__item')].map(i => (i.id || '—') + ' → ' + i.querySelector('a').getAttribute('href')), ratio: (() => { const r = document.querySelector('.cartes__photo').getBoundingClientRect(); return r.width / r.height; })(),
-    noms: [...document.querySelectorAll('.cartes__nom')].map(n => n.textContent), lignes: document.querySelectorAll('.cartes__ligne').length, ancre: !!document.querySelector('[data-ancre]'),
-    rangee: Math.round(document.querySelector('.cartes__item:nth-child(2) .cartes__ligne').getBoundingClientRect().bottom) }));
-  ok(!c.four && c.cartes === 'grid' && c.cols === 2 && Math.abs(c.ratio - 1.5) < 0.01 && c.noms.join(' · ') === 'Ateliers 118 · The Bank · Data Box · Community' && c.lignes === 4, 'les 4 projets en quatre cartes photo 3:2 en 2 × 2 (bascule 21 figée) ; la liste n’est plus générée sur cette page');
-  ok(c.items.join(' | ') === 'ateliers-118 → realisations.html#ateliers-118 | — → projet-the-bank.html | data-box → realisations.html#data-box | community → realisations.html#community' && !c.ancre, 'ancres en dur sur les cartes (id), plus de data-ancre ; The Bank vers sa fiche');
-  ok(c.rangee <= 900, `premier écran à 1440 × 900 : le titre, l'étiquette et la première rangée de cartes tiennent (ligne de la seconde carte à ${c.rangee})`);
-  ok(await p.evaluate(() => [...document.querySelectorAll('[id]')].map(e => e.id).filter((x, i, a) => a.indexOf(x) !== i).length === 0), 'aucun id en double');
-  ok(await pretty(p, '.cartes__ligne'), 'cartes : text-wrap: pretty sur les lignes');
-  const cartes = await photosImg(p, '.cartes__photo img');
-  ok(cartes.map(i => i.cle).join(' ') === 'ateliers-118-05 the-bank-01 data-box-02 community-05', 'cartes : ' + cartes.map(i => i.cle).join(' · '));
-  ok(cartes[1].cle === 'the-bank-01' && cartes[1].focal === '50% 60%' && cartes.filter(i => i.focal).length === 1, `carte The Bank : la façade (the-bank-01), object-position ${cartes[1].focal} posé en style sur l'<img> (la fiche la prend aussi en tête)`);
-  verifierSrcset(cartes, 'cartes');
-  ok(cartes.every(i => i.w === 544 && i.h === 363), `cartes : cadre 544 × 363 (${cartes.map(i => i.w + '×' + i.h).join(', ')})`);
-  ok(cartes.every(i => i.echelle <= 1), `cartes à 1× : aucune photo agrandie (${cartes.map(i => `${i.cle} ${i.pixels} ×${i.echelle}`).join(', ')})`);
-  const ag = await p.evaluate(() => ({ intro: document.querySelector('.agences__intro').textContent.slice(0, 30), noms: [...document.querySelectorAll('.agence__nom')].map(n => n.textContent), lignes: [...document.querySelectorAll('.agence__ligne')].map(n => n.textContent), ff: getComputedStyle(document.querySelector('.agence__nom')).fontFamily }));
-  ok(ag.noms.join(' · ') === 'Braine-le-Comte · Pont-à-Celles · Jambes · Mettet' && ag.lignes.every(l => /^\d.*m² · /.test(l)) && ag.ff.startsWith('Newsreader') && ag.intro.startsWith('Une agence bancaire fermée'), 'programme agences : intro de content/realisations.md, puis ' + ag.noms.join(' · '));
-  const g = await p.evaluate(() => ({ n: document.querySelectorAll('.galerie__item').length, cols: getComputedStyle(document.querySelector('.galerie')).gridTemplateColumns.split(' ').length, srcs: [...document.querySelectorAll('.galerie__item img')].map(i => i.getAttribute('src').replace(/^.*\//, '')),
-    ratio: (() => { const r = document.querySelector('.galerie__photo').getBoundingClientRect(); return r.width / r.height; })(), noms: [...document.querySelectorAll('.galerie__nom')].map(n => n.textContent),
-    items: [...document.querySelectorAll('.galerie__item')].map(it => ({ lieu: it.querySelector('.galerie__lieu').textContent, voile: it.querySelector('.galerie__voile').textContent, meta: it.querySelector('.galerie__meta').textContent })),
-    voile: (() => { const v = document.querySelector('.galerie__voile'), s = getComputedStyle(v); return { opacity: s.opacity, padding: s.paddingTop + ' ' + s.paddingLeft + ' ' + s.paddingBottom, fond: s.backgroundImage, fs: s.fontSize, hidden: v.getAttribute('aria-hidden') }; })(),
-    lieu: (() => { const s = getComputedStyle(document.querySelector('.galerie__lieu')); return { display: s.display, fs: s.fontSize, fw: s.fontWeight }; })(),
-    meta: (() => { const m = document.querySelector('.galerie__meta'), s = getComputedStyle(m), r = m.getBoundingClientRect(); return { display: s.display, clip: s.clipPath, w: Math.round(r.width), h: Math.round(r.height), position: s.position }; })() }));
-  ok(g.n === 12 && g.cols === 3 && g.srcs.every(s => /-01-s\.jpg$/.test(s)) && Math.abs(g.ratio - 1.5) < 0.01, `galerie : ${g.n} biens en 3 colonnes, photos <id>-01-s.jpg en 3:2`);
-  ok(g.noms.join(' · ') === galerieAttendue.map(x => x.name).join(' · ') && g.noms.join(' · ') === '# Bank 24 · # Bank 9 · # Bank 34 · # Bank 11 · # Bank 10 · # Bank 8 · Swap · # Bank 29 · Greek Style · Diversity · Ode to Joy · Corner', 'galerie : ordre de data/projects.json — ' + g.noms.join(' · '));
-  ok(g.items.every((it, i) => it.lieu === galerieAttendue[i].location && it.voile === `${galerieAttendue[i].location}${galerieAttendue[i].surface} · ${galerieAttendue[i].use}` && it.meta === `${galerieAttendue[i].location} · ${galerieAttendue[i].surface} · ${galerieAttendue[i].use}`),
-    `galerie : le lieu (data/projects.json) sur le voile puis « surface · usage » ; .galerie__meta « ${g.items[6].meta} »`);
-  ok(g.voile.opacity === '0' && g.voile.hidden === 'true' && g.voile.padding === '56px 20px 16px' && /rgba\(0, 0, 0, 0\.64\) 0%, rgba\(0, 0, 0, 0\.42\) 50%, rgba\(0, 0, 0, 0\) 100%/.test(g.voile.fond) && g.voile.fs === '14px', `galerie : voile caché au repos, aria-hidden, padding 56 20 16, dégradé .64 → .42 → transparent, 14 px (${g.voile.fond})`);
-  ok(g.lieu.display === 'block' && g.lieu.fs === '15px' && g.lieu.fw === '500', 'galerie : .galerie__lieu en bloc, 15 px, medium');
-  ok(g.meta.display !== 'none' && g.meta.position === 'absolute' && g.meta.clip === 'inset(50%)' && g.meta.w === 1 && g.meta.h === 1, `galerie au-dessus de 640 px : .galerie__meta dans la page mais masquée visuellement (clip, ${g.meta.w} × ${g.meta.h} px)`);
-  await p.hover('.galerie__item:nth-child(2) .galerie__photo');
-  const hv = await p.evaluate(() => { const it = document.querySelector('.galerie__item:nth-child(2)'); return { voile: getComputedStyle(it.querySelector('.galerie__voile')).opacity, zoom: getComputedStyle(it.querySelector('img')).transform, lieuTop: it.querySelector('.galerie__lieu').getBoundingClientRect().bottom <= it.querySelector('.galerie__voile').getBoundingClientRect().bottom - 16 }; });
-  ok(hv.voile === '1' && /^matrix\(1\.035, 0, 0, 1\.035/.test(hv.zoom) && hv.lieuTop, `galerie : au survol, lieu puis surface · usage sur deux lignes en surimpression, zoom 1,035 (${hv.zoom})`);
-  const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '')).join(' · '));
-  ok(panneau === 'cadrage (sans effet) · carte (sans effet)', 'panneau : ' + panneau);
+  const t = await p.evaluate(() => { const h1 = document.querySelector('.page__titre'), s = getComputedStyle(h1), ph = document.querySelector('.p2-ouv .ouv__texte');
+    return { title: document.title, h1: h1.textContent, ff: s.fontFamily, fw: s.fontWeight, fs: s.fontSize, ls: s.letterSpacing, lh: s.lineHeight, phrase: ph.textContent, mw: getComputedStyle(ph).maxWidth, provisoire: ph.classList.contains('provisoire') && !!ph.title,
+      actif: document.querySelector('.site-nav a.is-active') && document.querySelector('.site-nav a.is-active').textContent, pied: getComputedStyle(document.querySelector('.site-footer > .container')).maxWidth }; });
+  ok(t.title === 'Réalisations — Perpetual' && t.h1 === 'Réalisations' && t.actif === 'Réalisations', `titre « ${t.h1} », « ${t.actif} » actif dans la navigation`);
+  ok(t.ff.startsWith('"Instrument Sans"') && t.fw === '400' && t.fs === '64px' && t.ls === '-1.792px' && t.lh === '65.28px', `titre en Instrument Sans 400, 64 px, interlettrage −0,028 em, interligne 1,02 (${t.ff.split(',')[0]} ${t.fw}, ${t.ls}, ${t.lh}) — la fiche garde la serif`);
+  ok(t.phrase === phraseAttendue && t.phrase === 'Vingt adresses où l’usage d’un bâtiment a été changé pour le rendre à nouveau pertinent.' && t.mw === 'none' && t.provisoire, `phrase d'ouverture : le subtitle de content/realisations.md, sans max-width, signalée provisoire — « ${t.phrase} »`);
+  ok(t.pied === '1600px', `pied de page aligné sur la grille large (.site-footer > .container : max-width ${t.pied})`);
+  // les quatre projets
+  const b = await p.evaluate(() => [...document.querySelectorAll('.bloc')].map(e => { const r = e.getBoundingClientRect(), nom = e.querySelector('.bloc__nom'), tx = e.querySelector('.bloc__texte'), f = e.querySelector('.bloc__faits'), s = getComputedStyle(nom);
+    return { tag: e.tagName.toLowerCase(), id: e.id, href: e.getAttribute('href'), tab: e.getAttribute('tabindex'), nom: nom.textContent, ff: s.fontFamily.split(',')[0], fs: s.fontSize, c: s.color, gauche: Math.round(nom.getBoundingClientRect().left - r.left), bas: Math.round(r.bottom - tx.getBoundingClientRect().bottom),
+      faits: [...f.children].map(x => x.querySelector('.fait__et').textContent + ' ' + x.querySelector('.fait__val').textContent).join(' · '), repos: getComputedStyle(f).opacity + ' ' + Math.round(f.getBoundingClientRect().height),
+      et: getComputedStyle(f.querySelector('.fait__et')).fontSize, val: getComputedStyle(f.querySelector('.fait__val')).fontFamily.split(',')[0] + ' ' + getComputedStyle(f.querySelector('.fait__val')).fontSize, mobile: getComputedStyle(e.querySelector('.bloc__mobile')).display }; }));
+  ok(b.map(x => x.nom).join(' · ') === 'Community · Ateliers 118 · The Bank · Data Box' && b.every(x => x.ff === 'Newsreader' && x.fs === '38px' && x.c === BLANC && x.gauche === 28 && x.bas === 24),
+    `4 projets : ${b.map(x => x.nom).join(' · ')}, nom en serif blanc 38 px, en bas à gauche (28 / 24 px)`);
+  ok(b.map(x => `${x.tag}${x.id ? '#' + x.id : ''}${x.href ? ' → ' + x.href : ''}${x.tab ? ' tabindex ' + x.tab : ''}`).join(' | ') === 'div#community tabindex 0 | div#ateliers-118 tabindex 0 | a → projet-the-bank.html | div#data-box tabindex 0',
+    'seule The Bank est un lien (projet-the-bank.html) ; les trois autres, non cliquables, gardent leur id et un tabindex : ' + b.map(x => x.tag + (x.id ? '#' + x.id : '')).join(' · '));
+  ok(b.map(x => x.faits).join(' | ') === 'Lieu Uccle · Surface 14 unités · Usage Co-living | Lieu Molenbeek-Saint-Jean · Surface 1 200 m² · Usage Ateliers | Lieu Liège · Surface 1 100 m² · Usage Logements & commerce | Lieu Jemelle · Surface 4 200 m² · Usage Site technique'
+    && b.every(x => x.repos === '0 0' && x.et === '12px' && x.val === 'Newsreader 21px' && x.mobile === 'none'), 'trois faits Lieu / Surface / Usage (étiquette 12 px, valeur en serif 21 px), masqués au repos');
+  await p.hover('#community');
+  const survol = await p.evaluate(() => { const f = document.querySelector('#community .bloc__faits'); return getComputedStyle(f).opacity + ' ' + (f.getBoundingClientRect().height > 30) + ' ' + getComputedStyle(document.querySelector('#community img')).transform; });
+  await p.hover('a.bloc');
+  const zoom = await p.evaluate(() => getComputedStyle(document.querySelector('a.bloc img')).transform + ' ' + getComputedStyle(document.querySelector('a.bloc .bloc__faits')).opacity);
+  await p.focus('a.bloc');
+  await p.keyboard.press('Tab');
+  const focus = await p.evaluate(() => { const f = document.querySelector('#data-box .bloc__faits'); return document.activeElement.id + ' ' + document.querySelector('#data-box').matches(':focus-visible') + ' ' + getComputedStyle(f).opacity; });
+  ok(survol === '1 true none' && /^matrix\(1\.035, 0, 0, 1\.035/.test(zoom) && zoom.endsWith(' 1') && focus === 'data-box true 1',
+    `au survol, les faits s'affichent (Community : ${survol.split(' ')[0]}) ; au focus clavier aussi (${focus}) ; seule la photo du lien zoome (The Bank ${zoom.split(',')[0]}), pas les blocs non cliquables`);
+  const photos = await photosImg(p, '.bloc img');
+  ok(photos.map(i => `${i.cle} ${i.focal}`).join(' · ') === 'community-05 50% 50% · ateliers-118-05 50% 55% · the-bank-01 50% 40% · data-box-02 50% 55%', 'photos des blocs et points focaux : ' + photos.map(i => `${i.cle} ${i.focal}`).join(' · '));
+  verifierSrcset(photos, 'blocs');
+  ok(photos.every(i => i.echelle <= 1), `blocs à 1440 × 900, 1× : aucune photo agrandie (${photos.map(i => `${i.cle} ${i.w}×${i.h} ← ${i.pixels} ×${i.echelle}`).join(', ')})`);
+  ok(await p.evaluate(() => ['ateliers-118', 'data-box', 'community'].every(id => { const e = document.getElementById(id); return e && e.classList.contains('bloc'); }) && [...document.querySelectorAll('[id]')].map(e => e.id).filter((x, i, a) => a.indexOf(x) !== i).length === 0),
+    'ancres de la Home et du « Projet suivant » de la fiche : #ateliers-118, #data-box, #community présents (blocs), aucun id en double');
+  // le programme agences
+  const a = await p.evaluate(() => { const c = s => getComputedStyle(document.querySelector(s)), r = s => document.querySelector(s).getBoundingClientRect(), tete = document.querySelector('.bloc-agences__tete');
+    return { eyebrow: document.querySelector('.bloc-agences .eyebrow').textContent, enonce: document.querySelector('.enonce').textContent, suite: tete.querySelector(':scope > .ouv__texte').textContent, tag: document.querySelector('.enonce').tagName,
+      ff: c('.enonce').fontFamily.split(',')[0] + ' ' + c('.enonce').fontSize, mw: c('.enonce').maxWidth, cols: c('.bloc-agences__tete').gridTemplateColumns.split(' ').map(v => Math.round(parseFloat(v))),
+      basGauche: Math.round(tete.children[0].getBoundingClientRect().bottom), basDroite: Math.round(tete.children[1].getBoundingClientRect().bottom), gaucheDroite: Math.round(tete.children[1].getBoundingClientRect().left),
+      bande: c('.bloc-agences__bande').backgroundColor, pad: c('.bloc-agences__bande').paddingTop + ' ' + c('.bloc-agences__bande').paddingBottom, defil: c('.bloc-agences__defil').backgroundColor + ' ' + c('.bloc-agences__defil').paddingTop + ' ' + c('.bloc-agences__defil').paddingBottom }; });
+  ok(a.eyebrow === 'Programme agences' && a.tag === 'H2' && `${a.enonce} ${a.suite}` === paragrapheAgences && /^Une agence bancaire fermée.*quartier\.$/.test(a.enonce) && a.ff === 'Newsreader 34px' && a.mw !== 'none',
+    `énoncé : la première phrase du paragraphe de content/realisations.md en h2 serif 34 px (max ${a.mw}), la seconde à droite`);
+  ok(Math.abs(a.cols[0] / a.cols[1] - 7 / 5) < 0.02 && a.basGauche === a.basDroite && a.gaucheDroite > 700, `énoncé : grille 7/5 (${a.cols.join(' / ')}), les deux colonnes alignées en bas (${a.basGauche} = ${a.basDroite})`);
+  ok(a.bande === PAPIER && a.pad === '56px 52px' && a.defil === `${TRANSPARENT} 44px 88px`, `bande de l'énoncé sur papier (padding ${a.pad}), la rangée sur blanc (${a.defil.replace(TRANSPARENT + ' ', 'padding ')})`);
+  const v = await p.evaluate(() => { const piste = document.querySelector('.defil__piste'), pr = piste.getBoundingClientRect(), orig = [...piste.children].filter(li => !li.hasAttribute('data-clone'));
+    return { clones: piste.children.length - orig.length, compteur: document.querySelector('.defil__compteur').textContent,
+      items: orig.map(li => ({ ville: li.querySelector('.vignette__nom').firstChild.textContent, surface: li.querySelector('.vignette__nom span').textContent, usage: li.querySelector('.vignette__usage').textContent, n: +li.querySelector('.bien').dataset.n,
+        photos: [...li.querySelectorAll('.bien__piste > img:not([data-clone])')].map(i => i.getAttribute('src').replace(/^.*\//, '').replace(/-s\.jpg$/, '')).join(' '), cpt: li.querySelector('.bien__compteur').textContent,
+        cptVisible: getComputedStyle(li.querySelector('.bien__compteur')).display !== 'none', flechesVisibles: getComputedStyle(li.querySelector('.bien__fleche')).display !== 'none', voile: getComputedStyle(li.querySelector('.bien'), '::after').display })),
+      visibles: orig.filter(li => { const r = li.getBoundingClientRect(); return r.left >= pr.left - 1 && r.right <= pr.right + 1; }).map(li => li.querySelector('.vignette__nom').firstChild.textContent),
+      ratio: (() => { const r = document.querySelector('.vignette__photo').getBoundingClientRect(); return r.width / r.height; })(),
+      droite: (() => { const li = orig[0]; return Math.round(li.getBoundingClientRect().right - li.querySelector('.vignette__nom span').getBoundingClientRect().right); })(),
+      cptStyle: (() => { const s = getComputedStyle(document.querySelector('.bien__compteur')), b = document.querySelector('.bien').getBoundingClientRect(), c = document.querySelector('.bien__compteur').getBoundingClientRect(); return `${s.fontSize} ${s.color} ${Math.round(c.top - b.top)} ${Math.round(b.right - c.right)}`; })() }; });
+  ok(v.items.length === 16 && v.clones === 32 && v.items.map(i => i.ville).join(' · ') === VILLES.join(' · ') && v.items.every((it, i) => it.surface === biensAttendus[i].surface && it.usage === biensAttendus[i].usage),
+    `rangée : les 16 biens (kind agency puis gallery, dans l'ordre), ville (name / location), surface et usage — ${v.items.map(i => i.ville).join(' · ')} ; ${v.clones} clones`);
+  ok(v.visibles.length === 4 && v.visibles.join(' · ') === VILLES.slice(0, 4).join(' · ') && Math.abs(v.ratio - 1.5) < 0.01 && v.droite === 0 && v.compteur === '1–4 / 16',
+    `4 vignettes visibles (${v.visibles.join(' · ')}), photo 3:2, surface à droite du nom, « ${v.compteur} »`);
+  ok(v.items.every((it, i) => it.photos === biensAttendus[i].photos.join(' ') && it.n === biensAttendus[i].photos.length && it.cpt === `1 / ${it.n}`), `photos de chaque bien : le champ selection, dans l'ordre (${v.items.reduce((s, i) => s + i.n, 0)} vues), « 1 / n »`);
+  const seule = v.items.filter(i => i.n === 1), plusieurs = v.items.filter(i => i.n > 1);
+  ok(seule.length >= 1 && seule.every(i => !i.cptVisible && !i.flechesVisibles && i.voile === 'none') && plusieurs.every(i => i.cptVisible && i.voile !== 'none') && v.cptStyle === `12px ${BLANC} 10 12`,
+    `« 1 / n » en haut à droite (blanc 12 px, voile dans le coin : ${v.cptStyle}) ; rien pour une seule photo (${seule.map(i => i.ville).join(', ')})`);
+  const USAGES = ['Service finance de la commune', 'Auto-école', 'École de danse et commerce de proximité', 'Quatre logements'];
+  ok(parOrdre('agency').map(x => x.use).join(' | ') === USAGES.join(' | ') && v.items.slice(0, 4).map(i => i.usage).join(' | ') === USAGES.join(' | ') && !donnees.some(x => /Bancontact/.test(x.use || '')) && v.items.every(i => !/Bancontact/.test(i.usage)),
+    'usages des 4 agences sans « Point Bancontact » (data/projects.json et page) : ' + USAGES.join(' · '));
+  const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '') + ' [' + [...f.querySelectorAll('input')].map(i => i.value).join(' / ') + ']').join(' · '));
+  ok(panneau === 'cadrage (sans effet) [centre / haut] · carte (sans effet) [sable / papier-contour] · papier [enonce / tout] · bas [rien / anciens]', 'panneau : ' + panneau + ' (22 et 23 : la V1 en défaut)');
+  await p.click('.mq__b[data-cle="papier"] label[for="mq-papier-tout"]');
+  ok((await p.evaluate(() => document.documentElement.dataset.papier + ' ' + location.search)) === 'tout ?papier=tout', 'panneau : « toute la section » pose data-papier="tout" et ?papier=tout');
+  await ctx.close();
+}
+{
+  // la rangée en boucle, défilement doux (sans « mouvement réduit ») : on suit scrollLeft à chaque image pour vérifier qu'elle ne revient jamais en arrière
+  const { p, ctx } = await ouvrir('', [1440, 900], { reducedMotion: 'no-preference' }, REAL);
+  await p.evaluate(() => document.querySelector('.defil').scrollIntoView({ block: 'center' }));
+  const etat = () => p.evaluate(() => { const piste = document.querySelector('.defil__piste'), g = piste.getBoundingClientRect().left, li = [...piste.children].find(li => Math.abs(li.getBoundingClientRect().left - g) < 2);
+    return document.querySelector('.defil__compteur').textContent + ' · ' + (li ? li.querySelector('.vignette__nom').firstChild.textContent : '?'); });
+  const suivre = () => p.evaluate(() => { const r = document.querySelector('.defil__piste'); window.__pos = []; window.__fin = false; (function f() { window.__pos.push(r.scrollLeft); if (!window.__fin) requestAnimationFrame(f); })(); });
+  const bilan = () => p.evaluate(() => { window.__fin = true; const c = document.querySelector('.defil__piste').children, pas = c[1].getBoundingClientRect().left - c[0].getBoundingClientRect().left, n = 16; let recul = 0, total = 0;
+    for (let i = 1; i < window.__pos.length; i++) { let d = (window.__pos[i] - window.__pos[i - 1]) / pas; if (Math.abs(Math.abs(d) - n) < 0.5) d -= Math.sign(d) * n; if (d < -0.01) recul++; total += d; }   // seul le recentrage (n vignettes d'un coup, invisible) compte pour 0
+    return { recul, total: Math.round(total * 100) / 100, images: window.__pos.length }; });
+  const attendre = () => p.waitForTimeout(1100);
+  await suivre();
+  const suite = [await etat()];
+  for (let i = 0; i < 4; i++) { await p.click('[data-d-suiv]'); await attendre(); suite.push(await etat()); }
+  const avance = await bilan();
+  const attendue = ['1–4', '5–8', '9–12', '13–16', '1–4'].map((c, i) => `${c} / 16 · ${VILLES[(i * 4) % 16]}`);
+  ok(suite.join(' → ') === attendue.join(' → '), 'rangée, → quatre fois : ' + suite.join(' → '));
+  ok(avance.recul === 0 && Math.abs(avance.total - 16) < 0.05, `rangée : toujours vers la droite, sans retour en arrière (${avance.images} images suivies, avance de ${avance.total} vignettes, ${avance.recul} recul)`);
+  await p.click('[data-d-prec]'); await attendre();
+  const prec = await etat();
+  ok(prec === `13–16 / 16 · ${VILLES[12]}`, `rangée : ← depuis 1–4 → ${prec}`);
+  await p.click('[data-d-suiv]'); await attendre();
+  await suivre();
+  await p.evaluate(async () => { const a = document.querySelector('[data-d-suiv]'); for (let i = 0; i < 3; i++) { a.click(); await new Promise(r => setTimeout(r, 80)); } });
+  await attendre();
+  const rapides = await etat(), avance3 = await bilan();
+  ok(rapides === `13–16 / 16 · ${VILLES[12]}` && avance3.recul === 0 && Math.abs(avance3.total - 12) < 0.05, `rangée : trois clics rapides (80 ms) = trois pages, 1–4 → ${rapides} (avance de ${avance3.total} vignettes, ${avance3.recul} recul)`);
+  await ctx.close();
+}
+{
+  // mouvement réduit (défilement instantané) : la rangée, les photos d'un bien, la visionneuse
+  const { p, ctx } = await ouvrir('', [1440, 900], {}, REAL);
+  const compteur = () => p.evaluate(() => document.querySelector('.defil__compteur').textContent);
+  const r = [];
+  for (let i = 0; i < 4; i++) { await p.click('[data-d-suiv]'); await p.waitForTimeout(100); r.push(await compteur()); }
+  await p.click('[data-d-prec]'); await p.waitForTimeout(100); r.push(await compteur());
+  await p.click('[data-d-suiv]'); await p.waitForTimeout(100);
+  ok(r.join(' → ') === '5–8 / 16 → 9–12 / 16 → 13–16 / 16 → 1–4 / 16 → 13–16 / 16', 'rangée en mouvement réduit : ' + r.join(' → '));
+  const B = '.defil__piste > li:not([data-clone]) .bien[data-bien="0"]';
+  const lire = () => p.evaluate(s => { const b = document.querySelector(s), pi = b.querySelector('.bien__piste'), vis = pi.children[Math.round(pi.scrollLeft / pi.clientWidth)]; return b.querySelector('.bien__compteur').textContent + ' ' + vis.getAttribute('src').replace(/^.*\//, ''); }, B);
+  await p.evaluate(s => document.querySelector(s).scrollIntoView({ block: 'center' }), B);
+  const repos = await style(p, B + ' .bien__fleche--d', 'opacity');
+  await p.hover(B);
+  const survol = await style(p, B + ' .bien__fleche--d', 'opacity');
+  const photos = [await lire()];
+  for (let i = 0; i < 2; i++) { await p.click(B + ' .bien__fleche--d'); await p.waitForTimeout(150); photos.push(await lire()); }
+  ok(photos.join(' → ') === '1 / 2 bnp-braine-le-comte-01-s.jpg → 2 / 2 bnp-braine-le-comte-03-s.jpg → 1 / 2 bnp-braine-le-comte-01-s.jpg' && repos === '0' && survol === '1',
+    `vignette à deux photos : ${photos.map(x => x.split(' ').slice(0, 3).join(' ')).join(' → ')} (flèches au survol seulement)`);
+  // visionneuse : ouverte sur la photo affichée dans la vignette
+  await p.click(B + ' .bien__fleche--d'); await p.waitForTimeout(150);
+  await p.click(B + ' .bien__piste');
+  await p.waitForTimeout(150);
+  const vis = () => p.evaluate(() => { const v = document.querySelector('.visio'), vp = v.querySelector('.visio__piste'), img = vp.children[Math.round(vp.scrollLeft / vp.clientWidth)], cadre = v.querySelector('.visio__cadre').getBoundingClientRect();
+    return { ouvert: !v.hidden && getComputedStyle(v).display !== 'none', cpt: v.querySelector('.visio__compteur').textContent, src: img ? img.getAttribute('src').replace(/^.*\//, '') : null, legende: v.querySelector('.visio__legende').innerHTML,
+      focus: document.activeElement && document.activeElement.textContent, corps: document.body.classList.contains('visio-ouverte'), fit: img && getComputedStyle(img).objectFit, ratio: cadre.width / cadre.height, fond: getComputedStyle(v).backgroundColor,
+      fleches: [...v.querySelectorAll('.visio__fleche')].map(f => !f.hidden && getComputedStyle(f).display !== 'none').join(' ') }; });
+  const v1 = await vis();
+  ok(v1.ouvert && photos[1].startsWith('2 / 2') && v1.cpt === '2 / 2' && v1.src === 'bnp-braine-le-comte-03.jpg' && v1.legende === '<b>Braine-le-Comte</b>600 m² · Service finance de la commune',
+    `visionneuse : ouverte sur la photo de la vignette (${v1.cpt}, ${v1.src}), « ${v1.legende.replace(/<\/?b>/g, '|')} »`);
+  ok(v1.fond === BLANC && v1.fit === 'contain' && Math.abs(v1.ratio - 4 / 3) < 0.01 && v1.fleches === 'true true' && v1.focus === 'Fermer' && v1.corps, 'visionneuse : fond blanc, photo entière (contain) dans un cadre 4:3, flèches de part et d’autre, focus sur « Fermer », page figée');
+  // le panneau (visible par défaut) s'efface devant la visionneuse : ses flèches, sa légende et son compteur restent libres, à la souris aussi
+  const libres = await p.evaluate(() => [...document.querySelectorAll('.visio__fleche, .visio__legende, .visio__compteur')].every(e => { const r = e.getBoundingClientRect(), x = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return x && e.contains(x); }) && getComputedStyle(document.querySelector('.mq')).display === 'none');
+  const cliquer = async s => { try { await p.click(s, { timeout: 2000 }); } catch (e) { /* recouverte : le compteur ne bouge pas, la vérification échoue */ } await p.waitForTimeout(150); return vis(); };
+  const vc1 = await cliquer('.visio [data-v-suiv]'), vc2 = await cliquer('.visio [data-v-prec]');
+  ok(libres && vc1.cpt === '1 / 2' && vc2.cpt === '2 / 2', `visionneuse : le panneau s'efface, les flèches se cliquent à la souris (${v1.cpt} → ${vc1.cpt} → ${vc2.cpt})`);
+  const tab = [];
+  for (let i = 0; i < 6; i++) { await p.keyboard.press(i < 4 ? 'Tab' : 'Shift+Tab'); tab.push(await p.evaluate(() => document.activeElement.closest('.visio') ? (document.activeElement.textContent || document.activeElement.className) : 'HORS : ' + document.activeElement.outerHTML.slice(0, 60))); }
+  ok(tab.every(t => !t.startsWith('HORS')), 'visionneuse modale : Tab et Maj+Tab restent dans ses commandes — ' + tab.join(' → '));
+  await p.keyboard.press('ArrowRight'); await p.waitForTimeout(150); const v2 = await vis();
+  await p.keyboard.press('ArrowRight'); await p.waitForTimeout(150); const v3 = await vis();
+  await p.keyboard.press('ArrowLeft'); await p.waitForTimeout(150); const v4 = await vis();
+  ok([v2, v3, v4].map(x => `${x.cpt} ${x.src}`).join(' → ') === '1 / 2 bnp-braine-le-comte-01.jpg → 2 / 2 bnp-braine-le-comte-03.jpg → 1 / 2 bnp-braine-le-comte-01.jpg', 'visionneuse au clavier, en boucle : ' + [v2, v3, v4].map(x => x.cpt).join(' → '));
+  await p.keyboard.press('Escape'); await p.waitForTimeout(100);
+  const v5 = await vis(), plie = await p.evaluate(() => document.querySelector('.mq').classList.contains('is-plie') || getComputedStyle(document.querySelector('.mq')).display === 'none');
+  ok(!v5.ouvert && !v5.corps && !plie, 'visionneuse : Échap la ferme (le panneau revient, sans se replier)');
+  await p.evaluate(() => document.querySelector('.defil__piste > li:not([data-clone]) .bien[data-n="1"] .bien__piste').click());
+  await p.waitForTimeout(150);
+  const v6 = await vis();
+  ok(v6.ouvert && v6.cpt === '' && v6.fleches === 'false false', 'visionneuse d’un bien à une photo : ni compteur ni flèches');
+  await p.click('.visio [data-fermer]');
+  ok(!(await vis()).ouvert, 'visionneuse : « Fermer »');
+  await ctx.close();
+}
+{
+  // au clavier, de haut en bas : jamais d'arrêt dans les clones de la boucle (aria-hidden), et les flèches des biens restent atteignables
+  const { p, ctx } = await ouvrir('panneau=off', [1440, 900], {}, REAL);
+  const arrets = [];
+  for (let i = 0; i < 80; i++) { await p.keyboard.press('Tab'); arrets.push(await p.evaluate(() => { const a = document.activeElement; return { cache: !!a.closest('[aria-hidden="true"], [data-clone]'), cls: a.className || a.tagName }; })); }
+  const caches = arrets.filter(a => a.cache), fleches = arrets.filter(a => /bien__fleche/.test(a.cls)).length;
+  ok(!caches.length && fleches >= 20, `clavier : ${arrets.length} tabulations, aucun arrêt dans un clone de la boucle (${caches.length}), ${fleches} flèches de biens atteintes`);
+  await ctx.close();
+}
+{
+  // les trois faits ne sont jamais rognés au survol, même quand ils passent sur deux ou trois lignes (blocs étroits)
+  const rognes = [];
+  for (const w of [660, 700, 800, 1100, 1440]) {
+    const { p, ctx } = await ouvrir('panneau=off', [w, 800], {}, REAL);
+    for (const i of [0, 1, 2, 3]) {
+      await p.hover(`.bloc >> nth=${i}`);
+      const r = await p.evaluate(i => { const f = document.querySelectorAll('.bloc__faits')[i]; return { nom: f.closest('.bloc').querySelector('.bloc__nom').textContent, vu: f.clientHeight, plein: f.scrollHeight }; }, i);
+      if (r.plein > r.vu + 1) rognes.push(`${w} ${r.nom} ${r.vu}/${r.plein}`);
+    }
+    await ctx.close();
+  }
+  ok(!rognes.length, 'survol des blocs de 660 à 1440 px : les trois faits entiers, jamais rognés' + (rognes.length ? ' — ' + rognes.join(', ') : ''));
+}
+{
+  // photos des blocs, cadre variable (largeur et hauteur suivent la fenêtre) : à 1×, le plus petit fichier suffisant est servi — jamais agrandi, jamais trop lourd
+  const ecarts = [];
+  for (const [w, h] of [[641, 800], [800, 800], [1024, 768], [1280, 800], [1366, 703], [1440, 900], [1521, 705], [1920, 1080]]) {
+    const { p, ctx } = await ouvrir('panneau=off', [w, h], {}, REAL);
+    for (const i of await photosImg(p, '.bloc img')) {
+      const petit = tailleJpeg(path.join(IMG_DIR, `${i.cle}-s.jpg`)), besoin = Math.max(i.w, i.h * petit.width / petit.height);
+      const attendu = petit.width >= besoin ? `${i.cle}-s.jpg` : `${i.cle}.jpg`;
+      if (i.servi !== attendu) ecarts.push(`${w}×${h} ${i.cle} : ${i.servi} au lieu de ${attendu} (besoin ${Math.round(besoin)} px)`);
+    }
+    await ctx.close();
+  }
+  ok(!ecarts.length, 'blocs, 641 à 1920 px, 1× : le sizes suit le cadre (largeur ou hauteur × ratio), le plus petit fichier suffisant est servi' + (ecarts.length ? ' — ' + ecarts.join(' ; ') : ''));
+}
+// bascules 22 (papier) et 23 (bas)
+for (const [w, h] of [[1440, 900], [390, 844]]) {
+  const res = [];
+  for (const etat of ['', 'papier=tout', 'bas=anciens', 'papier=tout&bas=anciens']) {
+    const { p, ctx } = await ouvrir(etat, [w, h], {}, REAL);
+    res.push([etat || 'défaut', await p.evaluate(() => { const c = s => getComputedStyle(document.querySelector(s)), r = s => document.querySelector(s).getBoundingClientRect(), anciens = c('.anciens').display !== 'none';
+      return { section: c('.bloc-agences').backgroundColor, bande: c('.bloc-agences__bande').backgroundColor, anciens, avantPied: Math.round(r('.site-footer').top - r(anciens ? '.anciens' : '.bloc-agences').bottom),
+        apresSection: anciens ? Math.round(r('.anciens').top - r('.bloc-agences').bottom) : null, fond: c('.anciens').backgroundColor, n: document.querySelectorAll('.ancien').length, cols: c('.anciens__liste').gridTemplateColumns.split(' ').length,
+        nom: c('.ancien__nom').fontFamily.split(',')[0] + ' ' + c('.ancien__nom').fontSize, titre: document.querySelector('.anciens .enonce').textContent, eyebrow: document.querySelector('.anciens .eyebrow').textContent,
+        premier: document.querySelector('.ancien').textContent }; })]);
+    await ctx.close();
+  }
+  const [def, tout, anc, lesDeux] = res.map(x => x[1]), blanc = w > 640 ? 32 : 20;
+  ok(def.section === TRANSPARENT && def.bande === PAPIER && !def.anciens && def.avantPied === 0, `${w} · défaut (V1) : papier sur l'énoncé seul, pas d'anciens projets`);
+  ok(tout.section === PAPIER && tout.bande === TRANSPARENT && tout.avantPied === blanc, `${w} · 22 papier=tout : toute la section sur papier, puis ${tout.avantPied} px de blanc avant le pied de page (${blanc} attendus)`);
+  ok(anc.anciens && anc.n === 11 && anc.cols === (w > 640 ? 4 : 2) && anc.nom === `Newsreader ${w > 640 ? 24 : 20}px` && anc.fond === TRANSPARENT && anc.eyebrow === 'Autres réalisations' && anc.titre === 'Et, depuis 2002, des projets de toutes tailles.'
+    && anc.premier === 'SerhieuxSeraing · 7 200 m²Valorisation et vente d’un bien à un organisme public' && anc.avantPied === 0 && anc.apresSection === 0,
+    `${w} · 23 bas=anciens : « Autres réalisations », les 11 projets de l'ancien site sur blanc, en ${anc.cols} colonnes, nom ${anc.nom}`);
+  ok(lesDeux.section === PAPIER && lesDeux.anciens && lesDeux.apresSection === 0, `${w} · papier=tout&bas=anciens : la section papier touche les anciens projets (${lesDeux.apresSection} px)`);
+}
+{
+  const { p, ctx } = await ouvrir('', [390, 844], {}, REAL);
+  const m = await p.evaluate(() => ({
+    blocs: [...document.querySelectorAll('.bloc')].map(b => { const r = b.getBoundingClientRect(), mob = b.querySelector('.bloc__mobile'); return { w: Math.round(r.width), ratio: r.width / r.height, nom: getComputedStyle(b.querySelector('.bloc__nom')).fontSize, mobile: getComputedStyle(mob).display + ' ' + mob.textContent, faits: getComputedStyle(b.querySelector('.bloc__faits')).display }; }),
+    cols: [...document.querySelectorAll('.alt__rang')].map(r => getComputedStyle(r).gridTemplateColumns.split(' ').length),
+    vignette: (() => { const piste = document.querySelector('.defil__piste'), li = piste.querySelector('li:not([data-clone])'), pr = piste.getBoundingClientRect(), r = li.getBoundingClientRect(), s = li.nextElementSibling.getBoundingClientRect(); return { part: r.width / pr.width, bord: s.left > r.right && s.left < pr.right - 10 }; })(),
+    compteur: document.querySelector('.defil__compteur').textContent, titre: getComputedStyle(document.querySelector('.page__titre')).fontSize, enonce: getComputedStyle(document.querySelector('.enonce')).fontSize,
+    tete: getComputedStyle(document.querySelector('.bloc-agences__tete')).gridTemplateColumns.split(' ').length, fleches: getComputedStyle(document.querySelector('.visio__fleche')).display }));
+  ok(m.cols.every(c => c === 1) && m.blocs.every(b => b.w === 350 && Math.abs(b.ratio - 4 / 3) < 0.01 && b.nom === '28px' && b.faits === 'none')
+    && m.blocs.map(b => b.mobile).join(' | ') === 'block Uccle · 14 unités | block Molenbeek-Saint-Jean · 1 200 m² | block Liège · 1 100 m² | block Jemelle · 4 200 m²', 'mobile : un bloc par ligne en 4:3, nom 28 px, « Lieu · surface » dessous, faits masqués');
+  ok(Math.abs(m.vignette.part - 0.78) < 0.005 && m.vignette.bord && m.compteur === '1 / 16', `mobile : une vignette à ${Math.round(m.vignette.part * 100)} % de la rangée et le bord de la suivante, « ${m.compteur} »`);
+  ok(m.titre === '44px' && m.enonce === '26px' && m.tete === 1 && m.fleches === 'none', 'mobile : titre 44 px, énoncé 26 px en une colonne, visionneuse sans flèches');
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('', [1440, 900], { javaScriptEnabled: false }, REAL);
+  ok(await p.evaluate(() => !document.querySelector('.mq') && !document.querySelector('[data-clone]') && document.querySelectorAll('.defil__piste > li').length === 16 && getComputedStyle(document.querySelector('.visio')).display === 'none'
+    && getComputedStyle(document.querySelector('.anciens')).display === 'none' && document.querySelectorAll('.bloc').length === 4), 'sans JavaScript : les 4 blocs, la rangée des 16 (défilement natif), visionneuse et anciens projets masqués, sans panneau');
   await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('', [1440, 900], { deviceScaleFactor: 2 }, REAL);
-  const cartes2 = (await photosImg(p, '.cartes__photo img')).filter(i => fs.existsSync(path.join(IMG_DIR, `${i.cle}.jpg`)));
-  ok(cartes2.length >= 3 && cartes2.every(i => i.servi === `${i.cle}.jpg`), `cartes à 1440 × 2 : le 1800 px est servi (${cartes2.map(i => i.servi).join(', ')})`);
+  const blocs2 = await photosImg(p, '.bloc img');
+  ok(blocs2.every(i => i.servi === `${i.cle}.jpg`), `blocs à 1440 × 2 : le 1800 px est servi (${blocs2.map(i => i.servi).join(', ')})`);
   await ctx.close();
 }
+// photos des biens : la version « 1800 px » d'une vue peut être provisoire (tirée d'une planche) tant que l'original n'est pas réduit — signalé, pas compté en échec
 {
-  const { p, ctx } = await ouvrir('quatre=liste&quatre=cartes', [1440, 900], {}, REAL);
-  ok((await style(p, '.cartes', 'display')) === 'grid' && !(await p.evaluate(() => document.querySelector('.section--quatre .four'))) && (await p.evaluate(() => document.querySelector('#data-box').className)) === 'cartes__item',
-    'quatre=… (bascule 21 retirée) : sans effet, les cartes et leurs ancres restent');
-  await p.hover('.cartes__item:first-child a');
-  ok(/^matrix\(1\.035/.test(await p.evaluate(() => getComputedStyle(document.querySelector('.cartes__item:first-child img')).transform)), 'cartes : zoom 1,035 au survol');
-  await ctx.close();
+  const petites = biensAttendus.flatMap(b => b.photos).filter(k => { const t = tailleJpeg(path.join(IMG_DIR, `${k}.jpg`)); return Math.max(t.width, t.height) < 1800; });
+  if (petites.length) console.log(`  info  ${petites.length} vues des biens n'ont pas encore leur 1800 px (plus grand côté < 1800) — reduire-photos.mjs --petit --grand <originaux>, puis rebâtir`);
 }
-{
-  const { p, ctx } = await ouvrir('', [390, 844], {}, REAL);
-  const m = await p.evaluate(() => ({ cols: getComputedStyle(document.querySelector('.galerie')).gridTemplateColumns.split(' ').length, meta: (() => { const e = document.querySelector('.galerie__item:nth-child(7) .galerie__meta'), s = getComputedStyle(e); return { display: s.display, position: s.position, clip: s.clipPath, w: Math.round(e.getBoundingClientRect().width), texte: e.textContent }; })(),
-    voile: getComputedStyle(document.querySelector('.galerie__voile')).display, agences: getComputedStyle(document.querySelector('.agences')).gridTemplateColumns.split(' ').length, cartes: getComputedStyle(document.querySelector('.cartes')).gridTemplateColumns.split(' ').length, titre: getComputedStyle(document.querySelector('.page__titre')).fontSize }));
-  ok(m.cols === 1 && m.meta.display === 'block' && m.meta.position === 'static' && m.meta.clip === 'none' && m.meta.w > 100 && m.meta.texte === 'Perwez · 60 m² · Commerce' && m.voile === 'none', `mobile : galerie en une colonne, « ${m.meta.texte} » affiché sous le nom, voile absent`);
-  ok(m.agences === 1 && m.cartes === 1 && m.titre === '44px', 'mobile : agences en une colonne, cartes en une colonne, titre 44 px');
-  await ctx.close();
-}
-
 await browser.close();
 console.log(ko ? `\n${ko} vérification(s) en échec` : '\nTout est vérifié.');
 process.exitCode = ko ? 1 : 0;
