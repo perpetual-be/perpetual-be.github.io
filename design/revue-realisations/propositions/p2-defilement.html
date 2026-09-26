@@ -233,7 +233,7 @@ html[data-fin="anciens"] .anciens{display:block}
 }
 
 /* ---- section agences (26/09) : papier sur l'énoncé seul (défaut) ou sur toute la section (?papier=tout) ---- */
-.bloc-agences{margin-top:96px}
+.bloc-agences{margin-top:56px}   /* 26/09 : écart réduit (96 → 56 px) à la demande d'Axel */
 .bloc-agences__bande{background:var(--surface);padding:56px 0 52px}
 .bloc-agences__bande .p1-agences__tete{margin-bottom:0}
 .bloc-agences__defil{padding-top:44px;padding-bottom:88px}
@@ -245,10 +245,20 @@ html[data-papier="tout"] .bloc-agences__defil{padding-top:0;padding-bottom:56px}
 html[data-bas="anciens"] .anciens{display:block;padding-top:8px;padding-bottom:96px}
 html[data-bas="anciens"][data-papier="tout"] .bloc-agences{margin-bottom:0}
 html[data-bas="anciens"][data-papier="tout"] .anciens{padding-top:88px}
-/* bandeau des propositions : deux réglages en plus */
+/* ---- une seule largeur pour tout le site (26/09) : l'en-tête suit la même limite que le contenu (1600 px, gouttière comprise) ;
+   au-delà de ~1680 px de fenêtre, logo et navigation restent alignés sur les photos au lieu de coller aux bords ---- */
+.site-header{max-width:1600px;margin-left:auto;margin-right:auto}
+/* ---- 26/09, P2 retenue : titre de la page en sans léger (Instrument Sans 400), figé — les fiches gardent la serif, qui prolonge le nom
+   des projets posé sur les photos ; la phrase sous le titre tient sur une ligne ---- */
+.page__titre{font-family:var(--sans);font-weight:400;letter-spacing:-.028em;line-height:1.02}
+.p2-ouv .ouv__texte,.p1-ouv .ouv__texte{max-width:none}
+/* ---- (ancienne bascule ?titre=, retirée du bandeau) titre de la page : serif (défaut, Newsreader 400) / sans (Instrument Sans 500) / sans-leger (Instrument Sans 400) ---- */
+html[data-titre="sans"] .page__titre,html[data-titre="sans-leger"] .page__titre{font-family:var(--sans);font-weight:500;letter-spacing:-.03em;line-height:1.02}
+html[data-titre="sans-leger"] .page__titre{font-weight:400;letter-spacing:-.028em}
+/* bandeau des propositions : réglages en plus */
 .prop-badge .sep{color:var(--filet)}
 @media (max-width:640px){
-  .bloc-agences{margin-top:56px}
+  .bloc-agences{margin-top:40px}
   .bloc-agences__bande{padding:40px 0 36px}
   .bloc-agences__defil{padding-top:28px;padding-bottom:56px}
   html[data-papier="tout"] .bloc-agences{margin-bottom:20px}
@@ -365,7 +375,7 @@ html[data-bas="anciens"][data-papier="tout"] .anciens{padding-top:88px}
   <blockquote class="footer__quote"><p>« Le véritable voyage de découverte ne consiste pas à chercher de nouveaux paysages, mais à avoir de nouveaux yeux. »</p><cite>Marcel Proust</cite></blockquote>
   <p class="footer__legal">© 2026 Perpetual</p>
 </div></footer>
-<nav class="prop-badge" aria-label="Propositions"><b>Réalisations</b><a href="p1-defilement.html">P1 · Quatre portraits</a><a href="p2-defilement.html" class="is-active">P2 · Nom sur la photo</a><span class="sep">|</span><span>papier :</span><a href="#" data-cle="papier" data-val="">énoncé seul</a><a href="#" data-cle="papier" data-val="tout">toute la section</a><span class="sep">|</span><span>bas :</span><a href="#" data-cle="bas" data-val="">rien</a><a href="#" data-cle="bas" data-val="anciens">anciens projets (réserve)</a></nav>
+<nav class="prop-badge" aria-label="Propositions"><b>Réalisations</b><a href="p2-defilement.html" class="is-active">P2 · Nom sur la photo (retenue)</a><a href="p1-defilement.html">P1 · Quatre portraits</a><span class="sep">|</span><span>papier :</span><a href="#" data-cle="papier" data-val="">énoncé seul</a><a href="#" data-cle="papier" data-val="tout">toute la section</a><span class="sep">|</span><span>bas :</span><a href="#" data-cle="bas" data-val="">rien</a><a href="#" data-cle="bas" data-val="anciens">anciens projets (réserve)</a></nav>
 <script>window.BIENS=[{"ville": "Braine-le-Comte", "surface": "600 m²", "usage": "Point Bancontact et service finance de la commune", "l": ["img/bnp-braine-le-comte-01-l.jpg", "img/bnp-braine-le-comte-03-l.jpg"]}, {"ville": "Pont-à-Celles", "surface": "250 m²", "usage": "Point Bancontact et auto-école", "l": ["img/bnp-pont-a-celles-01-l.jpg", "img/bnp-pont-a-celles-02-l.jpg"]}, {"ville": "Jambes", "surface": "400 m²", "usage": "Point Bancontact, école de danse et commerce de proximité", "l": ["img/bnp-jambes-01-l.jpg", "img/bnp-jambes-02-l.jpg"]}, {"ville": "Mettet", "surface": "600 m²", "usage": "Point Bancontact et quatre logements", "l": ["img/belfius-mettet-03-l.jpg", "img/belfius-mettet-05-l.jpg"]}, {"ville": "Braine-l’Alleud", "surface": "110 m²", "usage": "Commerce", "l": ["img/belfius-braine-l-alleud-01-l.jpg", "img/belfius-braine-l-alleud-02-l.jpg", "img/belfius-braine-l-alleud-03-l.jpg", "img/belfius-braine-l-alleud-04-l.jpg"]}, {"ville": "Bois-de-Villers", "surface": "60 m²", "usage": "Commerce", "l": ["img/bnp-bois-de-villers-02-l.jpg", "img/bnp-bois-de-villers-01-l.jpg"]}, {"ville": "Belgrade (Namur)", "surface": "130 m²", "usage": "Commerces", "l": ["img/ing-belgrade-01-l.jpg", "img/ing-belgrade-02-l.jpg"]}, {"ville": "Haaltert", "surface": "250 m²", "usage": "Logement, bureau et commerce", "l": ["img/ing-haaltert-01-l.jpg", "img/ing-haaltert-03-l.jpg"]}, {"ville": "Landen", "surface": "350 m²", "usage": "Logements et commerce", "l": ["img/ing-landen-01-l.jpg", "img/ing-landen-02-l.jpg", "img/ing-landen-03-l.jpg"]}, {"ville": "Tervuren", "surface": "320 m²", "usage": "Commerces et parkings", "l": ["img/ing-tervuren-01-l.jpg", "img/ing-tervuren-02-l.jpg", "img/ing-tervuren-03-l.jpg"]}, {"ville": "Perwez", "surface": "60 m²", "usage": "Commerce", "l": ["img/perwez-02-l.jpg", "img/perwez-01-l.jpg"]}, {"ville": "Welkenraedt", "surface": "120 m²", "usage": "Commerce", "l": ["img/ing-welkenraedt-01-l.jpg", "img/ing-welkenraedt-02-l.jpg"]}, {"ville": "Gilly", "surface": "450 m²", "usage": "Logements et commerces", "l": ["img/gilly-01-l.jpg"]}, {"ville": "Anderlecht", "surface": "230 m²", "usage": "Commerce et atelier", "l": ["img/wayez-27-01-l.jpg", "img/wayez-27-02-l.jpg", "img/wayez-27-03-l.jpg"]}, {"ville": "Schaerbeek", "surface": "700 m²", "usage": "Logements et équipement public", "l": ["img/consolation-01-l.jpg", "img/consolation-02-l.jpg"]}, {"ville": "Waremme", "surface": "110 m²", "usage": "Commerce", "l": ["img/waremme-03-l.jpg", "img/waremme-04-l.jpg", "img/waremme-01-l.jpg"]}];</script><script>
 (function(){
   var BIENS = window.BIENS, doux = !matchMedia('(prefers-reduced-motion: reduce)').matches;
