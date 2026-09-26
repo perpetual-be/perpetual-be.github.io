@@ -1,6 +1,5 @@
 ---
 title: Engagements
-subtitle: Trois engagements — aider, transmettre, soutenir
 description: Aider bénévolement, transmettre à La Cambre-Horta, soutenir le Créahmbxl — les trois engagements de Perpetual.
 ---
 
@@ -14,7 +13,7 @@ Ce n’est pas leur métier. Elles portent des causes, elles gèrent un patrimoi
 
 Le temps donné là ne se compte pas et ne sert aucun projet.
 
-Cela fait partie de ce que nous sommes. [Écrivez-nous](/contact) — une conversation suffit souvent.
+Cela fait partie de ce que nous sommes. [Écrivez-nous](#contact) — une conversation suffit souvent.
 
 <!-- Aucune organisation n’est nommée dans ce bloc. -->
 
@@ -34,5 +33,5 @@ Nous mettons en place avec eux un soutien logistique et financier de longue dur�
 
 <!--
 Le lien Créahmbxl s’ouvre dans un nouvel onglet (liens externes : target="_blank" rel="noopener" au rendu).
-Œuvre — Créahmbxl : une image sera ajoutée dans ce bloc, avec une légende « nom de l’artiste + titre ». À recevoir de Julien (Drive 04 Engagements).
+Œuvre — Créahmbxl : l’œuvre (Ines Reddah, 2024, recadrée) est sur une cimaise sous « Soutenir » ; ses données sont dans build.mjs (design/maquette/src/, objet oeuvre).
 -->

@@ -18,7 +18,7 @@
   // Home entièrement figée le 26/09 : 9c cadrage sur « haut » (50% 20%, le point focal de community-05 dans photoCandidates, build.mjs) et 15a carte
   // sur « sable » ; plus aucune bascule sur la Home. La 20 (fiche, titres de chapitre) est figée sur « sans »
   // (revue de la fiche, 23/09). Vue Réalisations (revue du 26/09, la proposition P2 remplace les cartes et la bascule 21) : 22 fond papier du programme
-  // agences et 23 bas de page, la V1 en défaut, la V2 en réserve.
+  // agences et 23 bas de page, la V1 en défaut, la V2 en réserve. Page Engagements (26/09) : aucune bascule, 22 et 23 y sont grisées.
   var BASCULES = [
     { n: '22', cle: 'papier', titre: 'Programme agences, fond papier', groupe: 'Réalisations', valeurs: [['enonce', 'énoncé seul'], ['tout', 'toute la section']], note: 'toute la section : puis 32 px de blanc avant le pied de page', pages: ['realisations'] },
     { n: '23', cle: 'bas', titre: 'Bas de page', groupe: 'Réalisations', valeurs: [['rien', 'rien'], ['anciens', 'anciens projets']], note: 'en réserve : les projets de l’ancien site, à confirmer avec Julien', pages: ['realisations'] }
@@ -99,7 +99,7 @@
   var corps = groupes.map(function (g) {
     return '<div class="mq__groupe"><div class="mq__gtitre">' + g + '</div>' + BASCULES.filter(function (b) { return b.groupe === g; }).map(fieldset).join('') + '</div>';
   }).join('');
-  var pagesHtml = [['index.html', 'home', 'Home'], ['projet-the-bank.html', 'fiche', 'Fiche'], ['realisations.html', 'realisations', 'Réalisations']].map(function (p) {
+  var pagesHtml = [['index.html', 'home', 'Home'], ['projet-the-bank.html', 'fiche', 'Fiche'], ['realisations.html', 'realisations', 'Réalisations'], ['engagements.html', 'engagements', 'Engagements']].map(function (p) {
     return '<a href="' + p[0] + '"' + (p[1] === PAGE ? ' class="is-active"' : '') + '>' + p[2] + '</a>';
   }).join('');
 
