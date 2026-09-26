@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Engagements — Perpetual</title>
 <script>(function(){var p=new URLSearchParams(location.search),h=document.documentElement;p.forEach(function(v,k){if(/^[a-z][a-z-]*$/.test(k)&&/^[a-z0-9-]*$/.test(v))h.setAttribute('data-'+k,v)})})();</script>
-<link rel="stylesheet" href="../../maquette/maquette.css">
-<link rel="icon" href="../../../public/favicon.svg">
+<link rel="stylesheet" href="../../../maquette/maquette.css">
+<link rel="icon" href="../../../../public/favicon.svg">
 <style>
 /* page Engagements — commun aux trois propositions */
 html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:400;letter-spacing:-.028em;line-height:1.02}   /* comme Réalisations : titre de page en sans léger */
@@ -38,20 +38,18 @@ html[data-panneau="off"] .prop-badge{display:none}
 @media print{.prop-badge{display:none}}
 @media (max-width:640px){.prop-badge{font-size:12px;gap:4px 10px;padding:6px 10px;left:8px;bottom:8px;max-width:calc(100vw - 16px)}}
 
-.duo{display:grid;grid-template-columns:1fr 1fr;gap:0 64px;padding-top:12px;padding-bottom:80px}
-.duo__bloc{border-top:1px solid var(--filet);padding-top:26px}
-.eng3 .verbe{font-family:var(--serif);font-weight:400;font-size:var(--fs-h2-serif);line-height:1.15;letter-spacing:-.01em;margin-bottom:20px}
-.soutenir{display:grid;grid-template-columns:5fr 7fr;gap:0 64px;align-items:center;border-top:1px solid var(--filet);padding-top:48px;padding-bottom:96px}
-.cimaise{background:var(--surface);padding:44px 48px 36px}
-.cimaise .oeuvre{max-width:340px;margin:0 auto}
-.cimaise .cartel{margin-top:16px}
+.eng2{display:grid;grid-template-columns:7fr 5fr;gap:0 64px;align-items:stretch;padding-bottom:96px}
+.eng2__g .eng-ouv{padding-left:0;padding-right:0}
+.eng2 .chapitres{max-width:none;padding-top:28px;display:flex;flex-direction:column;gap:52px}
+.eng2 .chapitre{margin:0}
+.eng2__d{padding-top:32px}
+.eng2__d .oeuvre{position:sticky;top:32px;width:100%;max-width:400px;margin-left:auto}
 @media (max-width:640px){
-  .duo{grid-template-columns:1fr;gap:40px;padding-bottom:48px}
-  .duo__bloc{padding-top:22px}
-  .soutenir{grid-template-columns:1fr;gap:28px;padding-top:22px;padding-bottom:56px}
-  .soutenir__texte{order:1}
-  .cimaise{order:2;padding:28px 24px 22px}
-  .cimaise .oeuvre{max-width:none}
+  .eng2{grid-template-columns:1fr;padding-bottom:56px}
+  .eng2__g .eng-ouv{padding-top:28px;padding-bottom:22px}
+  .eng2 .chapitres{padding-top:12px;gap:40px}
+  .eng2__d{padding-top:32px}
+  .eng2__d .oeuvre{position:static;max-width:none}
 }
 </style>
 </head>
@@ -90,19 +88,19 @@ html[data-panneau="off"] .prop-badge{display:none}
 -3 3304 c-1 2023 2 3307 7 3311 11 6 156 -4 279 -19z"/>
 </g></symbol></svg>
 <header class="site-header">
-  <a class="logo" href="../../maquette/index.html" aria-label="Perpetual"><svg class="logo__mark" aria-hidden="true"><use href="#phi"/></svg><span class="logo__texte">Perpetual</span></a>
-  <nav class="site-nav" aria-label="Navigation"><a href="../../maquette/realisations.html" class="trait">Réalisations</a><a href="p3.html" class="trait is-active" aria-current="page">Engagements</a><a href="#contact" class="trait">Contact</a></nav>
+  <a class="logo" href="../../../maquette/index.html" aria-label="Perpetual"><svg class="logo__mark" aria-hidden="true"><use href="#phi"/></svg><span class="logo__texte">Perpetual</span></a>
+  <nav class="site-nav" aria-label="Navigation"><a href="../../../maquette/realisations.html" class="trait">Réalisations</a><a href="p2-v1.html" class="trait is-active" aria-current="page">Engagements</a><a href="#contact" class="trait">Contact</a></nav>
 </header>
 <main>
-<div class="container eng-ouv"><h1 class="page__titre">Engagements</h1><p class="ouv__texte">Trois engagements — aider, transmettre, soutenir</p></div><div class="container eng3"><div class="duo"><section class="duo__bloc" id="aider"><h2 class="verbe">Aider</h2><div class="eng-texte"><p>Depuis 2016, nous consacrons du temps et de l’énergie à aider ponctuellement des familles, des associations et des ONG confrontées à une problématique immobilière. À titre bénévole.</p><p>Ce n’est pas leur métier. Elles portent des causes, elles gèrent un patrimoine reçu, elles font face à une situation qu’elles n’ont pas choisie — et se retrouvent à devoir parler une langue qui n’est pas la leur.</p><p>Le temps donné là ne se compte pas et ne sert aucun projet.</p><p>Cela fait partie de ce que nous sommes. <a class="lien-texte" href="#contact">Écrivez-nous</a> — une conversation suffit souvent.</p></div></section><section class="duo__bloc" id="transmettre"><h2 class="verbe">Transmettre</h2><div class="eng-texte"><p>Depuis 2021, Julien De Dobbeleer est professeur invité à la Faculté d’architecture La Cambre-Horta de l’ULB, dans le cadre du cours de déontologie.</p><p>Quelques heures par an, face aux étudiants de dernière année, au moment où ils quittent l’école. Comment vivre de ce métier sans renoncer à ses idées — et donner à celles-ci les moyens d’aboutir.</p></div></section></div><section class="soutenir" id="soutenir"><div class="cimaise"><figure class="oeuvre"><img class="oeuvre__img oeuvre__img--atelier" src="img/ines-reddah-2024.jpg" width="933" height="1244" alt="Peinture d’Ines Reddah, 2024 : deux grands visages ronds cernés de bleu et de rose, entourés de traits verticaux de couleur." decoding="async"><img class="oeuvre__img oeuvre__img--recadree" src="img/ines-reddah-2024-recadree.jpg" width="870" height="1132" alt="Peinture d’Ines Reddah, 2024 : deux grands visages ronds cernés de bleu et de rose, entourés de traits verticaux de couleur." decoding="async"><figcaption class="cartel"><b>Ines Reddah, 2024</b><span class="cartel__detail">Feutres et acrylique, 65 × 82 cm</span></figcaption></figure></div><div class="soutenir__texte"><h2 class="verbe">Soutenir</h2><div class="eng-texte"><p>Le <a class="lien-texte" href="https://creahmbxl.be" target="_blank" rel="noopener">Créahmbxl<span class="visuellement-masque"> (nouvel onglet)</span></a> est un laboratoire d’art. Ses salles débordent de sons, de couleurs et de gestes. On y peint, on y sculpte, on y danse, on y joue — et on y travaille dur.</p><p>Ce sont de vrais artistes. Ils ont une œuvre, un univers, une obstination, et ils exposent en Belgique et à l’étranger. Rien de ce qui se fait là n’est décoratif ou thérapeutique : c’est de l’art, au sens le plus entier du mot.</p><p>Nous mettons en place avec eux un soutien logistique et financier de longue durée.</p></div></div></section></div>
+<div class="container eng2"><div class="eng2__g"><div class="eng-ouv"><h1 class="page__titre">Engagements</h1><p class="ouv__texte">Trois engagements — aider, transmettre, soutenir</p></div><div class="chapitres"><section class="chapitre" id="aider"><p class="chapitre__num">01</p><h2 class="chapitre__titre">Aider</h2><div class="eng-texte chapitre__texte"><p>Depuis 2016, nous consacrons du temps et de l’énergie à aider ponctuellement des familles, des associations et des ONG confrontées à une problématique immobilière. À titre bénévole.</p><p>Ce n’est pas leur métier. Elles portent des causes, elles gèrent un patrimoine reçu, elles font face à une situation qu’elles n’ont pas choisie — et se retrouvent à devoir parler une langue qui n’est pas la leur.</p><p>Le temps donné là ne se compte pas et ne sert aucun projet.</p><p>Cela fait partie de ce que nous sommes. <a class="lien-texte" href="#contact">Écrivez-nous</a> — une conversation suffit souvent.</p></div></section><section class="chapitre" id="transmettre"><p class="chapitre__num">02</p><h2 class="chapitre__titre">Transmettre</h2><div class="eng-texte chapitre__texte"><p>Depuis 2021, Julien De Dobbeleer est professeur invité à la Faculté d’architecture La Cambre-Horta de l’ULB, dans le cadre du cours de déontologie.</p><p>Quelques heures par an, face aux étudiants de dernière année, au moment où ils quittent l’école. Comment vivre de ce métier sans renoncer à ses idées — et donner à celles-ci les moyens d’aboutir.</p></div></section><section class="chapitre" id="soutenir"><p class="chapitre__num">03</p><h2 class="chapitre__titre">Soutenir</h2><div class="eng-texte chapitre__texte"><p>Le <a class="lien-texte" href="https://creahmbxl.be" target="_blank" rel="noopener">Créahmbxl<span class="visuellement-masque"> (nouvel onglet)</span></a> est un laboratoire d’art. Ses salles débordent de sons, de couleurs et de gestes. On y peint, on y sculpte, on y danse, on y joue — et on y travaille dur.</p><p>Ce sont de vrais artistes. Ils ont une œuvre, un univers, une obstination, et ils exposent en Belgique et à l’étranger. Rien de ce qui se fait là n’est décoratif ou thérapeutique : c’est de l’art, au sens le plus entier du mot.</p><p>Nous mettons en place avec eux un soutien logistique et financier de longue durée.</p></div></section></div></div><div class="eng2__d"><figure class="oeuvre"><img class="oeuvre__img oeuvre__img--atelier" src="../img/ines-reddah-2024.jpg" width="933" height="1244" alt="Peinture d’Ines Reddah, 2024 : deux grands visages ronds cernés de bleu et de rose, entourés de traits verticaux de couleur." decoding="async"><img class="oeuvre__img oeuvre__img--recadree" src="../img/ines-reddah-2024-recadree.jpg" width="870" height="1132" alt="Peinture d’Ines Reddah, 2024 : deux grands visages ronds cernés de bleu et de rose, entourés de traits verticaux de couleur." decoding="async"><figcaption class="cartel"><b>Ines Reddah, 2024</b><span class="cartel__detail">Feutres et acrylique, 65 × 82 cm</span></figcaption></figure></div></div>
 </main>
 <footer class="site-footer" id="contact"><div class="container footer__grid">
   <div class="footer__contact"><p class="footer__name">Julien De Dobbeleer</p><a class="footer__mail" href="mailto:julien@perpetual.be">julien@perpetual.be</a><p class="footer__addr">Perpetual, 1030 Bruxelles</p></div>
-  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="../../maquette/realisations.html">Réalisations</a><a class="trait" href="../../maquette/index.html#collectif">Collectif</a><a class="trait" href="p3.html">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
+  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="../../../maquette/realisations.html">Réalisations</a><a class="trait" href="../../../maquette/index.html#collectif">Collectif</a><a class="trait" href="p2-v1.html">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
   <blockquote class="footer__quote"><p>« Le véritable voyage de découverte ne consiste pas à chercher de nouveaux paysages, mais à avoir de nouveaux yeux. »</p><cite>Marcel Proust</cite></blockquote>
   <p class="footer__legal">© 2026 Perpetual</p>
 </div></footer>
-<nav class="prop-badge" aria-label="Propositions"><a data-page="p1.html" href="p1.html" class="">P1 · Registre</a><a data-page="p2.html" href="p2.html" class="">P2 · Colonne et œuvre</a><a data-page="p3.html" href="p3.html" class="is-active">P3 · Deux temps</a><span class="sep">|</span>œuvre :<a data-cle="oeuvre" data-val="atelier" data-defaut="atelier" href="#">telle quelle</a><a data-cle="oeuvre" data-val="recadree" data-defaut="atelier" href="#">recadrée</a><span class="sep">|</span>légende :<a data-cle="legende" data-val="cartel" data-defaut="cartel" href="#">cartel</a><a data-cle="legende" data-val="courte" data-defaut="cartel" href="#">courte</a></nav>
+<nav class="prop-badge" aria-label="Propositions"><b>v1 (26/09, archives)</b><a data-page="p1-v1.html" href="p1-v1.html" class="">P1 · Registre</a><a data-page="p2-v1.html" href="p2-v1.html" class="is-active">P2 · Colonne et œuvre</a><a data-page="p3-v1.html" href="p3-v1.html" class="">P3 · Deux temps</a><span class="sep">|</span>œuvre :<a data-cle="oeuvre" data-val="atelier" data-defaut="atelier" href="#">telle quelle</a><a data-cle="oeuvre" data-val="recadree" data-defaut="atelier" href="#">recadrée</a><span class="sep">|</span>légende :<a data-cle="legende" data-val="cartel" data-defaut="cartel" href="#">cartel</a><a data-cle="legende" data-val="courte" data-defaut="cartel" href="#">courte</a></nav>
 <script>
 /* bandeau : garder les réglages (?oeuvre=…&legende=…) d'une proposition à l'autre */
 (function(){
