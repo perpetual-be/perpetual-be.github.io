@@ -1,4 +1,5 @@
-/* Perpetual — maquette du lot 2 : le panneau de bascules, l'état dans l'URL, l'aperçu de la liste des projets (Home).
+/* Perpetual — maquette du lot 2 : le panneau de bascules, l'état dans l'URL, l'aperçu de la liste des projets (Home), et sur la vue Réalisations
+   la rangée des agences en boucle, les photos de chaque bien et la visionneuse (revue du 26/09, repris de la proposition P2).
    L'état (une valeur par bascule) vit dans la query de l'URL (?cadrage=haut&carte=papier-contour) ; le hash reste aux ancres.
    Un script en tête de page pose déjà les attributs data-* avant le premier rendu ; ici on dessine le panneau et on tient l'URL à jour. */
 (function () {
@@ -16,11 +17,13 @@
   // Gel de la Home (23/09) : 2 serif (Newsreader) et 17 graisse (400) figées ; 9c réduite à centre / haut (« bas » retiré).
   // Sur la Home ne restent que deux décisions reportées : 9c cadrage (temporaire : la valeur retenue remplacera le point focal de community-05
   // dans photoCandidates, build.mjs) et 15a carte. La 20 (fiche, titres de chapitre) est figée sur « sans »
-  // (revue de la fiche, 23/09) ; la 21 (vue Réalisations, liste / cartes) est figée sur « cartes » le 23/09 : les cartes sont écrites en dur avec leurs ancres,
-  // la liste des 4 n'est plus générée sur cette page.
+  // (revue de la fiche, 23/09). Vue Réalisations (revue du 26/09, la proposition P2 remplace les cartes et la bascule 21) : 22 fond papier du programme
+  // agences et 23 bas de page, la V1 en défaut, la V2 en réserve.
   var BASCULES = [
     { n: '9c', cle: 'cadrage', titre: 'Cadrage de Community 05', groupe: 'Home', valeurs: [['centre', 'centre · 50% 50%'], ['haut', 'haut · 50% 20%']], note: 'décision reportée : la valeur retenue remplacera le point focal de photoCandidates (build.mjs)', pages: ['home'] },
-    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Home', valeurs: [['sable', 'sable'], ['papier-contour', 'papier, contour fin']], note: 'décision reportée : papier-contour ajoute le trait fin (--trait-carte)', pages: ['home'] }
+    { n: '15a', cle: 'carte', titre: 'Carte', groupe: 'Home', valeurs: [['sable', 'sable'], ['papier-contour', 'papier, contour fin']], note: 'décision reportée : papier-contour ajoute le trait fin (--trait-carte)', pages: ['home'] },
+    { n: '22', cle: 'papier', titre: 'Programme agences, fond papier', groupe: 'Réalisations', valeurs: [['enonce', 'énoncé seul'], ['tout', 'toute la section']], note: 'toute la section : puis 32 px de blanc avant le pied de page', pages: ['realisations'] },
+    { n: '23', cle: 'bas', titre: 'Bas de page', groupe: 'Réalisations', valeurs: [['rien', 'rien'], ['anciens', 'anciens projets']], note: 'en réserve : les projets de l’ancien site, à confirmer avec Julien', pages: ['realisations'] }
   ];
   var defauts = {};
   BASCULES.forEach(function (b) { defauts[b.cle] = b.valeurs[0][0]; });
@@ -62,6 +65,7 @@
   // ---- panneau ----
   var CSS = '.mq{position:fixed;right:16px;bottom:16px;z-index:1000;width:324px;max-height:min(80vh,calc(100vh - 32px));display:flex;flex-direction:column;background:#fff;color:#26231F;border:1px solid #26231F;font:12px/1.45 system-ui,sans-serif}' +
     'html[data-panneau="off"] .mq{display:none}' +
+    'body.visio-ouverte .mq{display:none}' +   // le panneau s'efface devant la visionneuse (vue Réalisations) : il recouvrait sa flèche droite et son compteur
     '.mq__tete{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid #E6E1D6}' +
     '.mq__plier{font:600 12px/1.4 system-ui,sans-serif;background:none;border:0;cursor:pointer;color:inherit;padding:0;text-align:left}' +
     '.mq__compte{font-weight:400;color:#6B655C}' +
@@ -179,6 +183,7 @@
   });
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
+    if (document.querySelector('.visio:not([hidden])')) return;   // Échap ferme la visionneuse (vue Réalisations), sans toucher au panneau
     if (presentation()) { html.removeAttribute('data-panneau'); appliquer(etat); }
     else panneau.querySelector('.mq__plier').click();
   });
@@ -199,5 +204,122 @@
         if (imgs[i]) imgs[i].classList.add('is-active');
       });
     });
+  });
+})();
+
+// ---- vue Réalisations : la rangée des agences, les photos de chaque bien, la visionneuse (repris tel quel de la proposition P2, revue du 26/09) ----
+(function(){
+  if (!document.querySelector('.visio')) return;
+  var BIENS = window.BIENS, doux = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function cloner(el){
+    var c = el.cloneNode(true); c.setAttribute('aria-hidden', 'true'); c.setAttribute('data-clone', '');
+    c.querySelectorAll('a,button,[tabindex]').forEach(function(x){ x.setAttribute('tabindex', '-1') });
+    return c;
+  }
+  // Piste en boucle : un jeu de clones avant et après les éléments ; on défile toujours dans le même sens,
+  // et en fin de défilement la piste est recentrée sans animation sur le jeu du milieu (invisible à l'œil).
+  function Boucle(piste, onmaj){
+    var self = this, items = Array.prototype.slice.call(piste.children), n = items.length, cible = null, depuis = 0, t;
+    self.n = n; self.courant = 0;
+    if (n > 1) {
+      var avant = document.createDocumentFragment(), apres = document.createDocumentFragment();
+      items.forEach(function(it){ avant.appendChild(cloner(it)); apres.appendChild(cloner(it)) });
+      piste.insertBefore(avant, piste.firstChild); piste.appendChild(apres);
+    }
+    function pas(){ var c = piste.children; return c.length > 1 ? c[1].getBoundingClientRect().left - c[0].getBoundingClientRect().left : piste.clientWidth }   // fractionnaire : les vignettes font 342,25 px
+    function indice(){ return Math.round(piste.scrollLeft / pas()) }
+    function reel(i){ return ((i % n) + n) % n }
+    function placer(i){ piste.scrollLeft = i * pas() }
+    function maj(i){ self.courant = reel(i); onmaj(self.courant) }
+    function recentrer(){
+      if (n < 2) return;
+      // un défilement demandé est encore en route (clics rapprochés) : on attend qu'il arrive, au plus 1,2 s
+      if (cible != null && Math.abs(piste.scrollLeft - cible * pas()) > 3) {
+        var reste = 1200 - (Date.now() - depuis);
+        if (reste > 0) { clearTimeout(t); t = setTimeout(recentrer, reste); return }
+      }
+      var i = indice();
+      if (i < n) placer(i + n); else if (i >= 2 * n) placer(i - n);
+      cible = null; maj(indice());
+    }
+    self.aller = function(delta){
+      if (n < 2) return;
+      var base = cible != null ? cible : indice();
+      if (base < n || base >= 2 * n) { var d = base < n ? n : -n; placer(indice() + d); base += d }
+      cible = base + delta; depuis = Date.now(); maj(cible);
+      piste.scrollTo({ left: cible * pas(), behavior: doux ? 'smooth' : 'auto' });
+      if (!doux) recentrer();
+    };
+    self.montrer = function(i){ if (n > 1) placer(n + i); maj(i) };
+    piste.addEventListener('scroll', function(){ clearTimeout(t); t = setTimeout(recentrer, 150) }, { passive: true });
+    if ('onscrollend' in window) piste.addEventListener('scrollend', function(){ clearTimeout(t); recentrer() });
+    window.addEventListener('resize', function(){ if (n > 1) placer(n + self.courant) });
+    self.montrer(0);
+  }
+
+  // 1. la rangée des agences (à construire avant les photos : ses clones copient les vignettes telles quelles)
+  var rangee = document.querySelector('.defil__piste'), cpt = document.querySelector('.defil__compteur'), rb;
+  function parVue(){ var c = rangee.children, p = c.length > 1 ? c[1].offsetLeft - c[0].offsetLeft : rangee.clientWidth; return Math.max(1, Math.round((rangee.clientWidth + 24) / p)) }
+  if (rangee) {
+    rb = new Boucle(rangee, function(i){
+      var k = parVue(), n = rb ? rb.n : rangee.children.length, fin = ((i + k - 1) % n) + 1;
+      cpt.textContent = (k > 1 ? (i + 1) + '–' + fin : (i + 1)) + ' / ' + n;
+    });
+    rb.montrer(0);
+    document.querySelector('[data-d-prec]').addEventListener('click', function(e){ e.preventDefault(); rb.aller(-parVue()) });
+    document.querySelector('[data-d-suiv]').addEventListener('click', function(e){ e.preventDefault(); rb.aller(parVue()) });
+    rangee.addEventListener('keydown', function(e){ if (e.target !== rangee) return;
+      if (e.key === 'ArrowRight'){ e.preventDefault(); rb.aller(parVue()) } if (e.key === 'ArrowLeft'){ e.preventDefault(); rb.aller(-parVue()) } });
+  }
+
+  // 2. les photos de chaque bien (originaux et clones de la rangée)
+  document.querySelectorAll('.bien').forEach(function(b){
+    var cptb = b.querySelector('.bien__compteur'), n = +b.getAttribute('data-n');
+    var bb = new Boucle(b.querySelector('.bien__piste'), function(i){ cptb.textContent = (i + 1) + ' / ' + n });
+    b.querySelector('.bien__fleche--g').addEventListener('click', function(e){ e.stopPropagation(); bb.aller(-1) });
+    b.querySelector('.bien__fleche--d').addEventListener('click', function(e){ e.stopPropagation(); bb.aller(1) });
+    b.querySelector('.bien__piste').addEventListener('click', function(){ ouvrir(+b.getAttribute('data-bien'), bb.courant) });
+  });
+
+  // 3. la visionneuse
+  var v = document.querySelector('.visio'), vl = v.querySelector('.visio__legende'), vc = v.querySelector('.visio__compteur'),
+      vg = v.querySelector('[data-v-prec]'), vd = v.querySelector('[data-v-suiv]'), vb = null, retour = null;
+  function ouvrir(k, depart){
+    var b = BIENS[k], n = b.l.length, ancienne = v.querySelector('.visio__piste'), vp = ancienne.cloneNode(false);
+    ancienne.replaceWith(vp); retour = document.activeElement;
+    vp.innerHTML = b.l.map(function(s){ return '<img src="' + s + '" alt="" decoding="async">' }).join('');
+    vl.innerHTML = '<b>' + b.ville + '</b>' + b.surface + ' · ' + b.usage;
+    vg.hidden = vd.hidden = n < 2;
+    v.hidden = false; document.body.classList.add('visio-ouverte');
+    vb = new Boucle(vp, function(i){ vc.textContent = n > 1 ? (i + 1) + ' / ' + n : '' });
+    vb.montrer(depart || 0);
+    v.querySelector('[data-fermer]').focus();
+  }
+  function fermer(){ v.hidden = true; document.body.classList.remove('visio-ouverte'); if (retour) retour.focus() }
+  document.querySelectorAll('[data-ouvrir]').forEach(function(el){ el.addEventListener('click', function(){ ouvrir(+el.getAttribute('data-ouvrir'), 0) }) });
+  vg.addEventListener('click', function(){ vb.aller(-1) });
+  vd.addEventListener('click', function(){ vb.aller(1) });
+  v.querySelector('[data-fermer]').addEventListener('click', fermer);
+  v.addEventListener('click', function(e){ if (e.target === v) fermer() });
+  document.addEventListener('keydown', function(e){
+    if (v.hidden) return;
+    if (e.key === 'Escape') fermer();
+    if (e.key === 'ArrowRight') vb.aller(1);
+    if (e.key === 'ArrowLeft') vb.aller(-1);
+  });
+})();
+
+// La visionneuse est modale (aria-modal) : tant qu'elle est ouverte, Tab et Maj+Tab restent dans ses commandes visibles — la page, sous le fond blanc,
+// n'est plus atteignable au clavier. Ajout à la proposition P2, dont le script ci-dessus reste tel quel.
+(function () {
+  var v = document.querySelector('.visio');
+  if (!v) return;
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab' || v.hidden) return;
+    var f = Array.prototype.filter.call(v.querySelectorAll('button, [tabindex="0"]'), function (el) { return !el.hidden && el.getClientRects().length; });
+    if (!f.length) return;
+    var i = f.indexOf(document.activeElement);
+    e.preventDefault();
+    f[e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : (i === -1 || i === f.length - 1 ? 0 : i + 1)].focus();
   });
 })();

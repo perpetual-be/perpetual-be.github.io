@@ -118,12 +118,16 @@
     "location": "Braine-le-Comte",
     "address": "Grand-Place 18, Braine-le-Comte",
     "surface": "600 m²",
-    "use": "Point Bancontact et service finance de la commune",
+    "use": "Service finance de la commune",
     "photos": [
       "bnp-braine-le-comte-01.jpg",
       "bnp-braine-le-comte-02.jpg",
       "bnp-braine-le-comte-03.jpg",
       "bnp-braine-le-comte-04.jpg"
+    ],
+    "selection": [
+      "bnp-braine-le-comte-01",
+      "bnp-braine-le-comte-03"
     ]
   },
   {
@@ -134,10 +138,14 @@
     "location": "Pont-à-Celles",
     "address": "Place Communale 25, Pont-à-Celles",
     "surface": "250 m²",
-    "use": "Point Bancontact et auto-école",
+    "use": "Auto-école",
     "photos": [
       "bnp-pont-a-celles-01.jpg",
       "bnp-pont-a-celles-02.jpg"
+    ],
+    "selection": [
+      "bnp-pont-a-celles-01",
+      "bnp-pont-a-celles-02"
     ]
   },
   {
@@ -148,10 +156,14 @@
     "location": "Jambes",
     "address": "Avenue Bourgmestre Jean Materne 135, Jambes",
     "surface": "400 m²",
-    "use": "Point Bancontact, école de danse et commerce de proximité",
+    "use": "École de danse et commerce de proximité",
     "photos": [
       "bnp-jambes-01.jpg",
       "bnp-jambes-02.jpg"
+    ],
+    "selection": [
+      "bnp-jambes-01",
+      "bnp-jambes-02"
     ]
   },
   {
@@ -162,13 +174,17 @@
     "location": "Mettet",
     "address": "Rue de Lurot 1, Mettet",
     "surface": "600 m²",
-    "use": "Point Bancontact et quatre logements",
+    "use": "Quatre logements",
     "photos": [
       "belfius-mettet-01.jpg",
       "belfius-mettet-02.jpg",
       "belfius-mettet-03.jpg",
       "belfius-mettet-04.jpg",
       "belfius-mettet-05.jpg"
+    ],
+    "selection": [
+      "belfius-mettet-03",
+      "belfius-mettet-05"
     ]
   },
   {
@@ -185,6 +201,12 @@
       "belfius-braine-l-alleud-02.jpg",
       "belfius-braine-l-alleud-03.jpg",
       "belfius-braine-l-alleud-04.jpg"
+    ],
+    "selection": [
+      "belfius-braine-l-alleud-01",
+      "belfius-braine-l-alleud-02",
+      "belfius-braine-l-alleud-03",
+      "belfius-braine-l-alleud-04"
     ]
   },
   {
@@ -199,6 +221,10 @@
     "photos": [
       "bnp-bois-de-villers-01.jpg",
       "bnp-bois-de-villers-02.jpg"
+    ],
+    "selection": [
+      "bnp-bois-de-villers-02",
+      "bnp-bois-de-villers-01"
     ]
   },
   {
@@ -213,6 +239,10 @@
     "photos": [
       "ing-belgrade-01.jpg",
       "ing-belgrade-02.jpg"
+    ],
+    "selection": [
+      "ing-belgrade-01",
+      "ing-belgrade-02"
     ]
   },
   {
@@ -228,6 +258,10 @@
       "ing-haaltert-01.jpg",
       "ing-haaltert-02.jpg",
       "ing-haaltert-03.jpg"
+    ],
+    "selection": [
+      "ing-haaltert-01",
+      "ing-haaltert-03"
     ]
   },
   {
@@ -244,6 +278,11 @@
       "ing-landen-02.jpg",
       "ing-landen-03.jpg",
       "ing-landen-04.jpg"
+    ],
+    "selection": [
+      "ing-landen-01",
+      "ing-landen-02",
+      "ing-landen-03"
     ]
   },
   {
@@ -259,6 +298,11 @@
       "ing-tervuren-01.jpg",
       "ing-tervuren-02.jpg",
       "ing-tervuren-03.jpg"
+    ],
+    "selection": [
+      "ing-tervuren-01",
+      "ing-tervuren-02",
+      "ing-tervuren-03"
     ]
   },
   {
@@ -274,6 +318,10 @@
       "ing-welkenraedt-01.jpg",
       "ing-welkenraedt-02.jpg",
       "ing-welkenraedt-03.jpg"
+    ],
+    "selection": [
+      "ing-welkenraedt-01",
+      "ing-welkenraedt-02"
     ]
   },
   {
@@ -288,6 +336,10 @@
     "photos": [
       "perwez-01.jpg",
       "perwez-02.jpg"
+    ],
+    "selection": [
+      "perwez-02",
+      "perwez-01"
     ]
   },
   {
@@ -304,6 +356,11 @@
       "waremme-02.jpg",
       "waremme-03.jpg",
       "waremme-04.jpg"
+    ],
+    "selection": [
+      "waremme-03",
+      "waremme-04",
+      "waremme-01"
     ]
   },
   {
@@ -318,6 +375,9 @@
     "photos": [
       "gilly-01.jpg",
       "gilly-02.jpg"
+    ],
+    "selection": [
+      "gilly-01"
     ]
   },
   {
@@ -334,6 +394,11 @@
       "wayez-27-02.jpg",
       "wayez-27-03.jpg",
       "wayez-27-04.jpg"
+    ],
+    "selection": [
+      "wayez-27-01",
+      "wayez-27-02",
+      "wayez-27-03"
     ]
   },
   {
@@ -348,6 +413,10 @@
     "photos": [
       "consolation-01.jpg",
       "consolation-02.jpg"
+    ],
+    "selection": [
+      "consolation-01",
+      "consolation-02"
     ]
   }
 ]

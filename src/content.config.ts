@@ -32,6 +32,9 @@ const projects = defineCollection({
     use: z.string().optional(),
     order: z.number().optional(),
     photos: z.array(z.string()).default([]),
+    // Programme agences et galerie : les photos montrées (vignette, visionneuse), en clés <id>-NN sans extension,
+    // dans l'ordre d'affichage. Sélection provisoire, revue sans toucher au code.
+    selection: z.array(z.string()).optional(),
     hero: z.string().optional(),
     // Plusieurs photos pleine largeur à tester avant de trancher (lot 5).
     heroCandidates: z.array(z.string()).optional(),
