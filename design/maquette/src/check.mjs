@@ -1,6 +1,7 @@
 // Vérifications de la maquette (Playwright + Chromium) : premier écran (structure F), débordement, effet de chaque bascule,
-// valeurs figées et alignement (gel de la Home du 23/09 : signature, espacements, pied de page), en-tête (Φ, wordmark, limite de 1600 px), carte des réalisations,
-// logos partenaires, photo 2800 px, srcset de l'aperçu des 4, mode présentation, page sans JavaScript, polices, contrastes ; puis la fiche The Bank
+// valeurs figées et alignement (gel de la Home du 23/09 : signature, espacements, pied de page), en-tête (Φ, wordmark, limite de 1600 px), pied de page
+// sur le container de 1 200 px (les trois pages), carte des réalisations, logos partenaires, photo 2800 px, srcset de l'aperçu des 4, mode présentation,
+// page sans JavaScript, polices, contrastes ; puis la fiche The Bank
 // (débordement horizontal, polices, gouttière du titre, premier écran et photo de tête, titres de chapitre, paire de photos, rythme) et la vue Réalisations,
 // proposition P2 (débordement et erreurs, alignement sur la grille large, ouverture, blocs des 4 projets, programme agences, rangée en boucle, photos d'un bien,
 // visionneuse, bascules 22 et 23, mobile, sans JavaScript).
@@ -197,6 +198,17 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   const hd = await p.evaluate(() => ({ w: Math.round(document.querySelector('.site-header').getBoundingClientRect().width), logo: Math.round(document.querySelector('.logo').getBoundingClientRect().left), nav: Math.round(document.querySelector('.site-nav').getBoundingClientRect().right) }));
   ok(hd.w === 1600 && hd.logo === 200 && hd.nav === 1720, `en-tête à 1920 : limité à 1600 px (${hd.w}), logo à ${hd.logo} px, liens jusqu'à ${hd.nav} px`);
   await ctx.close();
+}
+// pied de page (Cowork, 26/09) : sur le container de 1 200 px sur les trois pages, comme sur la Home, Réalisations comprise — seul l'en-tête est sur la grille
+// large ; .site-footer > .container n'a pas de max-width propre, et le contact commence au même x d'une page à l'autre
+for (const [w, h] of [[1920, 1080], [1521, 705], [390, 844]]) {
+  const pied = [];
+  for (const page of ['index', 'projet-the-bank', 'realisations']) {
+    const { p, ctx } = await ouvrir('', [w, h], {}, page);
+    pied.push({ page, ...await p.evaluate(() => ({ mw: getComputedStyle(document.querySelector('.site-footer > .container')).maxWidth, x: Math.round(document.querySelector('.footer__contact').getBoundingClientRect().left) })) });
+    await ctx.close();
+  }
+  ok(pied.every(q => q.mw === '1200px' && q.x === pied[0].x), `${w} × ${h} : pied de page sur le container de 1 200 px, contact au même x sur les trois pages — ${pied.map(q => `${q.page} ${q.mw}, x ${q.x}`).join(' · ')}`);
 }
 {
   const { p, ctx } = await ouvrir('', [390, 844]);
@@ -447,9 +459,9 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
 {
   const { p, ctx } = await ouvrir('', [1920, 1080], {}, REAL);
   const x = await p.evaluate(() => { const l = s => Math.round(document.querySelector(s).getBoundingClientRect().left), r = s => Math.round(document.querySelector(s).getBoundingClientRect().right);
-    return { logo: l('.logo'), titre: l('.page__titre'), photo: l('.bloc'), rangee: l('.defil__piste'), eyebrow: l('.bloc-agences .eyebrow'), pied: l('.footer__contact'), nav: r('.site-nav'), photoD: r('.alt__rang--a .bloc:last-child'), rangeeD: r('.defil__piste') }; });
+    return { logo: l('.logo'), titre: l('.page__titre'), photo: l('.bloc'), rangee: l('.defil__piste'), eyebrow: l('.bloc-agences .eyebrow'), nav: r('.site-nav'), photoD: r('.alt__rang--a .bloc:last-child'), rangeeD: r('.defil__piste') }; });
   ok(x.logo === 200 && x.titre === 200 && x.photo === 200 && x.rangee === 200, `1920 : le logo, le titre, la première photo et la rangée commencent au même x (${x.logo}, ${x.titre}, ${x.photo}, ${x.rangee})`);
-  ok(x.eyebrow === 200 && x.pied === 200 && x.nav === 1720 && x.photoD === 1720 && x.rangeeD === 1720, `1920 : « Programme agences » et le pied de page sur la même grille (x ${x.eyebrow}, ${x.pied}) ; la navigation finit avec les photos et la rangée (${x.nav}, ${x.photoD}, ${x.rangeeD})`);
+  ok(x.eyebrow === 200 && x.nav === 1720 && x.photoD === 1720 && x.rangeeD === 1720, `1920 : « Programme agences » sur la même grille (x ${x.eyebrow}) ; la navigation finit avec les photos et la rangée (${x.nav}, ${x.photoD}, ${x.rangeeD})`);
   const blocs = await photosImg(p, '.bloc img');
   ok(blocs.every(i => i.echelle <= 1), `blocs à 1920 × 1080, 1× : aucune photo agrandie (${blocs.map(i => `${i.cle} ${i.w}×${i.h} ← ${i.pixels} ×${i.echelle}`).join(', ')})`);
   await ctx.close();
@@ -468,11 +480,10 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   await polices(p, 'réalisations');
   const t = await p.evaluate(() => { const h1 = document.querySelector('.page__titre'), s = getComputedStyle(h1), ph = document.querySelector('.p2-ouv .ouv__texte');
     return { title: document.title, h1: h1.textContent, ff: s.fontFamily, fw: s.fontWeight, fs: s.fontSize, ls: s.letterSpacing, lh: s.lineHeight, phrase: ph.textContent, mw: getComputedStyle(ph).maxWidth, provisoire: ph.classList.contains('provisoire') && !!ph.title,
-      actif: document.querySelector('.site-nav a.is-active') && document.querySelector('.site-nav a.is-active').textContent, pied: getComputedStyle(document.querySelector('.site-footer > .container')).maxWidth }; });
+      actif: document.querySelector('.site-nav a.is-active') && document.querySelector('.site-nav a.is-active').textContent }; });
   ok(t.title === 'Réalisations — Perpetual' && t.h1 === 'Réalisations' && t.actif === 'Réalisations', `titre « ${t.h1} », « ${t.actif} » actif dans la navigation`);
   ok(t.ff.startsWith('"Instrument Sans"') && t.fw === '400' && t.fs === '64px' && t.ls === '-1.792px' && t.lh === '65.28px', `titre en Instrument Sans 400, 64 px, interlettrage −0,028 em, interligne 1,02 (${t.ff.split(',')[0]} ${t.fw}, ${t.ls}, ${t.lh}) — la fiche garde la serif`);
   ok(t.phrase === phraseAttendue && t.phrase === 'Vingt adresses où l’usage d’un bâtiment a été changé pour le rendre à nouveau pertinent.' && t.mw === 'none' && t.provisoire, `phrase d'ouverture : le subtitle de content/realisations.md, sans max-width, signalée provisoire — « ${t.phrase} »`);
-  ok(t.pied === '1600px', `pied de page aligné sur la grille large (.site-footer > .container : max-width ${t.pied})`);
   // les quatre projets
   const b = await p.evaluate(() => [...document.querySelectorAll('.bloc')].map(e => { const r = e.getBoundingClientRect(), nom = e.querySelector('.bloc__nom'), tx = e.querySelector('.bloc__texte'), f = e.querySelector('.bloc__faits'), s = getComputedStyle(nom);
     return { tag: e.tagName.toLowerCase(), id: e.id, href: e.getAttribute('href'), tab: e.getAttribute('tabindex'), nom: nom.textContent, ff: s.fontFamily.split(',')[0], fs: s.fontSize, c: s.color, gauche: Math.round(nom.getBoundingClientRect().left - r.left), bas: Math.round(r.bottom - tx.getBoundingClientRect().bottom),

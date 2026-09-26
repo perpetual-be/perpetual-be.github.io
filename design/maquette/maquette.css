@@ -40,7 +40,7 @@
   --fs-titre-page:64px;--fs-suivant:30px;   /* fiche et vue Réalisations */
   /* mise en page */
   --max:1200px;--gutter:40px;--bande-haut:44px;--bande-bas:40px;
-  --max-large:1600px;   /* grille large, gouttières comprises (26/09) : l'en-tête et la vue Réalisations ; la Home et la fiche y passeront plus tard */
+  --max-large:1600px;   /* grille large, gouttières comprises (26/09) : l'en-tête de toutes les pages et le contenu de la vue Réalisations ; le pied de page de toutes les pages et le contenu de la Home et de la fiche restent sur --max (1 200 px) */
   /* photo du premier écran : assez basse pour que la bande et ses quatre chiffres tiennent sous elle à 1440 × 900 et 1366 × 703
      (en-tête 76 px + bande ~176 px dans la fenêtre basse ⇒ ~360 px restent pour la photo) */
   --photo-hauteur:clamp(320px,calc(100vh - 270px),560px);--photo-haut:64px;
@@ -70,7 +70,9 @@ ol,ul{list-style:none}
 
 /* ---------- 4. Composants ---------- */
 /* en-tête : logo et liens aux marges de la grille large, la même limite que le contenu large (--max-large, gouttière comprise ; 26/09) — rien ne change
-   sous ~1 680 px de fenêtre, au-delà logo et navigation restent alignés sur le contenu large au lieu de coller aux bords ; le contenu texte reste sur --max */
+   sous ~1 680 px de fenêtre, au-delà logo et navigation restent alignés sur le contenu large au lieu de coller aux bords. L'en-tête est le même sur toutes
+   les pages, sur la grille large, quelle que soit la grille du contenu ; le pied de page, lui, est sur --max (1 200 px) partout, comme le contenu de la Home
+   et de la fiche */
 .site-header{display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:76px;max-width:var(--max-large);margin-left:auto;margin-right:auto;padding:0 var(--gutter)}
 .logo{display:inline-flex;align-items:center;gap:15px;color:var(--c-texte)}
 .logo__mark{width:19px;height:20px;color:var(--c-phi);fill:currentColor;flex:none;position:relative;top:1px}
@@ -189,10 +191,9 @@ ol,ul{list-style:none}
 .suivant .eyebrow{display:block;margin-bottom:6px}
 .suivant__nom{display:inline-block;font-family:var(--serif);font-size:var(--fs-suivant);line-height:1.2;color:var(--c-lien);padding-bottom:2px}
 /* vue Réalisations (revue du 26/09, proposition P2 retenue), sur la grille large : le titre en sans léger — la fiche garde la serif, qui prolonge le nom
-   des projets posé sur les photos —, la phrase d'ouverture sur une ligne ; le pied de page s'aligne sur la grille large.
+   des projets posé sur les photos —, la phrase d'ouverture sur une ligne (le pied de page, lui, reste sur le container de 1 200 px, comme sur toutes les pages).
    .provisoire : texte ou intitulé provisoire (lot 3), signalé par un title au survol */
 html[data-page="realisations"] .page__titre{font-family:var(--sans);font-weight:400;letter-spacing:-.028em;line-height:1.02}
-html[data-page="realisations"] .site-footer>.container{max-width:var(--max-large)}
 .p2-ouv{padding-top:32px;padding-bottom:30px}
 .ouv__texte{font-size:var(--fs-texte);line-height:1.5;color:var(--c-texte);max-width:40ch;text-wrap:pretty}
 .p2-ouv .ouv__texte{margin-top:14px;max-width:none}
@@ -282,7 +283,9 @@ body.visio-ouverte{overflow:hidden}
 .ancien__usage{font-size:15px;line-height:1.45;margin-top:8px;max-width:30ch;text-wrap:pretty}
 
 /* pied de page */
-/* resserré le 23/09 : 48 px en haut, 32 px entre la dernière ligne des colonnes et le filet du bas (le gap vertical de la grille, sans marge sur le bloc légal) */
+/* resserré le 23/09 : 48 px en haut, 32 px entre la dernière ligne des colonnes et le filet du bas (le gap vertical de la grille, sans marge sur le bloc légal).
+   Sur le container de 1 200 px (--max, celui de .container), sur toutes les pages, Réalisations comprise (26/09) : pas de max-width propre, seul l'en-tête
+   est sur la grille large */
 .site-footer{padding:48px 0 40px;font-size:15px;background:var(--surface-pied)}
 .footer__grid{display:grid;grid-template-columns:4fr 3fr 5fr;gap:32px 48px;align-items:start}
 .footer__name{font-weight:500}
