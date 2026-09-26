@@ -1,10 +1,11 @@
 // Vérifications de la maquette (Playwright + Chromium) : premier écran (structure F), débordement, paramètres des bascules retirées sans effet,
 // valeurs figées et alignement (gel de la Home du 23/09 : signature, espacements, pied de page), en-tête (Φ, wordmark, limite de 1600 px), pied de page
-// sur le container de 1 200 px (les trois pages), carte des réalisations, logos partenaires, photo 2800 px, srcset de l'aperçu des 4, mode présentation,
+// sur le container de 1 200 px (les quatre pages), carte des réalisations, logos partenaires, photo 2800 px, srcset de l'aperçu des 4, mode présentation,
 // page sans JavaScript, polices, contrastes ; puis la fiche The Bank
-// (débordement horizontal, polices, gouttière du titre, premier écran et photo de tête, titres de chapitre, paire de photos, rythme) et la vue Réalisations,
+// (débordement horizontal, polices, gouttière du titre, premier écran et photo de tête, titres de chapitre, paire de photos, rythme), la vue Réalisations,
 // proposition P2 (débordement et erreurs, alignement sur la grille large, ouverture, blocs des 4 projets, programme agences, rangée en boucle, photos d'un bien,
-// visionneuse, bascules 22 et 23, mobile, sans JavaScript).
+// visionneuse, bascules 22 et 23, mobile, sans JavaScript) et la page Engagements (débordement et erreurs, ouverture, registre, œuvre sur sa cimaise, cartel,
+// liens, espacements, téléphone, panneau, sans JavaScript ; liens « Engagements » des quatre pages).
 // Usage, depuis la racine du dépôt : NODE_PATH=$(npm root -g) node design/maquette/src/check.mjs
 import path from 'node:path';
 import fs from 'node:fs';
@@ -76,7 +77,7 @@ function verifierSrcset(liste, nom) {
 
 // la palette, telle que Chromium la rend
 const ANTHRACITE = 'rgb(38, 35, 31)', GRIS = 'rgb(107, 101, 92)', GRIS_CHAUD = 'rgb(122, 116, 102)', OR = 'rgb(154, 122, 59)', OR_FONCE = 'rgb(138, 107, 47)', OR_CLAIR = 'rgb(184, 151, 90)',
-  BRONZE = 'rgb(104, 78, 30)', PAPIER = 'rgb(249, 249, 246)', SABLE = 'rgb(246, 241, 230)', BLANC = 'rgb(255, 255, 255)', OR_DECO = 'rgb(201, 181, 138)';
+  BRONZE = 'rgb(104, 78, 30)', PAPIER = 'rgb(249, 249, 246)', SABLE = 'rgb(246, 241, 230)', BLANC = 'rgb(255, 255, 255)', OR_DECO = 'rgb(201, 181, 138)', FILET = 'rgb(230, 225, 214)';
 
 console.log('\n1 · Premier écran — structure F : la photo porte l’accroche, la bande et ses quatre chiffres tiennent dans 900 à 1440 et dans 703 à 1366');
 for (const [w, h] of [[1440, 900], [1366, 703]]) {
@@ -148,7 +149,7 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   const libelles = await p.evaluate(() => ({ nav: document.querySelector('.site-nav a').textContent, plan: document.querySelector('.footer__nav a').textContent, liste: document.querySelector('.section--projets .eyebrow').textContent, carte: document.querySelector('.section--autres .eyebrow').textContent,
     chiffre: [...document.querySelectorAll('.stat__label')].some(l => l.textContent === 'Projets en cours'), onglet: [...document.querySelectorAll('.mq__pages a')].map(a => a.textContent).join(' · ') }));
   const siteNav = JSON.parse(fs.readFileSync(path.resolve(MAQ, '../../data/site.json'), 'utf8')).nav.find(n => n.href === '/realisations').label;
-  ok(libelles.nav === siteNav && libelles.plan === siteNav && libelles.liste === 'Réalisations' && libelles.carte === 'Réalisations' && libelles.chiffre && libelles.onglet === 'Home · Fiche · Réalisations',
+  ok(libelles.nav === siteNav && libelles.plan === siteNav && libelles.liste === 'Réalisations' && libelles.carte === 'Réalisations' && libelles.chiffre && libelles.onglet === 'Home · Fiche · Réalisations · Engagements',
     `libellés : navigation et plan « ${libelles.nav} » (data/site.json), liste des 4 « ${libelles.liste} », « Projets en cours » inchangé, onglets ${libelles.onglet}`);
   const photos = await p.evaluate(() => [...document.querySelectorAll('.hero__photo img')].map(i => ({ key: i.dataset.photo, display: getComputedStyle(i).display, focal: getComputedStyle(i).objectPosition })));
   ok(photos.length === 1 && photos[0].key === 'community-05' && photos[0].display === 'block' && photos[0].focal === '50% 20%', `photo du premier écran : Community 05 seule, cadrage haut, figé le 26/09 (${photos.map(x => x.focal).join(' · ')})`);
@@ -187,16 +188,16 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok(hd.w === 1600 && hd.logo === 200 && hd.nav === 1720, `en-tête à 1920 : limité à 1600 px (${hd.w}), logo à ${hd.logo} px, liens jusqu'à ${hd.nav} px`);
   await ctx.close();
 }
-// pied de page (Cowork, 26/09) : sur le container de 1 200 px sur les trois pages, comme sur la Home, Réalisations comprise — seul l'en-tête est sur la grille
-// large ; .site-footer > .container n'a pas de max-width propre, et le contact commence au même x d'une page à l'autre
+// pied de page (Cowork, 26/09) : sur le container de 1 200 px sur les quatre pages, comme sur la Home, Réalisations et Engagements comprises — seul l'en-tête
+// est sur la grille large ; .site-footer > .container n'a pas de max-width propre, et le contact commence au même x d'une page à l'autre
 for (const [w, h] of [[1920, 1080], [1521, 705], [390, 844]]) {
   const pied = [];
-  for (const page of ['index', 'projet-the-bank', 'realisations']) {
+  for (const page of ['index', 'projet-the-bank', 'realisations', 'engagements']) {
     const { p, ctx } = await ouvrir('', [w, h], {}, page);
     pied.push({ page, ...await p.evaluate(() => ({ mw: getComputedStyle(document.querySelector('.site-footer > .container')).maxWidth, x: Math.round(document.querySelector('.footer__contact').getBoundingClientRect().left) })) });
     await ctx.close();
   }
-  ok(pied.every(q => q.mw === '1200px' && q.x === pied[0].x), `${w} × ${h} : pied de page sur le container de 1 200 px, contact au même x sur les trois pages — ${pied.map(q => `${q.page} ${q.mw}, x ${q.x}`).join(' · ')}`);
+  ok(pied.every(q => q.mw === '1200px' && q.x === pied[0].x), `${w} × ${h} : pied de page sur le container de 1 200 px, contact au même x sur les quatre pages — ${pied.map(q => `${q.page} ${q.mw}, x ${q.x}`).join(' · ')}`);
 }
 {
   const { p, ctx } = await ouvrir('', [390, 844]);
@@ -305,8 +306,8 @@ const encres = [['#26231F', 'anthracite (texte, barres)'], ['#6B655C', 'gris (é
 ok(Number(contraste('#8A6B2F', '#FFFFFF')) >= 4.5 && Number(contraste('#9A7A3B', '#FFFFFF')) < 4.5, `numéros de chapitre (15 px) en or foncé : ${contraste('#8A6B2F', '#FFFFFF')}:1 sur blanc (or mat : ${contraste('#9A7A3B', '#FFFFFF')}:1, sous le seuil)`);
 for (const [hex, nom] of encres) console.log('  ' + nom.padEnd(30) + Object.entries(fonds).map(([f, h]) => `${f} ${contraste(hex, h)}:1`).join('   '));
 
-// ---------- fiche The Bank et vue Réalisations ----------
-const FICHE = 'projet-the-bank', REAL = 'realisations';
+// ---------- fiche The Bank, vue Réalisations et page Engagements ----------
+const FICHE = 'projet-the-bank', REAL = 'realisations', ENG = 'engagements';
 const familles = ['Newsreader', 'Instrument Sans', 'Jost'];
 async function polices(p, nom) {
   for (const f of familles) ok(await p.evaluate(async f => { await document.fonts.load(`400 16px "${f}"`); return document.fonts.check(`400 16px "${f}"`); }, f), `${nom} : police chargée en file:// : ${f}`);
@@ -367,8 +368,8 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
   ok(g.titre === g.eyebrow && g.titre === (w === 1440 ? 160 : 20), `${FICHE} · ${w} : .page__titre au même x que la première .eyebrow (${g.titre} = ${g.eyebrow}, padding latéral ${g.pad})`);
   await ctx.close();
 }
-// citation du pied de page : espaces insécables (U+00A0) après « et avant », sur les trois pages
-for (const page of ['index', FICHE, REAL]) {
+// citation du pied de page : espaces insécables (U+00A0) après « et avant », sur les quatre pages
+for (const page of ['index', FICHE, REAL, ENG]) {
   const { p, ctx } = await ouvrir('', [1440, 900], {}, page);
   const q = await p.evaluate(() => document.querySelector('.footer__quote p').textContent);
   ok(q.startsWith('«\u00A0') && q.endsWith('\u00A0»'), `${page} : citation du pied de page, espaces insécables après « et avant »`);
@@ -704,6 +705,130 @@ for (const [w, h] of [[1440, 900], [390, 844]]) {
 {
   const petites = biensAttendus.flatMap(b => b.photos).filter(k => { const t = tailleJpeg(path.join(IMG_DIR, `${k}.jpg`)); return Math.max(t.width, t.height) < 1800; });
   if (petites.length) console.log(`  info  ${petites.length} vues des biens n'ont pas encore leur 1800 px (plus grand côté < 1800) — reduire-photos.mjs --petit --grand <originaux>, puis rebâtir`);
+}
+
+console.log('\n10 · Page Engagements (Cowork, 26/09)');
+const ALT_OEUVRE = 'Peinture d’Ines Reddah, 2024 : deux grands visages ronds cernés de bleu et de rose, entourés de traits verticaux de couleur.';
+{
+  // l'œuvre : le fichier de la référence, copié tel quel dans design/directions/img/ (pas recompressé), 870 × 1132
+  const fichier = 'ines-reddah-2024-recadree.jpg', copie = path.join(IMG_DIR, fichier), source = path.resolve(MAQ, '../revue-engagements/propositions/img', fichier);
+  const t = fs.existsSync(copie) ? tailleJpeg(copie) : {};
+  ok(fs.existsSync(copie) && fs.readFileSync(copie).equals(fs.readFileSync(source)) && t.width === 870 && t.height === 1132, `œuvre : design/directions/img/${fichier} (${t.width} × ${t.height}), identique au fichier de la référence, pas recompressé`);
+}
+// aux quatre formats : ni erreur ni débordement ; le titre au x du texte de la Home (container de 1 200 px), sans sous-titre ; les trois rangées ; l'œuvre
+// entière sur sa cimaise, dans la colonne de gauche de #soutenir ; 72 px du bas de la cimaise au haut du pied de page (44 au téléphone)
+for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
+  const home = await ouvrir('', [w, h]);
+  const xHome = await home.p.evaluate(() => Math.round(document.querySelector('.hero__text > p').getBoundingClientRect().left));
+  await home.ctx.close();
+  const { p, ctx, erreurs } = await ouvrir('', [w, h], {}, ENG);
+  await parcourir(p);
+  await p.waitForLoadState('networkidle');
+  const deb = await largeur(p), tel = w <= 640, nom = `engagements · ${w} × ${h}`;
+  ok(deb === 0 && !erreurs.length, `${nom} : aucun débordement horizontal (${deb} px), aucune erreur` + (erreurs.length ? ' — ' + erreurs.join(' | ') : ''));
+  const m = await p.evaluate(() => {
+    const r = e => e.getBoundingClientRect(), img = document.querySelector('.oeuvre img'), cim = document.querySelector('.cimaise'), s = getComputedStyle(cim);
+    const soutenir = document.querySelector('#soutenir'), verbe = soutenir.querySelector('.rang__verbe'), texte = soutenir.querySelector('.eng-texte');
+    return { titre: Math.round(r(document.querySelector('.page__titre')).left), sousTitre: !!document.querySelector('.ouv__texte'),
+      rangs: [...document.querySelectorAll('.registre > section.rang')].map(x => x.id).join(' '), verbes: [...document.querySelectorAll('.rang__verbe')].map(v => v.tagName + ' ' + getComputedStyle(v).fontFamily.split(',')[0]),
+      oeuvres: document.querySelectorAll('.oeuvre').length, dans: !!img.closest('#soutenir .rang__g > .cimaise > figure.oeuvre'), lien: !!img.closest('a'), fit: getComputedStyle(img).objectFit,
+      iw: r(img).width, ih: r(img).height, nw: img.naturalWidth, nh: img.naturalHeight, il: r(img).left, ir: r(img).right,
+      cl: r(cim).left, cr: r(cim).right, cw: r(cim).width, ct: r(cim).top, cb: r(cim).bottom, pad: [s.paddingTop, s.paddingRight, s.paddingBottom, s.paddingLeft].join(' '), fond: s.backgroundColor,
+      col: r(soutenir.querySelector('.rang__g')).width, rl: r(soutenir).left, verbeBas: r(verbe).bottom, texteHaut: r(texte).top, texteBas: r(texte).bottom, texteP: r(texte.querySelector('p')).top,
+      pied: r(document.querySelector('.site-footer')).top };
+  });
+  ok(m.titre === xHome && !m.sousTitre, `${nom} : « Engagements » au même x que le texte de la Home (${m.titre} = ${xHome}), sans sous-titre (.ouv__texte absent)`);
+  ok(m.rangs === 'aider transmettre soutenir' && m.verbes.length === 3 && m.verbes.every(v => v === 'H2 Newsreader'), `${nom} : trois rangées (${m.rangs}), verbes en h2 Newsreader`);
+  ok(m.oeuvres === 1 && m.dans && !m.lien && m.fit === 'fill' && m.nw >= 2 * m.iw && Math.abs(m.iw / m.ih - m.nw / m.nh) < 0.01 && (tel || m.iw <= 340),
+    `${nom} : l'œuvre dans la cimaise de #soutenir, entière — ${Math.round(m.iw)} × ${Math.round(m.ih)} px affichés, fichier ${m.nw} × ${m.nh} (≥ 2 ×), object-fit ${m.fit} —, ${tel ? 'pleine largeur du panneau' : '340 px au plus'}, pas un lien`);
+  if (!tel) ok(Math.round(m.cw) === Math.round(m.col) && Math.round(m.cl) === Math.round(m.rl) && Math.round(m.ct - m.verbeBas) === 32 && m.pad === '44px 48px 36px 48px' && m.fond === PAPIER && Math.abs((m.il - m.cl) - (m.cr - m.ir)) <= 1,
+    `${nom} : cimaise papier dans la colonne de gauche (${Math.round(m.cw)} px), 32 px sous le verbe, padding 44 / 48 / 36, l'œuvre centrée`);
+  else ok(Math.round(m.cl) === 20 && Math.round(m.cr) === w - 20 && Math.round(m.iw) === Math.round(m.cw) - 48 && m.pad === '28px 24px 22px 24px' && m.fond === PAPIER && m.verbeBas <= m.texteHaut + 1 && Math.round(m.texteP - m.verbeBas) === 14 && Math.round(m.ct - m.texteBas) === 28,
+    `${nom} : une colonne — le verbe, le texte (14 px dessous), puis l'œuvre (28 px au-dessus) ; cimaise dans les gouttières (${Math.round(m.cl)}–${Math.round(m.cr)}), padding 28 / 24 / 22, l'œuvre sur toute la largeur du panneau (${Math.round(m.iw)} px)`);
+  const fin = Math.round(m.pied - m.cb);
+  ok(fin === (tel ? 44 : 72), `${nom} : bas de la cimaise → haut du pied de page, ${fin} px (${tel ? 44 : 72} attendus)`);
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('', [1440, 900], {}, ENG);
+  await polices(p, 'engagements');
+  const t = await p.evaluate(() => { const h1 = document.querySelector('.page__titre'), s = getComputedStyle(h1), tete = getComputedStyle(h1.parentElement);
+    return { page: document.documentElement.dataset.page, title: document.title, h1: h1.textContent, ff: s.fontFamily, fw: s.fontWeight, fs: s.fontSize, ls: s.letterSpacing, lh: s.lineHeight,
+      pad: tete.paddingTop + ' / ' + tete.paddingBottom, registre: getComputedStyle(document.querySelector('.registre')).paddingTop }; });
+  ok(t.page === 'engagements' && t.title === 'Engagements — Perpetual' && t.h1 === 'Engagements', `html data-page="${t.page}", titre « ${t.title} », h1 « ${t.h1} » seul`);
+  ok(t.ff.startsWith('"Instrument Sans"') && t.fw === '400' && t.fs === '64px' && t.ls === '-1.792px' && t.lh === '65.28px' && t.pad === '32px / 30px' && t.registre === '12px',
+    `titre en Instrument Sans 400, 64 px, interlettrage −0,028 em, interligne 1,02, comme Réalisations (${t.ls}, ${t.lh}) ; ouverture ${t.pad}, registre ${t.registre} dessous`);
+  // le registre : grille 5 / 7, écart 64 px, filet en haut, padding 30 / 52 (72 en bas de la dernière rangée) ; verbe en serif 42 px ; texte 17 px, 62ch, 16 px entre paragraphes
+  const g = await p.evaluate(() => {
+    // 62ch dans la police du paragraphe : une boîte de cette largeur, posée dans le premier paragraphe (une suite de 62 « 0 » rendue ne mesure pas 62ch)
+    const boite = document.createElement('div'); boite.style.cssText = 'position:absolute;visibility:hidden;width:62ch'; document.querySelector('.eng-texte p').appendChild(boite);
+    const ch62 = boite.getBoundingClientRect().width; boite.remove();
+    return { ch62, rangs: [...document.querySelectorAll('.rang')].map(x => { const s = getComputedStyle(x), v = getComputedStyle(x.querySelector('.rang__verbe')), tx = x.querySelector('.eng-texte'), ps = [...tx.querySelectorAll('p')];
+      return { cols: s.gridTemplateColumns, gap: s.columnGap, filet: `${s.borderTopWidth} ${s.borderTopStyle} ${s.borderTopColor}`, pad: s.paddingTop + ' ' + s.paddingBottom,
+        verbe: [x.querySelector('.rang__verbe').textContent, v.fontWeight, v.fontSize, v.lineHeight, v.letterSpacing].join(' '), texte: getComputedStyle(tx).paddingTop + ' ' + [...new Set(ps.map(q => getComputedStyle(q).fontSize))].join(','),
+        marges: ps.map(q => getComputedStyle(q).marginBottom).join(','), mw: ps.map(q => parseFloat(getComputedStyle(q).maxWidth)) }; }) };
+  });
+  const rg = g.rangs;
+  ok(rg.length === 3 && rg.every(x => x.cols === '440px 616px' && x.gap === '64px' && x.filet === `1px solid ${FILET}`) && rg.map(x => x.pad).join(' · ') === '30px 52px · 30px 52px · 30px 72px',
+    `rangées : grille 5 / 7 (${rg[0].cols}), écart ${rg[0].gap}, filet en haut, padding ${rg.map(x => x.pad.replace(' ', ' / ')).join(' · ')}`);
+  ok(rg.map(x => x.verbe).join(' · ') === 'Aider 400 42px 44.1px -0.42px · Transmettre 400 42px 44.1px -0.42px · Soutenir 400 42px 44.1px -0.42px', `verbes : serif 400, 42 px, interligne 1,05, interlettrage −0,01 em — ${rg.map(x => x.verbe.split(' ')[0]).join(' · ')}`);
+  ok(rg.every(x => x.texte === '9px 17px' && x.marges.split(',').every((mb, i, a) => mb === (i === a.length - 1 ? '0px' : '16px')) && x.mw.every(v => Math.abs(v - g.ch62) < 0.5)) && await pretty(p, '.eng-texte p'),
+    `texte : 9 px au-dessus, 17 px, 62ch (${Math.round(g.ch62)} px), 16 px entre paragraphes, text-wrap: pretty`);
+  // liens dans le texte
+  const l = await p.evaluate(() => { const a = [...document.querySelectorAll('.eng-texte a')], s = getComputedStyle(a[0]), masque = document.querySelector('.lien-texte .visuellement-masque'), mr = masque.getBoundingClientRect();
+    return { liens: a.map(x => `${x.className} ${x.firstChild.textContent} → ${x.getAttribute('href')}${x.target ? ' ' + x.target : ''}${x.rel ? ' ' + x.rel : ''}`).join(' | '), masque: `${masque.textContent} ${Math.round(mr.width)}×${Math.round(mr.height)}`,
+      contact: document.getElementById('contact') ? document.getElementById('contact').tagName : null, couleur: s.color, filet: s.borderBottom }; });
+  ok(l.liens === 'lien-texte Écrivez-nous → #contact | lien-texte Créahmbxl → https://creahmbxl.be _blank noopener' && l.contact === 'FOOTER' && l.masque === ' (nouvel onglet) 1×1',
+    `liens : ${l.liens.replace(/lien-texte /g, '')} ; #contact est le pied de page ; « (nouvel onglet) » masqué visuellement`);
+  await p.hover('.eng-texte a[href^="https"]');
+  const survol = await style(p, '.eng-texte a[href^="https"]', 'borderBottomColor');
+  await p.focus('.site-nav a:last-child');
+  await p.keyboard.press('Tab');
+  const focus = await p.evaluate(() => { const a = document.activeElement; return a.textContent + ' ' + a.matches(':focus-visible') + ' ' + getComputedStyle(a).borderBottomColor; });
+  ok(l.couleur === ANTHRACITE && l.filet === `1px solid ${OR_CLAIR}` && survol === OR && focus === `Écrivez-nous true ${OR}`, `.lien-texte : anthracite, filet or clair (${l.filet}) ; or au survol (${survol}) et au focus clavier (${focus.split(' ').slice(1).join(' ')})`);
+  // typographie, cartel, fichier
+  const c = await p.evaluate(() => { const txt = document.querySelector('.registre').textContent, f = document.querySelector('.cartel'), b = f.querySelector('b'), sp = f.querySelector('span'), img = document.querySelector('.oeuvre img'), sb = getComputedStyle(b), ss = getComputedStyle(sp);
+    return { espaces: (txt.match(/ :/g) || []).length, insecables: (txt.match(/\u00A0:/g) || []).length, tag: f.tagName + ' ' + f.parentElement.tagName, legende: b.textContent, detail: sp.textContent,
+      b: [sb.display, sb.fontSize, sb.fontWeight, sb.color].join(' '), s: [ss.display, ss.fontSize, ss.color].join(' '), ecart: Math.round(f.getBoundingClientRect().top - img.getBoundingClientRect().bottom),
+      alt: img.alt, attrs: img.getAttribute('width') + ' × ' + img.getAttribute('height'), src: img.getAttribute('src'), lazy: img.getAttribute('loading') }; });
+  ok(c.espaces === 0 && c.insecables === 1, `typographie : espace insécable avant « : » (${c.insecables} « : », aucune espace simple devant)`);
+  ok(c.tag === 'FIGCAPTION FIGURE' && c.legende === 'Ines Reddah, 2024' && c.b === `block 14px 500 ${ANTHRACITE}` && c.detail === 'Feutres et acrylique, 65\u00A0×\u00A082\u00A0cm' && c.s === `block 13px ${GRIS}` && c.ecart === 16,
+    `cartel, ${c.ecart} px sous l'image : « ${c.legende} » (14 px, 500, anthracite), puis « ${c.detail} » (13 px, gris ; espaces insécables autour de × et avant cm)`);
+  ok(c.alt === ALT_OEUVRE && c.attrs === '870 × 1132' && c.src === '../directions/img/ines-reddah-2024-recadree.jpg' && !c.lazy, `œuvre : ${c.src}, width / height ${c.attrs}, texte alternatif (provisoire, lot 3)`);
+  // navigation et panneau
+  const nav = await p.evaluate(() => [...document.querySelectorAll('.site-nav a')].map(a => `${a.textContent}${a.classList.contains('is-active') ? ' actif' : ''}${a.hasAttribute('aria-current') ? ' aria-current=' + a.getAttribute('aria-current') : ''} → ${a.getAttribute('href')}`).join(' | '));
+  ok(nav === 'Réalisations → realisations.html | Engagements actif aria-current=page → engagements.html | Contact → #contact', 'navigation : ' + nav);
+  const panneau = await p.evaluate(() => ({ b: [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (' + f.querySelector('.mq__note--inactif').textContent + ')' : '')).join(' · '),
+    onglets: [...document.querySelectorAll('.mq__pages a')].map(a => a.textContent + (a.classList.contains('is-active') ? ' (actif)' : '')).join(' · ') }));
+  ok(panneau.b === 'papier (sans effet sur cette page) · bas (sans effet sur cette page)' && panneau.onglets === 'Home · Fiche · Réalisations · Engagements (actif)', `panneau : aucune bascule sur cette page — ${panneau.b} ; onglets ${panneau.onglets}`);
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('', [390, 844], {}, ENG);
+  const m = await p.evaluate(() => { const s = sel => getComputedStyle(document.querySelector(sel)), rangs = [...document.querySelectorAll('.rang')].map(x => getComputedStyle(x));
+    return { logo: s('.logo__texte').display, titre: s('.page__titre').fontSize, tete: s('.page-head').paddingTop + ' / ' + s('.page-head').paddingBottom, registre: s('.registre').paddingTop, verbe: s('.rang__verbe').fontSize,
+      cols: rangs.map(x => x.gridTemplateColumns.split(' ').length).join(''), pad: rangs.map(x => x.paddingTop + ' / ' + x.paddingBottom).join(' · '), texte: s('.eng-texte').paddingTop }; });
+  ok(m.logo === 'none' && m.titre === '44px' && m.tete === '28px / 24px' && m.registre === '4px' && m.verbe === '30px' && m.cols === '111' && m.pad === '22px / 40px · 22px / 40px · 22px / 44px' && m.texte === '14px',
+    `mobile : Φ seul, titre 44 px, ouverture ${m.tete} (celle de .page-head), verbes 30 px, une colonne par rangée (${m.pad}), texte 14 px sous le verbe`);
+  await ctx.close();
+}
+{
+  const { p, ctx } = await ouvrir('', [1440, 900], { javaScriptEnabled: false }, ENG);
+  ok(await p.evaluate(() => !document.querySelector('.mq') && document.querySelectorAll('.rang').length === 3 && getComputedStyle(document.querySelector('.cimaise')).display === 'block' && document.querySelector('.oeuvre img').naturalWidth === 870),
+    'sans JavaScript : la page entière (trois rangées, l’œuvre sur sa cimaise), sans panneau');
+  await ctx.close();
+}
+{
+  // les liens « Engagements » de la navigation et du plan du pied de page, sur les quatre pages ; actif sur la page Engagements seulement
+  const liens = [];
+  for (const page of ['index', FICHE, REAL, ENG]) {
+    const { p, ctx } = await ouvrir('', [1440, 900], {}, page);
+    liens.push({ page, ...await p.evaluate(() => { const a = [...document.querySelectorAll('.site-nav a, .footer__nav a')].filter(x => x.textContent === 'Engagements');
+      return { hrefs: a.map(x => x.getAttribute('href')), actif: a.some(x => x.classList.contains('is-active') || x.hasAttribute('aria-current')) }; }) });
+    await ctx.close();
+  }
+  ok(liens.every(l => l.hrefs.length === 2 && l.hrefs.every(x => x === 'engagements.html') && l.actif === (l.page === ENG)),
+    'liens « Engagements » (navigation et plan du pied de page) vers engagements.html sur les quatre pages, actif sur la sienne seulement — ' + liens.map(l => `${l.page} : ${l.hrefs.join(', ')}${l.actif ? ' (actif)' : ''}`).join(' · '));
 }
 await browser.close();
 console.log(ko ? `\n${ko} vérification(s) en échec` : '\nTout est vérifié.');

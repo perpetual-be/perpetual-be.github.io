@@ -40,7 +40,7 @@
   --fs-titre-page:64px;--fs-suivant:30px;   /* fiche et vue Réalisations */
   /* mise en page */
   --max:1200px;--gutter:40px;--bande-haut:44px;--bande-bas:40px;
-  --max-large:1600px;   /* grille large, gouttières comprises (26/09) : l'en-tête de toutes les pages et le contenu de la vue Réalisations ; le pied de page de toutes les pages et le contenu de la Home et de la fiche restent sur --max (1 200 px) */
+  --max-large:1600px;   /* grille large, gouttières comprises (26/09) : l'en-tête de toutes les pages et le contenu de la vue Réalisations ; le pied de page de toutes les pages et le contenu de la Home, de la fiche et d'Engagements restent sur --max (1 200 px) */
   /* photo du premier écran : assez basse pour que la bande et ses quatre chiffres tiennent sous elle à 1440 × 900 et 1366 × 703
      (en-tête 76 px + bande ~176 px dans la fenêtre basse ⇒ ~360 px restent pour la photo) */
   --photo-hauteur:clamp(320px,calc(100vh - 270px),560px);--photo-haut:64px;
@@ -281,6 +281,31 @@ body.visio-ouverte{overflow:hidden}
 .ancien__nom{font-family:var(--serif);font-size:24px;line-height:1.15;letter-spacing:-.005em}
 .ancien__lieu{font-size:var(--fs-etiquette);color:var(--c-meta);margin-top:4px}
 .ancien__usage{font-size:15px;line-height:1.45;margin-top:8px;max-width:30ch;text-wrap:pretty}
+/* page Engagements (Cowork, 26/09 ; référence validée : design/revue-engagements/propositions/p1.html), sur le container de 1 200 px comme la Home :
+   le titre seul, sans sous-titre, en sans léger comme Réalisations ; puis le registre, une rangée par engagement — le verbe en serif à gauche, le texte
+   à droite (grille 5/7), un filet au-dessus ; sous « Soutenir », l'œuvre sur sa cimaise */
+html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:400;letter-spacing:-.028em;line-height:1.02}
+@media (min-width:641px){html[data-page="engagements"] .page-head{padding-top:32px;padding-bottom:30px}}   /* téléphone : le padding de .page-head */
+.registre{padding-top:12px}
+.rang{display:grid;grid-template-columns:5fr 7fr;gap:0 64px;border-top:1px solid var(--filet);padding:30px 0 52px}
+.rang:last-child{padding-bottom:72px}   /* bas de la cimaise → haut du pied de page : 72 px */
+.rang__g,.rang__d{display:flex;flex-direction:column;align-items:stretch}
+.rang__verbe{font-family:var(--serif);font-weight:400;font-size:var(--fs-nom);line-height:1.05;letter-spacing:-.01em}
+.eng-texte{padding-top:9px}   /* la première ligne du texte à hauteur de l'œil du verbe */
+.eng-texte p{margin-bottom:16px;max-width:62ch;text-wrap:pretty}
+.eng-texte p:last-child{margin-bottom:0}
+/* lien dans un paragraphe : le texte reste anthracite, un filet or clair permanent dessous (comme le mail du pied de page), or au survol et au focus */
+.lien-texte{border-bottom:1px solid var(--c-trait-fin);transition:border-color .2s}
+.lien-texte:hover,.lien-texte:focus-visible{border-bottom-color:var(--c-trait)}
+.visuellement-masque{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}   /* « (nouvel onglet) », pour les lecteurs d'écran */
+/* l'œuvre, recadrée sur la feuille, sur sa cimaise (panneau papier, dans la colonne, 32 px sous le verbe) : entière — jamais d'object-fit —, jamais
+   agrandie au-delà de 340 px (fichier de 870 px) ; pas un lien, pas de zoom ; le cartel sous l'œuvre, sur le panneau */
+.cimaise{margin-top:32px;background:var(--surface);padding:44px 48px 36px}
+.oeuvre{max-width:340px;margin:0 auto}
+.oeuvre img{width:100%;height:auto}
+.cartel{margin-top:16px;font-size:var(--fs-etiquette);line-height:1.45;color:var(--c-meta)}
+.cartel b{display:block;font-weight:500;font-size:14px;color:var(--c-texte)}
+.cartel span{display:block}
 
 /* pied de page */
 /* resserré le 23/09 : 48 px en haut, 32 px entre la dernière ligne des colonnes et le filet du bas (le gap vertical de la grille, sans marge sur le bloc légal).
@@ -365,13 +390,22 @@ body.visio-ouverte{overflow:hidden}
   .anciens__liste{grid-template-columns:1fr 1fr;gap:0 16px}
   .ancien__nom{font-size:20px}
   .ancien__usage{font-size:14px}
+  /* page Engagements : une colonne par rangée — le verbe, le texte, puis l'œuvre ; la cimaise reste dans les gouttières, l'œuvre prend la largeur du panneau */
+  .registre{padding-top:4px}
+  .rang{grid-template-columns:1fr;padding:22px 0 40px}
+  .rang:last-child{padding-bottom:44px}
+  .rang__g,.rang__d{display:contents}
+  .rang__verbe{order:1}
+  .eng-texte{order:2;padding-top:14px}
+  .cimaise{order:3;margin-top:28px;padding:28px 24px 22px}
+  .oeuvre{max-width:none}
 }
 /* fenêtre basse (portable 1366 × 768 avec les barres du navigateur) : la bande et ses chiffres tiennent dans 703 px */
 @media (max-height:720px) and (min-width:641px){
   :root{--bande-haut:36px;--bande-bas:32px}
 }
 @media (prefers-reduced-motion:reduce){
-  .trait::after,.four__name::after,.four__preview img,.carte__lab,.bloc img,.bloc::after,.bloc__faits,.bien__fleche{transition:none}
+  .trait::after,.four__name::after,.four__preview img,.carte__lab,.bloc img,.bloc::after,.bloc__faits,.bien__fleche,.lien-texte{transition:none}
 }
 
 /* ---------- 6. Bascules ---------- */

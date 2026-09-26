@@ -1,7 +1,7 @@
-// Génère les pages de la maquette du lot 2 (design/maquette/*.html : la Home, la fiche The Bank, la vue Réalisations) à partir des données du dépôt.
+// Génère les pages de la maquette du lot 2 (design/maquette/*.html : la Home, la fiche The Bank, la vue Réalisations, la page Engagements) à partir des données du dépôt.
 // Exécuter depuis la racine : node design/maquette/src/build.mjs
-// Lit data/*.json, content/home.md, content/collectif.md, content/realisations.md, public/favicon.svg, public/partners/encre/*.svg (hauteurs des logos),
-// design/maquette/src/carte/belgique.{svg,json}, et les dimensions des photos de design/directions/img/ (srcset). N'écrit que dans design/maquette/.
+// Lit data/*.json, content/home.md, content/collectif.md, content/realisations.md, content/engagements.md, public/favicon.svg, public/partners/encre/*.svg (hauteurs des logos),
+// design/maquette/src/carte/belgique.{svg,json}, et les dimensions des photos de design/directions/img/ (srcset, œuvre). N'écrit que dans design/maquette/.
 // Aucune dépendance hors Node.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -26,6 +26,7 @@ const navLabel = href => { const n = site.nav.find(x => x.href === href); if (!n
 const REALISATIONS = navLabel('/realisations');
 const PAGE_REALISATIONS = 'realisations.html';   // la vue « Réalisations » (le brief la nommait « Projets »)
 const PAGE_FICHE = 'projet-the-bank.html';
+const PAGE_ENGAGEMENTS = 'engagements.html';
 
 function frontmatter(md) {
   const m = md.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -107,6 +108,27 @@ const fiche = {
   chapitres: [['Ce que c’était', bank.was], ['Ce que nous y avons vu', bank.saw], ['Ce que c’est devenu', bank.became]],
   suivant: { projet: byId['data-box'], href: `${PAGE_REALISATIONS}#data-box` },
 };
+// Page Engagements (Cowork, 26/09) : le titre de content/engagements.md (pas de sous-titre, décision d'Axel du 26/09), puis une rangée par titre ## —
+// le verbe, et les paragraphes qui le suivent jusqu'au titre suivant ; l'id de la rangée est le verbe (#aider, #transmettre, #soutenir).
+const slug = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const engagementsMd = frontmatter(read('content/engagements.md'));
+const engagements = { titre: engagementsMd.fm.match(/title:\s*(.+)/)[1].trim(), rangs: [] };
+for (const b of blocks(engagementsMd.body)) {
+  if (b.startsWith('## ')) engagements.rangs.push({ verbe: b.slice(3).trim(), id: slug(b.slice(3)), paragraphes: [] });
+  else if (engagements.rangs.length && !b.startsWith('#')) engagements.rangs[engagements.rangs.length - 1].paragraphes.push(b);
+  else throw new Error('content/engagements.md : bloc hors d’une rangée ## — ' + b.slice(0, 60));
+}
+// L'œuvre du Créahmbxl, sur une cimaise dans la colonne de gauche de la rangée `rang` (« Soutenir »), sous le verbe : le fichier, recadré sur la feuille
+// (870 × 1132, copié tel quel de design/revue-engagements/propositions/img/, jamais recompressé ; width et height lus dans l'en-tête JPEG), la légende et
+// le détail du cartel, le texte alternatif (provisoire, lot 3). Entière : jamais recadrée par le CSS ni agrandie au-delà de 340 px ; pas un lien, pas de zoom.
+const oeuvre = {
+  rang: 'soutenir',
+  fichier: 'ines-reddah-2024-recadree.jpg',
+  legende: 'Ines Reddah, 2024',
+  detail: 'Feutres et acrylique, 65\u00A0×\u00A082\u00A0cm',
+  alt: 'Peinture d’Ines Reddah, 2024 : deux grands visages ronds cernés de bleu et de rose, entourés de traits verticaux de couleur.',
+};
+if (!engagements.rangs.some(r => r.id === oeuvre.rang)) throw new Error(`content/engagements.md : pas de rangée #${oeuvre.rang} pour l'œuvre`);
 
 // Premier écran (structure F, figée le 23/09) : la photo, en 1800 px (<nom>.jpg) puis 2800 px (<nom>-l.jpg) pour les grands écrans ;
 // le srcset porte la largeur réelle de chaque fichier, lue dans l'en-tête JPEG. Les versions se génèrent depuis l'original avec
@@ -217,11 +239,12 @@ ${stateScript}
 ${phiSymbol}`;
 }
 
+// Page active : le trait sous son lien ; sur la page Engagements, aria-current="page" en plus (26/09 ; le lien de « Réalisations » ne change pas).
 function header(active = '') {
-  const a = k => active === k ? ' class="trait is-active"' : ' class="trait"';
+  const a = k => active === k ? ` class="trait is-active"${k === 'engagements' ? ' aria-current="page"' : ''}` : ' class="trait"';
   return `<header class="site-header">
   <a class="logo" href="index.html" aria-label="Perpetual">${phi('logo__mark')}<span class="logo__texte">Perpetual</span></a>
-  <nav class="site-nav" aria-label="Navigation"><a href="${PAGE_REALISATIONS}"${a('realisations')}>${esc(REALISATIONS)}</a><a href="#"${a('engagements')}>Engagements</a><a href="#contact" class="trait">Contact</a></nav>
+  <nav class="site-nav" aria-label="Navigation"><a href="${PAGE_REALISATIONS}"${a('realisations')}>${esc(REALISATIONS)}</a><a href="${PAGE_ENGAGEMENTS}"${a('engagements')}>Engagements</a><a href="#contact" class="trait">Contact</a></nav>
 </header>`;
 }
 
@@ -329,7 +352,7 @@ ${partnersHtml}
 function footer() {
   return `<footer class="site-footer" id="contact"><div class="container footer__grid">
   <div class="footer__contact"><p class="footer__name">Julien De Dobbeleer</p><a class="footer__mail" href="mailto:${site.email}">${site.email}</a><p class="footer__addr">${site.name}, ${site.city}</p></div>
-  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="${PAGE_REALISATIONS}">${esc(REALISATIONS)}</a><a class="trait" href="index.html#collectif">Collectif</a><a class="trait" href="#">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
+  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="${PAGE_REALISATIONS}">${esc(REALISATIONS)}</a><a class="trait" href="index.html#collectif">Collectif</a><a class="trait" href="${PAGE_ENGAGEMENTS}">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
   <blockquote class="footer__quote"><p>«\u00A0${site.quote.text}\u00A0»</p><cite>${site.quote.author}</cite></blockquote>
   <p class="footer__legal">© 2026 ${site.name}</p>
 </div></footer>
@@ -423,11 +446,36 @@ function realisationsPage() {
 <script>window.BIENS=${JSON.stringify(BIENS)};</script>`;
 }
 
+// ---------- page Engagements ----------
+// Cowork, 26/09 (référence validée par Axel : design/revue-engagements/propositions/p1.html), sur le container de 1 200 px comme la Home : le titre seul,
+// sans sous-titre, en sans léger comme Réalisations → le registre, une rangée par titre ## de content/engagements.md : le verbe en serif à gauche, les
+// paragraphes à droite, un filet au-dessus → dans la colonne de gauche de la rangée oeuvre.rang (« Soutenir »), sous le verbe, l'œuvre sur sa cimaise,
+// avec son cartel → pied de page.
+// Markdown en ligne des paragraphes : les liens seuls, en .lien-texte — une ancre ou une page telle quelle ([Écrivez-nous](#contact) : le bloc du pied de
+// page), un autre site dans un nouvel onglet (target _blank, rel noopener), annoncé aux lecteurs d'écran ; puis l'espace insécable avant « : ».
+const enLigne = md => md.replace(/ :/g, '\u00A0:').replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, texte, href) => /^https?:\/\//.test(href)
+  ? `<a class="lien-texte" href="${esc(href)}" target="_blank" rel="noopener">${texte}<span class="visuellement-masque"> (nouvel onglet)</span></a>`
+  : `<a class="lien-texte" href="${esc(href)}">${texte}</a>`);
+function engagementsPage() {
+  const taille = jpegSize(path.join(REPO, 'design/directions/img', oeuvre.fichier));
+  const cimaise = `<div class="cimaise"><figure class="oeuvre"><img src="${IMG}/${oeuvre.fichier}" width="${taille.width}" height="${taille.height}" alt="${esc(oeuvre.alt)}" decoding="async">`
+    + `<figcaption class="cartel"><b>${esc(oeuvre.legende)}</b><span>${esc(oeuvre.detail)}</span></figcaption></figure></div>`;
+  const rang = r => `<section class="rang" id="${r.id}">
+    <div class="rang__g"><h2 class="rang__verbe">${esc(r.verbe)}</h2>${r.id === oeuvre.rang ? cimaise : ''}</div>
+    <div class="rang__d"><div class="eng-texte">${r.paragraphes.map(p => `<p>${enLigne(p)}</p>`).join('')}</div></div>
+  </section>`;
+  return `<div class="container page-head"><h1 class="page__titre">${esc(engagements.titre)}</h1></div>
+<div class="container registre">
+  ${engagements.rangs.map(rang).join('\n  ')}
+</div>`;
+}
+
 // ---------- pages ----------
 const pages = {
   'index.html': () => head({ page: 'home', text: `${site.name} — ${site.tagline}` }) + '\n' + header('') + '\n<main>\n' + lead() + '\n' + chart() + '\n' + projets() + '\n' + autres() + '\n' + collectifBlock() + '\n</main>\n' + footer(),
   [PAGE_FICHE]: () => head({ page: 'fiche', text: `${fiche.projet.name} — ${site.name}` }) + '\n' + header('realisations') + '\n<main>\n' + fichePage() + '\n</main>\n' + footer(),
   [PAGE_REALISATIONS]: () => head({ page: 'realisations', text: `${REALISATIONS} — ${site.name}` }) + '\n' + header('realisations') + '\n<main>\n' + realisationsPage() + '\n</main>\n' + footer(),
+  [PAGE_ENGAGEMENTS]: () => head({ page: 'engagements', text: `${engagements.titre} — ${site.name}` }) + '\n' + header('engagements') + '\n<main>\n' + engagementsPage() + '\n</main>\n' + footer(),
 };
 
 for (const [name, render] of Object.entries(pages)) {
