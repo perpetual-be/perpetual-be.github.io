@@ -14,30 +14,46 @@
 @media print{.prop-badge{display:none}}
 .suivant{margin-top:0}
 
-.p6-titre{padding-top:24px;padding-bottom:22px}
+.prop-badge{flex-wrap:wrap;max-width:calc(100vw - 32px)}
+.prop-badge .sep{color:var(--filet)}
+.prop-badge [data-param].is-active{border-bottom:1px solid var(--c-trait)}
+/* titre et région */
 .p6-titre .eyebrow{margin-bottom:8px}
-/* fine bande : surface · usage (le lieu en option : ?lieu=bande) */
-.p6-bande{padding:15px 0 14px}
-.p6-faits{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 0}
-.p6-fait{display:flex;align-items:baseline;gap:10px;padding:0 28px;border-left:1px solid var(--filet)}
-.p6-fait__v{font-family:var(--serif);font-size:24px;line-height:1.2;color:var(--c-chiffre);white-space:nowrap}
-.p6-fait__l{font-size:var(--fs-etiquette);color:var(--c-etiquette-chiffre)}
-.p6-fait--lieu{display:none;padding-left:0;border-left:0}
-.p6-fait--lieu + .p6-fait{padding-left:0;border-left:0}
-html[data-lieu="bande"] .p6-fait--lieu{display:flex}
-html[data-lieu="bande"] .p6-fait--lieu + .p6-fait{padding-left:28px;border-left:1px solid var(--filet)}
-/* la grande photo au bord droit, les trois chapitres à sa gauche */
-.p6-corps{display:grid;grid-template-columns:1fr var(--p6-w);align-items:start;padding-top:40px}
+/* les infos : valeurs en sans (plus de serif à côté du titre), étiquette dessous (défaut) ou avant */
+.p6-faits{display:flex;flex-wrap:wrap;gap:12px 0}
+.p6-fait{display:flex;flex-direction:column;gap:3px;padding:0 22px;border-left:1px solid var(--filet)}
+.p6-fait:first-child{padding-left:0;border-left:0}
+.p6-fait__v{font-family:var(--sans);font-weight:500;font-size:17px;line-height:1.25;color:var(--or-fonce);white-space:nowrap}
+.p6-fait__l{font-size:13px;line-height:1.3;color:var(--c-etiquette-chiffre)}
+html[data-etiquettes="avant"] .p6-fait{flex-direction:row;align-items:baseline;gap:9px}
+html[data-etiquettes="avant"] .p6-fait__l{order:-1}
+/* à côté de la photo, la colonne est étroite : en « avant », les trois infos s'empilent en petite fiche (étiquette | valeur) */
+html[data-etiquettes="avant"]:not([data-mise="bande"]) .p6-gauche .p6-faits{flex-direction:column;gap:5px}
+html[data-etiquettes="avant"]:not([data-mise="bande"]) .p6-gauche .p6-fait{padding:0;border-left:0}
+html[data-etiquettes="avant"]:not([data-mise="bande"]) .p6-gauche .p6-fait__l{min-width:96px}
+/* mise « haut » (défaut) : pas de bande ; la photo part du haut, au bord droit ; à sa gauche le titre, les infos, les chapitres */
+.p6-haut-seul{display:block}.p6-bande-seul{display:none}
+html[data-mise="bande"] .p6-haut-seul{display:none}html[data-mise="bande"] .p6-bande-seul{display:block}
+.p6-corps{display:grid;grid-template-columns:1fr var(--p6-w);align-items:start}
 .p6-corps--paysage{--p6-w:50vw;--p6-ratio:2100/1694}
-.p6-corps--portrait{--p6-w:36vw;--p6-ratio:4/5}
-.p6-chapitres{display:flex;flex-direction:column;gap:36px;padding:0 64px 0 max(var(--gutter), calc((100vw - var(--max)) / 2 + var(--gutter)))}
+.p6-corps--carre{--p6-w:40vw;--p6-ratio:1/1}
+.p6-gauche{padding:24px 64px 0 max(var(--gutter), calc((100vw - var(--max)) / 2 + var(--gutter)))}
+.p6-gauche .p6-faits{margin-top:22px}
+.p6-chapitres{display:flex;flex-direction:column;gap:34px;margin-top:44px}
 .p6-chapitres .chapitre{margin:0;max-width:52ch}
 .p6-photo{margin:0;width:var(--p6-w);aspect-ratio:var(--p6-ratio);overflow:hidden}
 .p6-photo img{width:100%;height:100%;object-fit:cover}
-/* les autres photos : mosaïque justifiée, chaque photo garde son format ; rangées alternées grande / petite (placées par le script) */
+/* mise « bande » (la version d'Axel du 26/09, avec les nouvelles infos) : titre, fine bande papier, puis la photo et les chapitres */
+.p6-titre-bande{padding-top:24px;padding-bottom:22px}
+.p6-bande{padding:14px 0 13px}
+html[data-mise="bande"] .p6-corps{padding-top:40px}
+html[data-mise="bande"] .p6-gauche{padding-top:0}
+html[data-mise="bande"] .p6-chapitres{margin-top:0}
+/* les autres photos : mosaïque justifiée, format de chaque photo respecté, rangées alternées haute / basse (script) */
 .p6-autres{padding-top:88px;padding-bottom:72px}
 .p6-autres .eyebrow{margin-bottom:18px}
 .p6-mosaique{display:flex;flex-wrap:wrap;gap:16px}
+html[data-rangee="2"] .p6-mosaique{max-width:760px}
 .p6-mosaique::after{content:"";flex-grow:999}
 .p6-tuile{flex-grow:var(--r);flex-basis:calc(var(--r) * 260px);margin:0;overflow:hidden;cursor:zoom-in;background:var(--surface)}
 .p6-tuile img{display:block;width:100%;aspect-ratio:var(--r);height:auto;object-fit:cover;transition:transform var(--zoom-duree) ease}
@@ -49,16 +65,22 @@ html[data-lieu="bande"] .p6-fait--lieu + .p6-fait{padding-left:28px;border-left:
 .p6-boite img{max-width:90vw;max-height:82vh;object-fit:contain}
 .p6-boite p{position:absolute;left:0;right:0;bottom:22px;text-align:center;color:#fff;font-size:14px}
 @media (max-width:640px){
-  .p6-titre{padding-top:28px;padding-bottom:20px}
-  .p6-faits{flex-direction:column;gap:4px}
-  .p6-fait,.p6-fait--lieu + .p6-fait,html[data-lieu="bande"] .p6-fait--lieu + .p6-fait{padding:0;border-left:0}
-  .p6-fait__v{font-size:20px}
-  .p6-corps{grid-template-columns:1fr;padding-top:0}
-  .p6-photo{order:-1;width:100%}
-  .p6-corps--portrait .p6-photo{aspect-ratio:4/5}
-  .p6-chapitres{padding:36px var(--gutter) 0;gap:32px}
+  .p6-corps{grid-template-columns:1fr}
+  .p6-gauche{display:contents}
+  .p6-gauche .p6-titre{order:1;padding:28px var(--gutter) 0}
+  .p6-gauche .p6-faits{order:2;margin:18px var(--gutter) 24px}
+  .p6-photo{order:3;width:100%}
+  .p6-chapitres{order:4;margin:36px var(--gutter) 0;gap:32px}
+  html[data-mise="bande"] .p6-corps{padding-top:0}
+  html[data-mise="bande"] .p6-chapitres{margin-top:36px}
+  .p6-titre-bande{padding-top:28px;padding-bottom:20px}
+  .p6-faits{display:grid;grid-template-columns:auto 1fr;gap:14px 0}
+  .p6-fait{padding:0 16px}
+  .p6-fait:nth-child(3){grid-column:1/-1;padding-left:0;border-left:0}
+  .p6-fait__v{font-size:16px}
   .p6-autres{padding-top:56px;padding-bottom:44px}
   .p6-mosaique{gap:10px}
+  html[data-rangee="2"] .p6-mosaique{max-width:none}
 }
 @media (prefers-reduced-motion:reduce){.p6-tuile img{transition:none}}
 </style>
@@ -103,10 +125,12 @@ html[data-lieu="bande"] .p6-fait--lieu + .p6-fait{padding-left:28px;border-left:
 </header>
 <main>
 <article class="fiche p6">
-<div class="container p6-titre"><p class="eyebrow">Liège, centre-ville</p><h1 class="page__titre">The Bank</h1></div>
-<section class="band p6-bande"><div class="container"><ol class="p6-faits" aria-label="En bref"><li class="p6-fait p6-fait--lieu"><span class="p6-fait__v">Liège</span><span class="p6-fait__l">Localisation</span></li><li class="p6-fait"><span class="p6-fait__v">1 100 m²</span><span class="p6-fait__l">Surface</span></li><li class="p6-fait"><span class="p6-fait__v">Logements &amp; commerce</span><span class="p6-fait__l">Usage</span></li></ol></div></section>
+<div class="p6-bande-seul" aria-hidden="true">
+  <div class="container p6-titre-bande"><div class="p6-titre"><p class="eyebrow">Liège</p><p class="page__titre">The Bank</p></div></div>
+  <section class="band p6-bande"><div class="container"><ol class="p6-faits" aria-label="En bref"><li class="p6-fait"><span class="p6-fait__v">Centre-ville</span><span class="p6-fait__l">Localisation</span></li><li class="p6-fait"><span class="p6-fait__v">1 100 m²</span><span class="p6-fait__l">Surface</span></li><li class="p6-fait"><span class="p6-fait__v">Logements &amp; commerce</span><span class="p6-fait__l">Usage</span></li></ol></div></section>
+</div>
 <div class="p6-corps p6-corps--paysage">
-  <div class="p6-chapitres"><section class="chapitre"><p class="chapitre__num">01</p><h2 class="chapitre__titre">Ce que c’était</h2><p class="chapitre__texte">Une agence bancaire de 1 100 m², au cœur de Liège.</p></section><section class="chapitre"><p class="chapitre__num">02</p><h2 class="chapitre__titre">Ce que nous y avons vu</h2><p class="chapitre__texte">Une surface unique qui pouvait en accueillir trois. Le service bancaire maintenu sur ce qu’il lui faut, une vitrine rendue au commerce, et les niveaux supérieurs libérés pour l’habitat.</p></section><section class="chapitre"><p class="chapitre__num">03</p><h2 class="chapitre__titre">Ce que c’est devenu</h2><p class="chapitre__texte">Une bijouterie de 160 m², un point Bancontact de 60 m², et un projet de logements de standing. Vendu.</p></section></div>
+  <div class="p6-gauche"><div class="p6-haut-seul"><div class="p6-titre"><p class="eyebrow">Liège</p><h1 class="page__titre">The Bank</h1></div><ol class="p6-faits" aria-label="En bref"><li class="p6-fait"><span class="p6-fait__v">Centre-ville</span><span class="p6-fait__l">Localisation</span></li><li class="p6-fait"><span class="p6-fait__v">1 100 m²</span><span class="p6-fait__l">Surface</span></li><li class="p6-fait"><span class="p6-fait__v">Logements &amp; commerce</span><span class="p6-fait__l">Usage</span></li></ol></div><div class="p6-chapitres"><section class="chapitre"><p class="chapitre__num">01</p><h2 class="chapitre__titre">Ce que c’était</h2><p class="chapitre__texte">Une agence bancaire de 1 100 m², au cœur de Liège.</p></section><section class="chapitre"><p class="chapitre__num">02</p><h2 class="chapitre__titre">Ce que nous y avons vu</h2><p class="chapitre__texte">Une surface unique qui pouvait en accueillir trois. Le service bancaire maintenu sur ce qu’il lui faut, une vitrine rendue au commerce, et les niveaux supérieurs libérés pour l’habitat.</p></section><section class="chapitre"><p class="chapitre__num">03</p><h2 class="chapitre__titre">Ce que c’est devenu</h2><p class="chapitre__texte">Une bijouterie de 160 m², un point Bancontact de 60 m², et un projet de logements de standing. Vendu.</p></section></div></div>
   <figure class="p6-photo"><img src="img/the-bank-01-facade-m.jpg" srcset="img/the-bank-01-facade-m.jpg 1200w, img/the-bank-01-facade.jpg 2100w" sizes="(max-width:640px) 100vw, 50vw" alt="" decoding="async" style="object-position:50% 100%"></figure>
 </div>
 <div class="container p6-autres"><p class="eyebrow">Photos</p><div class="p6-mosaique"><figure class="p6-tuile" style="--r:1.3333" data-r="1.3333" data-legende="Le point Bancontact, l’extérieur"><img src="../../directions/img/the-bank-02.jpg" alt="" loading="lazy" decoding="async"></figure><figure class="p6-tuile" style="--r:1.3333" data-r="1.3333" data-legende="Le point Bancontact, l’intérieur"><img src="../../directions/img/the-bank-03.jpg" alt="" loading="lazy" decoding="async"></figure></div></div>
@@ -121,21 +145,29 @@ html[data-lieu="bande"] .p6-fait--lieu + .p6-fait{padding-left:28px;border-left:
   <p class="footer__legal">© 2026 Perpetual</p>
 </div></footer>
 
-<nav class="prop-badge" aria-label="Propositions"><b>Fiches</b><a href="p4.html" class="">P4</a><a href="p5.html" class="">P5</a><a href="p6.html" class="is-active">P6 · The Bank</a><a href="p6-community.html" class="">P6 · Community</a><a href="p6-ateliers-118.html" class="">P6 · Ateliers 118</a><span>bande :</span><a href="p6.html">surface · usage</a><a href="p6.html?lieu=bande">+ lieu</a><a href="../selection/index.html">sélection des photos</a><a href="../../maquette/projet-the-bank.html">actuelle</a></nav>
+<nav class="prop-badge" aria-label="Propositions"><b>Fiches</b><a href="p4.html" class="">P4</a><a href="p6.html" class="is-active">P6 · The Bank</a><a href="p6-community.html" class="">P6 · Community</a><a href="p6-ateliers-118.html" class="">P6 · Ateliers 118</a><span class="sep">|</span><span>mise en page :</span><a data-param="mise" data-valeur="">photo en haut</a><a data-param="mise" data-valeur="bande">titre puis bande</a><span class="sep">|</span><span>étiquettes :</span><a data-param="etiquettes" data-valeur="">dessous</a><a data-param="etiquettes" data-valeur="avant">avant</a><span class="sep">|</span><a href="../selection/index.html">sélection des photos</a><a href="../../maquette/projet-the-bank.html">actuelle</a></nav>
 <script>
 (function(){
+  /* bandeau : chaque réglage garde les autres */
+  document.querySelectorAll('.prop-badge [data-param]').forEach(function(a){
+    var u=new URL(location.href), k=a.dataset.param, v=a.dataset.valeur;
+    if(v) u.searchParams.set(k,v); else u.searchParams.delete(k);
+    a.href=u.pathname.split('/').pop()+u.search;
+    var cur=new URLSearchParams(location.search).get(k)||'';
+    if(cur===(v||'')) a.classList.add('is-active');
+  });
   var m=document.querySelector('.p6-mosaique'); if(!m) return;
   var tuiles=[].slice.call(m.querySelectorAll('.p6-tuile'));
-  var GAP=function(){return parseFloat(getComputedStyle(m).columnGap)||16};
+  var maxN0=+(document.documentElement.getAttribute('data-rangee')||0)||99;
   function placer(){
-    var W=m.clientWidth, g=GAP(), petit=W<641;
-    var hauts=petit?[210,150]:[440,280];               /* rangées alternées : grande, petite */
+    var W=m.clientWidth, g=parseFloat(getComputedStyle(m).columnGap)||16, petit=innerWidth<641, maxN=petit?2:maxN0;
+    var hauts=petit?[210,150]:[440,280];               /* rangées alternées : haute, basse */
     var i=0, rang=0;
     while(i<tuiles.length){
       var cible=hauts[rang%2], somme=0, j=i;
-      while(j<tuiles.length){ somme+=+tuiles[j].dataset.r; j++; if(somme*cible+(j-i-1)*g>=W) break; }
+      while(j<tuiles.length && j-i<maxN){ somme+=+tuiles[j].dataset.r; j++; if(somme*cible+(j-i-1)*g>=W) break; }
       var n=j-i, h=(W-(n-1)*g)/somme;
-      if(j>=tuiles.length && h>cible*1.25){ h=cible; }   /* dernière rangée incomplète : pas d'agrandissement démesuré */
+      if(j>=tuiles.length && n<maxN && h>cible*1.25){ h=cible; }   /* dernière rangée incomplète : pas d'agrandissement démesuré */
       for(var k=i;k<j;k++){ var t=tuiles[k]; t.style.width=(+t.dataset.r*h)+'px'; t.style.height=h+'px'; t.querySelector('img').style.height=h+'px'; }
       i=j; rang++;
     }
