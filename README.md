@@ -65,7 +65,7 @@ Une entrée par projet. Champs :
 | `address` | adresse complète du bien (tableau de Julien du 13/09) ; donnée de référence, pas nécessairement affichée |
 | `was`, `saw`, `became` | les trois champs d'un projet détaillé : ce que c'était, ce que nous y avons vu, ce que c'est devenu |
 | `photos` | fichiers du reportage, dans l'ordre |
-| `selection` | programme agences et galerie (facultatif) : les photos montrées sur la vue Réalisations — la vignette et la visionneuse —, en clés sans extension (`<id>-03`), dans l'ordre d'affichage, la première étant la vignette au repos. Sélection provisoire : elle se change ici, sans toucher au code |
+| `selection` | les photos montrées (facultatif), en clés sans extension (`<id>-03`), dans l'ordre d'affichage. Projet détaillé : la première est la photo du projet — tête de sa fiche, aperçu de la liste des 4 (Home), bloc de la vue Réalisations —, les suivantes la mosaïque de sa fiche ; les clés `data-box-03` à `-07` sont des vues drone (correspondance avec les fichiers dans `design/maquette/src/README.md`). Programme agences et galerie : la vignette et la visionneuse de la vue Réalisations, la première étant la vignette au repos. Sélection provisoire : elle se change ici, sans toucher au code |
 | `hero` | la photo pleine largeur d'un projet détaillé |
 | `heroCandidates` | plusieurs photos pleine largeur à tester tant que le choix n'est pas fait |
 | `captions` | légende par fichier photo (sert de texte alternatif) |

@@ -36,11 +36,11 @@
   /* titres de section : deux classes explicites, .h2--sans (--fs-h2) et .h2--serif (--fs-h2-serif) ;
      titres de chapitre de la fiche : sans medium --fs-chapitre (bascule 20 figée sur « sans », revue de la fiche du 23/09) */
   --fs-accroche:52px;--fs-chiffre:58px;--fs-h2:28px;--fs-h2-serif:34px;--fs-chapitre:26px;--fs-texte:17px;--fs-nav:15px;
-  --fs-etiquette:13px;--fs-etiquette-chiffre:14px;--fs-signature:24px;--fs-chute:26px;--fs-nom:42px;--fs-ligne:16px;--fs-fait:28px;
-  --fs-titre-page:64px;--fs-suivant:30px;   /* fiche et vue Réalisations */
+  --fs-etiquette:13px;--fs-etiquette-chiffre:14px;--fs-signature:24px;--fs-chute:26px;--fs-nom:42px;--fs-ligne:16px;
+  --fs-titre-page:64px;--fs-suivant:30px;   /* fiches et vue Réalisations */
   /* mise en page */
   --max:1200px;--gutter:40px;--bande-haut:44px;--bande-bas:40px;
-  --max-large:1600px;   /* grille large, gouttières comprises (26/09) : l'en-tête de toutes les pages et le contenu de la vue Réalisations ; le pied de page de toutes les pages et le contenu de la Home et de la fiche restent sur --max (1 200 px) */
+  --max-large:1600px;   /* grille large, gouttières comprises (26/09) : l'en-tête de toutes les pages, le contenu de la vue Réalisations et des fiches ; le pied de page de toutes les pages et le contenu de la Home et d'Engagements restent sur --max (1 200 px) */
   /* photo du premier écran : assez basse pour que la bande et ses quatre chiffres tiennent sous elle à 1440 × 900 et 1366 × 703
      (en-tête 76 px + bande ~176 px dans la fenêtre basse ⇒ ~360 px restent pour la photo) */
   --photo-hauteur:clamp(320px,calc(100vh - 270px),560px);--photo-haut:64px;
@@ -72,7 +72,7 @@ ol,ul{list-style:none}
 /* en-tête : logo et liens aux marges de la grille large, la même limite que le contenu large (--max-large, gouttière comprise ; 26/09) — rien ne change
    sous ~1 680 px de fenêtre, au-delà logo et navigation restent alignés sur le contenu large au lieu de coller aux bords. L'en-tête est le même sur toutes
    les pages, sur la grille large, quelle que soit la grille du contenu ; le pied de page, lui, est sur --max (1 200 px) partout, comme le contenu de la Home
-   et de la fiche */
+   et d'Engagements */
 .site-header{display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:76px;max-width:var(--max-large);margin-left:auto;margin-right:auto;padding:0 var(--gutter)}
 .logo{display:inline-flex;align-items:center;gap:15px;color:var(--c-texte)}
 .logo__mark{width:19px;height:20px;color:var(--c-phi);fill:currentColor;flex:none;position:relative;top:1px}
@@ -156,39 +156,57 @@ ol,ul{list-style:none}
    Logos figés en couleur le 22/09 (bascule 14 retirée) */
 .partner__couleur{display:block;height:calc(var(--logo-h)*var(--logo-echelle));width:auto}
 
-/* fiche projet (23/09) : mêmes jetons et composants que la Home.
-   .page-head est un .container : ne poser que padding-top / padding-bottom, le padding latéral (la gouttière) reste celui de .container (revue du 23/09) */
+/* titre de page : serif 64 px, celui des fiches — la vue Réalisations et Engagements le passent en sans léger.
+   .page-head (Engagements) est un .container : ne poser que padding-top / padding-bottom, le padding latéral (la gouttière) reste celui de .container (revue du 23/09) */
 .page-head{padding-top:40px;padding-bottom:32px}
-.page-head .eyebrow{margin-bottom:14px}
 .page__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-titre-page);line-height:1;letter-spacing:-.015em}
-/* fiche : photo hero (the-bank-01), puis la bande de trois faits — le composant de la bande des chiffres (surface papier, valeur en serif or, étiquette gris chaud).
-   Revue de la fiche (23/09) : au-dessus de 640 px, en-tête de page resserré (12 / 24 px, eyebrow à 8 px) et photo calée sur la fenêtre, pour que la bande
-   tienne sous la photo : 570 px à 1440 × 900 (bande jusqu'à ~892), 373 px à 1366 × 703 (bande jusqu'à ~695). Point focal en variables sur l'<img>
-   (--focal, --focal-mobile sous 640 px), déclaré dans `fiche` (build.mjs). */
-.fiche__hero{height:clamp(320px,calc(100vh - 330px),570px);overflow:hidden}
-.fiche__hero img{width:100%;height:100%;object-fit:cover;object-position:var(--focal)}
-@media (min-width:641px){
-  .fiche .page-head{padding-top:12px;padding-bottom:24px}
-  .fiche .page-head .eyebrow{margin-bottom:8px}
-}
-.faits-band{padding:28px 0 26px}
-.stats--faits{display:flex;flex-wrap:wrap}
-.stats--faits .stat{padding:4px 40px 4px 36px}
-.stats--faits .stat:first-child{padding-left:0}
-.stats--faits .stat__value{font-size:var(--fs-fait);line-height:1.1;white-space:nowrap}
-.stats--faits .stat__label{margin-top:6px;font-size:var(--fs-etiquette);max-width:none}
-/* chapitres en colonne de 760 px alignée à gauche ; la paire de photos intercalée prend la largeur du container, en deux colonnes égales.
-   Rythme : 56 px entre chapitres, 64 px avant la paire (56 + 8) et après (le padding haut de .chapitres) */
-.chapitres{max-width:760px;padding-top:64px}
-.chapitre{margin-bottom:56px}
+/* les quatre fiches (P6, Cowork, 26/09 ; références validées : design/revue-fiche/propositions/p6*.html), un seul gabarit, sur la grille large comme la vue
+   Réalisations (le pied de page reste sur le container de 1 200 px) : trois colonnes, marge | texte | photo. La marge est celle de la grille large, en % de
+   la page — pas en vw, sinon la barre de défilement décale le texte de 8,5 px — : le texte part au même x que le logo (40 px à 1 521 px de fenêtre, 200 px
+   à 1 920). À gauche la région en eyebrow, le titre, les infos (valeur en sans or foncé, étiquette gris chaud dessous, filets verticaux entre elles), puis
+   les trois chapitres empilés ; à droite la photo de tête, au bord de la fenêtre dès le bas de l'en-tête — cadre paysage : 50 % de la page, 2100 / 1694 ;
+   carré : 40 %, 1:1 (object-position : son point focal, posé en style par build.mjs) */
+.fiche__corps{display:grid;grid-template-columns:max(var(--gutter),calc((100% - var(--max-large)) / 2 + var(--gutter))) minmax(0,1fr) var(--cadre-largeur);align-items:start}
+.fiche__corps--paysage{--cadre-largeur:50%;--cadre-format:2100/1694}
+.fiche__corps--carre{--cadre-largeur:40%;--cadre-format:1/1}
+.fiche__gauche{grid-column:2;padding:24px 64px 0 0}
+.fiche__titre .eyebrow{margin-bottom:8px}
+.fiche__faits{display:flex;flex-wrap:wrap;gap:12px 0;margin-top:22px}
+.fiche__fait{display:flex;flex-direction:column;gap:3px;padding:0 22px;border-left:1px solid var(--filet)}
+.fiche__fait:first-child{padding-left:0;border-left:0}
+.fiche__valeur{font-family:var(--sans);font-weight:500;font-size:17px;line-height:1.25;color:var(--or-fonce);white-space:nowrap}
+.fiche__etiquette{font-size:13px;line-height:1.3;color:var(--c-etiquette-chiffre)}
+/* chapitres : titres en sans medium, numéros or foncé (bascule 20 figée sur « sans », revue du 23/09), 34 px entre eux */
+.fiche__chapitres{display:flex;flex-direction:column;gap:34px;margin-top:44px}
+.chapitre{max-width:52ch}
 .chapitre__num{font-family:var(--sans);font-size:15px;color:var(--c-num-chapitre);letter-spacing:.06em;margin-bottom:8px}
 .chapitre__titre{font-family:var(--sans);font-weight:500;font-size:var(--fs-chapitre);line-height:1.15;letter-spacing:-.01em;margin-bottom:16px}
-.chapitre__texte{max-width:62ch}
-.fiche__photos{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:0;padding-top:8px}   /* padding, pas margin : une marge de 8 px se replierait dans les 56 px du chapitre */
-.fiche__photos img{width:100%;height:440px;object-fit:cover}
-.fiche__photos figcaption{font-size:var(--fs-etiquette);color:var(--c-meta);margin-top:10px}
-.suivant{display:block;border-top:1px solid var(--filet);padding:24px 0 72px;margin-top:8px}
-.suivant .eyebrow{display:block;margin-bottom:6px}
+/* la photo qui suit (26/09) : quand le texte est plus long que la photo, elle reste en place pendant qu'on lit la fin, puis tout repart ensemble ;
+   rien ne bouge quand elle est plus haute que le texte. Le cadre est un ::before au format du cadre, l'image le remplit */
+.fiche__photo{grid-column:3;width:100%;position:sticky;top:0;overflow:hidden}
+.fiche__photo::before{content:"";display:block;aspect-ratio:var(--cadre-format)}
+.fiche__photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* les autres photos, sur la grille large : une mosaïque au format de chaque photo (--r, son ratio), sans légendes, en rangées justifiées alternées haute /
+   basse (maquette.js, qui fige chaque rangée en .fiche__rang) ; sans JavaScript, des rangées souples. Chaque tuile est un bouton : zoom 1,035 au survol
+   (photo cliquable) et au focus clavier ; clic → visionneuse */
+.fiche__autres{padding-top:88px;padding-bottom:72px}
+.fiche__autres .eyebrow{margin-bottom:18px}
+.fiche__mosaique{display:flex;flex-wrap:wrap;gap:16px}
+.fiche__mosaique::after{content:"";flex-grow:999}
+.fiche__tuile{flex-grow:var(--r);flex-basis:calc(var(--r) * 260px);overflow:hidden;background:var(--surface)}
+.fiche__agrandir{display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in}
+.fiche__agrandir:focus-visible{outline:2px solid var(--c-trait);outline-offset:-2px}
+.fiche__tuile img{width:100%;aspect-ratio:var(--r);height:auto;object-fit:cover;transition:transform var(--zoom-duree) ease}
+.fiche__tuile:hover img,.fiche__agrandir:focus-visible img{transform:scale(var(--zoom))}
+.fiche__mosaique.est-placee{flex-wrap:nowrap;flex-direction:column}
+.fiche__mosaique.est-placee::after{display:none}
+.fiche__rang{display:flex;gap:16px}
+.fiche__mosaique.est-placee .fiche__tuile{flex:none}
+/* projet précédent (← nom, à gauche) et suivant (nom →, à droite), en boucle dans l'ordre du champ order, sur la grille large, filet au-dessus */
+.fiche__voisins{display:flex;justify-content:space-between;gap:32px;border-top:1px solid var(--filet);padding:24px 0 72px}
+.fiche__voisin{display:block}
+.fiche__voisin .eyebrow{display:block;margin-bottom:6px}
+.fiche__voisin--suiv{text-align:right}
 .suivant__nom{display:inline-block;font-family:var(--serif);font-size:var(--fs-suivant);line-height:1.2;color:var(--c-lien);padding-bottom:2px}
 /* vue Réalisations (revue du 26/09, proposition P2 retenue), sur la grille large : le titre en sans léger — la fiche garde la serif, qui prolonge le nom
    des projets posé sur les photos —, la phrase d'ouverture sur une ligne (le pied de page, lui, reste sur le container de 1 200 px, comme sur toutes les pages).
@@ -200,8 +218,8 @@ html[data-page="realisations"] .page__titre{font-family:var(--sans);font-weight:
 .eyebrow--sans-marge{margin-bottom:0}
 .enonce{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.18;letter-spacing:-.01em;max-width:26ch;margin-top:14px}
 /* les quatre projets : deux rangées de blocs photo, 7/5 puis 5/7, hauteur calée sur la fenêtre ; le nom en serif blanc sur un dégradé, en bas à gauche ;
-   au survol et au focus, les trois faits (Lieu / Surface / Usage). Seule The Bank est un lien, et seule sa photo zoome (1,035 : photos cliquables seulement) ;
-   les trois autres blocs gardent leur id (ancres) et un tabindex, pour que leurs faits s'affichent au focus */
+   au survol et au focus, les trois faits (Lieu / Surface / Usage). Depuis la P6 (26/09), les quatre blocs sont des liens vers leur fiche (ils gardent leur
+   id) : leur photo zoome (1,035 : photos cliquables) */
 .alt{display:grid;gap:14px}
 .alt__rang{display:grid;gap:14px;height:clamp(340px,calc(100vh - 262px),540px)}
 .alt__rang--a{grid-template-columns:7fr 5fr}
@@ -281,6 +299,31 @@ body.visio-ouverte{overflow:hidden}
 .ancien__nom{font-family:var(--serif);font-size:24px;line-height:1.15;letter-spacing:-.005em}
 .ancien__lieu{font-size:var(--fs-etiquette);color:var(--c-meta);margin-top:4px}
 .ancien__usage{font-size:15px;line-height:1.45;margin-top:8px;max-width:30ch;text-wrap:pretty}
+/* page Engagements (Cowork, 26/09 ; référence validée : design/revue-engagements/propositions/p1.html), sur le container de 1 200 px comme la Home :
+   le titre seul, sans sous-titre, en sans léger comme Réalisations ; puis le registre, une rangée par engagement — le verbe en serif à gauche, le texte
+   à droite (grille 5/7), un filet au-dessus ; sous « Soutenir », l'œuvre sur sa cimaise */
+html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:400;letter-spacing:-.028em;line-height:1.02}
+@media (min-width:641px){html[data-page="engagements"] .page-head{padding-top:32px;padding-bottom:30px}}   /* téléphone : le padding de .page-head */
+.registre{padding-top:12px}
+.rang{display:grid;grid-template-columns:5fr 7fr;gap:0 64px;border-top:1px solid var(--filet);padding:30px 0 52px}
+.rang:last-child{padding-bottom:72px}   /* bas de la cimaise → haut du pied de page : 72 px */
+.rang__g,.rang__d{display:flex;flex-direction:column;align-items:stretch}
+.rang__verbe{font-family:var(--serif);font-weight:400;font-size:var(--fs-nom);line-height:1.05;letter-spacing:-.01em}
+.eng-texte{padding-top:9px}   /* la première ligne du texte à hauteur de l'œil du verbe */
+.eng-texte p{margin-bottom:16px;max-width:62ch;text-wrap:pretty}
+.eng-texte p:last-child{margin-bottom:0}
+/* lien dans un paragraphe : le texte reste anthracite, un filet or clair permanent dessous (comme le mail du pied de page), or au survol et au focus */
+.lien-texte{border-bottom:1px solid var(--c-trait-fin);transition:border-color .2s}
+.lien-texte:hover,.lien-texte:focus-visible{border-bottom-color:var(--c-trait)}
+.visuellement-masque{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}   /* « (nouvel onglet) », pour les lecteurs d'écran */
+/* l'œuvre, recadrée sur la feuille, sur sa cimaise (panneau papier, dans la colonne, 32 px sous le verbe) : entière — jamais d'object-fit —, jamais
+   agrandie au-delà de 340 px (fichier de 870 px) ; pas un lien, pas de zoom ; le cartel sous l'œuvre, sur le panneau */
+.cimaise{margin-top:32px;background:var(--surface);padding:44px 48px 36px}
+.oeuvre{max-width:340px;margin:0 auto}
+.oeuvre img{width:100%;height:auto}
+.cartel{margin-top:16px;font-size:var(--fs-etiquette);line-height:1.45;color:var(--c-meta)}
+.cartel b{display:block;font-weight:500;font-size:14px;color:var(--c-texte)}
+.cartel span{display:block}
 
 /* pied de page */
 /* resserré le 23/09 : 48 px en haut, 32 px entre la dernière ligne des colonnes et le filet du bas (le gap vertical de la grille, sans marge sur le bloc légal).
@@ -320,21 +363,24 @@ body.visio-ouverte{overflow:hidden}
   .partners{gap:22px 28px}
   .footer__grid{grid-template-columns:1fr;gap:28px}
   .footer__legal{margin-top:4px}
-  /* fiche et vue Réalisations : une colonne, tout affiché */
-  :root{--fs-titre-page:44px;--fs-chapitre:22px;--fs-fait:22px;--fs-suivant:24px}
+  /* fiches et vue Réalisations : une colonne, tout affiché */
+  :root{--fs-titre-page:44px;--fs-chapitre:22px;--fs-suivant:24px}
   .page-head{padding-top:28px;padding-bottom:24px}
-  .fiche__hero{height:300px}
-  .fiche__hero img{object-position:var(--focal-mobile)}
-  .faits-band{padding:24px 0 22px}
-  .stats--faits{display:grid;gap:18px 0}
-  .stats--faits .stat{padding:0 12px 0 16px}
-  .stats--faits .stat:nth-child(3){padding-left:0;grid-column:1/-1}   /* « Logements & commerce » sur une ligne, plus de case vide */
-  .stats--faits .stat__value{white-space:normal}
-  .chapitres{padding-top:40px}
-  .chapitre{margin-bottom:40px}
-  .fiche__photos{grid-template-columns:1fr}
-  .fiche__photos img{height:300px}
-  .suivant{padding-bottom:44px}
+  /* fiches : la région et le titre, les infos (Localisation et Surface sur une ligne, Usage dessous), la photo pleine largeur au même format — elle ne
+     suit plus (position: relative) —, les chapitres, la mosaïque (deux photos au plus par rangée), les voisins */
+  .fiche__corps{grid-template-columns:1fr}
+  .fiche__gauche{display:contents}
+  .fiche__titre{order:1;padding:28px var(--gutter) 0}
+  .fiche__faits{order:2;margin:18px var(--gutter) 24px;display:grid;grid-template-columns:auto 1fr;gap:14px 0}
+  .fiche__fait{padding:0 16px}
+  .fiche__fait:nth-child(3){grid-column:1/-1;padding-left:0;border-left:0}
+  .fiche__valeur{font-size:16px}
+  .fiche__photo{order:3;grid-column:1;position:relative}
+  .fiche__chapitres{order:4;margin:36px var(--gutter) 0;gap:32px}
+  .fiche__autres{padding-top:56px;padding-bottom:44px}
+  .fiche__mosaique,.fiche__rang{gap:10px}
+  .fiche__voisins{padding-bottom:44px;gap:16px}
+  .fiche__voisin .suivant__nom{font-size:20px}
   /* vue Réalisations : un bloc par ligne en 4:3, nom 28 px, « Lieu · surface » dessous, faits masqués ; une vignette à 78 % de large et le bord de la suivante,
      la ville puis la surface puis l'usage ; au doigt, la rangée défile, les photos d'un bien se parcourent dans la visionneuse */
   .p2-ouv{padding-top:24px;padding-bottom:22px}
@@ -365,13 +411,22 @@ body.visio-ouverte{overflow:hidden}
   .anciens__liste{grid-template-columns:1fr 1fr;gap:0 16px}
   .ancien__nom{font-size:20px}
   .ancien__usage{font-size:14px}
+  /* page Engagements : une colonne par rangée — le verbe, le texte, puis l'œuvre ; la cimaise reste dans les gouttières, l'œuvre prend la largeur du panneau */
+  .registre{padding-top:4px}
+  .rang{grid-template-columns:1fr;padding:22px 0 40px}
+  .rang:last-child{padding-bottom:44px}
+  .rang__g,.rang__d{display:contents}
+  .rang__verbe{order:1}
+  .eng-texte{order:2;padding-top:14px}
+  .cimaise{order:3;margin-top:28px;padding:28px 24px 22px}
+  .oeuvre{max-width:none}
 }
 /* fenêtre basse (portable 1366 × 768 avec les barres du navigateur) : la bande et ses chiffres tiennent dans 703 px */
 @media (max-height:720px) and (min-width:641px){
   :root{--bande-haut:36px;--bande-bas:32px}
 }
 @media (prefers-reduced-motion:reduce){
-  .trait::after,.four__name::after,.four__preview img,.carte__lab,.bloc img,.bloc::after,.bloc__faits,.bien__fleche{transition:none}
+  .trait::after,.four__name::after,.four__preview img,.carte__lab,.bloc img,.bloc::after,.bloc__faits,.bien__fleche,.lien-texte,.fiche__tuile img{transition:none}
 }
 
 /* ---------- 6. Bascules ---------- */

@@ -1,7 +1,7 @@
-// Génère les pages de la maquette du lot 2 (design/maquette/*.html : la Home, la fiche The Bank, la vue Réalisations) à partir des données du dépôt.
+// Génère les pages de la maquette du lot 2 (design/maquette/*.html : la Home, les quatre fiches projet, la vue Réalisations, la page Engagements) à partir des données du dépôt.
 // Exécuter depuis la racine : node design/maquette/src/build.mjs
-// Lit data/*.json, content/home.md, content/collectif.md, content/realisations.md, public/favicon.svg, public/partners/encre/*.svg (hauteurs des logos),
-// design/maquette/src/carte/belgique.{svg,json}, et les dimensions des photos de design/directions/img/ (srcset). N'écrit que dans design/maquette/.
+// Lit data/*.json, content/home.md, content/collectif.md, content/realisations.md, content/engagements.md, public/favicon.svg, public/partners/encre/*.svg (hauteurs des logos),
+// design/maquette/src/carte/belgique.{svg,json}, et les dimensions des photos de design/directions/img/ (srcset, ratios de la mosaïque, œuvre). N'écrit que dans design/maquette/.
 // Aucune dépendance hors Node.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -25,7 +25,18 @@ const byId = Object.fromEntries(projects.map(p => [p.id, p]));
 const navLabel = href => { const n = site.nav.find(x => x.href === href); if (!n) throw new Error('data/site.json : entrée de navigation ' + href + ' introuvable'); return n.label; };
 const REALISATIONS = navLabel('/realisations');
 const PAGE_REALISATIONS = 'realisations.html';   // la vue « Réalisations » (le brief la nommait « Projets »)
-const PAGE_FICHE = 'projet-the-bank.html';
+const PAGE_ENGAGEMENTS = 'engagements.html';
+// Les quatre fiches (P6, 26/09) : une page par projet détaillé, dans l'ordre du champ order (celui de « Projet précédent / suivant », en boucle).
+const pageFiche = id => `projet-${id}.html`;
+const DETAILLES = projects.filter(p => p.kind === 'detailed').sort((a, b) => a.order - b.order);
+// La photo d'un projet détaillé est la première clé de son champ selection : tête de sa fiche, aperçu de la liste des 4 (Home), bloc de la vue Réalisations ;
+// les suivantes font la mosaïque de sa fiche, dans cet ordre (clés <id>-NN ; data-box-03 à -07 sont des vues drone, voir le README de src).
+for (const p of DETAILLES) {
+  if (!p.selection || !p.selection.length) throw new Error(`data/projects.json : ${p.id}, selection — la photo du projet, puis celles de la mosaïque`);
+  const etrangere = p.selection.find(k => !k.startsWith(p.id + '-'));
+  if (etrangere) throw new Error(`data/projects.json : ${p.id}, selection — ${etrangere} n'est pas une photo de ce projet`);
+}
+const photoProjet = id => byId[id].selection[0];
 
 function frontmatter(md) {
   const m = md.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -56,17 +67,18 @@ if (!agences || agences.startsWith('#')) throw new Error('content/realisations.m
 const [enonce, enonceSuite] = (agences.match(/^(.+?[.!?])\s+(.+)$/s) || []).slice(1);
 if (!enonceSuite) throw new Error('content/realisations.md : le paragraphe du programme agences doit compter au moins deux phrases');
 
-// Les quatre projets : une ligne chacun (mêmes lignes que la planche A) et la photo de l'aperçu de la liste de la Home (img, cadre portrait 4:5) ;
-// sur la vue Réalisations (revue du 26/09), la photo du bloc (bloc, point focal blocFocal posé en style sur l'<img>, comme photoCandidates) et les trois
-// faits du survol, lieu, surface et usage (provisoires, lot 3 ; pour The Bank la ville seule, l'adresse exacte n'est pas publiée).
-// Les photos sont des clés : <clé>-s.jpg (800 px) et <clé>.jpg (1800 px) en srcset (photoImgPetit).
-// The Bank pointe vers sa fiche — c'est le seul bloc cliquable de la vue Réalisations —, les trois autres vers leur ancre sur la vue Réalisations (l'id de leur bloc).
+// Les quatre projets : une ligne chacun (mêmes lignes que la planche A) et la photo de l'aperçu de la liste de la Home (img, cadre portrait 4:5, centrée,
+// sans point focal) ; sur la vue Réalisations (revue du 26/09), la photo du bloc (bloc, point focal blocFocal posé en style sur l'<img>, comme
+// photoCandidates) et les trois faits du survol, lieu, surface et usage (provisoires, lot 3 ; pour The Bank la ville seule, l'adresse exacte n'est pas publiée).
+// img et bloc sont la photo du projet, la première clé de son champ selection (P6, 26/09) : <clé>-s.jpg (800 px) et <clé>.jpg (1800 px) en srcset
+// (photoImgPetit). Ateliers 118 : ateliers-118-01, toute la façade avec la porte de garage dans le bloc (50% 30%) ; Data Box : data-box-03, la vue drone.
+// Les quatre pointent vers leur fiche (la liste de la Home, les quatre blocs-liens de la vue Réalisations, qui gardent leur id).
 const four = [
-  { id: 'ateliers-118', line: 'Molenbeek-Saint-Jean · 1 200 m² · Treize ateliers dans une ancienne usine de colle', img: 'ateliers-118-05', bloc: 'ateliers-118-05', blocFocal: '50% 55%', lieu: 'Molenbeek-Saint-Jean', surface: '1 200 m²', usage: 'Ateliers', href: `${PAGE_REALISATIONS}#ateliers-118` },
-  { id: 'the-bank', line: 'Liège · 1 100 m² · Une agence devenue bijouterie, Bancontact et logements', img: 'the-bank-01', bloc: 'the-bank-01', blocFocal: '50% 40%', lieu: 'Liège', surface: '1 100 m²', usage: 'Logements & commerce', href: PAGE_FICHE },
-  { id: 'data-box', line: 'Jemelle · 4 200 m² sur un hectare · Un site technique dont l’avenir reste ouvert', img: 'data-box-02', bloc: 'data-box-02', blocFocal: '50% 55%', lieu: 'Jemelle', surface: '4 200 m²', usage: 'Site technique', href: `${PAGE_REALISATIONS}#data-box` },
-  { id: 'community', line: 'Uccle · 14 unités · Quatorze unités autour d’espaces partagés', img: 'community-05', bloc: 'community-05', blocFocal: '50% 50%', lieu: 'Uccle', surface: '14 unités', usage: 'Co-living', href: `${PAGE_REALISATIONS}#community` },
-];
+  { id: 'ateliers-118', line: 'Molenbeek-Saint-Jean · 1 200 m² · Treize ateliers dans une ancienne usine de colle', blocFocal: '50% 30%', lieu: 'Molenbeek-Saint-Jean', surface: '1 200 m²', usage: 'Ateliers' },
+  { id: 'the-bank', line: 'Liège · 1 100 m² · Une agence devenue bijouterie, Bancontact et logements', blocFocal: '50% 40%', lieu: 'Liège', surface: '1 100 m²', usage: 'Logements & commerce' },
+  { id: 'data-box', line: 'Jemelle · 4 200 m² sur un hectare · Un site technique dont l’avenir reste ouvert', blocFocal: '50% 50%', lieu: 'Jemelle', surface: '4 200 m²', usage: 'Site technique' },
+  { id: 'community', line: 'Uccle · 14 unités · Quatorze unités autour d’espaces partagés', blocFocal: '50% 50%', lieu: 'Uccle', surface: '14 unités', usage: 'Co-living' },
+].map(f => ({ ...f, img: photoProjet(f.id), bloc: photoProjet(f.id), href: pageFiche(f.id) }));
 // Vue Réalisations : les quatre blocs en deux rangées, 7fr / 5fr puis 5fr / 7fr (.alt__rang--a, .alt__rang--b).
 const rangees = [[['community', 7], ['ateliers-118', 5]], [['the-bank', 5], ['data-box', 7]]];
 // Le programme agences, vue Réalisations : la rangée des seize biens, kind agency dans l'ordre puis kind gallery dans l'ordre (data/projects.json).
@@ -93,20 +105,42 @@ const ANCIENS = [
   { nom: 'Meuhh', lieu: 'Méan', surface: '3,2 ha', usage: 'Urbanisation d’un ensemble de terrains à bâtir' },
   { nom: 'Genval', lieu: 'Genval', surface: '180 m²', usage: 'Rénovation complète d’une maison unifamiliale dans un style contemporain' },
 ];
-// Fiche The Bank : la photo de tête et son point focal, la bande de trois faits (comme la planche A), la paire de photos intercalée et ses légendes, le projet suivant.
-// Revue de la fiche (23/09) : la façade (the-bank-01) passe en tête ; son point focal est posé en variables sur l'<img> (--focal au-dessus de 640 px :
-// le bas de l'image juste au-dessus de la voiture, de 1280 à 1920 px de large ; --focal-mobile à 390 : toute la façade), lues par .fiche__hero img.
-// La paire devient 02 (extérieur, à gauche) + 03 (intérieur, à droite), en deux colonnes égales.
-// Les légendes ne sont pas dans data/projects.json (pas de captions pour the-bank) : provisoires, à confirmer au lot 3.
-const bank = byId['the-bank'];
-const fiche = {
-  projet: bank,
-  faits: [['Localisation', 'Liège'], ['Surface', bank.surface], ['Usage', 'Logements & commerce']],
-  hero: { key: 'the-bank-01', focal: '50% 44%', focalMobile: '50% 5%' },
-  photos: [{ key: 'the-bank-02', legende: 'Le point Bancontact, rue des Mineurs', sizes: '(max-width:640px) 100vw, 548px' }, { key: 'the-bank-03', legende: 'Le point Bancontact, l’intérieur', sizes: '(max-width:640px) 100vw, 548px' }],
-  chapitres: [['Ce que c’était', bank.was], ['Ce que nous y avons vu', bank.saw], ['Ce que c’est devenu', bank.became]],
-  suivant: { projet: byId['data-box'], href: `${PAGE_REALISATIONS}#data-box` },
+// Les quatre fiches (P6, Cowork, 26/09 ; références validées : design/revue-fiche/propositions/p6.html, p6-ateliers-118.html, p6-data-box.html,
+// p6-community.html), un seul gabarit. Par projet (valeurs provisoires, lot 3) : la région (eyebrow), les trois infos — lieu, surface, usage —, le cadre
+// de la photo de tête et son point focal (object-position, posé en style sur l'<img>). Cadre paysage : 50 % de la page, format 2100 / 1694 ; carré :
+// 40 %, 1:1. The Bank : the-bank-01 est en portrait ; calée en haut dans le cadre paysage (1,24), elle en montre exactement les 60,5 % du haut, sans la
+// voiture — la découpe de la référence, sans ses fichiers recadrés (img/the-bank-01-facade*.jpg). Les chapitres sont was, saw et became de
+// data/projects.json ; la photo de tête est la première clé de selection, la mosaïque les suivantes.
+const CADRES = { paysage: { largeur: 50, ratio: 2100 / 1694 }, carre: { largeur: 40, ratio: 1 } };
+const fiches = {
+  'ateliers-118': { region: 'Bruxelles', lieu: 'Molenbeek-Saint-Jean', surface: '1 200 m²', usage: 'Ateliers', cadre: 'carre', focal: '50% 0%' },
+  'the-bank': { region: 'Liège', lieu: 'Centre-ville', surface: '1 100 m²', usage: 'Logements & commerce', cadre: 'paysage', focal: '50% 0%' },
+  'data-box': { region: 'Rochefort', lieu: 'Jemelle', surface: '4 200 m²', usage: 'Site technique', cadre: 'paysage', focal: '60% 50%' },
+  'community': { region: 'Bruxelles', lieu: 'Uccle', surface: '14 unités', usage: 'Co-living', cadre: 'paysage', focal: '50% 50%' },
 };
+const CHAPITRES = [['was', 'Ce que c’était'], ['saw', 'Ce que nous y avons vu'], ['became', 'Ce que c’est devenu']];
+for (const p of DETAILLES) if (!fiches[p.id] || !CADRES[fiches[p.id].cadre]) throw new Error(`build.mjs : fiche de ${p.id} absente de fiches, ou cadre inconnu`);
+// Page Engagements (Cowork, 26/09) : le titre de content/engagements.md (pas de sous-titre, décision d'Axel du 26/09), puis une rangée par titre ## —
+// le verbe, et les paragraphes qui le suivent jusqu'au titre suivant ; l'id de la rangée est le verbe (#aider, #transmettre, #soutenir).
+const slug = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const engagementsMd = frontmatter(read('content/engagements.md'));
+const engagements = { titre: engagementsMd.fm.match(/title:\s*(.+)/)[1].trim(), rangs: [] };
+for (const b of blocks(engagementsMd.body)) {
+  if (b.startsWith('## ')) engagements.rangs.push({ verbe: b.slice(3).trim(), id: slug(b.slice(3)), paragraphes: [] });
+  else if (engagements.rangs.length && !b.startsWith('#')) engagements.rangs[engagements.rangs.length - 1].paragraphes.push(b);
+  else throw new Error('content/engagements.md : bloc hors d’une rangée ## — ' + b.slice(0, 60));
+}
+// L'œuvre du Créahmbxl, sur une cimaise dans la colonne de gauche de la rangée `rang` (« Soutenir »), sous le verbe : le fichier, recadré sur la feuille
+// (870 × 1132, copié tel quel de design/revue-engagements/propositions/img/, jamais recompressé ; width et height lus dans l'en-tête JPEG), la légende et
+// le détail du cartel, le texte alternatif (provisoire, lot 3). Entière : jamais recadrée par le CSS ni agrandie au-delà de 340 px ; pas un lien, pas de zoom.
+const oeuvre = {
+  rang: 'soutenir',
+  fichier: 'ines-reddah-2024-recadree.jpg',
+  legende: 'Ines Reddah, 2024',
+  detail: 'Feutres et acrylique, 65\u00A0×\u00A082\u00A0cm',
+  alt: 'Peinture d’Ines Reddah, 2024 : deux grands visages ronds cernés de bleu et de rose, entourés de traits verticaux de couleur.',
+};
+if (!engagements.rangs.some(r => r.id === oeuvre.rang)) throw new Error(`content/engagements.md : pas de rangée #${oeuvre.rang} pour l'œuvre`);
 
 // Premier écran (structure F, figée le 23/09) : la photo, en 1800 px (<nom>.jpg) puis 2800 px (<nom>-l.jpg) pour les grands écrans ;
 // le srcset porte la largeur réelle de chaque fichier, lue dans l'en-tête JPEG. Les versions se génèrent depuis l'original avec
@@ -123,16 +157,15 @@ function jpegSize(file) {
   }
   throw new Error(`${file} : dimensions JPEG introuvables`);
 }
-const jpegWidth = file => jpegSize(file).width;
 // La photo déclare son point focal (object-position, posé en style sur l'<img>, vaut aussi sur téléphone). Figée le 23/09 sur Community 05,
-// accroche à gauche (bascules 9b et 9d retirées ; data-box-03 reste dans design/directions/img/). Plus de bascule 9c : cadrage figé le 26/09 sur
+// accroche à gauche (bascules 9b et 9d retirées ; data-box-03, l'autre candidate, est depuis la P6 la photo de Data Box). Plus de bascule 9c : cadrage figé le 26/09 sur
 // « haut », 50% 20%, pour le premier écran de la Home seulement (le blocFocal de community-05 dans four, vue Réalisations, reste 50% 50%).
 // Sur téléphone, pas d'exception : Community 05 (4:3) est calée sur la hauteur du cadre de 390 × 420, le point focal vertical n'y change rien.
 // Sources d'une photo : <clé>.jpg (1800 px) et <clé>-l.jpg (2800 px) quand ils existent, sinon repli sur <clé>-s.jpg (800 px).
 function photoSources(key) {
   const chemin = f => path.join(REPO, 'design/directions/img', f);
-  const sources = [`${key}.jpg`, `${key}-l.jpg`].filter(f => fs.existsSync(chemin(f))).map(f => ({ file: f, width: jpegWidth(chemin(f)) }));
-  if (!sources.length) { console.warn(`${key} : repli sur ${key}-s.jpg (800 px)`); sources.push({ file: `${key}-s.jpg`, width: jpegWidth(chemin(`${key}-s.jpg`)) }); }
+  const sources = [`${key}.jpg`, `${key}-l.jpg`].filter(f => fs.existsSync(chemin(f))).map(f => ({ file: f, ...jpegSize(chemin(f)) }));
+  if (!sources.length) { console.warn(`${key} : repli sur ${key}-s.jpg (800 px)`); sources.push({ file: `${key}-s.jpg`, ...jpegSize(chemin(`${key}-s.jpg`)) }); }
   return sources;
 }
 // <img> avec srcset quand plusieurs tailles existent ; attrs : attributs supplémentaires, déjà échappés.
@@ -155,15 +188,18 @@ function photoSourcesPetit(key) {
   return sources;
 }
 // sizes : le navigateur choisit la source sur la largeur affichée seule ; en object-fit: cover, une photo plus large que son cadre (ratio largeur/hauteur
-// `cadre`) est calée sur la hauteur et a besoin de cadre × (ratio de la photo ÷ ratio du cadre) pixels de large (Data Box 02, 16:9 dans l'aperçu 4:5 :
-// 2,2 × la largeur). Chaque terme de `sizes` ([media, largeur]) est multiplié par ce facteur, lu sur la photo elle-même. cadre null : les termes portent
-// déjà la contrainte de hauteur (blocs de la vue Réalisations, dont le cadre change de forme avec la fenêtre, sizesBloc), rien n'est multiplié.
+// `cadre`) est calée sur la hauteur et a besoin de cadre × (ratio de la photo ÷ ratio du cadre) pixels de large (Data Box 03, 16:9 dans l'aperçu 4:5 :
+// 2,2 × la largeur). Chaque terme de `sizes` ([media, largeur]) est multiplié par ce facteur k, lu sur la photo elle-même (sizesCadre ; aussi pour la
+// photo de tête des fiches). cadre null : les termes portent déjà la contrainte de hauteur (blocs de la vue Réalisations, dont le cadre change de forme
+// avec la fenêtre, sizesBloc), rien n'est multiplié.
+function sizesCadre(sizes, k) {
+  const facteur = expr => /^\d+px$/.test(expr) ? `${Math.round(parseFloat(expr) * k)}px` : k === 1 ? `calc(${expr})` : `calc((${expr}) * ${k.toFixed(3)})`;
+  return sizes.map(([media, w]) => (media ? `${media} ` : '') + facteur(w)).join(', ');
+}
 function photoImgPetit(key, cadre, sizes, attrs = '') {
   const sources = photoSourcesPetit(key);
   const k = cadre ? Math.max(1, (sources[0].width / sources[0].height) / cadre) : 1;
-  const facteur = expr => /^\d+px$/.test(expr) ? `${Math.round(parseFloat(expr) * k)}px` : k === 1 ? `calc(${expr})` : `calc((${expr}) * ${k.toFixed(3)})`;
-  const sz = sizes.map(([media, w]) => (media ? `${media} ` : '') + facteur(w)).join(', ');
-  return `<img${attrs} src="${IMG}/${sources[0].file}"${sources.length > 1 ? ` srcset="${sources.map(s => `${IMG}/${s.file} ${s.width}w`).join(', ')}" sizes="${sz}"` : ''} alt="" decoding="async">`;
+  return `<img${attrs} src="${IMG}/${sources[0].file}"${sources.length > 1 ? ` srcset="${sources.map(s => `${IMG}/${s.file} ${s.width}w`).join(', ')}" sizes="${sizesCadre(sizes, k)}"` : ''} alt="" decoding="async">`;
 }
 // Largeur affichée : aperçu de la liste = 5/12 du container moins la gouttière de 64 px (440 px à partir de 1280 px de fenêtre ; masqué sous 641 px).
 // Vue Réalisations, sur la grille large (1600 px, gouttières comprises) : vignette = le quart de la rangée moins trois écarts de 24 px (362 px à partir
@@ -217,11 +253,12 @@ ${stateScript}
 ${phiSymbol}`;
 }
 
+// Page active : le trait sous son lien ; sur la page Engagements, aria-current="page" en plus (26/09 ; le lien de « Réalisations » ne change pas).
 function header(active = '') {
-  const a = k => active === k ? ' class="trait is-active"' : ' class="trait"';
+  const a = k => active === k ? ` class="trait is-active"${k === 'engagements' ? ' aria-current="page"' : ''}` : ' class="trait"';
   return `<header class="site-header">
   <a class="logo" href="index.html" aria-label="Perpetual">${phi('logo__mark')}<span class="logo__texte">Perpetual</span></a>
-  <nav class="site-nav" aria-label="Navigation"><a href="${PAGE_REALISATIONS}"${a('realisations')}>${esc(REALISATIONS)}</a><a href="#"${a('engagements')}>Engagements</a><a href="#contact" class="trait">Contact</a></nav>
+  <nav class="site-nav" aria-label="Navigation"><a href="${PAGE_REALISATIONS}"${a('realisations')}>${esc(REALISATIONS)}</a><a href="${PAGE_ENGAGEMENTS}"${a('engagements')}>Engagements</a><a href="#contact" class="trait">Contact</a></nav>
 </header>`;
 }
 
@@ -329,7 +366,7 @@ ${partnersHtml}
 function footer() {
   return `<footer class="site-footer" id="contact"><div class="container footer__grid">
   <div class="footer__contact"><p class="footer__name">Julien De Dobbeleer</p><a class="footer__mail" href="mailto:${site.email}">${site.email}</a><p class="footer__addr">${site.name}, ${site.city}</p></div>
-  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="${PAGE_REALISATIONS}">${esc(REALISATIONS)}</a><a class="trait" href="index.html#collectif">Collectif</a><a class="trait" href="#">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
+  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="${PAGE_REALISATIONS}">${esc(REALISATIONS)}</a><a class="trait" href="index.html#collectif">Collectif</a><a class="trait" href="${PAGE_ENGAGEMENTS}">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
   <blockquote class="footer__quote"><p>«\u00A0${site.quote.text}\u00A0»</p><cite>${site.quote.author}</cite></blockquote>
   <p class="footer__legal">© 2026 ${site.name}</p>
 </div></footer>
@@ -339,38 +376,61 @@ function footer() {
 `;
 }
 
-// ---------- fiche projet (The Bank) ----------
-// Brief §2 et §5 : lieu en eyebrow → titre 64 px → photo hero the-bank-01 (hauteur calée sur la fenêtre, point focal en variables) → bande de trois faits
-// (même composant que la bande des chiffres de la Home : surface papier, valeur en serif or, étiquette gris chaud) → chapitre 01 → deux photos (02 et 03,
-// colonnes égales, 440 px, légendes) → chapitres 02 et 03, en colonne de 760 px alignée à gauche → projet suivant → pied de page.
-// Titres de chapitre en sans medium (bascule 20 figée sur « sans », revue du 23/09).
-function fichePage() {
-  const f = fiche;
-  const chapitre = (i, [titre, texte]) => `<section class="chapitre"><p class="chapitre__num">0${i + 1}</p><h2 class="chapitre__titre">${esc(titre)}</h2><p class="chapitre__texte">${texte}</p></section>`;
+// ---------- visionneuse (vue Réalisations et fiches) ----------
+// Fond blanc, la photo entière dans un cadre 4:3, flèches de part et d'autre, « Fermer », Échap, Tab contenu (maquette.js). Sur la vue Réalisations, la ville
+// puis « surface · usage » et le compteur sous la photo ; sur les fiches, le compteur seul (« 3 / 10 »), pas de légende.
+const FLECHE_G = '<svg viewBox="0 0 14 28" aria-hidden="true"><path d="M12 2 2 14l10 12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
+const FLECHE_D = '<svg viewBox="0 0 14 28" aria-hidden="true"><path d="M2 2l10 12L2 26" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
+const visio = label => `<div class="visio" hidden role="dialog" aria-modal="true" aria-label="${label}">
+  <button type="button" class="visio__fermer trait" data-fermer>Fermer</button>
+  <button type="button" class="visio__fleche visio__fleche--g" data-v-prec aria-label="Photo précédente">${FLECHE_G}</button>
+  <div class="visio__cadre"><div class="visio__piste" tabindex="0"></div></div>
+  <button type="button" class="visio__fleche visio__fleche--d" data-v-suiv aria-label="Photo suivante">${FLECHE_D}</button>
+  <p class="visio__bas"><span class="visio__legende"></span><span class="visio__compteur"></span></p>
+</div>`;
+
+// ---------- fiches projet (P6, Cowork, 26/09) ----------
+// Un seul gabarit pour les quatre projets détaillés, sur la grille large (comme la vue Réalisations ; le pied de page reste sur le container de 1 200 px) :
+// une grille de trois colonnes, marge | texte | photo. À gauche, la région en eyebrow, le titre (serif 64 px), les infos (Localisation, Surface, Usage :
+// la valeur en sans or foncé, l'étiquette dessous), puis les trois chapitres empilés (titres en sans medium, bascule 20 figée) ; à droite, la photo de tête
+// au bord de la fenêtre, dès le bas de l'en-tête, qui suit le texte quand il est plus long qu'elle (CSS). Dessous, sur la grille large : « Photos », la
+// mosaïque (une figure par photo, au format du fichier, sans légende ; rangées justifiées par maquette.js, clic → visionneuse), puis le projet précédent
+// et le suivant, en boucle dans l'ordre du champ order.
+// Photo de tête : <clé>.jpg et <clé>-l.jpg (photoImg), sans lazy, sizes corrigé du recadrage cover (sizesCadre). Mosaïque : <clé>-s.jpg et <clé>.jpg avec
+// leur largeur réelle, --r et data-r = le ratio du plus grand fichier (en-tête JPEG) ; le sizes posé ici ne vaut que sans JavaScript (et avant le
+// placement), maquette.js le remplace par la largeur de chaque tuile. Chaque tuile est un bouton (clavier) qui ouvre la visionneuse sur son <clé>.jpg.
+function fichePage(p, i) {
+  const f = fiches[p.id], cadre = CADRES[f.cadre], n = DETAILLES.length, prec = DETAILLES[(i + n - 1) % n], suiv = DETAILLES[(i + 1) % n];
+  const [tete, ...autres] = p.selection;
+  const s = photoSources(tete)[0], k = Math.max(1, (s.width / s.height) / cadre.ratio);
+  const photo = photoImg(tete, sizesCadre([['(max-width:640px)', '100vw'], ['', `${cadre.largeur}vw`]], k), ` style="object-position:${f.focal}"`);
+  const fait = (valeur, etiquette) => `<li class="fiche__fait"><span class="fiche__valeur">${esc(valeur)}</span><span class="fiche__etiquette">${etiquette}</span></li>`;
+  const chapitre = ([champ, titre], j) => `<section class="chapitre"><p class="chapitre__num">0${j + 1}</p><h2 class="chapitre__titre">${esc(titre)}</h2><p class="chapitre__texte">${p[champ]}</p></section>`;
+  const tuile = (cle, j) => {
+    const sources = photoSourcesPetit(cle), grand = sources[sources.length - 1], r = (grand.width / grand.height).toFixed(4);
+    return `<figure class="fiche__tuile" style="--r:${r}" data-r="${r}"><button type="button" class="fiche__agrandir" data-grande="${IMG}/${grand.file}" aria-label="Agrandir la photo ${j + 1} sur ${autres.length}">`
+      + `<img src="${IMG}/${sources[0].file}"${sources.length > 1 ? ` srcset="${sources.map(x => `${IMG}/${x.file} ${x.width}w`).join(', ')}" sizes="(max-width:640px) 100vw, ${Math.round(r * 440)}px"` : ''} alt="" loading="lazy" decoding="async"></button></figure>`;
+  };
+  const mosaique = autres.length ? `\n<div class="large fiche__autres"><p class="eyebrow">Photos</p><div class="fiche__mosaique">${autres.map(tuile).join('')}</div></div>` : '';
   return `<article class="fiche">
-<div class="container page-head"><p class="eyebrow">${esc(f.projet.location)}</p><h1 class="page__titre">${esc(f.projet.name)}</h1></div>
-<div class="fiche__hero">${photoImg(f.hero.key, '100vw', ` style="--focal:${f.hero.focal};--focal-mobile:${f.hero.focalMobile}"`)}</div>
-<section class="band faits-band" aria-label="En bref"><div class="container"><ol class="stats stats--faits">${f.faits.map(([l, v]) => `<li class="stat"><span class="stat__value">${esc(v)}</span><span class="stat__label">${esc(l)}</span></li>`).join('')}</ol></div></section>
-<div class="container">
-  <div class="chapitres">${chapitre(0, f.chapitres[0])}</div>
-  <div class="fiche__photos">${f.photos.map(ph => `<figure>${photoImg(ph.key, ph.sizes, ' loading="lazy"')}<figcaption>${esc(ph.legende)}</figcaption></figure>`).join('')}</div>
-  <div class="chapitres">${f.chapitres.slice(1).map((c, i) => chapitre(i + 1, c)).join('')}</div>
-  <a class="suivant" href="${f.suivant.href}"><span class="eyebrow">Projet suivant</span><span class="suivant__nom trait">${esc(f.suivant.projet.name)} →</span></a>
-</div>
-</article>`;
+<div class="fiche__corps fiche__corps--${f.cadre}">
+  <div class="fiche__gauche"><div class="fiche__titre"><p class="eyebrow">${esc(f.region)}</p><h1 class="page__titre">${esc(p.name)}</h1></div><ol class="fiche__faits" aria-label="En bref">${fait(f.lieu, 'Localisation')}${fait(f.surface, 'Surface')}${fait(f.usage, 'Usage')}</ol><div class="fiche__chapitres">${CHAPITRES.map(chapitre).join('')}</div></div>
+  <figure class="fiche__photo">${photo}</figure>
+</div>${mosaique}
+<div class="large"><nav class="fiche__voisins" aria-label="Autres projets"><a class="fiche__voisin fiche__voisin--prec" href="${pageFiche(prec.id)}"><span class="eyebrow">Projet précédent</span><span class="suivant__nom trait">← ${esc(prec.name)}</span></a><a class="fiche__voisin fiche__voisin--suiv" href="${pageFiche(suiv.id)}"><span class="eyebrow">Projet suivant</span><span class="suivant__nom trait">${esc(suiv.name)} →</span></a></nav></div>
+</article>
+${visio('Photos du projet')}`;
 }
 
 // ---------- vue Réalisations ----------
 // Revue du 26/09, proposition P2 retenue (design/revue-realisations/propositions/p2-defilement.html), sur la grille large (.large, 1600 px gouttières
 // comprises) : l'ouverture — le titre en sans léger, puis la phrase du subtitle de content/realisations.md (provisoire, lot 3), sur une ligne —
-// → les quatre projets en deux rangées de blocs photo (nom en serif sur la photo, Lieu / Surface / Usage au survol et au focus ; seule The Bank est un lien,
-// les trois autres gardent leur id, ancre de la Home et du « Projet suivant » de la fiche) → le programme agences : l'énoncé sur papier (eyebrow, première
-// phrase en serif à gauche, la suite à droite), puis la rangée des seize biens, quatre visibles, en boucle, chacun avec ses photos et la visionneuse
-// (maquette.js, qui lit window.BIENS : ville, surface, usage et photos 1800 px, déjà échappés pour innerHTML) → en réserve (bascule 23), les projets de
-// l'ancien site → pied de page. La piste des photos d'un bien a un tabindex="-1" : Chromium rend focalisable un conteneur qui défile, et ses clones
-// (aria-hidden) seraient sinon autant d'arrêts de tabulation invisibles ; au clavier, les photos se parcourent avec les flèches du bien.
-const FLECHE_G = '<svg viewBox="0 0 14 28" aria-hidden="true"><path d="M12 2 2 14l10 12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
-const FLECHE_D = '<svg viewBox="0 0 14 28" aria-hidden="true"><path d="M2 2l10 12L2 26" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
+// → les quatre projets en deux rangées de blocs photo (nom en serif sur la photo, Lieu / Surface / Usage au survol et au focus) ; depuis la P6 (26/09), les
+// quatre blocs sont des liens vers leur fiche et gardent leur id (#ateliers-118, #the-bank, #data-box, #community) → le programme agences : l'énoncé sur
+// papier (eyebrow, première phrase en serif à gauche, la suite à droite), puis la rangée des seize biens, quatre visibles, en boucle, chacun avec ses photos
+// et la visionneuse (maquette.js, qui lit window.BIENS : ville, surface, usage et photos 1800 px, déjà échappés pour innerHTML) → en réserve (bascule 23),
+// les projets de l'ancien site → pied de page. La piste des photos d'un bien a un tabindex="-1" : Chromium rend focalisable un conteneur qui défile, et ses
+// clones (aria-hidden) seraient sinon autant d'arrêts de tabulation invisibles ; au clavier, les photos se parcourent avec les flèches du bien.
 function realisationsPage() {
   const rmd = frontmatter(read('content/realisations.md'));
   const phrase = (rmd.fm.match(/subtitle:\s*(.+)/) || [])[1];
@@ -379,8 +439,8 @@ function realisationsPage() {
     const f = four.find(x => x.id === id);
     const contenu = photoImgPetit(f.bloc, null, sizesBloc(f.bloc, fr), ` style="object-position:${f.blocFocal}"`)
       + `<span class="bloc__texte"><span class="bloc__nom">${esc(byId[id].name)}</span><span class="bloc__faits">${fait('Lieu', f.lieu)}${fait('Surface', f.surface)}${fait('Usage', f.usage)}</span><span class="bloc__mobile">${esc(f.lieu)} · ${esc(f.surface)}</span></span>`;
-    // un bloc non cliquable reste atteignable au clavier (tabindex) : ses faits s'affichent au focus comme au survol
-    return f.href === PAGE_FICHE ? `<a class="bloc" href="${f.href}">${contenu}</a>` : `<div class="bloc" id="${id}" tabindex="0">${contenu}</div>`;
+    // un lien vers sa fiche : ses faits s'affichent au survol comme au focus clavier, et sa photo zoome (photo cliquable)
+    return `<a class="bloc" id="${id}" href="${f.href}">${contenu}</a>`;
   };
   const rangeesHtml = rangees.map((r, i) => `<div class="alt__rang alt__rang--${'ab'[i]}">${r.map(bloc).join('')}</div>`).join('\n  ');
   const vignettes = biens.map((b, k) => `<li><div class="vignette__photo"><div class="bien" data-bien="${k}" data-n="${b.photos.length}"><div class="bien__piste" tabindex="-1">${b.photos.map(c => photoImgPetit(c, 3 / 2, SIZES_VIGNETTE, ' loading="lazy"')).join('')}</div>`
@@ -413,21 +473,40 @@ function realisationsPage() {
     ${anciens}
   </ul>
 </section>
-<div class="visio" hidden role="dialog" aria-modal="true" aria-label="Photos du bien">
-  <button type="button" class="visio__fermer trait" data-fermer>Fermer</button>
-  <button type="button" class="visio__fleche visio__fleche--g" data-v-prec aria-label="Photo précédente">${FLECHE_G}</button>
-  <div class="visio__cadre"><div class="visio__piste" tabindex="0"></div></div>
-  <button type="button" class="visio__fleche visio__fleche--d" data-v-suiv aria-label="Photo suivante">${FLECHE_D}</button>
-  <p class="visio__bas"><span class="visio__legende"></span><span class="visio__compteur"></span></p>
-</div>
+${visio('Photos du bien')}
 <script>window.BIENS=${JSON.stringify(BIENS)};</script>`;
+}
+
+// ---------- page Engagements ----------
+// Cowork, 26/09 (référence validée par Axel : design/revue-engagements/propositions/p1.html), sur le container de 1 200 px comme la Home : le titre seul,
+// sans sous-titre, en sans léger comme Réalisations → le registre, une rangée par titre ## de content/engagements.md : le verbe en serif à gauche, les
+// paragraphes à droite, un filet au-dessus → dans la colonne de gauche de la rangée oeuvre.rang (« Soutenir »), sous le verbe, l'œuvre sur sa cimaise,
+// avec son cartel → pied de page.
+// Markdown en ligne des paragraphes : les liens seuls, en .lien-texte — une ancre ou une page telle quelle ([Écrivez-nous](#contact) : le bloc du pied de
+// page), un autre site dans un nouvel onglet (target _blank, rel noopener), annoncé aux lecteurs d'écran ; puis l'espace insécable avant « : ».
+const enLigne = md => md.replace(/ :/g, '\u00A0:').replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, texte, href) => /^https?:\/\//.test(href)
+  ? `<a class="lien-texte" href="${esc(href)}" target="_blank" rel="noopener">${texte}<span class="visuellement-masque"> (nouvel onglet)</span></a>`
+  : `<a class="lien-texte" href="${esc(href)}">${texte}</a>`);
+function engagementsPage() {
+  const taille = jpegSize(path.join(REPO, 'design/directions/img', oeuvre.fichier));
+  const cimaise = `<div class="cimaise"><figure class="oeuvre"><img src="${IMG}/${oeuvre.fichier}" width="${taille.width}" height="${taille.height}" alt="${esc(oeuvre.alt)}" decoding="async">`
+    + `<figcaption class="cartel"><b>${esc(oeuvre.legende)}</b><span>${esc(oeuvre.detail)}</span></figcaption></figure></div>`;
+  const rang = r => `<section class="rang" id="${r.id}">
+    <div class="rang__g"><h2 class="rang__verbe">${esc(r.verbe)}</h2>${r.id === oeuvre.rang ? cimaise : ''}</div>
+    <div class="rang__d"><div class="eng-texte">${r.paragraphes.map(p => `<p>${enLigne(p)}</p>`).join('')}</div></div>
+  </section>`;
+  return `<div class="container page-head"><h1 class="page__titre">${esc(engagements.titre)}</h1></div>
+<div class="container registre">
+  ${engagements.rangs.map(rang).join('\n  ')}
+</div>`;
 }
 
 // ---------- pages ----------
 const pages = {
   'index.html': () => head({ page: 'home', text: `${site.name} — ${site.tagline}` }) + '\n' + header('') + '\n<main>\n' + lead() + '\n' + chart() + '\n' + projets() + '\n' + autres() + '\n' + collectifBlock() + '\n</main>\n' + footer(),
-  [PAGE_FICHE]: () => head({ page: 'fiche', text: `${fiche.projet.name} — ${site.name}` }) + '\n' + header('realisations') + '\n<main>\n' + fichePage() + '\n</main>\n' + footer(),
+  ...Object.fromEntries(DETAILLES.map((p, i) => [pageFiche(p.id), () => head({ page: 'fiche', text: `${p.name} — ${site.name}` }) + '\n' + header('realisations') + '\n<main>\n' + fichePage(p, i) + '\n</main>\n' + footer()])),
   [PAGE_REALISATIONS]: () => head({ page: 'realisations', text: `${REALISATIONS} — ${site.name}` }) + '\n' + header('realisations') + '\n<main>\n' + realisationsPage() + '\n</main>\n' + footer(),
+  [PAGE_ENGAGEMENTS]: () => head({ page: 'engagements', text: `${engagements.titre} — ${site.name}` }) + '\n' + header('engagements') + '\n<main>\n' + engagementsPage() + '\n</main>\n' + footer(),
 };
 
 for (const [name, render] of Object.entries(pages)) {
@@ -435,4 +514,4 @@ for (const [name, render] of Object.entries(pages)) {
   fs.writeFileSync(path.join(OUT, name), html);
   console.log('écrit', name, Math.round(html.length / 1024) + ' Ko');
 }
-if (sousGrand.size) console.warn(`${sousGrand.size} photos sans leur version 1800 px (<clé>.jpg plus petit, tiré d'une planche) — à produire depuis les originaux, reduire-photos.mjs --petit --grand, puis rebâtir : ${[...sousGrand].join(', ')}`);
+if (sousGrand.size) console.warn(`${sousGrand.size} photos dont le <clé>.jpg fait moins de 1800 px — tiré d'une planche en attendant l'original (à produire depuis l'original, reduire-photos.mjs --petit --grand, puis rebâtir), ou original plus petit (community-04, -11, -13 : 1080 px ; -14 à -16 : 1536 px ; connu) : ${[...sousGrand].join(', ')}`);
