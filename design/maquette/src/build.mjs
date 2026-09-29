@@ -336,11 +336,11 @@ function carteSvg() {
   return `${ouverture}\n${pays}\n${lieux.join('\n')}\n</svg>`;
 }
 
-// Section Réalisations : la carte, avec le texte à droite (figée le 23/09 ; la bande de vignettes et « aucune » sont retirées).
+// Section « En Belgique » (intitulé du 28/09, lot 3 : « Réalisations » faisait doublon avec la liste des 4) : la carte, avec le texte à droite (figée le 23/09 ; la bande de vignettes et « aucune » sont retirées).
 function autres() {
   return `<section class="section section--autres" id="realisations">
 <div class="container">
-  <p class="eyebrow">Réalisations</p>
+  <p class="eyebrow">En Belgique</p>
   <div class="carte">
     <div class="carte__fig">${carteSvg()}</div>
     <div class="carte__texte">

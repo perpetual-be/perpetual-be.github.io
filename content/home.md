@@ -4,21 +4,21 @@ subtitle: Positionnement et preuves
 description: Perpetual — le trait d’union entre les idées et le capital. Promoteur et développeur immobilier, Bruxelles, actif depuis 2002.
 stats:
   - value: "2002"
-    label: Actifs depuis
+    label: Nos débuts
   - value: "30+"
-    label: Agences bancaires transformées en quatre ans
+    label: Agences bancaires transformées depuis 2022
   - value: "19"
-    label: Jours entre chaque bien livré
+    label: Jours en moyenne entre deux livraisons
   - value: "24"
     label: Projets en cours
 portfolio:
   title: 11 150 m² en cours de transformation
   items:
-    - label: Industrial
+    - label: Industriel
       percent: 41
-    - label: Residential
+    - label: Résidentiel
       percent: 34
-    - label: Retail
+    - label: Commerce
       percent: 25
 ---
 
