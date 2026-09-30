@@ -35,6 +35,14 @@ const projects = defineCollection({
     // Les photos montrées, en clés <id>-NN sans extension, dans l'ordre d'affichage : projet détaillé, la photo du projet puis
     // la mosaïque de sa fiche ; programme agences et galerie, la vignette et la visionneuse. Sélection provisoire, revue sans toucher au code.
     selection: z.array(z.string()).optional(),
+    // aperçu de la liste des 4 de la Home : photo (par défaut la première de selection) et cadrage dans le cadre 4:5, en fractions de l'image.
+    // Projets détaillés ; cadre = [x, y, largeur, hauteur], x et largeur sur la largeur de l'image entière, y et hauteur sur sa hauteur.
+    apercu: z
+      .object({
+        photo: z.string().optional(),
+        cadre: z.tuple([z.number(), z.number(), z.number(), z.number()]),
+      })
+      .optional(),
     hero: z.string().optional(),
     // Plusieurs photos pleine largeur à tester avant de trancher (lot 5).
     heroCandidates: z.array(z.string()).optional(),

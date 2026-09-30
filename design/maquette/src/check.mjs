@@ -1,6 +1,7 @@
 // Vérifications de la maquette (Playwright + Chromium) : premier écran (structure F), débordement, paramètres des bascules retirées sans effet,
 // valeurs figées et alignement (gel de la Home du 23/09 : signature, espacements, pied de page), en-tête (Φ, wordmark, limite de 1600 px), pied de page
-// sur le container de 1 200 px (les quatre pages), carte des réalisations, logos partenaires, photo 2800 px, srcset de l'aperçu des 4, mode présentation,
+// sur le container de 1 200 px (les quatre pages), carte des réalisations, logos partenaires, photo 2800 px, aperçu des 4 (ordre du champ order, cadrage de
+// chaque aperçu, zoom du survol centré, aucune photo deux fois sur la Home, srcset, aucune photo agrandie), mode présentation,
 // page sans JavaScript, polices, contrastes ; puis les quatre fiches, P6 (débordement, erreurs et images, alignement sur le logo, pied de page, photo de tête
 // et son cadre, photo qui suit, rangées de la mosaïque, contenu, précédent / suivant en boucle, visionneuse, téléphone, sans JavaScript), la vue Réalisations,
 // proposition P2 (débordement et erreurs, alignement sur la grille large, ouverture, blocs-liens des 4 projets, programme agences, rangée en boucle, photos
@@ -76,6 +77,16 @@ function verifierSrcset(liste, nom) {
 }
 
 const donnees = JSON.parse(fs.readFileSync(path.resolve(MAQ, '../../data/projects.json'), 'utf8'));
+// les quatre projets détaillés, dans l'ordre du champ order : la liste des 4 de la Home et la boucle « Projet précédent / suivant » des fiches (30/09)
+const DETAILLES = donnees.filter(x => x.kind === 'detailed').sort((a, b) => a.order - b.order);
+// la photo de l'aperçu de la Home : apercu.photo, à défaut la première clé de selection
+const photoApercu = d => (d.apercu && d.apercu.photo) || d.selection[0];
+// la partie de chaque photo que montre le cadre de l'aperçu (Home) : la boîte de l'<img> rapportée à celle de .four__preview, en fractions de l'image entière,
+// [x, y, largeur, hauteur] comme le champ apercu.cadre ; au repos (rien n'est survolé), la boîte de l'<img> n'est pas transformée
+const partiesVisibles = p => p.evaluate(() => {
+  const cadre = document.querySelector('.four__preview').getBoundingClientRect();
+  return [...document.querySelectorAll('.four__preview img')].map(i => { const b = i.getBoundingClientRect(); return [(cadre.left - b.left) / b.width, (cadre.top - b.top) / b.height, cadre.width / b.width, cadre.height / b.height]; });
+});
 
 // la palette, telle que Chromium la rend
 const ANTHRACITE = 'rgb(38, 35, 31)', GRIS = 'rgb(107, 101, 92)', GRIS_CHAUD = 'rgb(122, 116, 102)', OR = 'rgb(154, 122, 59)', OR_FONCE = 'rgb(138, 107, 47)', OR_CLAIR = 'rgb(184, 151, 90)',
@@ -172,19 +183,50 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok(await pretty(p, '.four__line'), 'liste des 4 : text-wrap: pretty sur les lignes');
   ok((await p.evaluate(() => [...document.querySelectorAll('.four__line')].every(l => l.querySelectorAll('.four__sep').length === 2 && !/14 unités.*[Qq]uatorze unités/.test(l.textContent))))
     && parseFloat(await style(p, '.four__sep', 'marginLeft')) >= 5, 'liste des 4 : lieu · surface · phrase, deux séparateurs aérés par ligne (.four__sep, 30/09), plus de « 14 unités » en double');
-  // aperçu de la liste des 4 : la photo de chaque projet, la première clé de son champ selection (P6, 26/09), centrée, sans point focal ; srcset 800 / 1800 px
-  // (revue du 23/09) ; à 1×, aucune photo agrandie — Data Box 03 (800 × 450, cadre 440 × 550) reçoit le 1800 px
+  // aperçu de la liste des 4 (30/09) : dans l'ordre du champ order (The Bank, Data Box, Community, Ateliers 118), la photo de chaque projet est apercu.photo, à
+  // défaut la première clé de son champ selection (P6, 26/09) — Community montre community-15, pas la 05 du premier écran. Le cadre (.four__preview) fait 440 × 550
+  // et montre exactement le `cadre` du champ apercu : la boîte de l'<img>, plus grande que lui, rapportée à la sienne, à 0,5 % près. srcset 800 / 1800 px (revue
+  // du 23/09) ; à 1×, aucune photo agrandie (l'échelle est celle de la boîte de l'<img>) — Data Box 03 (800 × 450, l'<img> y est 2,22 fois plus large que le cadre)
+  // reçoit le 1800 px, retrouvée par sa clé et non par son rang
   const apercu = await photosImg(p, '.four__preview img');
-  const premieres = ['ateliers-118', 'the-bank', 'data-box', 'community'].map(id => donnees.find(x => x.id === id).selection[0]);
-  ok(apercu.length === 4 && apercu.map(i => i.cle).join(' ') === 'ateliers-118-01 the-bank-01 data-box-03 community-05' && apercu.map(i => i.cle).join(' ') === premieres.join(' ') && apercu.every(i => !i.focal),
-    'aperçu de la liste des 4 : la première clé de selection de chaque projet, centrée, sans point focal — ' + apercu.map(i => i.cle).join(' · '));
+  const attendues = DETAILLES.map(photoApercu), cadres = DETAILLES.map(d => d.apercu && d.apercu.cadre);
+  ok(DETAILLES.map(d => d.id).join(' ') === 'the-bank data-box community ateliers-118' && apercu.length === 4 && apercu.map(i => i.cle).join(' ') === 'the-bank-01 data-box-03 community-15 ateliers-118-01'
+    && apercu.map(i => i.cle).join(' ') === attendues.join(' ') && apercu.every(i => !i.focal),
+    'aperçu de la liste des 4 : dans l’ordre du champ order, apercu.photo ou la première clé de selection de chaque projet (le cadrage passe par le cadre, pas par object-position) — ' + apercu.map(i => i.cle).join(' · '));
+  ok(await p.evaluate(() => [...document.querySelectorAll('.four__name')].map(e => e.textContent).join(' · ') === 'The Bank · Data Box · Community · Ateliers 118'
+    && document.querySelector('.four__row.is-active .four__name').textContent === 'The Bank' && document.querySelector('.four__preview img.is-active') === document.querySelector('.four__preview img')
+    && /the-bank-01/.test(document.querySelector('.four__preview img.is-active').getAttribute('src')) && getComputedStyle(document.querySelector('.four__preview img.is-active')).opacity === '1'),
+    'liste des 4 : The Bank en tête de liste et dans l’aperçu au repos, puis Data Box, Community, Ateliers 118');
   verifierSrcset(apercu, 'aperçu');
-  ok(apercu.every(i => i.w === 440 && i.h === 550), `aperçu : cadre 440 × 550 (${apercu.map(i => i.w + '×' + i.h).join(', ')})`);
+  const cadre = await rect(p, '.four__preview');
+  ok(cadre.width === 440 && cadre.height === 550, `aperçu : cadre 440 × 550 (.four__preview ${cadre.width}×${cadre.height} ; les <img>, plus grandes : ${apercu.map(i => i.w + '×' + i.h).join(', ')})`);
+  const visibles = await partiesVisibles(p);
+  ok(cadres.every(Array.isArray) && visibles.length === 4 && visibles.every((v, k) => v.every((x, j) => Math.abs(x - cadres[k][j]) <= 0.005)),
+    'aperçu : la partie visible de chaque photo est son cadre [x, y, largeur, hauteur], à 0,5 % près — ' + visibles.map((v, k) => `${apercu[k].cle} [${v.map(x => x.toFixed(4)).join(', ')}] pour [${cadres[k].join(', ')}]`).join(' ; '));
   ok(apercu.every(i => i.echelle <= 1), `aperçu à 1× : aucune photo agrandie (${apercu.map(i => `${i.cle} ${i.pixels} ×${i.echelle}`).join(', ')})`);
-  ok(apercu[2].servi === 'data-box-03.jpg', `aperçu à 1× : Data Box 03 (16:9 dans le cadre 4:5) est servie en 1800 px (${apercu[2].servi}), pas en 800 × 450 agrandi`);
+  const box = apercu.find(i => i.cle === 'data-box-03');
+  ok(box && box.servi === 'data-box-03.jpg', `aperçu à 1× : Data Box 03 (16:9, l’<img> 2,22 fois plus large que le cadre 4:5) est servie en 1800 px (${box && box.servi}), pas en 800 × 450 agrandi`);
+  // aucune photo deux fois sur la Home : la clé du premier écran (community-05) n'est pas une clé d'aperçu, et aucune clé n'apparaît deux fois
+  const photosHome = await p.evaluate(() => [...document.querySelectorAll('img')].map(i => i.getAttribute('src')).filter(s => /directions\/img\//.test(s)).map(s => s.replace(/^.*\//, '').replace(/(-s|-l)?\.jpg$/, '')));
+  const premier = await p.evaluate(() => document.querySelector('.hero__photo img').dataset.photo);
+  ok(premier === 'community-05' && !apercu.some(i => i.cle === premier) && new Set(photosHome).size === photosHome.length,
+    `aucune photo deux fois sur la Home : le premier écran montre ${premier}, la liste des 4 ${apercu.map(i => i.cle).join(', ')} (${photosHome.length} photos, ${new Set(photosHome).size} différentes)`);
+  // au survol d'une ligne, l'aperçu de ce projet zoome de 1,035 en gardant le centre de la partie visible (le transform-origin de l'<img> : ±1 px)
+  const survols = [];
+  for (const [k, d] of DETAILLES.entries()) {
+    await p.hover(`.four__row:nth-child(${k + 1}) a`);
+    survols.push(await p.evaluate(([c, cle]) => {
+      const img = document.querySelector('.four__preview img.is-active'), cadre = document.querySelector('.four__preview').getBoundingClientRect(), b = img.getBoundingClientRect(), m = getComputedStyle(img).transform.match(/matrix\(([^)]+)\)/);
+      return { cle: img.getAttribute('src').replace(/^.*\//, '').replace(/-s\.jpg$/, ''), attendue: cle, echelle: m ? +m[1].split(',')[0] : 1,
+        dx: b.left + (c[0] + c[2] / 2) * b.width - (cadre.left + cadre.width / 2), dy: b.top + (c[1] + c[3] / 2) * b.height - (cadre.top + cadre.height / 2) };
+    }, [d.apercu.cadre, photoApercu(d)]));
+  }
+  ok(survols.every(s => s.cle === s.attendue && Math.abs(s.echelle - 1.035) < 0.001 && Math.abs(s.dx) <= 1 && Math.abs(s.dy) <= 1),
+    'survol d’une ligne : l’aperçu du projet zoome de 1,035 et garde le centre de la partie visible (écart au centre du cadre ±1 px) — ' + survols.map(s => `${s.cle} ×${s.echelle.toFixed(3)} (${s.dx.toFixed(2)}, ${s.dy.toFixed(2)})`).join(' · '));
+  await p.mouse.move(0, 0);
   const liens = await p.evaluate(() => ({ nav: document.querySelector('.site-nav a').getAttribute('href'), plan: document.querySelector('.footer__nav a').getAttribute('href'), tous: document.querySelector('.autres__lien').getAttribute('href'),
     quatre: [...document.querySelectorAll('.four__row a')].map(a => a.getAttribute('href')) }));
-  ok(liens.nav === 'realisations.html' && liens.plan === 'realisations.html' && liens.tous === 'realisations.html' && liens.quatre.join(' ') === 'projet-ateliers-118.html projet-the-bank.html projet-data-box.html projet-community.html',
+  ok(liens.nav === 'realisations.html' && liens.plan === 'realisations.html' && liens.tous === 'realisations.html' && liens.quatre.join(' ') === 'projet-the-bank.html projet-data-box.html projet-community.html projet-ateliers-118.html',
     'liens : navigation, plan et « Toutes les réalisations → » vers realisations.html ; la liste des 4 vers les quatre fiches — ' + liens.quatre.join(' · '));
   await ctx.close();
 }
@@ -328,16 +370,15 @@ const parcourir = p => p.evaluate(async () => {
 });
 
 console.log('\n8 · Les quatre fiches (P6, Cowork, 26/09)');
-// un seul gabarit, dans l'ordre du champ order (celui de la boucle « Projet précédent / suivant ») ; les valeurs provisoires (lot 3) de build.mjs — la région,
-// les infos, le cadre de la photo de tête (part de la page et format) et son point focal — et les rangées attendues de la mosaïque, le même nombre de photos
-// par rangée à 1 200, 1 521 et 1 920 px
-const DETAILLES = donnees.filter(x => x.kind === 'detailed').sort((a, b) => a.order - b.order);
+// un seul gabarit, dans l'ordre du champ order (DETAILLES, en tête du fichier : celui de la boucle « Projet précédent / suivant » et de la liste des 4 de la Home) ;
+// les valeurs provisoires (lot 3) de build.mjs — la région, les infos, le cadre de la photo de tête (part de la page et format) et son point focal — et les
+// rangées attendues de la mosaïque, le même nombre de photos par rangée à 1 200, 1 521 et 1 920 px
 const PAYSAGE = 2100 / 1694;
 const FICHES = {
-  'ateliers-118': { region: 'Bruxelles', faits: 'Molenbeek-Saint-Jean · 1 200 m² · Ateliers', part: 0.4, format: 1, focal: '50% 0%', rangees: '4' },
   'the-bank': { region: 'Liège', faits: 'Centre-ville · 1 100 m² · Logements & commerce', part: 0.5, format: PAYSAGE, focal: '50% 0%', rangees: '2' },
   'data-box': { region: 'Rochefort', faits: 'Jemelle · 4 200 m² · Site technique', part: 0.5, format: PAYSAGE, focal: '60% 50%', rangees: '2 3' },
   'community': { region: 'Bruxelles', faits: 'Uccle · 14 unités · Co-living', part: 0.5, format: PAYSAGE, focal: '50% 50%', rangees: '2 3 2 3' },
+  'ateliers-118': { region: 'Bruxelles', faits: 'Molenbeek-Saint-Jean · 1 200 m² · Ateliers', part: 0.4, format: 1, focal: '50% 0%', rangees: '4' },
 };
 const pageDe = d => `projet-${d.id}`;
 ok(DETAILLES.map(x => x.id).join(' ') === Object.keys(FICHES).join(' ') && DETAILLES.every(x => x.selection && x.selection.length > 1 && x.selection.every(k => k.startsWith(x.id + '-'))),
@@ -421,8 +462,9 @@ for (const [w, h] of [[1521, 705], [1920, 1080], [1200, 800], [390, 844]]) {
   // data/projects.json) ; la photo de tête — la première clé de selection, <clé>.jpg et <clé>-l.jpg avec leur largeur, sans lazy, sizes corrigé du recadrage
   // cover (ratio de la photo ÷ ratio du cadre), jamais agrandie à 1× — ; la mosaïque — les clés suivantes, dans l'ordre, au ratio de leur fichier (--r),
   // <clé>-s.jpg et <clé>.jpg avec leur largeur, lazy, sans texte alternatif, un bouton qui l'agrandit, sizes = la largeur de la tuile (maquette.js) — ;
-  // précédent / suivant en boucle, dans l'ordre du champ order
+  // précédent / suivant en boucle, dans l'ordre du champ order (The Bank, Data Box, Community, Ateliers 118 : vérifiée de bout en bout après la boucle)
   const IMG = '../directions/img/';
+  const boucle = {};
   for (const [i, d] of DETAILLES.entries()) {
     const F = FICHES[d.id], nom = pageDe(d), prec = DETAILLES[(i + DETAILLES.length - 1) % DETAILLES.length], suiv = DETAILLES[(i + 1) % DETAILLES.length];
     const { p, ctx } = await ouvrir('panneau=off', [1521, 705], {}, nom);   // sans parcourir() : il passe les images en loading="eager", on lit ici l'attribut d'origine
@@ -435,8 +477,10 @@ for (const [w, h] of [[1521, 705], [1920, 1080], [1200, 800], [390, 844]]) {
         eyebrow: t('.fiche__autres .eyebrow').join(),
         tuiles: [...document.querySelectorAll('.fiche__tuile')].map(f => { const im = f.querySelector('img'), b = f.querySelector('button');
           return { r: f.style.getPropertyValue('--r'), dr: f.dataset.r, src: im.getAttribute('src'), srcset: im.getAttribute('srcset'), sizes: im.getAttribute('sizes'), lazy: im.getAttribute('loading'), alt: im.getAttribute('alt'), w: f.getBoundingClientRect().width, grande: b.dataset.grande, bouton: `${b.type} ${b.getAttribute('aria-label')}` }; }),
-        voisins: [...document.querySelectorAll('.fiche__voisin')].map(a => `${a.getAttribute('href')} : ${a.querySelector('.eyebrow').textContent} « ${a.querySelector('.suivant__nom').textContent} »`).join(' | ') };
+        voisins: [...document.querySelectorAll('.fiche__voisin')].map(a => `${a.getAttribute('href')} : ${a.querySelector('.eyebrow').textContent} « ${a.querySelector('.suivant__nom').textContent} »`).join(' | '),
+        boucle: { prec: document.querySelector('.fiche__voisin--prec').getAttribute('href'), suiv: document.querySelector('.fiche__voisin--suiv').getAttribute('href') } };
     });
+    boucle[d.id] = c.boucle;
     ok(c.page === 'fiche' && c.title === `${d.name} — Perpetual` && c.actif === 'Réalisations → realisations.html', `${nom} : html data-page="${c.page}", titre « ${c.title} », « Réalisations » actif dans l'en-tête`);
     ok(c.region === F.region && c.h1 === d.name && c.faits === F.faits && c.etiquettes === 'Localisation · Surface · Usage', `${nom} : « ${c.region} » en eyebrow, « ${c.h1} », infos ${c.faits} (${c.etiquettes})`);
     ok(JSON.stringify(c.chapitres) === JSON.stringify([['01', 'Ce que c’était', d.was], ['02', 'Ce que nous y avons vu', d.saw], ['03', 'Ce que c’est devenu', d.became]]),
@@ -456,6 +500,13 @@ for (const [w, h] of [[1521, 705], [1920, 1080], [1200, 800], [390, 844]]) {
     ok(c.voisins === `projet-${prec.id}.html : Projet précédent « ← ${prec.name} » | projet-${suiv.id}.html : Projet suivant « ${suiv.name} → »`, `${nom} : ${c.voisins.replace(' | ', ' ; ')}`);
     await ctx.close();
   }
+  // la boucle de bout en bout (30/09) : The Bank → Data Box → Community → Ateliers 118 → The Bank ; The Bank a Ateliers 118 en précédent et Data Box en suivant,
+  // Ateliers 118 a The Bank en suivant
+  const ORDRE = ['the-bank', 'data-box', 'community', 'ateliers-118'];
+  ok(DETAILLES.map(d => d.id).join(' ') === ORDRE.join(' ') && ORDRE.every((id, k) => boucle[id] && boucle[id].prec === `projet-${ORDRE[(k + 3) % 4]}.html` && boucle[id].suiv === `projet-${ORDRE[(k + 1) % 4]}.html`),
+    `boucle des fiches, dans l'ordre du champ order : ${ORDRE.map(id => id + ' → ' + boucle[id].suiv.replace(/^projet-|\.html$/g, '')).join(' · ')}`);
+  ok(boucle['the-bank'].prec === 'projet-ateliers-118.html' && boucle['the-bank'].suiv === 'projet-data-box.html' && boucle['ateliers-118'].suiv === 'projet-the-bank.html',
+    `The Bank : Ateliers 118 en précédent (${boucle['the-bank'].prec}) et Data Box en suivant (${boucle['the-bank'].suiv}) ; Ateliers 118 : The Bank en suivant (${boucle['ateliers-118'].suiv})`);
 }
 {
   // styles (The Bank, 1521 × 705) : titre en serif 64 px ; infos — valeur en Instrument Sans 500, 17 px, or foncé, étiquette 13 px gris chaud dessous, filets

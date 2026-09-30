@@ -26,11 +26,13 @@ const navLabel = href => { const n = site.nav.find(x => x.href === href); if (!n
 const REALISATIONS = navLabel('/realisations');
 const PAGE_REALISATIONS = 'realisations.html';   // la vue « Réalisations » (le brief la nommait « Projets »)
 const PAGE_ENGAGEMENTS = 'engagements.html';
-// Les quatre fiches (P6, 26/09) : une page par projet détaillé, dans l'ordre du champ order (celui de « Projet précédent / suivant », en boucle).
+// Les quatre fiches (P6, 26/09) : une page par projet détaillé, dans l'ordre du champ order — celui de « Projet précédent / suivant » (en boucle) et, depuis le 30/09,
+// celui de la liste des 4 de la Home (The Bank, Data Box, Community, Ateliers 118). La vue Réalisations garde sa composition, les rangées ci-dessous.
 const pageFiche = id => `projet-${id}.html`;
 const DETAILLES = projects.filter(p => p.kind === 'detailed').sort((a, b) => a.order - b.order);
-// La photo d'un projet détaillé est la première clé de son champ selection : tête de sa fiche, aperçu de la liste des 4 (Home), bloc de la vue Réalisations ;
-// les suivantes font la mosaïque de sa fiche, dans cet ordre (clés <id>-NN ; data-box-03 à -07 sont des vues drone, voir le README de src).
+// La photo d'un projet détaillé est la première clé de son champ selection : tête de sa fiche, bloc de la vue Réalisations, et aperçu de la liste des 4 (Home)
+// sauf si son champ apercu en choisit une autre (30/09, voir apercuDe) ; les suivantes font la mosaïque de sa fiche, dans cet ordre (clés <id>-NN ; data-box-03
+// à -07 sont des vues drone, voir le README de src).
 for (const p of DETAILLES) {
   if (!p.selection || !p.selection.length) throw new Error(`data/projects.json : ${p.id}, selection — la photo du projet, puis celles de la mosaïque`);
   const etrangere = p.selection.find(k => !k.startsWith(p.id + '-'));
@@ -67,18 +69,20 @@ if (!agences || agences.startsWith('#')) throw new Error('content/realisations.m
 const [enonce, enonceSuite] = (agences.match(/^(.+?[.!?])\s+(.+)$/s) || []).slice(1);
 if (!enonceSuite) throw new Error('content/realisations.md : le paragraphe du programme agences doit compter au moins deux phrases');
 
-// Les quatre projets : une ligne chacun (mêmes lignes que la planche A) et la photo de l'aperçu de la liste de la Home (img, cadre portrait 4:5, centrée,
-// sans point focal) ; sur la vue Réalisations (revue du 26/09), la photo du bloc (bloc, point focal blocFocal posé en style sur l'<img>, comme
-// photoCandidates) et les trois faits du survol, lieu, surface et usage (provisoires, lot 3 ; pour The Bank la ville seule, l'adresse exacte n'est pas publiée).
-// img et bloc sont la photo du projet, la première clé de son champ selection (P6, 26/09) : <clé>-s.jpg (800 px) et <clé>.jpg (1800 px) en srcset
+// Les quatre projets : leurs infos propres, lues par id — l'ordre de ce tableau ne compte pas, la liste de la Home suit le champ order (DETAILLES). Une ligne
+// chacun (mêmes lignes que la planche A) ; sur la vue Réalisations (revue du 26/09), la photo du bloc (bloc, point focal blocFocal posé en style sur l'<img>,
+// comme photoCandidates) et les trois faits du survol, lieu, surface et usage (provisoires, lot 3 ; pour The Bank la ville seule, l'adresse exacte n'est pas
+// publiée). bloc est la photo du projet, la première clé de son champ selection (P6, 26/09) : <clé>-s.jpg (800 px) et <clé>.jpg (1800 px) en srcset
 // (photoImgPetit). Ateliers 118 : ateliers-118-01, toute la façade avec la porte de garage dans le bloc (50% 30%) ; Data Box : data-box-03, la vue drone.
-// Les quatre pointent vers leur fiche (la liste de la Home, les quatre blocs-liens de la vue Réalisations, qui gardent leur id).
+// Les quatre pointent vers leur fiche (la liste de la Home, les quatre blocs-liens de la vue Réalisations, qui gardent leur id). La photo et le cadrage de
+// l'aperçu de la Home (30/09) ne sont pas ici : ils sont dans le champ apercu de data/projects.json (apercus, plus bas).
 const four = [
   { id: 'ateliers-118', line: 'Molenbeek-Saint-Jean · 1 200 m² · Treize ateliers dans une ancienne usine de colle', blocFocal: '50% 30%', lieu: 'Molenbeek-Saint-Jean', surface: '1 200 m²', usage: 'Ateliers' },
   { id: 'the-bank', line: 'Liège · 1 100 m² · Une agence devenue bijouterie, Bancontact et logements', blocFocal: '50% 40%', lieu: 'Liège', surface: '1 100 m²', usage: 'Logements & commerce' },
   { id: 'data-box', line: 'Jemelle · 4 200 m² sur un hectare · Un site technique dont l’avenir reste ouvert', blocFocal: '50% 50%', lieu: 'Jemelle', surface: '4 200 m²', usage: 'Site technique' },
   { id: 'community', line: 'Uccle · 600 m² · Quatorze unités autour d’espaces partagés', blocFocal: '50% 50%', lieu: 'Uccle', surface: '14 unités', usage: 'Co-living' },
-].map(f => ({ ...f, img: photoProjet(f.id), bloc: photoProjet(f.id), href: pageFiche(f.id) }));
+].map(f => ({ ...f, bloc: photoProjet(f.id), href: pageFiche(f.id) }));
+for (const p of DETAILLES) if (!four.some(f => f.id === p.id)) throw new Error(`build.mjs : ${p.id} absent de four (ligne, blocFocal, lieu, surface, usage)`);
 // Vue Réalisations : les quatre blocs en deux rangées, 7fr / 5fr puis 5fr / 7fr (.alt__rang--a, .alt__rang--b).
 const rangees = [[['community', 7], ['ateliers-118', 5]], [['the-bank', 5], ['data-box', 7]]];
 // Le programme agences, vue Réalisations : la rangée des seize biens, kind agency dans l'ordre puis kind gallery dans l'ordre (data/projects.json).
@@ -191,17 +195,20 @@ function photoSourcesPetit(key) {
 // `cadre`) est calée sur la hauteur et a besoin de cadre × (ratio de la photo ÷ ratio du cadre) pixels de large (Data Box 03, 16:9 dans l'aperçu 4:5 :
 // 2,2 × la largeur). Chaque terme de `sizes` ([media, largeur]) est multiplié par ce facteur k, lu sur la photo elle-même (sizesCadre ; aussi pour la
 // photo de tête des fiches). cadre null : les termes portent déjà la contrainte de hauteur (blocs de la vue Réalisations, dont le cadre change de forme
-// avec la fenêtre, sizesBloc), rien n'est multiplié.
+// avec la fenêtre, sizesBloc), rien n'est multiplié. facteur : quand l'<img> est agrandie pour que le cadre n'en montre qu'une partie (aperçu de la Home avec
+// un cadre, apercuImg), elle est 1 / largeur du cadre fois plus large que lui — Data Box 2,22, Community 2,16, Ateliers 118 1,35, The Bank 1 : ce facteur
+// remplace alors le rapport photo ÷ cadre.
 function sizesCadre(sizes, k) {
   const facteur = expr => /^\d+px$/.test(expr) ? `${Math.round(parseFloat(expr) * k)}px` : k === 1 ? `calc(${expr})` : `calc((${expr}) * ${k.toFixed(3)})`;
   return sizes.map(([media, w]) => (media ? `${media} ` : '') + facteur(w)).join(', ');
 }
-function photoImgPetit(key, cadre, sizes, attrs = '') {
+function photoImgPetit(key, cadre, sizes, attrs = '', facteur = null) {
   const sources = photoSourcesPetit(key);
-  const k = cadre ? Math.max(1, (sources[0].width / sources[0].height) / cadre) : 1;
+  const k = facteur ?? (cadre ? Math.max(1, (sources[0].width / sources[0].height) / cadre) : 1);
   return `<img${attrs} src="${IMG}/${sources[0].file}"${sources.length > 1 ? ` srcset="${sources.map(s => `${IMG}/${s.file} ${s.width}w`).join(', ')}" sizes="${sizesCadre(sizes, k)}"` : ''} alt="" decoding="async">`;
 }
-// Largeur affichée : aperçu de la liste = 5/12 du container moins la gouttière de 64 px (440 px à partir de 1280 px de fenêtre ; masqué sous 641 px).
+// Largeur affichée : le cadre de l'aperçu de la liste = 5/12 du container moins la gouttière de 64 px (440 px à partir de 1280 px de fenêtre ; masqué sous
+// 641 px) ; l'<img> qu'il contient est 1 / largeur de son cadre fois plus large (apercuImg).
 // Vue Réalisations, sur la grille large (1600 px, gouttières comprises) : vignette = le quart de la rangée moins trois écarts de 24 px (362 px à partir
 // de 1600 ; 78 % de la rangée sur téléphone).
 const SIZES_APERCU = [['(max-width:1280px)', '(100vw - 144px) * 5 / 12'], ['', '440px']];
@@ -217,6 +224,28 @@ function sizesBloc(key, fr) {
 const photoCandidates = [
   { key: 'community-05', focal: '50% 20%' },
 ].map(c => ({ key: c.key, focal: c.focal, sources: photoSources(c.key) }));
+
+// Aperçu de la liste des 4 (Home, 30/09) : le champ apercu de data/projects.json, { photo?, cadre: [x, y, largeur, hauteur] }. La photo est apercu.photo, à défaut
+// la première clé de selection (Community montre community-15 : le premier écran de la Home montre déjà community-05, pas deux fois la même photo) ; elle doit
+// être du projet et avoir ses fichiers réduits, comme les clés de selection. Le cadre est la partie de l'image que montre le cadre 4:5 de l'aperçu, en fractions
+// de l'image entière (x et largeur sur sa largeur, y et hauteur sur sa hauteur) : refusé s'il n'a pas quatre nombres, s'il sort de l'image, ou si son rapport en
+// pixels, (largeur × L) / (hauteur × H) mesuré sur <clé>.jpg, s'écarte de 4/5 de plus de 1 % (la partie montrée serait alors déformée ou rognée). Sans
+// apercu : la photo de selection[0], centrée en cover, comme avant. La tête de fiche et le bloc de la vue Réalisations ne lisent pas ce champ.
+function apercuDe(p) {
+  const a = p.apercu, ou = `data/projects.json : ${p.id}, apercu`;
+  const photo = (a && a.photo) || photoProjet(p.id);
+  if (typeof photo !== 'string' || !photo.startsWith(p.id + '-')) throw new Error(`${ou}.photo — ${photo} n'est pas une photo de ce projet`);
+  const sources = photoSourcesPetit(photo);   // refuse une clé sans fichiers réduits
+  if (!a) return { photo, cadre: null };
+  const c = a.cadre;
+  if (!Array.isArray(c) || c.length !== 4 || !c.every(v => typeof v === 'number' && Number.isFinite(v))) throw new Error(`${ou}.cadre — quatre nombres attendus, [x, y, largeur, hauteur]`);
+  const [x, y, l, h] = c;
+  if (x < 0 || y < 0 || l <= 0 || h <= 0 || x + l > 1 + 1e-9 || y + h > 1 + 1e-9) throw new Error(`${ou}.cadre — [${c.join(', ')}] sort de l'image (x, y ≥ 0 ; largeur, hauteur > 0 ; x + largeur ≤ 1 ; y + hauteur ≤ 1)`);
+  const grande = sources[sources.length - 1], rapport = (l * grande.width) / (h * grande.height);
+  if (Math.abs(rapport / (4 / 5) - 1) > 0.01) throw new Error(`${ou}.cadre — rapport en pixels ${rapport.toFixed(4)} = (${l} × ${grande.width}) / (${h} × ${grande.height}) sur ${grande.file} ; 4/5 attendu, à 1 % près`);
+  return { photo, cadre: c };
+}
+const apercus = Object.fromEntries(DETAILLES.map(p => [p.id, apercuDe(p)]));
 
 // ---------- logos ----------
 // Figés en couleur le 22/09 (bascule 14 retirée) : <img> de public/partners/couleur/. La hauteur de chaque logo se calcule à la masse visuelle
@@ -294,14 +323,27 @@ function chart() {
 </div></section>`;
 }
 
-// La liste des quatre, sur la Home (la vue Réalisations a ses blocs photo depuis le 26/09) : l'aperçu photo suit la ligne survolée (maquette.js),
-// 800 / 1800 px en srcset (photoImgPetit, cadre 4:5).
+// L'<img> de l'aperçu d'un projet (apercus). Avec un cadre [x, y, l, h], l'image entière est agrandie de sorte que le cadre 4:5 (.four__preview, overflow
+// hidden) en montre exactement cette partie : largeur 100 / l %, hauteur 100 / h %, décalée de −100·x / l % et −100·y / h % (pourcentages du cadre) ; son
+// rapport est celui du fichier (à 1 % près, refusé sinon par apercuDe), le object-fit: cover de la feuille n'y rogne rien. transform-origin est le centre de la
+// partie visible, (x + l/2, y + h/2) en % de l'image : le zoom du survol y reste centré. sizes : l'<img> est 1 / l fois plus large que le cadre (photoImgPetit).
+// Sans cadre : centrée en cover, comme avant. La première est l'active au repos, les autres sont paresseuses.
+function apercuImg(p, i) {
+  const { photo, cadre } = apercus[p.id], base = i === 0 ? ' class="is-active"' : ' loading="lazy"';
+  if (!cadre) return photoImgPetit(photo, 4 / 5, SIZES_APERCU, base);
+  const [x, y, l, h] = cadre, pct = v => `${+v.toFixed(4)}%`;
+  const style = ` style="width:${pct(100 / l)};height:${pct(100 / h)};left:${pct(-100 * x / l)};top:${pct(-100 * y / h)};transform-origin:${pct(100 * (x + l / 2))} ${pct(100 * (y + h / 2))}"`;
+  return photoImgPetit(photo, 4 / 5, SIZES_APERCU, base + style, 1 / l);
+}
 // Ligne de la liste des 4 : lieu · surface · phrase, séparateurs aérés (lot 3, 30/09 : les trois éléments paraissaient serrés) ; espace insécable
 // avant le point (jamais en début de ligne), marge de .four__sep de part et d'autre (maquette.css).
 const ligneQuatre = s => s.split(' · ').map(esc).join('\u00A0<span class="four__sep">·</span> ');
+// La liste des quatre, sur la Home (la vue Réalisations a ses blocs photo depuis le 26/09), dans l'ordre du champ order (DETAILLES : The Bank, Data Box,
+// Community, Ateliers 118 ; plus d'ordre écrit ici) : l'aperçu photo suit la ligne survolée (maquette.js), 800 / 1800 px en srcset (photoImgPetit, cadre 4:5),
+// la photo et le cadrage de chacun étant son champ apercu (apercuImg).
 function fourList() {
-  const rows = four.map((f, i) => `<li class="four__row${i === 0 ? ' is-active' : ''}" data-index="${i}"><a href="${f.href}"><span class="four__name">${esc(byId[f.id].name)}</span><span class="four__line">${ligneQuatre(f.line)}</span></a></li>`).join('\n      ');
-  const previews = four.map((f, i) => photoImgPetit(f.img, 4 / 5, SIZES_APERCU, i === 0 ? ' class="is-active"' : ' loading="lazy"')).join('');
+  const rows = DETAILLES.map((p, i) => { const f = four.find(x => x.id === p.id); return `<li class="four__row${i === 0 ? ' is-active' : ''}" data-index="${i}"><a href="${f.href}"><span class="four__name">${esc(p.name)}</span><span class="four__line">${ligneQuatre(f.line)}</span></a></li>`; }).join('\n      ');
+  const previews = DETAILLES.map(apercuImg).join('');
   return `<div class="four">
     <ol class="four__list">
       ${rows}
