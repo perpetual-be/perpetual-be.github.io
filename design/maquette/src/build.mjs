@@ -352,6 +352,8 @@ function fourList() {
     <div class="four__preview" aria-hidden="true">${previews}</div>
   </div>`;
 }
+// Retirée de la Home le 30/09 (retour de Julien à la porte 1 : « tester la Home sans la section Réalisations ») : projets(), fourList() et apercuImg()
+// ne sont plus appelées. Gardées pour revenir à l'existant si le test ne convainc pas : remettre projets() entre chart() et autres() dans pages['index.html'].
 function projets() {
   return `<section class="section section--projets" id="projets"><div class="container">
   <p class="eyebrow">Réalisations</p>
@@ -382,7 +384,8 @@ function carteSvg() {
   return `${ouverture}\n${pays}\n${lieux.join('\n')}\n</svg>`;
 }
 
-// Section « En Belgique » (intitulé du 28/09, lot 3 : « Réalisations » faisait doublon avec la liste des 4) : la carte, avec le texte à droite (figée le 23/09 ; la bande de vignettes et « aucune » sont retirées).
+// Section « Réalisations » de la Home (30/09 : la liste des 4 est retirée, la carte reprend l'intitulé, qui est le libellé de la navigation — data/site.json ;
+// « En Belgique », du 28/09, évitait le doublon avec la liste) : la carte, avec le texte à droite (figée le 23/09 ; la bande de vignettes et « aucune » sont retirées).
 // Titre de la carte, calculé (lot 3, 30/09 : le nombre ne doit pas être retouché à chaque nouveau projet) : le nombre de biens de data/projects.json
 // qui ont une adresse, en toutes lettres, puis les villes la plus à l'ouest et la plus à l'est de la carte (belgique.json, longitudes ; le nom
 // du groupe pour une commune bruxelloise). « de » s'élide devant une voyelle.
@@ -397,7 +400,7 @@ function titreCarte() {
 function autres() {
   return `<section class="section section--autres" id="realisations">
 <div class="container">
-  <p class="eyebrow">En Belgique</p>
+  <p class="eyebrow">${esc(REALISATIONS)}</p>
   <div class="carte">
     <div class="carte__fig">${carteSvg()}</div>
     <div class="carte__texte">
@@ -560,7 +563,7 @@ function engagementsPage() {
 
 // ---------- pages ----------
 const pages = {
-  'index.html': () => head({ page: 'home', text: `${site.name} — ${site.tagline}` }) + '\n' + header('') + '\n<main>\n' + lead() + '\n' + chart() + '\n' + projets() + '\n' + autres() + '\n' + collectifBlock() + '\n</main>\n' + footer(),
+  'index.html': () => head({ page: 'home', text: `${site.name} — ${site.tagline}` }) + '\n' + header('') + '\n<main>\n' + lead() + '\n' + chart() + '\n' + autres() + '\n' + collectifBlock() + '\n</main>\n' + footer(),
   ...Object.fromEntries(DETAILLES.map((p, i) => [pageFiche(p.id), () => head({ page: 'fiche', text: `${p.name} — ${site.name}` }) + '\n' + header('realisations') + '\n<main>\n' + fichePage(p, i) + '\n</main>\n' + footer()])),
   [PAGE_REALISATIONS]: () => head({ page: 'realisations', text: `${REALISATIONS} — ${site.name}` }) + '\n' + header('realisations') + '\n<main>\n' + realisationsPage() + '\n</main>\n' + footer(),
   [PAGE_ENGAGEMENTS]: () => head({ page: 'engagements', text: `${engagements.titre} — ${site.name}` }) + '\n' + header('engagements') + '\n<main>\n' + engagementsPage() + '\n</main>\n' + footer(),

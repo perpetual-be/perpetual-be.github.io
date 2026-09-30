@@ -1,7 +1,7 @@
 // Vérifications de la maquette (Playwright + Chromium) : premier écran (structure F), débordement, paramètres des bascules retirées sans effet,
 // valeurs figées et alignement (gel de la Home du 23/09 : signature, espacements, pied de page), en-tête (Φ, wordmark, limite de 1600 px), pied de page
-// sur le container de 1 200 px (les quatre pages), carte des réalisations, logos partenaires, photo 2800 px, aperçu des 4 (ordre du champ order, cadrage de
-// chaque aperçu, zoom du survol centré, aucune photo deux fois sur la Home, srcset, aucune photo agrandie), mode présentation,
+// sur le container de 1 200 px (les quatre pages), carte des réalisations sous « Réalisations » et plus de liste des 4
+// (30/09), logos partenaires, photo 2800 px, aucune photo deux fois sur la Home, mode présentation,
 // page sans JavaScript, polices, contrastes ; puis les quatre fiches, P6 (débordement, erreurs et images, alignement sur le logo, pied de page, photo de tête
 // et son cadre, photo qui suit, rangées de la mosaïque, contenu, précédent / suivant en boucle, visionneuse, téléphone, sans JavaScript), la vue Réalisations,
 // proposition P2 (débordement et erreurs, alignement sur la grille large, ouverture, blocs-liens des 4 projets, programme agences, rangée en boucle, photos
@@ -78,16 +78,8 @@ function verifierSrcset(liste, nom) {
 }
 
 const donnees = JSON.parse(fs.readFileSync(path.resolve(MAQ, '../../data/projects.json'), 'utf8'));
-// les quatre projets détaillés, dans l'ordre du champ order : la liste des 4 de la Home et la boucle « Projet précédent / suivant » des fiches (30/09)
+// les quatre projets détaillés, dans l'ordre du champ order : la boucle « Projet précédent / suivant » des fiches (30/09 ; la liste des 4 n'est plus sur la Home)
 const DETAILLES = donnees.filter(x => x.kind === 'detailed').sort((a, b) => a.order - b.order);
-// la photo de l'aperçu de la Home : apercu.photo, à défaut la première clé de selection
-const photoApercu = d => (d.apercu && d.apercu.photo) || d.selection[0];
-// la partie de chaque photo que montre le cadre de l'aperçu (Home) : la boîte de l'<img> rapportée à celle de .four__preview, en fractions de l'image entière,
-// [x, y, largeur, hauteur] comme le champ apercu.cadre ; au repos (rien n'est survolé), la boîte de l'<img> n'est pas transformée
-const partiesVisibles = p => p.evaluate(() => {
-  const cadre = document.querySelector('.four__preview').getBoundingClientRect();
-  return [...document.querySelectorAll('.four__preview img')].map(i => { const b = i.getBoundingClientRect(); return [(cadre.left - b.left) / b.width, (cadre.top - b.top) / b.height, cadre.width / b.width, cadre.height / b.height]; });
-});
 
 // la palette, telle que Chromium la rend
 const ANTHRACITE = 'rgb(38, 35, 31)', GRIS = 'rgb(107, 101, 92)', GRIS_CHAUD = 'rgb(122, 116, 102)', OR = 'rgb(154, 122, 59)', OR_FONCE = 'rgb(138, 107, 47)', OR_CLAIR = 'rgb(184, 151, 90)',
@@ -143,7 +135,7 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok(villesCarte.length === nAdresses, `carte : un point par bien avec une adresse (${villesCarte.length} dans belgique.json, ${nAdresses} dans projects.json)`);
   ok([[1, 'un'], [17, 'dix-sept'], [20, 'vingt'], [71, 'soixante et onze'], [80, 'quatre-vingts'], [91, 'quatre-vingt-onze'], [200, 'deux cents'], [201, 'deux cent un']].every(([n, s]) => enLettres(n) === s) && enLettres(21, true) === 'vingt et une' && enLettres(1, true) === 'une', 'nombres.mjs : nombres en toutes lettres (vingt et une, soixante et onze, quatre-vingts…)');
   ok(await p.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--fs-chapitre').trim() === '26px' && getComputedStyle(document.documentElement).getPropertyValue('--font-titres') === ''), '--fs-chapitre conservée (à décider sur la fiche), --font-titres retirée');
-  ok((await style(p, '.hero__title', 'fontWeight')) === '400' && (await style(p, '.stat__value', 'fontWeight')) === '400' && (await style(p, '.h2--serif', 'fontWeight')) === '400' && (await style(p, '.four__name', 'fontWeight')) === '400'
+  ok((await style(p, '.hero__title', 'fontWeight')) === '400' && (await style(p, '.stat__value', 'fontWeight')) === '400' && (await style(p, '.h2--serif', 'fontWeight')) === '400'
     && (await p.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--poids-serif') === '')) && !(await p.evaluate(() => [...document.styleSheets].some(ss => { try { return [...ss.cssRules].some(r => r.cssText.includes('Source Serif')); } catch (e) { return false; } }))),
     'serif figée : Newsreader 400 partout, plus de seconde serif ni de --poids-serif');
   // gel de la Home (23/09) : espacements
@@ -165,11 +157,11 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok((await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pays', 'fill')) === SABLE && (await style(p, '.carte__pays', 'stroke')) === 'none', 'carte : points anthracite, fond du pays sable (figé le 26/09)');
   ok((await style(p, '.site-footer', 'backgroundColor')) === PAPIER && (await style(p, '.site-footer', 'borderTopStyle')) === 'none', 'pied de page : fond papier, sans filet en haut (figé)');
   ok((await style(p, '.autres__lien', 'color')) === OR_FONCE && (await p.evaluate(() => document.querySelector('.autres__lien').textContent)) === 'Toutes les réalisations →', 'lien « Toutes les réalisations → » : or foncé');
-  const libelles = await p.evaluate(() => ({ nav: document.querySelector('.site-nav a').textContent, plan: document.querySelector('.footer__nav a').textContent, liste: document.querySelector('.section--projets .eyebrow').textContent, carte: document.querySelector('.section--autres .eyebrow').textContent,
+  const libelles = await p.evaluate(() => ({ nav: document.querySelector('.site-nav a').textContent, plan: document.querySelector('.footer__nav a').textContent, liste: !!document.querySelector('.section--projets, .four'), carte: document.querySelector('.section--autres .eyebrow').textContent,
     chiffre: [...document.querySelectorAll('.stat__label')].some(l => l.textContent === 'Projets en cours'), onglet: [...document.querySelectorAll('.mq__pages a')].map(a => a.textContent).join(' · ') }));
   const siteNav = JSON.parse(fs.readFileSync(path.resolve(MAQ, '../../data/site.json'), 'utf8')).nav.find(n => n.href === '/realisations').label;
-  ok(libelles.nav === siteNav && libelles.plan === siteNav && libelles.liste === 'Réalisations' && libelles.carte === 'En Belgique' && libelles.chiffre && libelles.onglet === 'Home · Fiche · Réalisations · Engagements',
-    `libellés : navigation et plan « ${libelles.nav} » (data/site.json), liste des 4 « ${libelles.liste} », carte « ${libelles.carte} », « Projets en cours » inchangé, onglets ${libelles.onglet}`);
+  ok(libelles.nav === siteNav && libelles.plan === siteNav && !libelles.liste && libelles.carte === siteNav && libelles.chiffre && libelles.onglet === 'Home · Fiche · Réalisations · Engagements',
+    `libellés : navigation et plan « ${libelles.nav} » (data/site.json), carte « ${libelles.carte} » (même libellé, 30/09), plus de liste des 4, « Projets en cours » inchangé, onglets ${libelles.onglet}`);
   const photos = await p.evaluate(() => [...document.querySelectorAll('.hero__photo img')].map(i => ({ key: i.dataset.photo, display: getComputedStyle(i).display, focal: getComputedStyle(i).objectPosition })));
   ok(photos.length === 1 && photos[0].key === 'community-05' && photos[0].display === 'block' && photos[0].focal === '50% 20%', `photo du premier écran : Community 05 seule, cadrage haut, figé le 26/09 (${photos.map(x => x.focal).join(' · ')})`);
   ok(['left', 'start'].includes(await style(p, '.hero__title', 'textAlign')) && /at 0(px)? 0(px)?,/.test(await p.evaluate(() => getComputedStyle(document.querySelector('.hero__photo'), '::after').backgroundImage)) && !(await p.evaluate(() => [...document.querySelectorAll('head style')].some(s => /9d/.test(s.textContent)))), 'accroche à gauche, voile depuis le coin haut-gauche (plus d’aiguillage photo → côté dans la page)');
@@ -181,59 +173,17 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok(!wm.trace && wm.display !== 'none' && /^Jost/.test(wm.ff) && wm.fs === '27.7px' && Math.abs(wm.ls - 27.7 * 0.18) < 0.05 && wm.fw === '400' && wm.tt === 'uppercase', `wordmark : Jost 400, capitales, 0,18 em, sans tracé PNG (${wm.w} px de large)`);
   const hd = await p.evaluate(() => ({ header: document.querySelector('.site-header').getBoundingClientRect().width, logo: document.querySelector('.logo').getBoundingClientRect().left, nav: document.querySelector('.site-nav').getBoundingClientRect().right }));
   ok(hd.header === 1440 && Math.round(hd.logo) === 40 && Math.round(hd.nav) === 1400, `en-tête pleine largeur (logo à ${Math.round(hd.logo)} px, liens à ${1440 - Math.round(hd.nav)} px du bord)`);
-  ok((await style(p, '.section--projets', 'display')) === 'block' && (await p.evaluate(() => document.querySelectorAll('.four__row').length)) === 4, 'section projets : liste des 4 (bascule 11 figée)');
+  ok(!(await p.evaluate(() => document.querySelector('.section--projets, .four'))), 'plus de liste des 4 sur la Home (30/09, retour de Julien : « tester la Home sans la section Réalisations ») ; les fiches restent accessibles par la vue Réalisations');
   ok((await style(p, '.partner__couleur', 'display')) === 'block' && !(await p.evaluate(() => document.querySelector('.partner__encre'))), 'logos partenaires : couleur, figés (plus d’encre inline)');
   const cles = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle));
   const inactives = await p.evaluate(() => [...document.querySelectorAll('.mq__b.is-inactif')].map(f => f.dataset.cle));
   ok(cles.join(' ') === 'papier bas' && inactives.join(' ') === 'papier bas', 'panneau : ' + cles.join(' · ') + ' (9c et 15a figées le 26/09, 20 et 21 retirées ; 22 et 23, vue Réalisations, sans effet sur la Home)');
-  ok(await pretty(p, '.four__line'), 'liste des 4 : text-wrap: pretty sur les lignes');
-  ok((await p.evaluate(() => [...document.querySelectorAll('.four__line')].every(l => l.querySelectorAll('.four__sep').length === 2 && !/14 unités.*[Qq]uatorze unités/.test(l.textContent))))
-    && parseFloat(await style(p, '.four__sep', 'marginLeft')) >= 5, 'liste des 4 : lieu · surface · phrase, deux séparateurs aérés par ligne (.four__sep, 30/09), plus de « 14 unités » en double');
-  // aperçu de la liste des 4 (30/09) : dans l'ordre du champ order (The Bank, Data Box, Community, Ateliers 118), la photo de chaque projet est apercu.photo, à
-  // défaut la première clé de son champ selection (P6, 26/09) — Community montre community-15, pas la 05 du premier écran. Le cadre (.four__preview) fait 440 × 550
-  // et montre exactement le `cadre` du champ apercu : la boîte de l'<img>, plus grande que lui, rapportée à la sienne, à 0,5 % près. srcset 800 / 1800 px (revue
-  // du 23/09) ; à 1×, aucune photo agrandie (l'échelle est celle de la boîte de l'<img>) — Data Box 03 (800 × 450, l'<img> y est 2,22 fois plus large que le cadre)
-  // reçoit le 1800 px, retrouvée par sa clé et non par son rang
-  const apercu = await photosImg(p, '.four__preview img');
-  const attendues = DETAILLES.map(photoApercu), cadres = DETAILLES.map(d => d.apercu && d.apercu.cadre);
-  ok(DETAILLES.map(d => d.id).join(' ') === 'the-bank data-box community ateliers-118' && apercu.length === 4 && apercu.map(i => i.cle).join(' ') === 'the-bank-01 data-box-03 community-15 ateliers-118-01'
-    && apercu.map(i => i.cle).join(' ') === attendues.join(' ') && apercu.every(i => !i.focal),
-    'aperçu de la liste des 4 : dans l’ordre du champ order, apercu.photo ou la première clé de selection de chaque projet (le cadrage passe par le cadre, pas par object-position) — ' + apercu.map(i => i.cle).join(' · '));
-  ok(await p.evaluate(() => [...document.querySelectorAll('.four__name')].map(e => e.textContent).join(' · ') === 'The Bank · Data Box · Community · Ateliers 118'
-    && document.querySelector('.four__row.is-active .four__name').textContent === 'The Bank' && document.querySelector('.four__preview img.is-active') === document.querySelector('.four__preview img')
-    && /the-bank-01/.test(document.querySelector('.four__preview img.is-active').getAttribute('src')) && getComputedStyle(document.querySelector('.four__preview img.is-active')).opacity === '1'),
-    'liste des 4 : The Bank en tête de liste et dans l’aperçu au repos, puis Data Box, Community, Ateliers 118');
-  verifierSrcset(apercu, 'aperçu');
-  const cadre = await rect(p, '.four__preview');
-  ok(cadre.width === 440 && cadre.height === 550, `aperçu : cadre 440 × 550 (.four__preview ${cadre.width}×${cadre.height} ; les <img>, plus grandes : ${apercu.map(i => i.w + '×' + i.h).join(', ')})`);
-  const visibles = await partiesVisibles(p);
-  ok(cadres.every(Array.isArray) && visibles.length === 4 && visibles.every((v, k) => v.every((x, j) => Math.abs(x - cadres[k][j]) <= 0.005)),
-    'aperçu : la partie visible de chaque photo est son cadre [x, y, largeur, hauteur], à 0,5 % près — ' + visibles.map((v, k) => `${apercu[k].cle} [${v.map(x => x.toFixed(4)).join(', ')}] pour [${cadres[k].join(', ')}]`).join(' ; '));
-  ok(apercu.every(i => i.echelle <= 1), `aperçu à 1× : aucune photo agrandie (${apercu.map(i => `${i.cle} ${i.pixels} ×${i.echelle}`).join(', ')})`);
-  const box = apercu.find(i => i.cle === 'data-box-03');
-  ok(box && box.servi === 'data-box-03.jpg', `aperçu à 1× : Data Box 03 (16:9, l’<img> 2,22 fois plus large que le cadre 4:5) est servie en 1800 px (${box && box.servi}), pas en 800 × 450 agrandi`);
-  // aucune photo deux fois sur la Home : la clé du premier écran (community-05) n'est pas une clé d'aperçu, et aucune clé n'apparaît deux fois
+  // aucune photo deux fois sur la Home (30/09 : la liste des 4 et ses aperçus sont retirés, il reste la photo du premier écran)
   const photosHome = await p.evaluate(() => [...document.querySelectorAll('img')].map(i => i.getAttribute('src')).filter(s => /directions\/img\//.test(s)).map(s => s.replace(/^.*\//, '').replace(/(-s|-l)?\.jpg$/, '')));
   const premier = await p.evaluate(() => document.querySelector('.hero__photo img').dataset.photo);
-  ok(premier === 'community-05' && !apercu.some(i => i.cle === premier) && new Set(photosHome).size === photosHome.length,
-    `aucune photo deux fois sur la Home : le premier écran montre ${premier}, la liste des 4 ${apercu.map(i => i.cle).join(', ')} (${photosHome.length} photos, ${new Set(photosHome).size} différentes)`);
-  // au survol d'une ligne, l'aperçu de ce projet zoome de 1,035 en gardant le centre de la partie visible (le transform-origin de l'<img> : ±1 px)
-  const survols = [];
-  for (const [k, d] of DETAILLES.entries()) {
-    await p.hover(`.four__row:nth-child(${k + 1}) a`);
-    survols.push(await p.evaluate(([c, cle]) => {
-      const img = document.querySelector('.four__preview img.is-active'), cadre = document.querySelector('.four__preview').getBoundingClientRect(), b = img.getBoundingClientRect(), m = getComputedStyle(img).transform.match(/matrix\(([^)]+)\)/);
-      return { cle: img.getAttribute('src').replace(/^.*\//, '').replace(/-s\.jpg$/, ''), attendue: cle, echelle: m ? +m[1].split(',')[0] : 1,
-        dx: b.left + (c[0] + c[2] / 2) * b.width - (cadre.left + cadre.width / 2), dy: b.top + (c[1] + c[3] / 2) * b.height - (cadre.top + cadre.height / 2) };
-    }, [d.apercu.cadre, photoApercu(d)]));
-  }
-  ok(survols.every(s => s.cle === s.attendue && Math.abs(s.echelle - 1.035) < 0.001 && Math.abs(s.dx) <= 1 && Math.abs(s.dy) <= 1),
-    'survol d’une ligne : l’aperçu du projet zoome de 1,035 et garde le centre de la partie visible (écart au centre du cadre ±1 px) — ' + survols.map(s => `${s.cle} ×${s.echelle.toFixed(3)} (${s.dx.toFixed(2)}, ${s.dy.toFixed(2)})`).join(' · '));
-  await p.mouse.move(0, 0);
-  const liens = await p.evaluate(() => ({ nav: document.querySelector('.site-nav a').getAttribute('href'), plan: document.querySelector('.footer__nav a').getAttribute('href'), tous: document.querySelector('.autres__lien').getAttribute('href'),
-    quatre: [...document.querySelectorAll('.four__row a')].map(a => a.getAttribute('href')) }));
-  ok(liens.nav === 'realisations.html' && liens.plan === 'realisations.html' && liens.tous === 'realisations.html' && liens.quatre.join(' ') === 'projet-the-bank.html projet-data-box.html projet-community.html projet-ateliers-118.html',
-    'liens : navigation, plan et « Toutes les réalisations → » vers realisations.html ; la liste des 4 vers les quatre fiches — ' + liens.quatre.join(' · '));
+  ok(premier === 'community-05' && new Set(photosHome).size === photosHome.length, `aucune photo deux fois sur la Home : le premier écran montre ${premier} (${photosHome.length} photos, ${new Set(photosHome).size} différentes)`);
+  const liens = await p.evaluate(() => ({ nav: document.querySelector('.site-nav a').getAttribute('href'), plan: document.querySelector('.footer__nav a').getAttribute('href'), tous: document.querySelector('.autres__lien').getAttribute('href') }));
+  ok(liens.nav === 'realisations.html' && liens.plan === 'realisations.html' && liens.tous === 'realisations.html', 'liens : navigation, plan et « Toutes les réalisations → » vers realisations.html');
   await ctx.close();
 }
 {
@@ -269,14 +219,14 @@ console.log('\n5 · Réalisations : la carte');
 {
   const { p, ctx } = await ouvrir('');
   const c = await p.evaluate(() => ({
-    place: document.querySelector('.section--projets').nextElementSibling.classList.contains('section--autres') && document.querySelector('.section--autres').nextElementSibling.classList.contains('section--collectif'),
+    place: document.querySelector('.section--chart').nextElementSibling.classList.contains('section--autres') && document.querySelector('.section--autres').nextElementSibling.classList.contains('section--collectif'),
     pts: document.querySelectorAll('.carte__pt').length, labs: document.querySelectorAll('.carte__lab').length, rang1: [...document.querySelectorAll('.carte__lab[data-rang="1"]')].map(t => t.textContent),
     groupe: document.querySelector('.carte__lab--groupe').textContent, fig: Math.round(document.querySelector('.carte__fig').getBoundingClientRect().width),
     bxl: [...document.querySelectorAll('.carte__lieu[data-lieu="Bruxelles"] .carte__pt')].map(c => c.getAttribute('r')), autres: [...document.querySelectorAll('.carte__lieu:not([data-lieu="Bruxelles"]) .carte__pt')].map(c => c.getAttribute('r')),
     section: Math.round(document.querySelector('.section--autres').getBoundingClientRect().height),
     bande: !!document.querySelector('.bande, .autres__tous'),
   }));
-  ok(c.place, 'la section Réalisations est entre Projets et Collectif');
+  ok(c.place, 'la section Réalisations (la carte) suit le graphique et précède Collectif (30/09 : plus de liste des 4 entre les deux)');
   ok(!c.bande, 'la bande défilante n’est plus dans la page');
   ok(c.pts === 16 && c.labs === 16 && c.groupe === 'Bruxelles', `carte : ${c.pts} points, ${c.labs} étiquettes, groupe « ${c.groupe} »`);
   ok(c.bxl.length === 1 && c.bxl[0] === '6.5' && c.autres.length === 15 && c.autres.filter(r => r === '5.5').length === 1 && c.autres.filter(r => r === '4.5').length === 14, 'carte : Bruxelles = un seul point r 6,5, Namur (Jambes + Belgrade, 30/09) r 5,5, les quatorze autres r 4,5');
@@ -338,8 +288,6 @@ console.log('\n6 · Logos partenaires, photo 2800 px, présentation, sans JavaSc
 {
   const { p, ctx } = await ouvrir('', [1440, 900], { deviceScaleFactor: 2 });
   ok(await p.evaluate(() => /community-05-l\.jpg$/.test(document.querySelector('.hero__photo img').currentSrc)), 'premier écran : la version 2800 px est servie à 1440 × 2');
-  const apercu2 = (await photosImg(p, '.four__preview img')).filter(i => fs.existsSync(path.join(IMG_DIR, `${i.cle}.jpg`)));
-  ok(apercu2.length >= 3 && apercu2.every(i => i.servi === `${i.cle}.jpg`), `aperçu de la liste des 4 à 1440 × 2 : le 1800 px est servi (${apercu2.map(i => i.servi).join(', ')})`);
   await ctx.close();
 }
 {
@@ -352,7 +300,7 @@ console.log('\n6 · Logos partenaires, photo 2800 px, présentation, sans JavaSc
 }
 {
   const { p, ctx } = await ouvrir('', [1440, 900], { javaScriptEnabled: false });
-  ok(await p.evaluate(() => !document.querySelector('.mq') && !!document.querySelector('.four__preview img.is-active') && getComputedStyle(document.querySelector('.stats-band')).backgroundColor === 'rgb(249, 249, 246)' && getComputedStyle(document.querySelector('.hero__photo img')).objectPosition === '50% 20%'), 'sans JavaScript : la page est la combinaison retenue, sans panneau'); await ctx.close();
+  ok(await p.evaluate(() => !document.querySelector('.mq') && getComputedStyle(document.querySelector('.stats-band')).backgroundColor === 'rgb(249, 249, 246)' && getComputedStyle(document.querySelector('.hero__photo img')).objectPosition === '50% 20%'), 'sans JavaScript : la page est la combinaison retenue, sans panneau'); await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('');
@@ -622,7 +570,7 @@ for (const page of ['index', FICHE, REAL, ENG]) {
 }
 {
   const { p, ctx } = await ouvrir('chapitres=sans&quatre=cartes');
-  ok((await p.evaluate(() => document.querySelectorAll('.chapitre').length)) === 0 && (await style(p, '.four', 'display')) === 'grid', 'Home : chapitres=sans et quatre=cartes (bascule retirée) sont sans effet');
+  ok((await p.evaluate(() => document.querySelectorAll('.chapitre').length)) === 0 && !(await p.evaluate(() => document.querySelector('.four'))), 'Home : chapitres=sans et quatre=cartes (bascule retirée) sont sans effet');
   await ctx.close();
 }
 
