@@ -278,8 +278,8 @@ console.log('\n5 · Réalisations : la carte');
   }));
   ok(c.place, 'la section Réalisations est entre Projets et Collectif');
   ok(!c.bande, 'la bande défilante n’est plus dans la page');
-  ok(c.pts === 17 && c.labs === 17 && c.groupe === 'Bruxelles', `carte : ${c.pts} points, ${c.labs} étiquettes, groupe « ${c.groupe} »`);
-  ok(c.bxl.length === 1 && c.bxl[0] === '6.5' && c.autres.length === 16 && c.autres.every(r => r === '4.5'), 'carte : Bruxelles = un seul point r 6,5, les seize autres r 4,5');
+  ok(c.pts === 16 && c.labs === 16 && c.groupe === 'Bruxelles', `carte : ${c.pts} points, ${c.labs} étiquettes, groupe « ${c.groupe} »`);
+  ok(c.bxl.length === 1 && c.bxl[0] === '6.5' && c.autres.length === 15 && c.autres.filter(r => r === '5.5').length === 1 && c.autres.filter(r => r === '4.5').length === 14, 'carte : Bruxelles = un seul point r 6,5, Namur (Jambes + Belgrade, 30/09) r 5,5, les quatorze autres r 4,5');
   ok(c.rang1.length === 3, 'carte : étiquettes de rang 1 — ' + c.rang1.join(' · '));
   ok(c.fig <= 600, `carte : SVG ${c.fig} px de large (600 max)`);
   ok((await style(p, '.carte__pays', 'fill')) === SABLE && (await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pt', 'stroke')) === BLANC && (await style(p, '.carte__lab', 'fill')) === GRIS && (await style(p, '.carte__lab--groupe', 'fill')) === ANTHRACITE, 'carte : fond du pays sable (figé le 26/09), points anthracite à liseré blanc, étiquettes gris chaud, Bruxelles anthracite');
@@ -291,7 +291,7 @@ console.log('\n5 · Réalisations : la carte');
   await p.hover('.carte__lieu[data-lieu="Jemelle"] .carte__pt');
   ok((await style(p, '.carte__lieu[data-lieu="Jemelle"] .carte__lab', 'fill')) === ANTHRACITE, 'carte : le survol d’un point passe son étiquette en anthracite');
   // Chevauchements dans le SVG : getBBox() donne la boîte englobante dans le système de coordonnées propre du SVG (le viewBox, indépendant
-  // du zoom ou de la largeur d'écran), donc directement comparable aux décalages écrits dans belgique.json/belgique.svg. On teste les 17
+  // du zoom ou de la largeur d'écran), donc directement comparable aux décalages écrits dans belgique.json/belgique.svg. On teste les 16
   // étiquettes deux à deux, plus chaque étiquette contre chaque point (aucun n'a de transform propre, donc les boîtes sont comparables telles quelles).
   const chevauchements = await p.evaluate(() => {
     const labs = [...document.querySelectorAll('.carte__lab')].map(t => ({ nom: t.textContent, b: t.getBBox() }));
@@ -302,7 +302,18 @@ console.log('\n5 · Réalisations : la carte');
     for (const lab of labs) for (const pt of pts) if (inter(lab.b, pt.b)) paires.push(lab.nom + ' / point ' + pt.nom);
     return paires;
   });
-  ok(!chevauchements.length, chevauchements.length ? `carte : chevauchements (getBBox) — ${chevauchements.join(', ')}` : 'carte : aucune des 17 étiquettes ne chevauche une autre étiquette ni un point (getBBox, boîtes du SVG)');
+  ok(!chevauchements.length, chevauchements.length ? `carte : chevauchements (getBBox) — ${chevauchements.join(', ')}` : 'carte : aucune des 16 étiquettes ne chevauche une autre étiquette ni un point (getBBox, boîtes du SVG)');
+  // Étiquettes collées à leur point (30/09, Axel : « les noms des villes plus proches des points ») : distance entre la boîte de l'étiquette
+  // et le bord du point, en unités du viewBox, 4 au plus ; Namur remplace Jambes et Belgrade.
+  const lab = await p.evaluate(() => {
+    const pts = Object.fromEntries([...document.querySelectorAll('.carte__pt')].map(c => [c.querySelector('title').textContent, { x: +c.getAttribute('cx'), y: +c.getAttribute('cy'), r: +c.getAttribute('r') }]));
+    const noms = [...document.querySelectorAll('.carte__lab')].map(t => t.textContent);
+    const loin = [...document.querySelectorAll('.carte__lab')].map(t => { const b = t.getBBox(), pt = pts[t.textContent];
+      const dx = Math.max(b.x - pt.x, 0, pt.x - (b.x + b.width)), dy = Math.max(b.y - pt.y, 0, pt.y - (b.y + b.height));
+      return { nom: t.textContent, d: Math.hypot(dx, dy) - pt.r }; }).filter(e => e.d > 4).map(e => `${e.nom} (${e.d.toFixed(1)})`);
+    return { loin, namur: noms.includes('Namur') && !noms.includes('Jambes') && !noms.includes('Belgrade') };
+  });
+  ok(!lab.loin.length && lab.namur, lab.loin.length ? `carte : étiquettes trop loin de leur point — ${lab.loin.join(', ')}` : 'carte : chaque étiquette à 4 unités au plus de son point ; « Namur » au lieu de Jambes et Belgrade (30/09)');
   console.log(`        hauteur de la section : ${c.section} px (visée ≈ 550)`);
   await ctx.close();
 }
