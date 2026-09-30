@@ -20,7 +20,9 @@
   // sur « sable » ; plus aucune bascule sur la Home. La 20 (fiche, titres de chapitre) est figée sur « sans »
   // (revue de la fiche, 23/09). Vue Réalisations (revue du 26/09, la proposition P2 remplace les cartes et la bascule 21) : 22 fond papier du programme
   // agences et 23 bas de page, la V1 en défaut, la V2 en réserve. Page Engagements (26/09) : aucune bascule, 22 et 23 y sont grisées.
+  // Lot 2b (30/09, retours de Julien) : 13 graphique reprise, temporaire — barres / trois variantes en anneau qui se remplissent (A, B, C), le temps du choix d'Axel.
   var BASCULES = [
+    { n: '13', cle: 'graphique', titre: 'Graphique 11 150 m²', groupe: 'Home', valeurs: [['barres', 'barres'], ['anneau', 'A · un anneau, trois parts'], ['anneaux', 'B · un anneau par usage'], ['sobre', 'C · anneau sobre, étiquettes']], note: 'lot 2b, item 1 : cercle qui se remplit à l’arrivée à l’écran (rejoué au changement)', pages: ['home'] },
     { n: '22', cle: 'papier', titre: 'Programme agences, fond papier', groupe: 'Réalisations', valeurs: [['enonce', 'énoncé seul'], ['tout', 'toute la section']], note: 'toute la section : puis 32 px de blanc avant le pied de page', pages: ['realisations'] },
     { n: '23', cle: 'bas', titre: 'Bas de page', groupe: 'Réalisations', valeurs: [['rien', 'rien'], ['anciens', 'anciens projets']], note: 'en réserve : les projets de l’ancien site, à confirmer avec Julien', pages: ['realisations'] }
   ];
@@ -372,4 +374,29 @@
     e.preventDefault();
     f[e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : (i === -1 || i === f.length - 1 ? 0 : i + 1)].focus();
   });
+})();
+
+// ---- Home, graphique 11 150 m² en anneau (lot 2b, item 1 ; bascule 13) : les anneaux se remplissent une fois, quand le graphique arrive à l'écran
+// (à moitié visible), et de nouveau quand on change de variante dans le panneau. Sans IntersectionObserver ou avec « réduire les animations » :
+// rien, les anneaux restent pleins (le CSS ne les vide que sous .a-remplir). ----
+(function () {
+  var graphs = document.querySelectorAll('.graph'), section = document.querySelector('.section--chart');
+  if (!graphs.length || !section || !('IntersectionObserver' in window)) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var vu = false;
+  function vider() { Array.prototype.forEach.call(graphs, function (g) { g.classList.remove('est-rempli'); g.classList.add('a-remplir'); }); }
+  function jouer() {
+    vider();
+    void section.offsetWidth;   // l'état vide est appliqué avant la transition
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      Array.prototype.forEach.call(graphs, function (g) { g.classList.add('est-rempli'); });
+    }); });
+  }
+  vider();
+  var io = new IntersectionObserver(function (entrees) {
+    if (vu || !entrees.some(function (e) { return e.isIntersecting; })) return;
+    vu = true; io.disconnect(); jouer();
+  }, { threshold: 0.5 });
+  io.observe(section);
+  new MutationObserver(function () { if (vu) jouer(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-graphique'] });
 })();

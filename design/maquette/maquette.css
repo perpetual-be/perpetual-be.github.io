@@ -25,6 +25,7 @@
   --c-mail:var(--anthracite);                             /* mail du pied de page, souligné en or clair */
   --c-trait:var(--or);--c-trait-fin:var(--or-clair);      /* trait de survol ; soulignement du mail */
   --c-remplissage:var(--anthracite);                      /* graphique : remplissage des barres */
+  --c-part-1:var(--anthracite);--c-part-2:var(--or);--c-part-3:var(--or-deco);   /* graphique en anneau A (lot 2b, bascule 13) : les trois parts, dans l'ordre du tour */
   --c-point:var(--anthracite);                            /* carte : points */
   --c-num-chapitre:var(--or-fonce);                       /* numéros de chapitre : or foncé (5,0:1 à 15 px ; l'or mat n'y fait que 4,0:1), revue de la fiche */
   --c-phi:var(--bronze);--c-wordmark:var(--anthracite);
@@ -119,6 +120,39 @@ ol,ul{list-style:none}
 .bar__track{display:block;height:14px;background:var(--surface-piste)}
 .bar__fill{display:block;height:100%;background:var(--c-remplissage)}
 .bar__value{font-size:15px;color:var(--c-meta);font-variant-numeric:tabular-nums;text-align:right}
+/* graphique en anneau (lot 2b, item 1 : « un cercle qui se remplit », Julien, 30/09) — trois variantes, masquées par défaut, montrées par la bascule 13
+   (section 6). Traits de 14 unités sans arrondi (pathLength 100 : --l est la longueur d'une part en centièmes du tour). Remplissage : maquette.js pose
+   .a-remplir (anneaux vides), puis .est-rempli quand le graphique arrive à l'écran — une seule fois, rejoué au changement de variante ; chaque part
+   part à --d et dure --t. Sans JavaScript, ou avec « réduire les animations », les anneaux sont pleins d'emblée. */
+.graph{display:none}
+.graph__svg{display:block;overflow:visible}
+.graph__part{fill:none;stroke-width:14;stroke-dasharray:var(--l) 100}
+.graph.a-remplir .graph__part{stroke-dasharray:0 100}
+.graph.a-remplir.est-rempli .graph__part{stroke-dasharray:var(--l) 100;transition:stroke-dasharray var(--t) linear var(--d)}
+.graph__val{color:var(--c-meta);font-variant-numeric:tabular-nums}
+/* A · un anneau, trois parts, légende à droite (rangées à filets) */
+.graph--anneau{grid-template-columns:220px minmax(0,340px);column-gap:72px;align-items:center}
+.graph--anneau .graph__svg{width:220px;height:220px}
+.graph__part--1{stroke:var(--c-part-1)}.graph__part--2{stroke:var(--c-part-2)}.graph__part--3{stroke:var(--c-part-3)}
+.graph__legende li{display:grid;grid-template-columns:12px 1fr auto;align-items:center;column-gap:14px;padding:12px 0;border-top:1px solid var(--filet);font-size:15px}
+.graph__legende li:last-child{border-bottom:1px solid var(--filet)}
+.graph__cle{width:12px;height:12px}
+.graph__cle--1{background:var(--c-part-1)}.graph__cle--2{background:var(--c-part-2)}.graph__cle--3{background:var(--c-part-3)}
+/* B · un anneau par usage : anthracite sur piste sable (les couleurs des barres), le pourcentage au centre, le nom dessous */
+.graph--anneaux{grid-template-columns:repeat(3,160px);column-gap:64px}
+.graph__un{display:flex;flex-direction:column;align-items:center;gap:16px}
+.graph__tour{position:relative;width:160px;height:160px}
+.graph__tour .graph__svg{width:100%;height:100%}
+.graph--anneaux .graph__piste{fill:none;stroke:var(--surface-piste);stroke-width:16}
+.graph--anneaux .graph__part{stroke:var(--c-remplissage);stroke-width:16}
+.graph--anneaux.a-remplir.est-rempli .graph__part{transition-timing-function:cubic-bezier(.22,.61,.36,1)}
+.graph__centre{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--serif);font-size:34px;line-height:1;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.graph--anneaux .graph__nom{font-size:15px}
+/* C · un anneau anthracite, les parts séparées par un blanc, étiquettes directes autour (SVG à 1:1, largeur et hauteur posées par build.mjs) */
+.graph--sobre .graph__svg{max-width:100%;height:auto}
+.graph--sobre .graph__part{stroke:var(--c-remplissage)}
+.graph--sobre text{font-family:var(--sans);font-size:15px;fill:var(--c-texte)}
+.graph--sobre .graph__val{fill:var(--c-meta)}
 
 /* projets : liste des quatre */
 .four{display:grid;grid-template-columns:7fr 5fr;gap:64px;align-items:start}
@@ -356,6 +390,13 @@ html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:4
   .deco__svg{width:220px}
   .section{padding:44px 0}
   .bar{grid-template-columns:84px 1fr 48px;gap:12px}
+  .graph--anneau{grid-template-columns:1fr;row-gap:28px}
+  .graph--anneau .graph__svg{width:180px;height:180px}
+  .graph--anneaux{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:16px}
+  .graph__tour{width:100%;height:auto;aspect-ratio:1}
+  .graph__un{gap:12px}
+  .graph__centre{font-size:22px}
+  .graph--anneaux .graph__nom{font-size:13px}
   .four{grid-template-columns:1fr}
   .four__preview{display:none}
   .carte{grid-template-columns:1fr;gap:28px}
@@ -427,10 +468,16 @@ html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:4
   :root{--bande-haut:36px;--bande-bas:32px}
 }
 @media (prefers-reduced-motion:reduce){
-  .trait::after,.four__name::after,.four__preview img,.carte__lab,.bloc img,.bloc::after,.bloc__faits,.bien__fleche,.lien-texte,.fiche__tuile img{transition:none}
+  .trait::after,.four__name::after,.four__preview img,.carte__lab,.bloc img,.bloc::after,.bloc__faits,.bien__fleche,.lien-texte,.fiche__tuile img,.graph__part{transition:none}
+  .graph.a-remplir .graph__part{stroke-dasharray:var(--l) 100}
 }
 
 /* ---------- 6. Bascules ---------- */
+/* 13 · Home, graphique 11 150 m² (lot 2b, item 1 ; temporaire, jusqu'au choix d'Axel, puis barres / variante retenue pour le rendez-vous du 7/10) :
+   barres (défaut) / anneau (A) / anneaux (B) / sobre (C) */
+html[data-graphique="anneau"] .bars,html[data-graphique="anneaux"] .bars,html[data-graphique="sobre"] .bars{display:none}
+html[data-graphique="anneau"] .graph--anneau,html[data-graphique="anneaux"] .graph--anneaux{display:grid}
+html[data-graphique="sobre"] .graph--sobre{display:block}
 /* 20 · fiche, titres de chapitre : figée sur « sans » (revue de la fiche, 23/09) : .chapitre__titre et .chapitre__num, plus haut. */
 /* 22 · vue Réalisations, programme agences, fond papier : énoncé seul (défaut, .bloc-agences__bande) / toute la section (papier sur toute la section,
    puis 32 px de blanc avant le pied de page, 20 au téléphone) */

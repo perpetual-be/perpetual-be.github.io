@@ -317,10 +317,67 @@ function lead() {
 </section>`;
 }
 
+// Graphique 11 150 m² — lot 2b, item 1 (retour de Julien, 30/09 : « un cercle qui se remplit », à montrer en variante à côté des barres). Bascule 13
+// reprise (l'anneau fixe du 18/09 avait été écarté), temporaire, jusqu'au choix d'Axel : barres (défaut, l'existant) / A « anneau » : un anneau, trois
+// parts (anthracite, or, or clair), légende à droite / B « anneaux » : un anneau par usage, anthracite sur piste sable, le pourcentage au centre /
+// C « sobre » : un anneau anthracite, les parts séparées par un blanc, étiquettes autour. Même donnée pour les quatre (frontmatter portfolio de
+// content/home.md) ; l'ordre du tour (depuis midi, sens horaire) est celui de la légende. Les anneaux se remplissent une fois, quand le graphique arrive
+// à l'écran (maquette.js : .a-remplir puis .est-rempli) ; sans JavaScript ou avec « réduire les animations », ils sont pleins d'emblée.
+// Géométrie : viewBox 240 × 240, rayon 100, pathLength 100 (longueurs des traits en centièmes du tour), départ à midi (rotation de −90°).
+const ANNEAU = { r: 100, joint: 0.5, duree: 1.2 };   // joint : le blanc entre deux parts, en centièmes du tour (≈ 3 px) ; duree : le tour complet, en s
+const pct = n => `${n} %`;
+function partsDuTour(items) {
+  const total = items.reduce((s, i) => s + i.percent, 0);
+  let debut = 0;
+  return items.map((i, k) => { const part = i.percent * 100 / total, p = { ...i, k: k + 1, debut, part }; debut += part; return p; });
+}
+const cercle = (cls, attrs = '') => `<circle class="${cls}" cx="120" cy="120" r="${ANNEAU.r}" pathLength="100"${attrs}/>`;
+// Une part : un trait de (part − joint) centièmes, décalé de (début + joint / 2) ; --l sa longueur, --d et --t le départ et la durée de son remplissage
+// (le tour à vitesse constante : chaque part dure sa fraction du tour, et commence quand la précédente finit).
+const arcs = parts => parts.map(p => cercle(`graph__part graph__part--${p.k}`,
+  ` style="--l:${+(p.part - ANNEAU.joint).toFixed(3)};--d:${+(ANNEAU.duree * p.debut / 100).toFixed(3)}s;--t:${+(ANNEAU.duree * p.part / 100).toFixed(3)}s" stroke-dashoffset="${-(p.debut + ANNEAU.joint / 2).toFixed(3)}"`)).join('');
+// viewBox resserré sur le bord extérieur du trait (rayon 100 + 8 au plus) : l'anneau s'aligne sur le texte à gauche.
+const tour = contenu => `<svg class="graph__svg" viewBox="12 12 216 216" aria-hidden="true"><g transform="rotate(-90 120 120)">${contenu}</g></svg>`;
+
+function graphAnneau(parts) {
+  return `<div class="graph graph--anneau">${tour(arcs(parts))}<ul class="graph__legende">${parts.map(p => `<li><span class="graph__cle graph__cle--${p.k}" aria-hidden="true"></span><span class="graph__nom">${esc(p.label)}</span><span class="graph__val">${pct(p.percent)}</span></li>`).join('')}</ul></div>`;
+}
+function graphAnneaux(parts) {
+  return `<ul class="graph graph--anneaux">${parts.map((p, i) => `<li class="graph__un"><div class="graph__tour">${tour(cercle('graph__piste') + cercle('graph__part', ` style="--l:${p.percent};--d:${(i * 0.12).toFixed(2)}s;--t:1.1s"`))}<span class="graph__centre">${pct(p.percent)}</span></div><span class="graph__nom">${esc(p.label)}</span></li>`).join('')}</ul>`;
+}
+// Chasses d'Instrument Sans 400 (table hmtx de design/maquette/fonts/instrument-sans-latin-wght-normal.woff2, en millièmes d'em ; 600 pour un caractère
+// absent), pour mesurer les étiquettes de C sans navigateur ; l'approche (crénage) est ignorée.
+const CHASSE_SANS = {" ":200," ":200,"%":786,"0":666,"1":391,"2":545,"3":574,"4":600,"5":574,"6":599,"7":532,"8":582,"9":610,"a":533,"b":606,"c":533,"d":606,"e":564,"f":354,"g":606,"h":599,"i":240,"j":240,"k":535,"l":240,"m":922,"n":599,"o":584,"p":606,"q":606,"r":375,"s":473,"t":377,"u":589,"v":523,"w":767,"x":551,"y":523,"z":496,"A":728,"B":636,"C":741,"D":752,"E":638,"F":602,"G":765,"H":736,"I":254,"J":455,"K":692,"L":588,"M":906,"N":736,"O":786,"P":656,"Q":787,"R":656,"S":608,"T":648,"U":712,"V":728,"W":1089,"X":688,"Y":676,"Z":623,"à":533,"â":533,"ä":533,"ç":533,"é":564,"è":564,"ê":564,"ë":564,"î":240,"ï":240,"ô":584,"ö":584,"ù":589,"û":589,"ü":589,"œ":946,"À":728,"Â":728,"É":638,"È":638,"Ê":638,"Î":254,"Ô":786,"Ù":712,"Û":712,"Ç":741,"Œ":1064,"’":255,"'":232,"-":506,"–":586,".":255,",":255,":":255,";":255,"(":406,")":406,"/":443,"&":755,"+":531};
+const largeurSans = (texte, fs) => [...texte].reduce((w, c) => w + (CHASSE_SANS[c] ?? 600), 0) / 1000 * fs;
+// C : le centre de l'anneau à l'origine ; chaque étiquette (nom, puis pourcentage) au milieu de sa part, 18 unités hors de l'anneau, alignée vers
+// l'extérieur ; en haut, le bloc finit au-dessus du point, en bas il commence dessous. Le viewBox suit l'anneau et les étiquettes (largeurs mesurées
+// avec CHASSE_SANS) : l'élément le plus à gauche s'aligne sur le texte de la page ; SVG à 1:1 (15 px), réduit au téléphone s'il déborde.
+function graphSobre(parts) {
+  const rl = ANNEAU.r + 7 + 18, fs = 15, lh = 1.3, bord = ANNEAU.r + 7;
+  let haut = -bord, bas = bord, gauche = -bord, droite = bord;
+  const etiquettes = parts.map(p => {
+    const a = (p.debut + p.part / 2) / 100 * 2 * Math.PI, s = Math.sin(a), c = Math.cos(a);
+    const x = +(rl * s).toFixed(1), y = +(-rl * c).toFixed(1);
+    const ancre = s > 0.2 ? 'start' : s < -0.2 ? 'end' : 'middle';
+    const dy = c > 0.3 ? -(lh + 0.25) : c < -0.3 ? 0.95 : -0.2;   // en em, jusqu'à la ligne de base du nom
+    const b1 = y + dy * fs, w = Math.max(largeurSans(p.label, fs), largeurSans(pct(p.percent), fs) * 1.03);   // chiffres tabulaires : un peu plus larges
+    haut = Math.min(haut, b1 - 0.8 * fs); bas = Math.max(bas, b1 + lh * fs + 0.3 * fs);
+    gauche = Math.min(gauche, ancre === 'start' ? x : ancre === 'end' ? x - w : x - w / 2);
+    droite = Math.max(droite, ancre === 'start' ? x + w : ancre === 'end' ? x : x + w / 2);
+    return `<text x="${x}" y="${y}" text-anchor="${ancre}"><tspan class="graph__nom" x="${x}" dy="${dy}em">${esc(p.label)}</tspan><tspan class="graph__val" x="${x}" dy="${lh}em">${pct(p.percent)}</tspan></text>`;
+  }).join('');
+  haut = Math.floor(haut - 2); bas = Math.ceil(bas + 2); gauche = Math.floor(gauche); droite = Math.ceil(droite + 1);
+  return `<div class="graph graph--sobre"><svg class="graph__svg" viewBox="${gauche} ${haut} ${droite - gauche} ${bas - haut}" width="${droite - gauche}" height="${bas - haut}" role="img" aria-label="${esc(parts.map(p => p.label + ' ' + pct(p.percent)).join(', '))}"><g transform="rotate(-90) translate(-120 -120)">${arcs(parts)}</g><g aria-hidden="true">${etiquettes}</g></svg></div>`;
+}
+
 function chart() {
+  const parts = partsDuTour(portfolio.items);
   return `<section class="section section--chart"><div class="container">
   <h2 class="h2 h2--sans">${esc(portfolio.title)}</h2>
   <div class="bars">${portfolio.items.map(i => `<div class="bar"><span class="bar__label">${esc(i.label)}</span><span class="bar__track"><span class="bar__fill" style="width:${i.percent}%"></span></span><span class="bar__value">${i.percent} %</span></div>`).join('')}</div>
+  ${graphAnneau(parts)}
+  ${graphAnneaux(parts)}
+  ${graphSobre(parts)}
 </div></section>`;
 }
 
