@@ -131,7 +131,7 @@ ol,ul{list-style:none}
 .four__line{display:block;font-size:var(--fs-ligne);color:var(--c-meta);margin-top:8px;text-wrap:pretty}
 .four__sep{margin:0 .35em}
 .four__preview{position:sticky;top:24px;aspect-ratio:4/5;overflow:hidden;background:var(--surface)}
-.four__preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s,transform var(--zoom-duree) ease}
+.four__preview img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;opacity:0;transition:opacity .25s,transform var(--zoom-duree) ease}   /* cadrage : width, height, left, top et transform-origin posés en style par build.mjs (apercuImg), l'<img> dépasse alors le cadre */
 .four__preview img.is-active{opacity:1}
 .four__list:hover~.four__preview img.is-active{transform:scale(var(--zoom))}
 

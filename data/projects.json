@@ -3,7 +3,7 @@
     "id": "ateliers-118",
     "name": "Ateliers 118",
     "kind": "detailed",
-    "order": 1,
+    "order": 4,
     "location": "Molenbeek-Saint-Jean",
     "address": "Rue des Béguines 118, 1080 Bruxelles",
     "surface": "1 200 m²",
@@ -34,13 +34,16 @@
       "ateliers-118-05",
       "ateliers-118-03",
       "ateliers-118-04"
-    ]
+    ],
+    "apercu": {
+      "cadre": [0.1496, 0, 0.7407, 0.6944]
+    }
   },
   {
     "id": "the-bank",
     "name": "The Bank",
     "kind": "detailed",
-    "order": 2,
+    "order": 1,
     "location": "Liège, rue des Mineurs",
     "address": "Rue des Mineurs 53-55, 4000 Liège",
     "surface": "1 100 m²",
@@ -57,13 +60,16 @@
       "the-bank-01",
       "the-bank-02",
       "the-bank-03"
-    ]
+    ],
+    "apercu": {
+      "cadre": [0, 0, 1, 0.9375]
+    }
   },
   {
     "id": "data-box",
     "name": "Data Box",
     "kind": "detailed",
-    "order": 3,
+    "order": 2,
     "location": "Jemelle",
     "address": "Rue Delvigne 102, Jemelle",
     "surface": "4 200 m² sur un hectare",
@@ -89,13 +95,16 @@
       "data-box-05",
       "data-box-06",
       "data-box-07"
-    ]
+    ],
+    "apercu": {
+      "cadre": [0.205, 0, 0.45, 1]
+    }
   },
   {
     "id": "community",
     "name": "Community",
     "kind": "detailed",
-    "order": 4,
+    "order": 3,
     "location": "Uccle",
     "address": "Chaussée Saint-Job 8, 1180 Bruxelles",
     "surface": "14 unités",
@@ -141,7 +150,11 @@
       "community-04",
       "community-15",
       "community-16"
-    ]
+    ],
+    "apercu": {
+      "photo": "community-15",
+      "cadre": [0.2681, 0, 0.4638, 0.8696]
+    }
   },
   {
     "id": "bnp-braine-le-comte",
