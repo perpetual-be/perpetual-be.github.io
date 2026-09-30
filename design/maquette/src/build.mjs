@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { enLettres, capitale } from './nombres.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(HERE, '..');            // design/maquette/
@@ -382,6 +383,17 @@ function carteSvg() {
 }
 
 // Section « En Belgique » (intitulé du 28/09, lot 3 : « Réalisations » faisait doublon avec la liste des 4) : la carte, avec le texte à droite (figée le 23/09 ; la bande de vignettes et « aucune » sont retirées).
+// Titre de la carte, calculé (lot 3, 30/09 : le nombre ne doit pas être retouché à chaque nouveau projet) : le nombre de biens de data/projects.json
+// qui ont une adresse, en toutes lettres, puis les villes la plus à l'ouest et la plus à l'est de la carte (belgique.json, longitudes ; le nom
+// du groupe pour une commune bruxelloise). « de » s'élide devant une voyelle.
+function titreCarte() {
+  const n = projects.filter(p => p.address).length;
+  const villes = JSON.parse(fs.readFileSync(path.join(HERE, 'carte/belgique.json'), 'utf8')).villes;
+  const nom = v => v.groupe || v.ville;
+  const ouest = nom(villes.reduce((a, v) => (v.lon < a.lon ? v : a))), est = nom(villes.reduce((a, v) => (v.lon > a.lon ? v : a)));
+  const de = /^[aeiouyàâéèêîôûh]/i.test(ouest) && !/^h/i.test(ouest) ? 'd’' : 'de ';
+  return `${capitale(enLettres(n, true))} adresse${n > 1 ? 's' : ''}, ${de}${ouest} à ${est}.`;
+}
 function autres() {
   return `<section class="section section--autres" id="realisations">
 <div class="container">
@@ -389,7 +401,7 @@ function autres() {
   <div class="carte">
     <div class="carte__fig">${carteSvg()}</div>
     <div class="carte__texte">
-      <h2 class="h2 h2--serif">Vingt adresses, de Haaltert à Welkenraedt.</h2>
+      <h2 class="h2 h2--serif">${esc(titreCarte())}</h2>
       <p>${agences}</p>
       <a class="autres__lien trait" href="${PAGE_REALISATIONS}">Toutes les réalisations →</a>
     </div>
