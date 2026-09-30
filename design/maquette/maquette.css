@@ -129,6 +129,7 @@ ol,ul{list-style:none}
 .four__name::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--c-trait);transform:scaleX(0);transform-origin:left;transition:transform .25s}
 .four__row:hover .four__name::after,.four__row.is-active .four__name::after{transform:scaleX(1)}
 .four__line{display:block;font-size:var(--fs-ligne);color:var(--c-meta);margin-top:8px;text-wrap:pretty}
+.four__sep{margin:0 .35em}
 .four__preview{position:sticky;top:24px;aspect-ratio:4/5;overflow:hidden;background:var(--surface)}
 .four__preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s,transform var(--zoom-duree) ease}
 .four__preview img.is-active{opacity:1}

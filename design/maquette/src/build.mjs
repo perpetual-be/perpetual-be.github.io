@@ -77,7 +77,7 @@ const four = [
   { id: 'ateliers-118', line: 'Molenbeek-Saint-Jean · 1 200 m² · Treize ateliers dans une ancienne usine de colle', blocFocal: '50% 30%', lieu: 'Molenbeek-Saint-Jean', surface: '1 200 m²', usage: 'Ateliers' },
   { id: 'the-bank', line: 'Liège · 1 100 m² · Une agence devenue bijouterie, Bancontact et logements', blocFocal: '50% 40%', lieu: 'Liège', surface: '1 100 m²', usage: 'Logements & commerce' },
   { id: 'data-box', line: 'Jemelle · 4 200 m² sur un hectare · Un site technique dont l’avenir reste ouvert', blocFocal: '50% 50%', lieu: 'Jemelle', surface: '4 200 m²', usage: 'Site technique' },
-  { id: 'community', line: 'Uccle · 14 unités · Quatorze unités autour d’espaces partagés', blocFocal: '50% 50%', lieu: 'Uccle', surface: '14 unités', usage: 'Co-living' },
+  { id: 'community', line: 'Uccle · 600 m² · Quatorze unités autour d’espaces partagés', blocFocal: '50% 50%', lieu: 'Uccle', surface: '14 unités', usage: 'Co-living' },
 ].map(f => ({ ...f, img: photoProjet(f.id), bloc: photoProjet(f.id), href: pageFiche(f.id) }));
 // Vue Réalisations : les quatre blocs en deux rangées, 7fr / 5fr puis 5fr / 7fr (.alt__rang--a, .alt__rang--b).
 const rangees = [[['community', 7], ['ateliers-118', 5]], [['the-bank', 5], ['data-box', 7]]];
@@ -296,8 +296,11 @@ function chart() {
 
 // La liste des quatre, sur la Home (la vue Réalisations a ses blocs photo depuis le 26/09) : l'aperçu photo suit la ligne survolée (maquette.js),
 // 800 / 1800 px en srcset (photoImgPetit, cadre 4:5).
+// Ligne de la liste des 4 : lieu · surface · phrase, séparateurs aérés (lot 3, 30/09 : les trois éléments paraissaient serrés) ; espace insécable
+// avant le point (jamais en début de ligne), marge de .four__sep de part et d'autre (maquette.css).
+const ligneQuatre = s => s.split(' · ').map(esc).join('\u00A0<span class="four__sep">·</span> ');
 function fourList() {
-  const rows = four.map((f, i) => `<li class="four__row${i === 0 ? ' is-active' : ''}" data-index="${i}"><a href="${f.href}"><span class="four__name">${esc(byId[f.id].name)}</span><span class="four__line">${esc(f.line)}</span></a></li>`).join('\n      ');
+  const rows = four.map((f, i) => `<li class="four__row${i === 0 ? ' is-active' : ''}" data-index="${i}"><a href="${f.href}"><span class="four__name">${esc(byId[f.id].name)}</span><span class="four__line">${ligneQuatre(f.line)}</span></a></li>`).join('\n      ');
   const previews = four.map((f, i) => photoImgPetit(f.img, 4 / 5, SIZES_APERCU, i === 0 ? ' class="is-active"' : ' loading="lazy"')).join('');
   return `<div class="four">
     <ol class="four__list">

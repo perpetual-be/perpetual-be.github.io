@@ -170,6 +170,8 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   const inactives = await p.evaluate(() => [...document.querySelectorAll('.mq__b.is-inactif')].map(f => f.dataset.cle));
   ok(cles.join(' ') === 'papier bas' && inactives.join(' ') === 'papier bas', 'panneau : ' + cles.join(' · ') + ' (9c et 15a figées le 26/09, 20 et 21 retirées ; 22 et 23, vue Réalisations, sans effet sur la Home)');
   ok(await pretty(p, '.four__line'), 'liste des 4 : text-wrap: pretty sur les lignes');
+  ok((await p.evaluate(() => [...document.querySelectorAll('.four__line')].every(l => l.querySelectorAll('.four__sep').length === 2 && !/14 unités.*[Qq]uatorze unités/.test(l.textContent))))
+    && parseFloat(await style(p, '.four__sep', 'marginLeft')) >= 5, 'liste des 4 : lieu · surface · phrase, deux séparateurs aérés par ligne (.four__sep, 30/09), plus de « 14 unités » en double');
   // aperçu de la liste des 4 : la photo de chaque projet, la première clé de son champ selection (P6, 26/09), centrée, sans point focal ; srcset 800 / 1800 px
   // (revue du 23/09) ; à 1×, aucune photo agrandie — Data Box 03 (800 × 450, cadre 440 × 550) reçoit le 1800 px
   const apercu = await photosImg(p, '.four__preview img');
