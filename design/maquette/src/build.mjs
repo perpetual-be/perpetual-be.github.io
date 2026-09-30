@@ -79,7 +79,7 @@ if (!enonceSuite) throw new Error('content/realisations.md : le paragraphe du pr
 const four = [
   { id: 'ateliers-118', line: 'Molenbeek-Saint-Jean · 1 200 m² · Treize ateliers dans une ancienne usine de colle', blocFocal: '50% 30%', lieu: 'Molenbeek-Saint-Jean', surface: '1 200 m²', usage: 'Ateliers' },
   { id: 'the-bank', line: 'Liège · 1 100 m² · Une agence bancaire transformée pour trois nouveaux usages', blocFocal: '50% 40%', lieu: 'Liège', surface: '1 100 m²', usage: 'Logements & commerce' },
-  { id: 'data-box', line: 'Jemelle · 4 200 m² · Un site technique dont l’avenir reste ouvert', blocFocal: '50% 50%', lieu: 'Jemelle', surface: '4 200 m²', usage: 'Site technique' },
+  { id: 'data-box', line: 'Jemelle · 4 200 m² · Un hectare de potentiel, loué jusqu’en 2031', blocFocal: '50% 50%', lieu: 'Jemelle', surface: '4 200 m²', usage: 'Site technique' },
   { id: 'community', line: 'Uccle · 600 m² · Quatorze chez-soi autour d’espaces partagés', blocFocal: '50% 50%', lieu: 'Uccle', surface: '14 unités', usage: 'Co-living' },
 ].map(f => ({ ...f, bloc: photoProjet(f.id), href: pageFiche(f.id) }));
 for (const p of DETAILLES) if (!four.some(f => f.id === p.id)) throw new Error(`build.mjs : ${p.id} absent de four (ligne, blocFocal, lieu, surface, usage)`);
