@@ -881,7 +881,7 @@ const ALT_OEUVRE = 'Peinture d’Ines Reddah, 2024 : deux grands visages ronds c
   ok(fs.existsSync(copie) && fs.readFileSync(copie).equals(fs.readFileSync(source)) && t.width === 870 && t.height === 1132, `œuvre : design/directions/img/${fichier} (${t.width} × ${t.height}), identique au fichier de la référence, pas recompressé`);
 }
 // aux quatre formats : ni erreur ni débordement ; le titre au x du texte de la Home (container de 1 200 px), sans sous-titre ; les trois rangées ; l'œuvre
-// entière sur sa cimaise, dans la colonne de gauche de #soutenir ; 72 px du bas de la cimaise au haut du pied de page (44 au téléphone)
+// entière sur sa cimaise, dans la colonne de gauche de #soutenir ; 72 px du bas de la dernière rangée au haut du pied de page (44 au téléphone) ; ordre Soutenir, Aider, Transmettre depuis le 30/09
 for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   const home = await ouvrir('', [w, h]);
   const xHome = await home.p.evaluate(() => Math.round(document.querySelector('.hero__text > p').getBoundingClientRect().left));
@@ -900,18 +900,18 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
       iw: r(img).width, ih: r(img).height, nw: img.naturalWidth, nh: img.naturalHeight, il: r(img).left, ir: r(img).right,
       cl: r(cim).left, cr: r(cim).right, cw: r(cim).width, ct: r(cim).top, cb: r(cim).bottom, pad: [s.paddingTop, s.paddingRight, s.paddingBottom, s.paddingLeft].join(' '), fond: s.backgroundColor,
       col: r(soutenir.querySelector('.rang__g')).width, rl: r(soutenir).left, verbeBas: r(verbe).bottom, texteHaut: r(texte).top, texteBas: r(texte).bottom, texteP: r(texte.querySelector('p')).top,
-      pied: r(document.querySelector('.site-footer')).top };
+      pied: r(document.querySelector('.site-footer')).top, dernier: Math.max(...[...document.querySelectorAll('.registre > section.rang:last-child *')].map(r).filter(b => b.height > 0).map(b => b.bottom)) };
   });
   ok(m.titre === xHome && !m.sousTitre, `${nom} : « Engagements » au même x que le texte de la Home (${m.titre} = ${xHome}), sans sous-titre (.ouv__texte absent)`);
-  ok(m.rangs === 'aider transmettre soutenir' && m.verbes.length === 3 && m.verbes.every(v => v === 'H2 Newsreader'), `${nom} : trois rangées (${m.rangs}), verbes en h2 Newsreader`);
+  ok(m.rangs === 'soutenir aider transmettre' && m.verbes.length === 3 && m.verbes.every(v => v === 'H2 Newsreader'), `${nom} : trois rangées (${m.rangs}), verbes en h2 Newsreader`);
   ok(m.oeuvres === 1 && m.dans && !m.lien && m.fit === 'fill' && m.nw >= 2 * m.iw && Math.abs(m.iw / m.ih - m.nw / m.nh) < 0.01 && (tel || m.iw <= 340),
     `${nom} : l'œuvre dans la cimaise de #soutenir, entière — ${Math.round(m.iw)} × ${Math.round(m.ih)} px affichés, fichier ${m.nw} × ${m.nh} (≥ 2 ×), object-fit ${m.fit} —, ${tel ? 'pleine largeur du panneau' : '340 px au plus'}, pas un lien`);
   if (!tel) ok(Math.round(m.cw) === Math.round(m.col) && Math.round(m.cl) === Math.round(m.rl) && Math.round(m.ct - m.verbeBas) === 32 && m.pad === '44px 48px 36px 48px' && m.fond === PAPIER && Math.abs((m.il - m.cl) - (m.cr - m.ir)) <= 1,
     `${nom} : cimaise papier dans la colonne de gauche (${Math.round(m.cw)} px), 32 px sous le verbe, padding 44 / 48 / 36, l'œuvre centrée`);
   else ok(Math.round(m.cl) === 20 && Math.round(m.cr) === w - 20 && Math.round(m.iw) === Math.round(m.cw) - 48 && m.pad === '28px 24px 22px 24px' && m.fond === PAPIER && m.verbeBas <= m.texteHaut + 1 && Math.round(m.texteP - m.verbeBas) === 14 && Math.round(m.ct - m.texteBas) === 28,
     `${nom} : une colonne — le verbe, le texte (14 px dessous), puis l'œuvre (28 px au-dessus) ; cimaise dans les gouttières (${Math.round(m.cl)}–${Math.round(m.cr)}), padding 28 / 24 / 22, l'œuvre sur toute la largeur du panneau (${Math.round(m.iw)} px)`);
-  const fin = Math.round(m.pied - m.cb);
-  ok(fin === (tel ? 44 : 72), `${nom} : bas de la cimaise → haut du pied de page, ${fin} px (${tel ? 44 : 72} attendus)`);
+  const fin = Math.round(m.pied - m.dernier);
+  ok(fin === (tel ? 44 : 72), `${nom} : bas de la dernière rangée (${m.rangs.split(' ').pop()}) → haut du pied de page, ${fin} px (${tel ? 44 : 72} attendus)`);
   await ctx.close();
 }
 {
@@ -936,21 +936,21 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   const rg = g.rangs;
   ok(rg.length === 3 && rg.every(x => x.cols === '440px 616px' && x.gap === '64px' && x.filet === `1px solid ${FILET}`) && rg.map(x => x.pad).join(' · ') === '30px 52px · 30px 52px · 30px 72px',
     `rangées : grille 5 / 7 (${rg[0].cols}), écart ${rg[0].gap}, filet en haut, padding ${rg.map(x => x.pad.replace(' ', ' / ')).join(' · ')}`);
-  ok(rg.map(x => x.verbe).join(' · ') === 'Aider 400 42px 44.1px -0.42px · Transmettre 400 42px 44.1px -0.42px · Soutenir 400 42px 44.1px -0.42px', `verbes : serif 400, 42 px, interligne 1,05, interlettrage −0,01 em — ${rg.map(x => x.verbe.split(' ')[0]).join(' · ')}`);
+  ok(rg.map(x => x.verbe).join(' · ') === 'Soutenir 400 42px 44.1px -0.42px · Aider 400 42px 44.1px -0.42px · Transmettre 400 42px 44.1px -0.42px', `verbes : serif 400, 42 px, interligne 1,05, interlettrage −0,01 em — ${rg.map(x => x.verbe.split(' ')[0]).join(' · ')}`);
   ok(rg.every(x => x.texte === '9px 17px' && x.marges.split(',').every((mb, i, a) => mb === (i === a.length - 1 ? '0px' : '16px')) && x.mw.every(v => Math.abs(v - g.ch62) < 0.5)) && await pretty(p, '.eng-texte p'),
     `texte : 9 px au-dessus, 17 px, 62ch (${Math.round(g.ch62)} px), 16 px entre paragraphes, text-wrap: pretty`);
   // liens dans le texte
   const l = await p.evaluate(() => { const a = [...document.querySelectorAll('.eng-texte a')], s = getComputedStyle(a[0]), masque = document.querySelector('.lien-texte .visuellement-masque'), mr = masque.getBoundingClientRect();
     return { liens: a.map(x => `${x.className} ${x.firstChild.textContent} → ${x.getAttribute('href')}${x.target ? ' ' + x.target : ''}${x.rel ? ' ' + x.rel : ''}`).join(' | '), masque: `${masque.textContent} ${Math.round(mr.width)}×${Math.round(mr.height)}`,
       contact: document.getElementById('contact') ? document.getElementById('contact').tagName : null, couleur: s.color, filet: s.borderBottom }; });
-  ok(l.liens === 'lien-texte Écrivez-nous → #contact | lien-texte Créahmbxl → https://creahmbxl.be _blank noopener' && l.contact === 'FOOTER' && l.masque === ' (nouvel onglet) 1×1',
+  ok(l.liens === 'lien-texte Créahmbxl → https://creahmbxl.be _blank noopener | lien-texte Écrivez-nous → #contact' && l.contact === 'FOOTER' && l.masque === ' (nouvel onglet) 1×1',
     `liens : ${l.liens.replace(/lien-texte /g, '')} ; #contact est le pied de page ; « (nouvel onglet) » masqué visuellement`);
   await p.hover('.eng-texte a[href^="https"]');
   const survol = await style(p, '.eng-texte a[href^="https"]', 'borderBottomColor');
   await p.focus('.site-nav a:last-child');
   await p.keyboard.press('Tab');
   const focus = await p.evaluate(() => { const a = document.activeElement; return a.textContent + ' ' + a.matches(':focus-visible') + ' ' + getComputedStyle(a).borderBottomColor; });
-  ok(l.couleur === ANTHRACITE && l.filet === `1px solid ${OR_CLAIR}` && survol === OR && focus === `Écrivez-nous true ${OR}`, `.lien-texte : anthracite, filet or clair (${l.filet}) ; or au survol (${survol}) et au focus clavier (${focus.split(' ').slice(1).join(' ')})`);
+  ok(l.couleur === ANTHRACITE && l.filet === `1px solid ${OR_CLAIR}` && survol === OR && focus === `Créahmbxl (nouvel onglet) true ${OR}`, `.lien-texte : anthracite, filet or clair (${l.filet}) ; or au survol (${survol}) et au focus clavier (${focus.split(' ').slice(1).join(' ')})`);
   // typographie, cartel, fichier
   const c = await p.evaluate(() => { const txt = document.querySelector('.registre').textContent, f = document.querySelector('.cartel'), b = f.querySelector('b'), sp = f.querySelector('span'), img = document.querySelector('.oeuvre img'), sb = getComputedStyle(b), ss = getComputedStyle(sp);
     return { espaces: (txt.match(/ :/g) || []).length, insecables: (txt.match(/\u00A0:/g) || []).length, tag: f.tagName + ' ' + f.parentElement.tagName, legende: b.textContent, detail: sp.textContent,
