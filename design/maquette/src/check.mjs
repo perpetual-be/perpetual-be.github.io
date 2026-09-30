@@ -177,7 +177,7 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok((await style(p, '.partner__couleur', 'display')) === 'block' && !(await p.evaluate(() => document.querySelector('.partner__encre'))), 'logos partenaires : couleur, figés (plus d’encre inline)');
   const cles = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle));
   const inactives = await p.evaluate(() => [...document.querySelectorAll('.mq__b.is-inactif')].map(f => f.dataset.cle));
-  ok(cles.join(' ') === 'graphique papier bas' && inactives.join(' ') === 'papier bas', 'panneau : ' + cles.join(' · ') + ' (13 graphique, temporaire, lot 2b ; 9c et 15a figées le 26/09, 20 et 21 retirées ; 22 et 23, vue Réalisations, sans effet sur la Home)');
+  ok(cles.join(' ') === 'graphique vitesse papier bas' && inactives.join(' ') === 'papier bas', 'panneau : ' + cles.join(' · ') + ' (13 graphique et 13b vitesse, temporaires, lot 2b ; 9c et 15a figées le 26/09, 20 et 21 retirées ; 22 et 23, vue Réalisations, sans effet sur la Home)');
   // aucune photo deux fois sur la Home (30/09 : la liste des 4 et ses aperçus sont retirés, il reste la photo du premier écran)
   const photosHome = await p.evaluate(() => [...document.querySelectorAll('img')].map(i => i.getAttribute('src')).filter(s => /directions\/img\//.test(s)).map(s => s.replace(/^.*\//, '').replace(/(-s|-l)?\.jpg$/, '')));
   const premier = await p.evaluate(() => document.querySelector('.hero__photo img').dataset.photo);
@@ -275,54 +275,70 @@ console.log('\n5 · Réalisations : la carte');
   await ctx.close();
 }
 
-console.log('\n5 bis · Graphique 11 150 m² en anneau (lot 2b, item 1 ; bascule 13, temporaire) : barres / A anneau / B anneaux / C sobre');
+console.log('\n5 bis · Graphique 11 150 m² (lot 2b, item 1 ; bascules 13 et 13b, temporaires) : barres / A anneau / B anneaux, remplissage à l’arrivée à l’écran');
 {
   const LIBELLES = ['Industriel', 'Résidentiel', 'Commerce'];
   const mesure = p => p.evaluate(() => {
     const vis = e => getComputedStyle(e).display !== 'none';
     const g = [...document.querySelectorAll('.graph')].find(vis), titre = document.querySelector('.section--chart .h2').getBoundingClientRect().left;
-    if (!g) return { barres: vis(document.querySelector('.bars')), graphes: document.querySelectorAll('.graph').length };
+    if (!g) return { barres: vis(document.querySelector('.bars')), graphes: document.querySelectorAll('.graph').length, sobre: !!document.querySelector('.graph--sobre') };
     const noms = [...g.querySelectorAll('.graph__nom')].map(e => e.textContent), vals = [...g.querySelectorAll('.graph__val, .graph__centre')].map(e => e.textContent);
     const parts = [...g.querySelectorAll('.graph__part')].map(c => ({ l: parseFloat(c.style.getPropertyValue('--l')), da: getComputedStyle(c).strokeDasharray }));
-    const boites = [...g.querySelectorAll('svg, text, .graph__nom, .graph__val, .graph__centre, li')].map(e => e.getBoundingClientRect());
-    const anneau = g.querySelector('svg').getBoundingClientRect();
+    const boites = [...g.querySelectorAll('svg, .graph__nom, .graph__val, .graph__centre, li')].map(e => e.getBoundingClientRect());
+    const centre = g.querySelector('.graph__centre');
     return { barres: vis(document.querySelector('.bars')), visibles: [...document.querySelectorAll('.graph')].filter(vis).length, cls: g.className, noms, vals, parts,
-      gauche: Math.round(Math.min(...boites.map(b => b.left)) - titre), droite: Math.round(Math.max(...boites.map(b => b.right))), anneauG: Math.round(anneau.left - titre),
+      police: centre ? getComputedStyle(centre).fontFamily : null,
+      gauche: Math.round(Math.min(...boites.map(b => b.left)) - titre), droite: Math.round(Math.max(...boites.map(b => b.right))),
       largeur: document.documentElement.clientWidth, debord: document.documentElement.scrollWidth - document.documentElement.clientWidth };
   });
   {
     const { p, ctx } = await ouvrir('');
     const m = await mesure(p);
-    ok(m.barres && m.graphes === 3, 'par défaut : les barres, les trois variantes en anneau masquées');
+    ok(m.barres && m.graphes === 2 && !m.sobre, 'par défaut : les barres ; les deux variantes en anneau masquées (C « sobre » retirée le 01/10)');
     await ctx.close();
   }
-  for (const [v, nom] of [['anneau', 'A'], ['anneaux', 'B'], ['sobre', 'C']]) for (const vp of [[1521, 705], [390, 844]]) {
+  for (const [v, nom] of [['anneau', 'A'], ['anneaux', 'B']]) for (const vp of [[1521, 705], [390, 844]]) {
     const { p, ctx, erreurs } = await ouvrir('graphique=' + v, vp);
     const m = await mesure(p);
     const somme = m.parts.reduce((s, x) => s + x.l, 0);
     ok(!m.barres && m.visibles === 1 && m.noms.join(' ') === LIBELLES.join(' ') && m.vals.join(' ') === '41 % 34 % 25 %',
       `${nom} (${v}) à ${vp[0]} : seule variante visible, sans les barres ; ${m.noms.map((n, i) => n + ' ' + m.vals[i]).join(' · ')}`);
-    ok(v === 'anneaux' ? m.parts.map(x => x.l).join(' ') === '41 34 25' : Math.abs(somme + 3 * 0.5 - 100) < 0.01,
-      `${nom} à ${vp[0]} : ${v === 'anneaux' ? 'chaque anneau rempli à son pourcentage' : `les trois parts et leurs joints font le tour (${somme.toFixed(1)} + 3 × 0,5)`}`);
+    ok(v === 'anneaux' ? m.parts.map(x => x.l).join(' ') === '41 34 25' && m.police.startsWith('"Instrument Sans"') : Math.abs(somme + 3 * 0.5 - 100) < 0.01,
+      `${nom} à ${vp[0]} : ${v === 'anneaux' ? 'chaque anneau rempli à son pourcentage, pourcentage au centre en Instrument Sans' : `les trois parts et leurs joints font le tour (${somme.toFixed(1)} + 3 × 0,5)`}`);
     ok(m.parts.every(x => Math.abs(parseFloat(x.da) - x.l) < 0.01) && !/a-remplir/.test(m.cls),
       `${nom} à ${vp[0]} : « réduire les animations » → anneaux pleins d'emblée (${m.parts.map(x => x.da.split(',')[0]).join(' · ')})`);
-    ok(m.debord === 0 && m.droite <= m.largeur - (vp[0] > 640 ? 0 : 20) && m.gauche >= 0 && m.gauche <= (v === 'sobre' ? 1 : 2) && erreurs.length === 0,
+    ok(m.debord === 0 && m.droite <= m.largeur - (vp[0] > 640 ? 0 : 20) && m.gauche >= 0 && m.gauche <= 2 && erreurs.length === 0,
       `${nom} à ${vp[0]} : aucun débordement, aligné sur le titre (${m.gauche} px ; bord droit à ${m.droite} px), aucune erreur`);
     await ctx.close();
   }
-  // le remplissage : vide avant l'arrivée à l'écran, puis plein ; rejoué au changement de variante
+  // A : les parts s'enchaînent sur une seule courbe — chacune part quand la précédente finit, la dernière finit avant la fin de --remplissage
   {
-    const { p, ctx } = await ouvrir('graphique=anneau', [1521, 705], { reducedMotion: 'no-preference' });
-    const avant = await p.evaluate(() => ({ cls: document.querySelector('.graph--anneau').className, da: getComputedStyle(document.querySelector('.graph--anneau .graph__part')).strokeDasharray }));
+    const { p, ctx } = await ouvrir('graphique=anneau');
+    const t = await p.evaluate(() => [...document.querySelectorAll('.graph--anneau .graph__part')].map(c => ({ d: parseFloat(c.style.getPropertyValue('--d')), t: parseFloat(c.style.getPropertyValue('--t')) })));
+    ok(t.every((x, i) => i === 0 || Math.abs(t[i - 1].d + t[i - 1].t - x.d) < 0.02) && t[2].d + t[2].t <= 1 && t[2].t > t[0].t,
+      'A : le tour suit une courbe de décélération (départs ' + t.map(x => x.d.toFixed(3)).join(' · ') + ', durées ' + t.map(x => x.t.toFixed(3)).join(' · ') + ', en fractions de --remplissage)');
+    await ctx.close();
+  }
+  // le remplissage : vide avant l'arrivée à l'écran, puis plein ; barres comprises ; rejoué au changement de variante et de vitesse ; durée réglable (13b)
+  {
+    const { p, ctx } = await ouvrir('', [1521, 705], { reducedMotion: 'no-preference' });
+    const avant = await p.evaluate(() => ({ cls: document.querySelector('.bars').className, tr: getComputedStyle(document.querySelector('.bar__fill')).transform, duree: getComputedStyle(document.documentElement).getPropertyValue('--remplissage').trim() }));
     await p.evaluate(() => document.querySelector('.section--chart').scrollIntoView({ block: 'center' }));
-    await p.waitForTimeout(1700);
-    const apres = await p.evaluate(() => ({ cls: document.querySelector('.graph--anneau').className, da: [...document.querySelectorAll('.graph--anneau .graph__part')].map(c => parseFloat(getComputedStyle(c).strokeDasharray)) }));
-    ok(/a-remplir/.test(avant.cls) && !/est-rempli/.test(avant.cls) && parseFloat(avant.da) === 0, `remplissage : vide tant que le graphique n'est pas à l'écran (${avant.da})`);
-    ok(/est-rempli/.test(apres.cls) && apres.da.every(d => d > 20), `remplissage : plein après l'arrivée à l'écran (${apres.da.map(d => d.toFixed(1)).join(' · ')})`);
-    await p.click('.mq__b[data-cle="graphique"] label[for="mq-graphique-sobre"]');
-    await p.waitForTimeout(120);
-    const rejoue = await p.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.graph--sobre .graph__part')).strokeDasharray));
-    ok(rejoue < 38 && (await p.evaluate(() => location.search)) === '?graphique=sobre', `panneau : C rejoue le remplissage (${rejoue.toFixed(1)} à 120 ms) et pose ?graphique=sobre`);
+    await p.waitForTimeout(2400);
+    const apres = await p.evaluate(() => ({ cls: document.querySelector('.bars').className, tr: [...document.querySelectorAll('.bar__fill')].map(f => getComputedStyle(f).transform) }));
+    ok(/a-remplir/.test(avant.cls) && avant.tr === 'matrix(0, 0, 0, 1, 0, 0)' && avant.duree === '1.8s', `barres : vides tant que le graphique n'est pas à l'écran ; durée par défaut ${avant.duree}`);
+    ok(/est-rempli/.test(apres.cls) && apres.tr.every(x => x === 'matrix(1, 0, 0, 1, 0, 0)' || x === 'none'), 'barres : pleines après l’arrivée à l’écran');
+    await p.click('.mq__b[data-cle="graphique"] label[for="mq-graphique-anneau"]');
+    await p.waitForTimeout(150);
+    const rejoue = await p.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.graph--anneau .graph__part')).strokeDasharray));
+    ok(rejoue < 38 && (await p.evaluate(() => location.search)) === '?graphique=anneau', `panneau : A rejoue le remplissage (${rejoue.toFixed(1)} à 150 ms) et pose ?graphique=anneau`);
+    await p.waitForTimeout(2200);
+    ok((await p.evaluate(() => [...document.querySelectorAll('.graph--anneau .graph__part')].every(c => Math.abs(parseFloat(getComputedStyle(c).strokeDasharray) - parseFloat(c.style.getPropertyValue('--l'))) < 0.01))), 'A : plein à la fin du remplissage (1,8 s)');
+    await p.click('.mq__b[data-cle="vitesse"] label[for="mq-vitesse-25"]');
+    const v25 = await p.evaluate(() => ({ duree: getComputedStyle(document.documentElement).getPropertyValue('--remplissage').trim(), q: location.search, tr: getComputedStyle(document.querySelector('.graph--anneau .graph__part--3')).transitionDuration }));
+    await p.waitForTimeout(150);
+    const rejoue2 = await p.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.graph--anneau .graph__part')).strokeDasharray));
+    ok(v25.duree === '2.5s' && v25.q === '?graphique=anneau&vitesse=25' && rejoue2 < 38, `panneau : 2,5 s (--remplissage ${v25.duree}, ${v25.q}), rejoué au changement de vitesse`);
     await ctx.close();
   }
 }
@@ -549,7 +565,7 @@ for (const [w, h] of [[1521, 705], [1920, 1080], [1200, 800], [390, 844]]) {
   const zoom = await style(p, '.fiche__tuile img', 'transform');
   ok(/^matrix\(1\.035, 0, 0, 1\.035/.test(zoom) && (await style(p, '.fiche__agrandir', 'cursor')) === 'zoom-in', `mosaïque : zoom 1,035 au survol d'une tuile (${zoom.split(',')[0]}), curseur zoom-in`);
   const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '')).join(' · '));
-  ok(panneau === 'graphique (sans effet) · papier (sans effet) · bas (sans effet)', 'panneau : ' + panneau + ' (aucune bascule sur les fiches)');
+  ok(panneau === 'graphique (sans effet) · vitesse (sans effet) · papier (sans effet) · bas (sans effet)', 'panneau : ' + panneau + ' (aucune bascule sur les fiches)');
   await ctx.close();
 }
 {
@@ -699,10 +715,12 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
     && b.every(x => x.repos === '0 0' && x.et === '12px' && x.val === 'Newsreader 21px' && x.mobile === 'none'), 'trois faits Lieu / Surface / Usage (étiquette 12 px, valeur en serif 21 px), masqués au repos');
   // au survol, les faits et le zoom (photos cliquables : les quatre) ; au focus clavier, les faits — la souris écartée, de « Contact » aux quatre blocs
   const survols = [];
+  await p.evaluate(() => document.querySelector('.mq').classList.add('is-plie'));   // 01/10 : le panneau, plus haut avec 13 et 13b, recouvrait le bloc de Data Box
   for (const id of ['community', 'ateliers-118', 'the-bank', 'data-box']) {
     await p.hover('#' + id);
     survols.push(await p.evaluate(id => { const f = document.querySelector(`#${id} .bloc__faits`); return `${id} ${getComputedStyle(f).opacity} ${f.getBoundingClientRect().height > 30} ${getComputedStyle(document.querySelector(`#${id} img`)).transform}`; }, id));
   }
+  await p.evaluate(() => document.querySelector('.mq').classList.remove('is-plie'));
   await p.mouse.move(1, 1);
   await p.focus('.site-nav a:last-child');
   const focus = [];
@@ -747,7 +765,7 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   ok(parOrdre('agency').map(x => x.use).join(' | ') === USAGES.join(' | ') && v.items.slice(0, 4).map(i => i.usage).join(' | ') === USAGES.join(' | ') && !donnees.some(x => /Bancontact/.test(x.use || '')) && v.items.every(i => !/Bancontact/.test(i.usage)),
     'usages des 4 agences sans « Point Bancontact » (data/projects.json et page) : ' + USAGES.join(' · '));
   const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '') + ' [' + [...f.querySelectorAll('input')].map(i => i.value).join(' / ') + ']').join(' · '));
-  ok(panneau === 'graphique (sans effet) [barres / anneau / anneaux / sobre] · papier [enonce / tout] · bas [rien / anciens]', 'panneau : ' + panneau + ' (22 et 23 : la V1 en défaut ; 13, la Home, sans effet ici)');
+  ok(panneau === 'graphique (sans effet) [barres / anneau / anneaux] · vitesse (sans effet) [18 / 25 / 12] · papier [enonce / tout] · bas [rien / anciens]', 'panneau : ' + panneau + ' (22 et 23 : la V1 en défaut ; 13 et 13b, la Home, sans effet ici)');
   await p.click('.mq__b[data-cle="papier"] label[for="mq-papier-tout"]');
   ok((await p.evaluate(() => document.documentElement.dataset.papier + ' ' + location.search)) === 'tout ?papier=tout', 'panneau : « toute la section » pose data-papier="tout" et ?papier=tout');
   await ctx.close();
@@ -1017,7 +1035,7 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   ok(nav === 'Réalisations → realisations.html | Engagements actif aria-current=page → engagements.html | Contact → #contact', 'navigation : ' + nav);
   const panneau = await p.evaluate(() => ({ b: [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (' + f.querySelector('.mq__note--inactif').textContent + ')' : '')).join(' · '),
     onglets: [...document.querySelectorAll('.mq__pages a')].map(a => a.textContent + (a.classList.contains('is-active') ? ' (actif)' : '')).join(' · ') }));
-  ok(panneau.b === 'graphique (sans effet sur cette page) · papier (sans effet sur cette page) · bas (sans effet sur cette page)' && panneau.onglets === 'Home · Fiche · Réalisations · Engagements (actif)', `panneau : aucune bascule sur cette page — ${panneau.b} ; onglets ${panneau.onglets}`);
+  ok(panneau.b === 'graphique (sans effet sur cette page) · vitesse (sans effet sur cette page) · papier (sans effet sur cette page) · bas (sans effet sur cette page)' && panneau.onglets === 'Home · Fiche · Réalisations · Engagements (actif)', `panneau : aucune bascule sur cette page — ${panneau.b} ; onglets ${panneau.onglets}`);
   await ctx.close();
 }
 {

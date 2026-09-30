@@ -26,6 +26,7 @@
   --c-trait:var(--or);--c-trait-fin:var(--or-clair);      /* trait de survol ; soulignement du mail */
   --c-remplissage:var(--anthracite);                      /* graphique : remplissage des barres */
   --c-part-1:var(--anthracite);--c-part-2:var(--or);--c-part-3:var(--or-deco);   /* graphique en anneau A (lot 2b, bascule 13) : les trois parts, dans l'ordre du tour */
+  --remplissage:1.8s;                                     /* graphique : durée du remplissage (barres, A, B) — bascule 13b, 01/10 : 1,8 s par défaut */
   --c-point:var(--anthracite);                            /* carte : points */
   --c-num-chapitre:var(--or-fonce);                       /* numéros de chapitre : or foncé (5,0:1 à 15 px ; l'or mat n'y fait que 4,0:1), revue de la fiche */
   --c-phi:var(--bronze);--c-wordmark:var(--anthracite);
@@ -120,15 +121,20 @@ ol,ul{list-style:none}
 .bar__track{display:block;height:14px;background:var(--surface-piste)}
 .bar__fill{display:block;height:100%;background:var(--c-remplissage)}
 .bar__value{font-size:15px;color:var(--c-meta);font-variant-numeric:tabular-nums;text-align:right}
-/* graphique en anneau (lot 2b, item 1 : « un cercle qui se remplit », Julien, 30/09) — trois variantes, masquées par défaut, montrées par la bascule 13
-   (section 6). Traits de 14 unités sans arrondi (pathLength 100 : --l est la longueur d'une part en centièmes du tour). Remplissage : maquette.js pose
-   .a-remplir (anneaux vides), puis .est-rempli quand le graphique arrive à l'écran — une seule fois, rejoué au changement de variante ; chaque part
-   part à --d et dure --t. Sans JavaScript, ou avec « réduire les animations », les anneaux sont pleins d'emblée. */
+/* le remplissage (lot 2b, item 1 ; barres depuis le 01/10) : maquette.js pose .a-remplir (vide), puis .est-rempli quand le graphique arrive à l'écran —
+   une seule fois, rejoué au changement de variante ou de vitesse. Barres et B : ensemble, en décélération, décalées d'un dixième de --remplissage (--i).
+   Sans JavaScript, ou avec « réduire les animations », tout est plein d'emblée. */
+.bar__fill{transform-origin:left}
+.bars.a-remplir .bar__fill{transform:scaleX(0)}
+.bars.a-remplir.est-rempli .bar__fill{transform:scaleX(1);transition:transform var(--remplissage) cubic-bezier(.22,.61,.36,1) calc(var(--i) * var(--remplissage) * .1)}
+/* graphique en anneau (lot 2b, item 1 : « un cercle qui se remplit », Julien, 30/09) — deux variantes, masquées par défaut, montrées par la bascule 13
+   (section 6). Traits de 14 unités sans arrondi (pathLength 100 : --l est la longueur d'une part en centièmes du tour). A : le tour suit une seule courbe
+   de décélération, découpée en parts (--d départ et --t durée en fractions de --remplissage, --e la portion de courbe : build.mjs). */
 .graph{display:none}
 .graph__svg{display:block;overflow:visible}
 .graph__part{fill:none;stroke-width:14;stroke-dasharray:var(--l) 100}
 .graph.a-remplir .graph__part{stroke-dasharray:0 100}
-.graph.a-remplir.est-rempli .graph__part{stroke-dasharray:var(--l) 100;transition:stroke-dasharray var(--t) linear var(--d)}
+.graph.a-remplir.est-rempli .graph__part{stroke-dasharray:var(--l) 100;transition:stroke-dasharray calc(var(--t) * var(--remplissage)) var(--e) calc(var(--d) * var(--remplissage))}
 .graph__val{color:var(--c-meta);font-variant-numeric:tabular-nums}
 /* A · un anneau, trois parts, légende à droite (rangées à filets) */
 .graph--anneau{grid-template-columns:220px minmax(0,340px);column-gap:72px;align-items:center}
@@ -138,21 +144,16 @@ ol,ul{list-style:none}
 .graph__legende li:last-child{border-bottom:1px solid var(--filet)}
 .graph__cle{width:12px;height:12px}
 .graph__cle--1{background:var(--c-part-1)}.graph__cle--2{background:var(--c-part-2)}.graph__cle--3{background:var(--c-part-3)}
-/* B · un anneau par usage : anthracite sur piste sable (les couleurs des barres), le pourcentage au centre, le nom dessous */
+/* B · un anneau par usage : anthracite sur piste sable (les couleurs des barres), le pourcentage au centre en sans (Axel, 01/10), le nom dessous */
 .graph--anneaux{grid-template-columns:repeat(3,160px);column-gap:64px}
 .graph__un{display:flex;flex-direction:column;align-items:center;gap:16px}
 .graph__tour{position:relative;width:160px;height:160px}
 .graph__tour .graph__svg{width:100%;height:100%}
 .graph--anneaux .graph__piste{fill:none;stroke:var(--surface-piste);stroke-width:16}
 .graph--anneaux .graph__part{stroke:var(--c-remplissage);stroke-width:16}
-.graph--anneaux.a-remplir.est-rempli .graph__part{transition-timing-function:cubic-bezier(.22,.61,.36,1)}
-.graph__centre{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--serif);font-size:34px;line-height:1;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.graph--anneaux.a-remplir.est-rempli .graph__part{transition:stroke-dasharray var(--remplissage) cubic-bezier(.22,.61,.36,1) calc(var(--i) * var(--remplissage) * .1)}
+.graph__centre{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--sans);font-weight:400;font-size:30px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .graph--anneaux .graph__nom{font-size:15px}
-/* C · un anneau anthracite, les parts séparées par un blanc, étiquettes directes autour (SVG à 1:1, largeur et hauteur posées par build.mjs) */
-.graph--sobre .graph__svg{max-width:100%;height:auto}
-.graph--sobre .graph__part{stroke:var(--c-remplissage)}
-.graph--sobre text{font-family:var(--sans);font-size:15px;fill:var(--c-texte)}
-.graph--sobre .graph__val{fill:var(--c-meta)}
 
 /* projets : liste des quatre */
 .four{display:grid;grid-template-columns:7fr 5fr;gap:64px;align-items:start}
@@ -395,7 +396,7 @@ html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:4
   .graph--anneaux{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:16px}
   .graph__tour{width:100%;height:auto;aspect-ratio:1}
   .graph__un{gap:12px}
-  .graph__centre{font-size:22px}
+  .graph__centre{font-size:20px}
   .graph--anneaux .graph__nom{font-size:13px}
   .four{grid-template-columns:1fr}
   .four__preview{display:none}
@@ -468,16 +469,19 @@ html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:4
   :root{--bande-haut:36px;--bande-bas:32px}
 }
 @media (prefers-reduced-motion:reduce){
-  .trait::after,.four__name::after,.four__preview img,.carte__lab,.bloc img,.bloc::after,.bloc__faits,.bien__fleche,.lien-texte,.fiche__tuile img,.graph__part{transition:none}
+  .trait::after,.four__name::after,.four__preview img,.carte__lab,.bloc img,.bloc::after,.bloc__faits,.bien__fleche,.lien-texte,.fiche__tuile img,.graph__part,.bar__fill{transition:none}
   .graph.a-remplir .graph__part{stroke-dasharray:var(--l) 100}
+  .bars.a-remplir .bar__fill{transform:none}
 }
 
 /* ---------- 6. Bascules ---------- */
 /* 13 · Home, graphique 11 150 m² (lot 2b, item 1 ; temporaire, jusqu'au choix d'Axel, puis barres / variante retenue pour le rendez-vous du 7/10) :
-   barres (défaut) / anneau (A) / anneaux (B) / sobre (C) */
-html[data-graphique="anneau"] .bars,html[data-graphique="anneaux"] .bars,html[data-graphique="sobre"] .bars{display:none}
+   barres (défaut) / anneau (A) / anneaux (B) — la variante C, un anneau d'une couleur avec étiquettes autour, écartée le 01/10 */
+html[data-graphique="anneau"] .bars,html[data-graphique="anneaux"] .bars{display:none}
 html[data-graphique="anneau"] .graph--anneau,html[data-graphique="anneaux"] .graph--anneaux{display:grid}
-html[data-graphique="sobre"] .graph--sobre{display:block}
+/* 13b · vitesse du remplissage (01/10, pour comparer) : 1,8 s (défaut) / 2,5 s / 1,2 s (la première version) */
+html[data-vitesse="25"]{--remplissage:2.5s}
+html[data-vitesse="12"]{--remplissage:1.2s}
 /* 20 · fiche, titres de chapitre : figée sur « sans » (revue de la fiche, 23/09) : .chapitre__titre et .chapitre__num, plus haut. */
 /* 22 · vue Réalisations, programme agences, fond papier : énoncé seul (défaut, .bloc-agences__bande) / toute la section (papier sur toute la section,
    puis 32 px de blanc avant le pied de page, 20 au téléphone) */
