@@ -1,0 +1,20 @@
+---
+// La page Engagements (lot 6, 01/10/2026), identique à celle de la maquette (design/maquette/engagements.html, la référence) : en-tête → le titre seul
+// (.page-head) → le registre, une rangée par titre ## de content/engagements.md — le verbe en serif à gauche, les paragraphes à droite, un filet au-dessus
+// — et, sous « Soutenir », l'œuvre sur sa cimaise avec son cartel → pied de page. Les textes et l'œuvre viennent de content/engagements.md
+// (src/lib/contenu.ts, lus comme build.mjs). « Engagements » actif dans l'en-tête (trait et aria-current). Composants : src/components/engagements/.
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/engagements/PageHead.astro';
+import Registre from '../components/engagements/Registre.astro';
+import Rang from '../components/engagements/Rang.astro';
+import { lireEngagements } from '../lib/contenu';
+import '../styles/page.css';
+import '../styles/engagements.css';
+
+const engagements = await lireEngagements();
+---
+
+<Base title={engagements.titre} description={engagements.description} active="/engagements" page="engagements">
+  <PageHead titre={engagements.titre} />
+  <Registre>{engagements.rangs.map((r) => <Rang rang={r} oeuvre={r.id === engagements.oeuvre.rang ? engagements.oeuvre : undefined} />)}</Registre>
+</Base>

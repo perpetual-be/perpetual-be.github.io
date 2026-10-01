@@ -1,0 +1,13 @@
+---
+// L'ouverture d'une page de texte (lot 6, 01/10/2026) : mêmes balises et classes que engagementsPage() de design/maquette/src/build.mjs — un .container
+// .page-head avec le seul h1.page__titre (le title de l'en-tête du Markdown), sans sous-titre. Le slot reçoit ce qui vient sous le titre (la date de
+// mise à jour de la politique de confidentialité). Styles : src/styles/page.css ; la variante sans léger du titre tient à data-page sur <html>
+// (Base.astro : « engagements », « texte »).
+interface Props {
+  titre: string;
+}
+
+const { titre } = Astro.props;
+---
+
+<div class="container page-head"><h1 class="page__titre">{titre}</h1><slot /></div>

@@ -3,6 +3,8 @@
 // en-tête, pied de page, dans cet ordre —, l'en-tête collant et le pied de page, puis <main> pour la page. Le <title> est « <titre> — Perpetual »,
 // ou le titre complet passé par la page (fullTitle). noindex sur toutes les pages tant que le réglage `indexation` de data/site.json est faux
 // (public/robots.txt ne change pas) : au lot 9, passer ce seul réglage à vrai suffira, avec robots.txt.
+// `page` est posé en data-page sur <html>, comme dans la maquette (lot 6, 01/10/2026) : les règles de maquette.css qui en dépendent s'appliquent telles
+// quelles (html[data-page="engagements"] .page__titre…) ; « texte » pour les pages de texte sans maquette (mentions légales, confidentialité, 404).
 import '../styles/polices.css';
 import '../styles/jetons.css';
 import '../styles/base.css';
@@ -19,14 +21,16 @@ interface Props {
   description?: string;
   /** Entrée de navigation active (son href, ex. « /realisations ») : trait sous le lien de l'en-tête. */
   active?: string;
+  /** La page, pour data-page sur <html> (ex. « engagements », « texte ») ; sans valeur, pas d'attribut. */
+  page?: string;
 }
 
-const { title, fullTitle = false, description = '', active = '' } = Astro.props;
+const { title, fullTitle = false, description = '', active = '', page } = Astro.props;
 const pageTitle = fullTitle ? title : `${title} — ${site.name}`;
 ---
 
 <!doctype html>
-<html lang="fr">
+<html lang="fr" data-page={page}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

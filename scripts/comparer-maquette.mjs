@@ -9,7 +9,18 @@
 //     jamais agrandie à 1× et la plus grande à 2×, capture comparée avec une tolérance de compression (l'AVIF du site n'est pas le JPEG de la maquette :
 //     l'écart moyen par canal doit rester faible), l'accroche en blanc dessus identique au pixel près une fois la photo masquée ; le remplissage de l'anneau
 //     sans réduire les animations : vide avant l'arrivée à l'écran, encore vide quand la section est à moitié visible mais l'anneau coupé par le bas de la
-//     fenêtre (retouche du 01/10 : il démarre quand l'anneau est entièrement à l'écran), en cours à 500 ms, plein à 2,3 s.
+//     fenêtre (retouche du 01/10 : il démarre quand l'anneau est entièrement à l'écran), en cours à 500 ms, plein à 2,3 s ;
+//   · Engagements (lot 6), comparée à design/maquette/engagements.html?panneau=off : même hauteur de page ; captures identiques au pixel près de
+//     .page-head et de chaque section.rang, l'image de l'œuvre masquée ; l'œuvre — même boîte, version servie jamais agrandie à 1× et assez grande à 2×,
+//     capture comparée avec la tolérance de la photo du premier écran ; mêmes positions (titre, verbes, paragraphes, cimaise, cartel, haut du pied de
+//     page) ; liens (Créahmbxl avec target, rel et « (nouvel onglet) », Écrivez-nous vers #contact) ; « Engagements » actif avec aria-current dans
+//     l'en-tête, sur cette page seulement ; polices, requêtes, noindex, console ;
+//   · les pages de texte sans maquette (lot 6 : mentions légales, confidentialité, 404), alignées sur Engagements : h1 au même x et au même y, colonnes de
+//     gauche et de droite au même x que le verbe et le texte d'Engagements (la première ligne du texte à hauteur de l'œil du numéro ou du titre), filets
+//     de même largeur, 72 px (44 à 390) entre la dernière rangée et le pied de page, numéros 01 à 07 sur la confidentialité et aucun sur les mentions, aucun
+//     débordement horizontal, titre, description, aucune entrée active, noindex, console, requêtes ;
+//   · tout dist/ : aucune occurrence de « julien@ » et chaque mailto égal à site.email, aucun commentaire venu de content/, espaces insécables avant « : »
+//     dans les textes rendus, tous les liens internes répondent sauf /realisations (lot 5 : listé, pas compté), une adresse inconnue sert la 404.
 // En cas d'écart sur une capture : le nombre de pixels différents et une image des écarts (en rouge) dans scripts/ecarts/ (dossier ignoré par Git), avec
 // les deux captures. Affiche « Tout est identique » quand tout passe (code de sortie 1 sinon).
 // Usage, depuis la racine du dépôt, après npm run build : NODE_PATH=$(npm root -g) npm run comparer
@@ -29,6 +40,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '..');
 const ECARTS = path.join(HERE, 'ecarts');
 const MAQUETTE = pathToFileURL(path.join(REPO, 'design/maquette/index.html')).href + '?panneau=off';
+const MAQUETTE_ENGAGEMENTS = pathToFileURL(path.join(REPO, 'design/maquette/engagements.html')).href + '?panneau=off';
 const FORMATS = [[1521, 705], [1920, 1080], [390, 844]];
 const CHROMIUM_PREINSTALLE = '/opt/pw-browsers/chromium';
 const TOLERANCE_PHOTO = 4;   // écart moyen par canal (sur 255) admis entre l'AVIF du site et le JPEG de la maquette, dans la zone de la photo du premier écran
@@ -151,8 +163,12 @@ async function comparer(nom, site, maquette) {
   }
   return { differents, taille, detail };
 }
-// Écart moyen par canal (R, V, B, sur 255) entre deux captures de même taille : la photo du premier écran, AVIF contre JPEG.
-async function ecartMoyen(nom, site, maquette) {
+// Écart moyen par canal (R, V, B, sur 255) entre deux captures de même taille : la photo du premier écran, AVIF contre JPEG. `flou` (sigma, en px) :
+// les deux captures sont floutées avant la mesure — pour l'œuvre d'Engagements, dont le site sert une réduction faite par sharp (340 px) quand la maquette
+// réduit le JPEG de 870 px dans le navigateur : deux ré-échantillonnages des traits fins, qui diffèrent d'environ 11/255 en moyenne sans flou (18 entre deux
+// réductions sans perte) ; flouté, ce qui reste est une erreur de couleur, de cadrage ou de position.
+async function ecartMoyen(nom, site, maquette, flou = 0) {
+  if (flou) [site, maquette] = await Promise.all([site, maquette].map(b => sharp(b).blur(flou).png().toBuffer()));
   const { A, B, memeTaille, taille, tailleB } = await decoder(site, maquette);
   if (!memeTaille) { garder(nom, site, maquette); return { ok: false, taille, detail: `tailles différentes : site ${taille}, maquette ${tailleB}` }; }
   const n = A.info.width * A.info.height, somme = [0, 0, 0];
@@ -171,7 +187,26 @@ const infosPhoto = p => p.evaluate(() => {
   const z = document.querySelector('.hero__photo'), i = z.querySelector('img'), b = z.getBoundingClientRect(), bi = i.getBoundingClientRect(), s = getComputedStyle(i);
   return { boite: { left: b.left, top: b.top, width: b.width, height: b.height }, img: [Math.round(bi.left), Math.round(bi.top), Math.round(bi.width), Math.round(bi.height)], position: s.objectPosition, fit: s.objectFit, src: i.currentSrc, w: bi.width, h: bi.height };
 });
-const masquerPhoto = (p, oui) => p.evaluate(m => { let st = document.getElementById('masque-photo'); if (m && !st) { st = document.createElement('style'); st.id = 'masque-photo'; st.textContent = '.hero__photo img{visibility:hidden}'; document.head.appendChild(st); } if (!m && st) st.remove(); }, oui);
+// Une feuille de style posée (oui) ou retirée (non) dans la page : masquer une image (visibility: hidden, sa boîte reste), ou l'en-tête collant du site.
+const masquer = (p, id, css, oui) => p.evaluate(([id, css, m]) => { let st = document.getElementById(id); if (m && !st) { st = document.createElement('style'); st.id = id; st.textContent = css; document.head.appendChild(st); } if (!m && st) st.remove(); }, [id, css, oui]);
+const masquerPhoto = (p, oui) => masquer(p, 'masque-photo', '.hero__photo img{visibility:hidden}', oui);
+// L'en-tête collant du site (absent de la maquette) revient dès qu'on remonte dans la page et recouvre le haut de la fenêtre : masqué pendant les captures
+// d'une page qui n'est pas parcourue de haut en bas (sa boîte reste, la mise en page ne bouge pas).
+const masquerEntete = (p, oui) => masquer(p, 'masque-entete', '.entete-collante{visibility:hidden}', oui);
+// Hauteur totale d'une page : le défilement et le corps.
+const hauteurDe = p => p.evaluate(() => ({ defilement: document.documentElement.scrollHeight, corps: document.body.getBoundingClientRect().height }));
+// Une page du site telle qu'elle s'est chargée : les polices qu'elle utilise (plus Jost au-dessus de 640 px), toutes depuis /fonts/ (les trois préchargées
+// comprises), aucune requête hors du site, meta robots noindex, console vide.
+async function controlesPage(site, chemin, largeur, polices, { statut404 = false } = {}) {
+  const f = await site.p.evaluate(([fs, w]) => ({ ok: fs.concat(w > 640 ? ['400 27.7px Jost'] : []).every(f => document.fonts.check(f)), etat: document.fonts.status, chargees: [...new Set([...document.fonts].filter(f => f.status === 'loaded').map(f => f.family))].join(', ') }), [polices, largeur]);
+  const woff = site.requetes.filter(u => u.endsWith('.woff2')).map(u => u.replace(/^.*\//, '')), hors = site.requetes.filter(u => !u.startsWith(SITE + '/'));
+  const prechargees = ['instrument-sans-latin-wght-normal.woff2', 'newsreader-latin-opsz-normal.woff2', 'jost-latin-wght-normal.woff2'].every(f => woff.includes(f));
+  ok(f.ok && f.etat === 'loaded' && prechargees && site.requetes.filter(u => u.endsWith('.woff2')).every(u => u.startsWith(SITE + '/fonts/')) && !hors.length,
+    `polices : ${f.chargees} chargées, ${woff.length} fichiers woff2 depuis /fonts/ (les trois préchargées comprises), aucune requête hors du site (${site.requetes.length} requêtes)` + (hors.length ? ' — HORS SITE : ' + hors.join(', ') : ''));
+  ok((await site.p.evaluate(() => document.querySelector('meta[name="robots"]')?.getAttribute('content'))) === 'noindex', `meta robots noindex sur ${chemin}`);
+  const erreurs = statut404 ? site.erreurs.filter(e => !/status of 404/.test(e)) : site.erreurs;   // la page 404 est servie avec son statut : le navigateur le note en console
+  ok(!erreurs.length && (!statut404 || site.erreurs.length === 1), `aucune erreur dans la console sur ${chemin}${statut404 ? ' (hors le 404 de l\'adresse elle-même, attendu)' : ''}` + (erreurs.length ? ' — ' + erreurs.join(' | ') : ''));
+}
 const dasharrays = p => p.evaluate(() => [...document.querySelectorAll('.graph__part')].map(c => ({ l: parseFloat(c.style.getPropertyValue('--l')), v: parseFloat(getComputedStyle(c).strokeDasharray) })));
 
 try {
@@ -194,7 +229,6 @@ try {
     memesBoites(await boites(site.p, ENTETE, '.site-header'), await boites(maq.p, ENTETE, '.site-header'), 'en-tête', 'le haut de la section');
 
     // Home : la même hauteur totale de page
-    const hauteurDe = p => p.evaluate(() => ({ defilement: document.documentElement.scrollHeight, corps: document.body.getBoundingClientRect().height }));
     const hs = await hauteurDe(site.p), hm = await hauteurDe(maq.p);
     ok(hs.defilement === hm.defilement && Math.abs(hs.corps - hm.corps) < 0.01, `Home : même hauteur totale de page (site ${hs.defilement} px, maquette ${hm.defilement} px ; corps ${hs.corps} / ${hm.corps})`);
 
@@ -232,13 +266,7 @@ try {
     await masquerPhoto(site.p, false); await masquerPhoto(maq.p, false);
 
     // polices et requêtes, noindex, console (la page du site telle qu'elle s'est chargée)
-    const polices = await site.p.evaluate(w => ({ ok: ['400 17px "Instrument Sans"', 'italic 400 22px Newsreader', '400 34px Newsreader'].concat(w > 640 ? ['400 27.7px Jost'] : []).every(f => document.fonts.check(f)), etat: document.fonts.status, chargees: [...new Set([...document.fonts].filter(f => f.status === 'loaded').map(f => f.family))].join(', ') }), format[0]);
-    const woff = site.requetes.filter(u => u.endsWith('.woff2')).map(u => u.replace(/^.*\//, '')), hors = site.requetes.filter(u => !u.startsWith(SITE + '/'));
-    const prechargees = ['instrument-sans-latin-wght-normal.woff2', 'newsreader-latin-opsz-normal.woff2', 'jost-latin-wght-normal.woff2'].every(f => woff.includes(f));
-    ok(polices.ok && polices.etat === 'loaded' && prechargees && site.requetes.filter(u => u.endsWith('.woff2')).every(u => u.startsWith(SITE + '/fonts/')) && !hors.length,
-      `polices : ${polices.chargees} chargées, ${woff.length} fichiers woff2 depuis /fonts/ (les trois préchargées comprises), aucune requête hors du site (${site.requetes.length} requêtes)` + (hors.length ? ' — HORS SITE : ' + hors.join(', ') : ''));
-    ok((await site.p.evaluate(() => document.querySelector('meta[name="robots"]')?.getAttribute('content'))) === 'noindex', 'meta robots noindex sur /');
-    ok(!site.erreurs.length, 'aucune erreur dans la console sur /' + (site.erreurs.length ? ' — ' + site.erreurs.join(' | ') : ''));
+    await controlesPage(site, '/', format[0], ['400 17px "Instrument Sans"', 'italic 400 22px Newsreader', '400 34px Newsreader']);
     await site.ctx.close(); await maq.ctx.close();
 
     // en-tête collant, sans réduire les animations : la page est allongée pour pouvoir défiler quelle que soit sa hauteur
@@ -299,6 +327,159 @@ try {
   const sources = await Promise.all(fs.readdirSync(path.join(REPO, 'design/directions/img')).filter(f => new RegExp(`^${cle.replace(/-l$/, '')}(-l)?\\.jpg$`).test(f)).map(async f => (await sharp(path.join(REPO, 'design/directions/img', f)).metadata()).width));
   ok(tr.largeur === Math.max(...sources), `photo du premier écran à 2× : ${tr.nom} (${tr.format} ${tr.largeur} × ${tr.hauteur}) servi, la plus grande version disponible (${Math.max(...sources)} px) pour ${pr.w} px × 2`);
   await retina.ctx.close();
+
+  // ---------- Engagements (lot 6) : comparée à design/maquette/engagements.html?panneau=off, aux trois formats, l'œuvre masquée pour les captures ----------
+  const ENGAGEMENTS = ['.page-head', '.page__titre', '.registre', '.rang', '.rang__g', '.rang__d', '.rang__verbe', '.eng-texte', '.eng-texte p', '.lien-texte', '.cimaise', '.oeuvre', '.oeuvre img', '.cartel', '.cartel b', '.cartel span', '.site-footer'];
+  const masquerOeuvre = (p, oui) => masquer(p, 'masque-oeuvre', '.oeuvre img{visibility:hidden}', oui);
+  const infosOeuvre = p => p.evaluate(() => {
+    const i = document.querySelector('.oeuvre img'), b = i.getBoundingClientRect(), s = getComputedStyle(i);
+    return { boite: [Math.round(b.left), Math.round(b.top + window.scrollY), Math.round(b.width), Math.round(b.height)], zone: { left: b.left, top: b.top, width: b.width, height: b.height }, fit: s.objectFit, lien: !!i.closest('a'),
+      attrs: i.getAttribute('width') + ' × ' + i.getAttribute('height'), src: i.currentSrc, w: b.width, h: b.height, alt: i.alt, lazy: i.getAttribute('loading'), dans: !!i.closest('#soutenir .rang__g > .cimaise > figure.oeuvre') };
+  });
+  for (const format of FORMATS) {
+    console.log(`\nEngagements, ${fmt(format)}`);
+    const nom = `engagements-${format[0]}x${format[1]}`;
+    const site = await ouvrir(SITE + '/engagements', format, { reducedMotion: 'reduce' }), maq = await ouvrir(MAQUETTE_ENGAGEMENTS, format, { reducedMotion: 'reduce' });
+    ok(!maq.erreurs.length, `maquette ouverte sans erreur (${MAQUETTE_ENGAGEMENTS.replace(/^.*design\//, 'design/')})` + (maq.erreurs.length ? ' — ' + maq.erreurs.join(' | ') : ''));
+    const hs = await hauteurDe(site.p), hm = await hauteurDe(maq.p);
+    ok(hs.defilement === hm.defilement && Math.abs(hs.corps - hm.corps) < 0.01, `Engagements : même hauteur totale de page (site ${hs.defilement} px, maquette ${hm.defilement} px ; corps ${hs.corps} / ${hm.corps})`);
+    // l'ouverture et chaque rangée, l'image de l'œuvre masquée (sa boîte reste : AVIF côté site, JPEG côté maquette, elle est comparée à part) ; l'en-tête
+    // collant du site masqué (il recouvrirait .page-head, juste sous lui, puis l'œuvre quand on remonte vers elle)
+    await masquerEntete(site.p, true);
+    const rangs = await site.p.evaluate(() => [...document.querySelectorAll('.registre > section.rang')].map(s => '#' + s.id)), rangsMaq = await maq.p.evaluate(() => [...document.querySelectorAll('.registre > section.rang')].map(s => '#' + s.id));
+    ok(rangs.length === 3 && rangs.join(' ') === rangsMaq.join(' '), `rangées du registre : ${rangs.join(' ')} (maquette : ${rangsMaq.join(' ')})`);
+    await masquerOeuvre(site.p, true); await masquerOeuvre(maq.p, true);
+    for (const sel of ['.page-head', ...rangs]) {
+      const c = await comparer(`${slug(sel)}-${nom}`, await captureSection(site.p, sel), await captureSection(maq.p, sel));
+      ok(c.differents === 0, `${sel} : capture identique au pixel près, l'œuvre masquée (${c.taille})` + (c.differents ? ' — ' + c.detail : ''));
+    }
+    await masquerOeuvre(site.p, false); await masquerOeuvre(maq.p, false);
+    // l'œuvre : même boîte, version servie jamais agrandie à 1×, capture comparée avec la tolérance de la photo du premier écran
+    await amener(site.p, '.cimaise'); await amener(maq.p, '.cimaise');
+    const os = await infosOeuvre(site.p), om = await infosOeuvre(maq.p);
+    ok(JSON.stringify(os.boite) === JSON.stringify(om.boite) && os.fit === 'fill' && om.fit === 'fill' && !os.lien && os.dans && os.attrs === om.attrs && os.alt === om.alt && os.lazy === 'lazy',
+      `l'œuvre : même boîte (${os.boite[2]} × ${os.boite[3]} à y = ${os.boite[1]}) dans la cimaise de #soutenir, width / height ${os.attrs}, object-fit ${os.fit} / ${om.fit}, pas un lien, chargement paresseux, même texte alternatif`);
+    const ts = await tailleServie(os.src), tm = await tailleServie(om.src);
+    ok(ts.largeur >= Math.round(os.w) && ts.largeur <= tm.largeur, `l'œuvre : ${ts.nom} (${ts.format} ${ts.largeur} × ${ts.hauteur}) servi par le site, jamais agrandi à 1× (${Math.round(os.w)} px affichés) ; maquette : ${tm.nom} (${tm.largeur} × ${tm.hauteur})`);
+    const po = await ecartMoyen(`oeuvre-${nom}`, await captureZone(site.p, os.zone), await captureZone(maq.p, om.zone), 2.5);
+    ok(po.ok, `l'œuvre : capture de l'image (${po.taille}) comparée avec tolérance, les deux captures floutées (sigma 2,5 : la maquette réduit le JPEG de 870 px dans le navigateur, le site sert la réduction de sharp) — ${po.detail}`);
+    // positions dans le document, défilement à 0 : titre, verbes, paragraphes, cimaise, cartel, haut du pied de page
+    await haut(site.p); await haut(maq.p); await site.p.waitForTimeout(350);
+    memesBoites(await boites(site.p, ENGAGEMENTS, null), await boites(maq.p, ENGAGEMENTS, null), 'Engagements', 'le haut du document');
+    await masquerEntete(site.p, false);
+    // liens dans le texte : Créahmbxl dans un nouvel onglet, annoncé ; Écrivez-nous vers #contact, le pied de page
+    const l = await site.p.evaluate(() => ({ liens: [...document.querySelectorAll('.eng-texte a')].map(a => `${a.className} ${a.firstChild.textContent} → ${a.getAttribute('href')}${a.target ? ' ' + a.target : ''}${a.rel ? ' ' + a.rel : ''}${a.querySelector('.visuellement-masque') ? ' +' + JSON.stringify(a.querySelector('.visuellement-masque').textContent) : ''}`).join(' | '),
+      contact: document.getElementById('contact')?.tagName, masque: document.querySelector('.visuellement-masque') ? Math.round(document.querySelector('.visuellement-masque').getBoundingClientRect().width) + '×' + Math.round(document.querySelector('.visuellement-masque').getBoundingClientRect().height) : null }));
+    ok(l.liens === 'lien-texte Créahmbxl → https://creahmbxl.be _blank noopener +" (nouvel onglet)" | lien-texte Écrivez-nous → #contact' && l.contact === 'FOOTER' && l.masque === '1×1', `liens : ${l.liens.replace(/lien-texte /g, '')} ; #contact est le pied de page ; « (nouvel onglet) » masqué visuellement (${l.masque})`);
+    // navigation : Engagements actif, avec aria-current, sur cette page
+    const nav = await site.p.evaluate(() => [...document.querySelectorAll('.site-nav a')].map(a => `${a.textContent}${a.classList.contains('is-active') ? ' actif' : ''}${a.hasAttribute('aria-current') ? ' aria-current=' + a.getAttribute('aria-current') : ''} → ${a.getAttribute('href')}`).join(' | '));
+    ok(nav === 'Réalisations → /realisations | Engagements actif aria-current=page → /engagements | Contact → #contact', 'navigation : ' + nav);
+    ok((await site.p.evaluate(() => [document.documentElement.dataset.page, document.title, document.querySelector('.page__titre').textContent, document.querySelector('meta[name="description"]')?.content].join(' · '))) === 'engagements · Engagements — Perpetual · Engagements · Aider bénévolement, transmettre à La Cambre-Horta, soutenir le Créahmbxl — les trois engagements de Perpetual.',
+      `html data-page="engagements", titre « Engagements — Perpetual », h1 « Engagements » seul, description de l'en-tête`);
+    await controlesPage(site, '/engagements', format[0], ['400 17px "Instrument Sans"', '400 42px Newsreader', 'italic 400 22px Newsreader']);
+    await site.ctx.close(); await maq.ctx.close();
+  }
+  // à 2× (1521 × 705) : l'œuvre servie assez grande, sans dépasser la source
+  {
+    const retina = await ouvrir(SITE + '/engagements', [1521, 705], { deviceScaleFactor: 2, reducedMotion: 'reduce' });
+    await amener(retina.p, '.cimaise');
+    const oe = await infosOeuvre(retina.p), te = await tailleServie(oe.src);
+    ok(te.largeur >= 2 * oe.w && te.largeur <= 870, `l'œuvre à 2× : ${te.nom} (${te.format} ${te.largeur} × ${te.hauteur}) servi pour ${Math.round(oe.w)} px × 2, assez grand sans dépasser la source (870 px)`);
+    await retina.ctx.close();
+  }
+  // « Engagements » actif (aria-current) sur sa page seulement : les pages construites
+  {
+    const pages = fs.readdirSync(path.join(REPO, 'dist')).filter(f => f.endsWith('.html')).sort();
+    const actifs = pages.map(f => { const h = fs.readFileSync(path.join(REPO, 'dist', f), 'utf8'); const m = h.match(/<a href="([^"]+)" class="trait is-active"[^>]*aria-current="page"[^>]*>([^<]+)<\/a>/g) || []; return `${f} : ${m.length ? m.map(x => x.replace(/^.*>([^<]+)<\/a>$/, '$1')).join(', ') : '—'}`; });
+    ok(pages.includes('engagements.html') && actifs.every(a => a === 'engagements.html : Engagements' || a.endsWith(' : —')) && pages.every(f => (fs.readFileSync(path.join(REPO, 'dist', f), 'utf8').match(/aria-current/g) || []).length === (f === 'engagements.html' ? 1 : 0)),
+      `aria-current="page" sur le lien « Engagements » de engagements.html seulement — ${actifs.join(' · ')}`);
+  }
+
+  // ---------- pages de texte sans maquette (lot 6) : mentions légales, confidentialité et 404, sur le gabarit d'Engagements ----------
+  // Les repères sont pris sur la page Engagements du site (identique à la maquette) : x et y du h1, x de la colonne de gauche (le verbe) et de la colonne
+  // de droite (le texte), largeur des filets. Sur chaque page : le h1 au même x et au même y ; le numéro ou le titre de chapitre au x du verbe, le texte au x
+  // du texte d'Engagements, sa première ligne à hauteur de l'œil de la première ligne de gauche (le numéro, sinon le titre : ± 1 px) ; filets de même largeur ;
+  // 72 px (44 à 390) entre le bas de la dernière rangée et le pied de page ; numéros 01 à 07 sur la confidentialité, aucun sur les mentions ; aucun
+  // débordement horizontal ; titre de l'onglet, description, data-page="texte", aucune entrée active ; noindex, console vide, aucune requête hors du site.
+  const PAGES_TEXTE = [
+    ['/mentions-legales', { h1: 'Mentions légales', nums: '', sections: 'editeur-du-site hebergement propriete-intellectuelle', gauche: 'titre' }],
+    ['/confidentialite', { h1: 'Politique de confidentialité', nums: '01 02 03 04 05 06 07', sections: 'responsable-du-traitement donnees-traitees destinataires-et-transferts-hors-union-europeenne duree-de-conservation vos-droits cookies modification-de-cette-politique', gauche: 'numero' }],
+    ['/adresse-inconnue', { h1: 'Page introuvable', nums: '', sections: '', gauche: 'aucune', titre: 'Page introuvable — Perpetual' }],
+  ];
+  // l'œil d'une ligne de texte : sa ligne de base (un inline-block de hauteur nulle, inséré en tête) moins la moitié de la hauteur d'x (canvas)
+  const oeil = `(el) => { const s = document.createElement('span'); s.style.cssText = 'display:inline-block;width:0;height:0'; el.prepend(s); const base = s.getBoundingClientRect().bottom; s.remove();
+    const cs = getComputedStyle(el), c = document.createElement('canvas').getContext('2d'); c.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; return base - c.measureText('x').actualBoundingBoxAscent / 2; }`;
+  for (const format of FORMATS) {
+    console.log(`\nPages de texte, ${fmt(format)}`);
+    const tel = format[0] <= 640;
+    const eng = await ouvrir(SITE + '/engagements', format, { reducedMotion: 'reduce' });
+    const repere = await eng.p.evaluate(() => { const r = s => document.querySelector(s).getBoundingClientRect(); const h1 = r('.page__titre'), g = r('#soutenir .rang__verbe'), d = r('#soutenir .eng-texte p'), rang = r('.rang');
+      return { h1x: Math.round(h1.left), h1y: Math.round(h1.top), gauche: Math.round(g.left), droite: Math.round(d.left), filet: Math.round(rang.width) }; });
+    await eng.ctx.close();
+    for (const [chemin, attendu] of PAGES_TEXTE) {
+      const page = await ouvrir(SITE + chemin, format, { reducedMotion: 'reduce' });
+      const m = await page.p.evaluate((oeilSrc) => {
+        const oeil = eval(oeilSrc), r = e => e.getBoundingClientRect(), h1 = document.querySelector('.page__titre'), rangs = [...document.querySelectorAll('.registre > section.rang')], dernier = rangs[rangs.length - 1];
+        const gauches = rangs.map(s => s.querySelector('.rang__g > :first-child')).filter(Boolean), textes = rangs.map(s => s.querySelector('.page-texte > :first-child'));
+        const premier = textes.map(t => t.tagName === 'UL' || t.tagName === 'OL' ? t.querySelector('li') : t);
+        return { h1: h1.textContent, h1x: Math.round(r(h1).left), h1y: Math.round(r(h1).top), page: document.documentElement.dataset.page, title: document.title, description: document.querySelector('meta[name="description"]')?.content ?? '',
+          sections: rangs.map(s => s.id).join(' '), nums: [...document.querySelectorAll('.chapitre__num')].map(e => e.textContent).join(' '), numerotees: document.querySelectorAll('.rang--numerote').length, h2: [...document.querySelectorAll('h2')].map(h => h.className + (h.id ? '#' + h.id : '')).join(' '),
+          gauche: [...new Set(gauches.map(g => Math.round(r(g).left)))].join(','), droite: [...new Set(premier.map(t => Math.round(r(t).left)))].join(','), filets: [...new Set(rangs.map(s => Math.round(r(s).width)))].join(','),
+          ecarts: gauches.map((g, i) => +(oeil(premier[i]) - oeil(g)).toFixed(1)), sousTitre: [...new Set(rangs.map(s => s.querySelector('.chapitre__titre')).filter(Boolean).map((t, i) => Math.round(r(premier[i]).top - r(t).bottom)))].join(','), pied: Math.round(r(document.querySelector('.site-footer')).top), bas: Math.round(Math.max(...[...dernier.querySelectorAll('*')].map(r).filter(b => b.height > 0).map(b => b.bottom))),
+          deb: document.documentElement.scrollWidth - document.documentElement.clientWidth, actifs: document.querySelectorAll('.site-nav .is-active, .site-nav [aria-current]').length, maj: document.querySelector('.page__maj')?.textContent ?? null,
+          liens: [...document.querySelectorAll('.page-texte a')].map(a => `${a.className} ${a.getAttribute('href')}${a.target ? ' ' + a.target : ''}`).join(' | ') };
+      }, oeil);
+      ok(m.h1 === attendu.h1 && m.h1x === repere.h1x && m.h1y === repere.h1y, `${chemin} : h1 « ${m.h1} » au même x et au même y qu'Engagements (${m.h1x}, ${m.h1y} ; Engagements ${repere.h1x}, ${repere.h1y})`);
+      ok(m.sections === attendu.sections && m.nums === attendu.nums && m.numerotees === attendu.nums.split(' ').filter(Boolean).length && !/#/.test(m.h2),
+        `${chemin} : rangées ${m.sections || '(une, sans titre)'} ; numéros ${m.nums || 'aucun'} ; titres en h2.chapitre__titre sans id (l'id est sur la section)`);
+      ok((attendu.gauche === 'aucune' || m.gauche === String(repere.gauche)) && m.droite === String(repere.droite) && m.filets === String(repere.filet),
+        `${chemin} : colonne de gauche à x = ${m.gauche || '—'} (verbe d'Engagements ${repere.gauche}), texte à x = ${m.droite} (texte d'Engagements ${repere.droite}), filets de ${m.filets} px (${repere.filet})`);
+      if (attendu.gauche !== 'aucune' && !tel) ok(m.ecarts.every(e => Math.abs(e) <= 1), `${chemin} : première ligne du texte à hauteur de l'œil du ${attendu.gauche === 'numero' ? 'numéro' : 'titre'} (écarts ${m.ecarts.join(', ')} px, ± 1 admis)`);
+      if (attendu.gauche !== 'aucune' && tel) ok(m.sousTitre === '16', `${chemin} : une colonne — ${attendu.gauche === 'numero' ? 'le numéro, ' : ''}le titre, puis le texte ${m.sousTitre} px dessous (16 attendus)`);
+      ok(m.pied - m.bas === (tel ? 44 : 72), `${chemin} : bas de la dernière rangée → haut du pied de page, ${m.pied - m.bas} px (${tel ? 44 : 72} attendus)`);
+      ok(m.deb === 0 && m.page === 'texte' && m.title === (attendu.titre ?? `${attendu.h1} — Perpetual`) && (chemin === '/adresse-inconnue' || m.description.length > 20) && m.actifs === 0,
+        `${chemin} : aucun débordement horizontal (${m.deb} px), html data-page="${m.page}", titre « ${m.title} »${m.description ? ', description de l\'en-tête' : ''}, aucune entrée active dans l'en-tête`);
+      if (chemin === '/confidentialite') ok(m.maj === null, `${chemin} : updated vide dans l'en-tête — pas de ligne « Dernière mise à jour » (le build l'a signalé)`);
+      if (chemin === '/adresse-inconnue') ok(m.liens === 'lien-texte /', `${chemin} : la page 404 — un paragraphe, le lien « Revenir à l'accueil » vers / (${m.liens})`);
+      await controlesPage(page, chemin, format[0], ['400 17px "Instrument Sans"', 'italic 400 22px Newsreader'].concat(attendu.gauche === 'aucune' ? [] : ['500 26px "Instrument Sans"']), { statut404: chemin === '/adresse-inconnue' });
+      await page.ctx.close();
+    }
+  }
+
+  // ---------- tout dist/ ----------
+  console.log('\ndist/');
+  {
+    const DIST = path.join(REPO, 'dist');
+    const htmls = []; (function marcher(d) { for (const f of fs.readdirSync(d)) { const q = path.join(d, f); if (fs.statSync(q).isDirectory()) marcher(q); else if (f.endsWith('.html')) htmls.push(path.relative(DIST, q)); } })(DIST);
+    const lire = f => fs.readFileSync(path.join(DIST, f), 'utf8');
+    const siteJson = JSON.parse(fs.readFileSync(path.join(REPO, 'data/site.json'), 'utf8'));
+    // aucune occurrence de « julien@ » ; chaque mailto égal à site.email
+    const juliens = htmls.filter(f => lire(f).includes('julien@')), mailtos = htmls.flatMap(f => [...lire(f).matchAll(/mailto:([^"'\s<>]+)/g)].map(x => x[1]));
+    ok(!juliens.length && mailtos.length > 0 && mailtos.every(m => m === siteJson.email), `${htmls.length} pages : aucune occurrence de « julien@ » ; ${mailtos.length} mailto, tous vers ${siteJson.email}` + (juliens.length ? ' — julien@ dans ' + juliens.join(', ') : ''));
+    // aucun commentaire venu de content/ (les notes internes des fichiers Markdown)
+    const notes = fs.readdirSync(path.join(REPO, 'content')).filter(f => f.endsWith('.md')).flatMap(f => [...fs.readFileSync(path.join(REPO, 'content', f), 'utf8').matchAll(/<!--([\s\S]*?)-->/g)].map(x => x[1].trim()));
+    const commentaires = htmls.flatMap(f => [...lire(f).matchAll(/<!--([\s\S]*?)-->/g)].map(x => ({ f, c: x[1].trim() })));
+    const fuites = commentaires.filter(c => notes.some(n => n && (c.c.includes(n.slice(0, 40)) || n.includes(c.c.slice(0, 40)))));
+    ok(!fuites.length && !commentaires.length, `aucun commentaire HTML dans les pages (${notes.length} notes dans content/, ${commentaires.length} commentaires publiés)` + (commentaires.length ? ' — ' + commentaires.map(c => `${c.f} : ${c.c.slice(0, 50)}`).join(' ; ') : ''));
+    // espaces insécables avant « : » dans les textes rendus (le <main> de chaque page, balises et scripts retirés)
+    // (les pages de ce lot, dont les textes passent par enLigne ou le plugin ; la Home et /dev/photos insèrent leurs textes tels quels, comme la maquette : en information)
+    const LOT = ['engagements.html', 'mentions-legales.html', 'confidentialite.html', '404.html'];
+    const textes = htmls.map(f => ({ f, t: (lire(f).match(/<main>([\s\S]*?)<\/main>/) || ['', ''])[1].replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, '') }));
+    const simples = textes.filter(x => LOT.includes(x.f) && / :/.test(x.t)), insecables = textes.filter(x => LOT.includes(x.f)).reduce((n, x) => n + (x.t.match(/\u00A0:/g) || []).length, 0), autres = textes.filter(x => !LOT.includes(x.f) && / :/.test(x.t)).map(x => x.f);
+    ok(LOT.every(f => htmls.includes(f)) && !simples.length && insecables > 0, `espaces insécables avant « : » dans les textes rendus des quatre pages (${insecables} « : », aucune espace simple devant)` + (simples.length ? ' — espace simple dans ' + simples.map(x => x.f).join(', ') : '') + (autres.length ? ` ; textes insérés tels quels, non vérifiés : ${autres.join(', ')}` : ''));
+    // tous les liens internes répondent, sauf /realisations (lot 5 : listé, pas compté comme échec)
+    const liens = new Map();
+    for (const f of htmls) for (const m of lire(f).matchAll(/<a [^>]*href="([^"]+)"/g)) { const h = m[1]; if (/^(https?:|mailto:|tel:)/.test(h)) continue; const cible = h.startsWith('#') ? '/' + f.replace(/index\.html$/, '').replace(/\.html$/, '') + h : h; liens.set(cible, (liens.get(cible) || new Set()).add(f)); }
+    const reponses = [];
+    for (const [cible] of liens) { const chemin = cible.replace(/#.*$/, ''), r = await fetch(SITE + chemin), html = r.ok ? await r.text() : ''; const ancre = cible.includes('#') ? cible.slice(cible.indexOf('#') + 1) : null;
+      reponses.push({ cible, chemin, statut: r.status, ancre: ancre ? new RegExp(`id="${ancre}"`).test(html) : true }); }
+    const attendus = reponses.filter(r => r.chemin !== '/realisations'), echecs = attendus.filter(r => r.statut !== 200 || !r.ancre), real = reponses.find(r => r.chemin === '/realisations');
+    ok(!echecs.length && attendus.length >= 5, `${reponses.length} liens internes : ${attendus.length} répondent (ancres comprises)${real ? ` ; /realisations → ${real.statut} (lot 5, listé, pas compté)` : ''}` + (echecs.length ? ' — en échec : ' + echecs.map(r => `${r.cible} (${r.statut}${r.ancre ? '' : ', ancre absente'})`).join(', ') : ''));
+    // une adresse inconnue sert la 404 (astro preview, comme GitHub Pages), en chemins absolus
+    const r404 = await fetch(SITE + '/une/adresse/inconnue'), h404 = await r404.text();
+    const relatifs = [...h404.matchAll(/(?:href|src)="([^"]+)"/g)].map(x => x[1]).filter(u => !/^(\/|https?:|mailto:|#)/.test(u));
+    ok(r404.status === 404 && h404.includes('Page introuvable') && !relatifs.length, `une adresse inconnue répond ${r404.status} avec la page « Page introuvable » (dist/404.html), chemins absolus partout` + (relatifs.length ? ' — relatifs : ' + relatifs.join(', ') : ''));
+  }
 
   console.log('\n/dev/photos');
   const dev = await ouvrir(SITE + '/dev/photos', FORMATS[0]);

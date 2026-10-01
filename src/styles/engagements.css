@@ -1,0 +1,24 @@
+/* Page Engagements du site (lot 6, 01/10/2026) : ce qui n'appartient qu'à elle dans design/maquette/maquette.css (section 4, « page Engagements ») — le
+   verbe (.rang__verbe), le texte (.eng-texte), l'œuvre sur sa cimaise (.cimaise, .oeuvre) et son cartel (.cartel) — et leurs règles téléphone
+   (section 5), repris tels quels. Importé par src/pages/engagements.astro, après src/styles/page.css. Balisage : src/components/engagements/Rang.astro. */
+.rang__verbe{font-family:var(--serif);font-weight:400;font-size:var(--fs-nom);line-height:1.05;letter-spacing:-.01em}
+.eng-texte{padding-top:9px}   /* la première ligne du texte à hauteur de l'œil du verbe */
+.eng-texte p{margin-bottom:16px;max-width:62ch;text-wrap:pretty}
+.eng-texte p:last-child{margin-bottom:0}
+/* l'œuvre, recadrée sur la feuille, sur sa cimaise (panneau papier, dans la colonne, 32 px sous le verbe) : entière — jamais d'object-fit —, jamais
+   agrandie au-delà de 340 px (fichier de 870 px) ; pas un lien, pas de zoom ; le cartel sous l'œuvre, sur le panneau */
+.cimaise{margin-top:32px;background:var(--surface);padding:44px 48px 36px}
+.oeuvre{max-width:340px;margin:0 auto}
+.oeuvre img{width:100%;height:auto}
+.cartel{margin-top:16px;font-size:var(--fs-etiquette);line-height:1.45;color:var(--c-meta)}
+.cartel b{display:block;font-weight:500;font-size:14px;color:var(--c-texte)}
+.cartel span{display:block}
+
+/* ---------- téléphone (section 5 de maquette.css) ---------- */
+@media (max-width:640px){
+  /* une colonne par rangée — le verbe, le texte, puis l'œuvre ; la cimaise reste dans les gouttières, l'œuvre prend la largeur du panneau */
+  .rang__verbe{order:1}
+  .eng-texte{order:2;padding-top:14px}
+  .cimaise{order:3;margin-top:28px;padding:28px 24px 22px}
+  .oeuvre{max-width:none}
+}

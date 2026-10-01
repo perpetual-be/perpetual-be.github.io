@@ -1,0 +1,19 @@
+---
+// La page 404 (lot 6, 01/10/2026), servie par GitHub Pages pour toute adresse inconnue (dist/404.html ; tout y est en chemins absolus), sur le gabarit
+// d'Engagements : le titre seul (.page-head, en sans léger), puis une rangée sans titre à gauche, le texte de content/404.md (provisoire, lot 3) dans la
+// colonne de droite (.page-texte, au même x que les textes des autres pages), rendu par enLigne (les liens seuls), et 72 px (44 au téléphone) avant le
+// pied de page. Aucune entrée active dans l'en-tête.
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/engagements/PageHead.astro';
+import Registre from '../components/engagements/Registre.astro';
+import { lire404, enLigne } from '../lib/contenu';
+import '../styles/page.css';
+import '../styles/texte.css';
+
+const page = await lire404();
+---
+
+<Base title={page.titre} description={page.description} page="texte">
+  <PageHead titre={page.titre} />
+  <Registre><section class="rang"><div class="rang__g"></div><div class="rang__d"><div class="page-texte">{page.paragraphes.map((p) => <p set:html={enLigne(p)} />)}</div></div></section></Registre>
+</Base>

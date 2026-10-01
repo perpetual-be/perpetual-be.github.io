@@ -1,0 +1,20 @@
+---
+// Politique de confidentialité (lot 6, 01/10/2026) : une page de texte sur le gabarit d'Engagements (choix d'Axel du 01/10) — le titre seul (.page-head,
+// en sans léger) et, dès que l'en-tête de content/politique-confidentialite.md la donne (updated, vide jusqu'au lot 9), la date de dernière mise à jour en
+// étiquette dessous ; puis le registre : une section.rang par titre ## du Markdown, le numéro (« 01 ») et le titre à gauche comme les chapitres des fiches,
+// le Markdown de la section à droite, rendu par Astro et mis en forme par le plugin src/lib/rehype-registre.mjs (astro.config.mjs). Aucune entrée active.
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/engagements/PageHead.astro';
+import Registre from '../components/engagements/Registre.astro';
+import { lirePageTexte, dateFrancaise } from '../lib/contenu';
+import '../styles/page.css';
+import '../styles/texte.css';
+
+const page = await lirePageTexte('politique-confidentialite');
+if (!page.updated) console.warn('content/politique-confidentialite.md : updated est vide, la ligne « Dernière mise à jour » n’est pas affichée (date ISO à remplir à la mise en ligne, lot 9).');
+---
+
+<Base title={page.titre} description={page.description} page="texte">
+  <PageHead titre={page.titre}>{page.updated && <p class="page__maj">{`Dernière mise à jour : ${dateFrancaise(page.updated)}`}</p>}</PageHead>
+  <Registre><page.Content /></Registre>
+</Base>
