@@ -28,7 +28,7 @@ Les pull requests ouvertes depuis une branche de ce dépôt sont fusionnées aut
 | Ajouter ou modifier un projet (détaillé, programme agences, galerie) | `data/projects.json` |
 | Navigation, e-mail, ville, TVA, citation de pied de site | `data/site.json` |
 | Ajouter un logo partenaire | `data/partners.json` + les fichiers dans `public/partners/couleur/`, `mono/` et `encre/` |
-| Ajouter des photos | déposer les originaux dans le Drive, référencer les fichiers dans `data/projects.json`, puis lancer `npm run photos:ingest` (voir plus bas) |
+| Ajouter des photos | réduire les originaux du Drive avec `design/directions/src/reduire-photos.mjs`, committer les fichiers produits dans `design/directions/img/`, puis citer leurs clés dans `data/projects.json` (`selection`) — voir plus bas |
 | Changer la mise en page ou les styles | `src/` (pages, gabarits, `styles/`) |
 | Palette, typographies, maquettes | `design/` |
 
@@ -44,9 +44,8 @@ public/partners/       logos partenaires en SVG : couleur/, mono/ et encre/ (cur
 data/site.json         navigation, coordonnées, citation de pied de site
 design/                palette, typographies, maquettes exportées
 public/                favicon, logo, fichiers statiques servis tels quels
-scripts/               scripts d'outillage (ingestion des photos)
 src/                   layouts, pages, composants, styles (Astro)
-src/photos-source/     photos prêtes pour le site, générées par `npm run photos:ingest` (non versionné)
+design/directions/img/ photos réduites (1 800 et 2 800 px pour le site, 800 px pour la maquette), versionnées : la source des photos du site
 ```
 
 Dans les fichiers Markdown, les commentaires HTML (`<!-- … -->`) sont des indications de mise en page : ils ne sont pas publiés.
@@ -100,33 +99,30 @@ La planche de comparaison des traitements est dans `design/partenaires-comparais
 
 ### Photos
 
-Les photos originales (haute résolution) ne sont pas dans le dépôt. Elles vivent dans le dossier Google Drive `PERPETUAL / Site 2026 / 02 Photos/<id du projet>/`, nommées `<id>-01.jpg`, `<id>-02.jpg`, … dans l'ordre listé dans `data/projects.json`.
+**Une seule source, dans le dépôt : les versions réduites de `design/directions/img/`** (décision du 01/10/2026). Les originaux (haute résolution) n'entrent jamais dans le dépôt : ils vivent dans le Drive (`PERPETUAL / Site 2026 / 02 Photos/<id du projet>/`, nommés `<id>-01.jpg`, `<id>-02.jpg`, …).
 
-**Pipeline d'ingestion** (`scripts/ingest-photos.mjs`) : lit `data/projects.json`, va chercher chaque photo référencée (`photos`, `hero`, `heroCandidates`) dans le dossier Drive local, et produit une version prête pour le site dans `src/photos-source/<id>/<fichier>` (dossier non versionné — voir `.gitignore` — puisque les originaux restent dans le Drive). Pour chaque photo, mécaniquement et sans aucun recadrage :
+Chaque photo a une **clé**, `<id>-NN` (ex. `community-05`), et jusqu'à trois versions, produites depuis l'original par `design/directions/src/reduire-photos.mjs` (redressement EXIF, métadonnées retirées, JPEG qualité 82) :
 
-- redressement selon l'orientation EXIF ;
-- suppression des métadonnées (EXIF, IPTC, XMP) ;
-- plus grand côté plafonné à 3000 px (jamais agrandi).
+| Fichier | Plus grand côté | Sert à |
+|---|---|---|
+| `<clé>-s.jpg` | 800 px | la maquette seulement |
+| `<clé>.jpg` | 1 800 px | le site et la maquette — **obligatoire pour le site** |
+| `<clé>-l.jpg` | 2 800 px | les photos montrées en grand (premier écran, tête de fiche) |
 
-Lancer, depuis la racine du dépôt :
-
-```bash
-npm run photos:ingest -- "<chemin vers le dossier Drive '02 Photos'>"
-```
-
-Avec la synchronisation Google Drive installée sur le poste, par exemple :
+Ajouter une photo :
 
 ```bash
-npm run photos:ingest -- "G:\Mon Drive\PERPETUAL\Site 2026\02 Photos"
+node design/directions/src/reduire-photos.mjs --petit --grand "G:\Mon Drive\PERPETUAL\Site 2026\02 Photos\brosse\brosse-01.jpg"
+# --tres-grand en plus pour une photo pleine largeur
 ```
 
-Le script est incrémental (il ignore les fichiers déjà à jour) et signale en fin d'exécution les photos référencées dans `data/projects.json` mais absentes du Drive, ainsi que les fichiers présents dans le Drive mais non référencés.
+puis committer les fichiers produits dans `design/directions/img/` et citer la clé dans `data/projects.json` (champ `selection`, dans l'ordre d'affichage).
 
-**Utilisation dans le site** : le composant `src/components/ProjectPhoto.astro` affiche une photo à partir de son projet et de son nom de fichier ; il génère WebP/AVIF en plusieurs largeurs via `<Picture>` (`astro:assets`), et prend le texte alternatif dans `captions` (repli : « nom du projet, lieu »). Une photo pas encore ingérée s'affiche comme un espace réservé plutôt que de casser la page.
+**Dans le site** : `src/lib/photos.ts` trouve la plus grande version d'une clé ; le composant `src/components/ProjectPhoto.astro` l'affiche (`<ProjectPhoto cle="community-05" sizes="100vw" focal="50% 20%" />`) : Astro en tire, au build, plusieurs largeurs (800, 1 200, 1 800, 2 800 px, jamais au-delà de la source) en AVIF et WebP, avec un JPEG de repli. Texte alternatif : `alt` (vide pour une photo décorative). Une clé citée sans version de 1 800 ou 2 800 px arrête le build avec un message qui dit quoi faire.
 
-**Page de vérification** (non indexée) : [`/dev/photos`](http://localhost:4321/dev/photos) affiche toutes les photos de tous les projets, avec le compte ingérées / manquantes — sert à contrôler le pipeline avant de s'en servir dans les vraies pages (lot 5).
+**Sur GitHub** : tout est dans le dépôt, le build automatique a donc toutes les photos. Les versions produites par Astro sont gardées d'un déploiement à l'autre (cache `.astro-cache`, cf. `astro.config.mjs` et `.github/workflows/deploy.yml`) : seules les nouvelles photos sont refaites (un build complet à froid prend ~2 minutes pour la page de contrôle).
 
-`src/photos-source/` n'étant pas versionné, le build automatique sur GitHub Actions ne dispose pas des photos : la façon de les lui fournir sera documentée ici quand les pages du site en afficheront. `/dev/photos` ne sert qu'en local.
+**Page de contrôle** (non indexée, aucun lien vers elle) : `/dev/photos` montre chaque photo citée par `data/projects.json`, projet par projet, par le même composant que le site, et signale en rouge une clé citée mais absente du dépôt.
 
 ## Domaine
 

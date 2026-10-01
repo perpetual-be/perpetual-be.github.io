@@ -1,4 +1,4 @@
-// Réduit des photos originales pour les planches et la maquette (design/directions/img/).
+// Réduit des photos originales pour la maquette et le site (design/directions/img/ : la source des photos du site depuis le 01/10/2026, voir README.md).
 // Mêmes règles que les photos déjà présentes : redressement EXIF, métadonnées retirées, JPEG qualité 82,
 // plus grand côté ≤ 800 px (fichier <nom>-s.jpg), 1800 px (<nom>.jpg) ou 2800 px (<nom>-l.jpg, chiffres sur photo en grand écran).
 //

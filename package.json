@@ -7,8 +7,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check",
-    "photos:ingest": "node scripts/ingest-photos.mjs"
+    "check": "astro check"
   },
   "dependencies": {
     "astro": "^7.3.2"

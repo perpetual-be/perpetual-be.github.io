@@ -9,8 +9,11 @@ node_modules/
 .env
 .env.*
 
-# photos originales : elles vivent dans le Drive, pas dans le dépôt
-photos-source/
+# cache d'Astro, dont les photos déjà produites (gardé par le déploiement GitHub, pas versionné)
+.astro-cache/
+
+# photos originales : elles vivent dans le Drive, jamais dans le dépôt. Les versions réduites (design/directions/img/) sont versionnées :
+# c'est la source des photos du site et de la maquette (01/10/2026) — ne pas ignorer ce dossier, sinon les nouvelles photos n'arrivent pas sur GitHub.
 
 # OS / éditeurs
 .DS_Store
@@ -18,7 +21,6 @@ Thumbs.db
 .vscode/
 .idea/
 
-# lot 2 : images de travail des planches et de la maquette
+# lot 2 : images de travail des planches
 design/photos-candidates/
-design/directions/img/
 design/directions/*.png

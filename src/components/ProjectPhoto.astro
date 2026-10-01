@@ -1,89 +1,41 @@
 ---
-// Affiche une photo d'un projet (data/projects.json) ingérée par
-// scripts/ingest-photos.mjs dans src/photos-source/<id>/<fichier>.
-//
-// - WebP/AVIF, plusieurs largeurs, srcset : via <Picture> (astro:assets).
-// - Texte alternatif : data.captions[<fichier>], repli « nom du projet, lieu ».
-// - Pas de recadrage ici : l'image s'affiche à ses proportions naturelles,
-//   le cadrage se fera en CSS aux lots 4-5.
-// - Une photo pas encore ingérée n'interrompt pas la page : espace réservé.
-import type { ImageMetadata } from 'astro';
+// Une photo du site, par sa clé (<id>-NN ; source : src/lib/photos.ts). Rend un <picture> : AVIF et WebP, JPEG de repli, plusieurs largeurs
+// (Astro retire celles au-delà de la source et ajoute la largeur de la source : une photo de 1 536 px est servie en 800, 1 200 et 1 536), `sizes` à
+// donner par la page (la largeur affichée de la photo). Point focal optionnel, posé en object-position sur l'<img> comme dans la
+// maquette (`focal`, ex. « 50% 20% »). Texte alternatif fourni par la page : alt="" pour une photo décorative (c'est le cas partout dans la maquette) ;
+// les légendes viendront des données au lot 5. Photo du premier écran : loading="eager" et fetchpriority="high". Le `src` de repli (navigateurs
+// sans srcset) est plafonné à 1 200 px : sinon Astro le produirait à la taille de la source, un gros JPEG par photo pour presque personne.
 import { Picture } from 'astro:assets';
-
-const sourceImages = import.meta.glob<{ default: ImageMetadata }>(
-  '/src/photos-source/**/*.{jpg,jpeg,png,webp}'
-);
-
-interface ProjectLike {
-  id: string;
-  name: string;
-  location?: string;
-  captions?: Record<string, string>;
-}
+import { photoSource } from '../lib/photos';
 
 interface Props {
-  project: ProjectLike;
-  filename: string;
-  /** Largeurs proposées ; Astro ignore automatiquement celles au-delà de la taille source. */
-  widths?: number[];
+  cle: string;
+  alt?: string;
   sizes?: string;
+  /** Largeurs souhaitées, en px. */
+  largeurs?: number[];
+  focal?: string;
   loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'low' | 'auto';
   class?: string;
 }
 
-const {
-  project,
-  filename,
-  widths = [480, 768, 1080, 1440, 1920, 2400, 3000],
-  sizes = '100vw',
-  loading = 'lazy',
-  class: className,
-} = Astro.props;
-
-const key = `/src/photos-source/${project.id}/${filename}`;
-const importer = sourceImages[key];
-const image = importer ? (await importer()).default : null;
-
-const alt =
-  project.captions?.[filename] ??
-  (project.location && project.location !== project.name
-    ? `${project.name}, ${project.location}`
-    : project.name);
-
-const fallbackFormat = image?.format === 'png' ? 'png' : 'jpeg';
+const { cle, alt = '', sizes = '100vw', largeurs = [800, 1200, 1800, 2800], focal, loading = 'lazy', fetchpriority, class: className } = Astro.props;
+const source = await photoSource(cle);
 ---
-{
-  image ? (
-    <Picture
-      src={image}
-      alt={alt}
-      formats={['avif', 'webp']}
-      fallbackFormat={fallbackFormat}
-      widths={widths}
-      sizes={sizes}
-      loading={loading}
-      class={className}
-    />
-  ) : (
-    <div class="photo-missing" role="img" aria-label={`Photo pas encore ingérée : ${filename}`}>
-      <p>Pas encore ingérée</p>
-      <code>{project.id}/{filename}</code>
-    </div>
-  )
-}
 
-<style>
-  .photo-missing {
-    display: grid;
-    place-items: center;
-    gap: 0.25rem;
-    aspect-ratio: 4 / 3;
-    border: 1px dashed var(--color-rule, #ccc);
-    color: var(--color-muted, #757575);
-    font-size: 0.75rem;
-    text-align: center;
-    padding: 1rem;
-  }
-  .photo-missing p { margin: 0; }
-  .photo-missing code { font-size: 0.7rem; word-break: break-all; }
-</style>
+<Picture
+  src={source}
+  alt={alt}
+  formats={['avif', 'webp']}
+  fallbackFormat="jpg"
+  widths={largeurs}
+  width={Math.min(1200, Math.max(...largeurs))}
+  sizes={sizes}
+  loading={loading}
+  decoding="async"
+  fetchpriority={fetchpriority}
+  class={className}
+  style={focal ? `object-position:${focal}` : undefined}
+  data-cle={cle}
+/>
