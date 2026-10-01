@@ -13,6 +13,9 @@ const pages = defineCollection({
     // Engagements uniquement : l'œuvre sur sa cimaise — la rangée (l'id d'un titre ##, ex. soutenir), la clé de la photo (design/directions/img/<clé>.jpg),
     // la légende et le détail du cartel, le texte alternatif ; lue aussi par design/maquette/src/build.mjs.
     oeuvre: z.object({ rang: z.string(), photo: z.string(), legende: z.string(), detail: z.string(), alt: z.string() }).optional(),
+    // Politique de confidentialité : la date de dernière mise à jour, ISO (2026-10-01, lue en date par le YAML ; une chaîne « 2026-10-01 » convient aussi) ;
+    // vide (updated:) jusqu'à la mise en ligne, lot 9 — la ligne n'est alors pas affichée et le build écrit un avertissement (src/pages/confidentialite.astro).
+    updated: z.preprocess((v) => (v === null || v === '' ? undefined : v), z.coerce.date().optional()),
     // Home uniquement : chiffres clés et répartition du portefeuille.
     stats: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
     portfolio: z

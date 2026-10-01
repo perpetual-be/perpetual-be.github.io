@@ -1,7 +1,7 @@
 // Les textes des pages, lus comme les lit design/maquette/src/build.mjs — une seule convention pour la maquette et le site (lot 4, 01/10/2026) :
 // le corps Markdown d'une entrée de la collection pages (content/<page>.md, entry.body), commentaires HTML retirés, découpé en blocs séparés par une
 // ligne vide. Les blocs sont rendus tels quels (texte brut, pas de rendu Markdown), comme dans la maquette.
-import { getEntry } from 'astro:content';
+import { getEntry, render } from 'astro:content';
 
 /** Les blocs d'un corps Markdown : commentaires HTML retirés, séparés par une ligne vide, sans les vides (blocks() de build.mjs). */
 export function blocks(body: string): string[] {
@@ -94,3 +94,27 @@ export async function lireEngagements() {
   return { titre: data.title as string, description: data.description as string | undefined, rangs, oeuvre };
 }
 
+/** Une page de texte rendue par Astro depuis son Markdown (lot 6, 01/10/2026) — les mentions légales, la politique de confidentialité — : le titre et la
+ *  description de l'en-tête, la date de mise à jour (updated) si elle est remplie, et le composant Content (le Markdown rendu par Astro, découpé en
+ *  rangées et mis en forme par le plugin src/lib/rehype-registre.mjs, enregistré dans astro.config.mjs). */
+export async function lirePageTexte(page: string) {
+  const e = await getEntry('pages', page);
+  if (!e) throw new Error(`content/${page}.md introuvable`);
+  const { Content } = await render(e);
+  return { titre: e.data.title, description: e.data.description, updated: e.data.updated as Date | undefined, Content };
+}
+
+/** La page 404 (content/404.md, texte provisoire, lot 3) : le titre de l'en-tête et les paragraphes du corps, rendus par enLigne. */
+export async function lire404() {
+  const { data, blocs } = await corps('404');
+  const titre = blocs.find((b) => b.startsWith('#'));
+  if (titre) throw new Error('content/404.md : des paragraphes seulement, le titre est dans l’en-tête — ' + titre.slice(0, 60));
+  return { titre: data.title as string, description: data.description as string | undefined, paragraphes: blocs };
+}
+
+const MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+/** Une date en français, « 1er octobre 2026 » (en UTC : une date ISO sans heure est à minuit UTC, quel que soit le fuseau de la machine qui construit). */
+export function dateFrancaise(d: Date): string {
+  const jour = d.getUTCDate();
+  return `${jour === 1 ? '1er' : jour} ${MOIS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}

@@ -14,7 +14,13 @@
 //     .page-head et de chaque section.rang, l'image de l'œuvre masquée ; l'œuvre — même boîte, version servie jamais agrandie à 1× et assez grande à 2×,
 //     capture comparée avec la tolérance de la photo du premier écran ; mêmes positions (titre, verbes, paragraphes, cimaise, cartel, haut du pied de
 //     page) ; liens (Créahmbxl avec target, rel et « (nouvel onglet) », Écrivez-nous vers #contact) ; « Engagements » actif avec aria-current dans
-//     l'en-tête, sur cette page seulement ; polices, requêtes, noindex, console.
+//     l'en-tête, sur cette page seulement ; polices, requêtes, noindex, console ;
+//   · les pages de texte sans maquette (lot 6 : mentions légales, confidentialité, 404), alignées sur Engagements : h1 au même x et au même y, colonnes de
+//     gauche et de droite au même x que le verbe et le texte d'Engagements (la première ligne du texte à hauteur de l'œil du numéro ou du titre), filets
+//     de même largeur, 72 px (44 à 390) entre la dernière rangée et le pied de page, numéros 01 à 07 sur la confidentialité et aucun sur les mentions, aucun
+//     débordement horizontal, titre, description, aucune entrée active, noindex, console, requêtes ;
+//   · tout dist/ : aucune occurrence de « julien@ » et chaque mailto égal à site.email, aucun commentaire venu de content/, espaces insécables avant « : »
+//     dans les textes rendus, tous les liens internes répondent sauf /realisations (lot 5 : listé, pas compté), une adresse inconnue sert la 404.
 // En cas d'écart sur une capture : le nombre de pixels différents et une image des écarts (en rouge) dans scripts/ecarts/ (dossier ignoré par Git), avec
 // les deux captures. Affiche « Tout est identique » quand tout passe (code de sortie 1 sinon).
 // Usage, depuis la racine du dépôt, après npm run build : NODE_PATH=$(npm root -g) npm run comparer
@@ -191,14 +197,15 @@ const masquerEntete = (p, oui) => masquer(p, 'masque-entete', '.entete-collante{
 const hauteurDe = p => p.evaluate(() => ({ defilement: document.documentElement.scrollHeight, corps: document.body.getBoundingClientRect().height }));
 // Une page du site telle qu'elle s'est chargée : les polices qu'elle utilise (plus Jost au-dessus de 640 px), toutes depuis /fonts/ (les trois préchargées
 // comprises), aucune requête hors du site, meta robots noindex, console vide.
-async function controlesPage(site, chemin, largeur, polices) {
+async function controlesPage(site, chemin, largeur, polices, { statut404 = false } = {}) {
   const f = await site.p.evaluate(([fs, w]) => ({ ok: fs.concat(w > 640 ? ['400 27.7px Jost'] : []).every(f => document.fonts.check(f)), etat: document.fonts.status, chargees: [...new Set([...document.fonts].filter(f => f.status === 'loaded').map(f => f.family))].join(', ') }), [polices, largeur]);
   const woff = site.requetes.filter(u => u.endsWith('.woff2')).map(u => u.replace(/^.*\//, '')), hors = site.requetes.filter(u => !u.startsWith(SITE + '/'));
   const prechargees = ['instrument-sans-latin-wght-normal.woff2', 'newsreader-latin-opsz-normal.woff2', 'jost-latin-wght-normal.woff2'].every(f => woff.includes(f));
   ok(f.ok && f.etat === 'loaded' && prechargees && site.requetes.filter(u => u.endsWith('.woff2')).every(u => u.startsWith(SITE + '/fonts/')) && !hors.length,
     `polices : ${f.chargees} chargées, ${woff.length} fichiers woff2 depuis /fonts/ (les trois préchargées comprises), aucune requête hors du site (${site.requetes.length} requêtes)` + (hors.length ? ' — HORS SITE : ' + hors.join(', ') : ''));
   ok((await site.p.evaluate(() => document.querySelector('meta[name="robots"]')?.getAttribute('content'))) === 'noindex', `meta robots noindex sur ${chemin}`);
-  ok(!site.erreurs.length, `aucune erreur dans la console sur ${chemin}` + (site.erreurs.length ? ' — ' + site.erreurs.join(' | ') : ''));
+  const erreurs = statut404 ? site.erreurs.filter(e => !/status of 404/.test(e)) : site.erreurs;   // la page 404 est servie avec son statut : le navigateur le note en console
+  ok(!erreurs.length && (!statut404 || site.erreurs.length === 1), `aucune erreur dans la console sur ${chemin}${statut404 ? ' (hors le 404 de l\'adresse elle-même, attendu)' : ''}` + (erreurs.length ? ' — ' + erreurs.join(' | ') : ''));
 }
 const dasharrays = p => p.evaluate(() => [...document.querySelectorAll('.graph__part')].map(c => ({ l: parseFloat(c.style.getPropertyValue('--l')), v: parseFloat(getComputedStyle(c).strokeDasharray) })));
 
@@ -386,6 +393,92 @@ try {
     const actifs = pages.map(f => { const h = fs.readFileSync(path.join(REPO, 'dist', f), 'utf8'); const m = h.match(/<a href="([^"]+)" class="trait is-active"[^>]*aria-current="page"[^>]*>([^<]+)<\/a>/g) || []; return `${f} : ${m.length ? m.map(x => x.replace(/^.*>([^<]+)<\/a>$/, '$1')).join(', ') : '—'}`; });
     ok(pages.includes('engagements.html') && actifs.every(a => a === 'engagements.html : Engagements' || a.endsWith(' : —')) && pages.every(f => (fs.readFileSync(path.join(REPO, 'dist', f), 'utf8').match(/aria-current/g) || []).length === (f === 'engagements.html' ? 1 : 0)),
       `aria-current="page" sur le lien « Engagements » de engagements.html seulement — ${actifs.join(' · ')}`);
+  }
+
+  // ---------- pages de texte sans maquette (lot 6) : mentions légales, confidentialité et 404, sur le gabarit d'Engagements ----------
+  // Les repères sont pris sur la page Engagements du site (identique à la maquette) : x et y du h1, x de la colonne de gauche (le verbe) et de la colonne
+  // de droite (le texte), largeur des filets. Sur chaque page : le h1 au même x et au même y ; le numéro ou le titre de chapitre au x du verbe, le texte au x
+  // du texte d'Engagements, sa première ligne à hauteur de l'œil de la première ligne de gauche (le numéro, sinon le titre : ± 1 px) ; filets de même largeur ;
+  // 72 px (44 à 390) entre le bas de la dernière rangée et le pied de page ; numéros 01 à 07 sur la confidentialité, aucun sur les mentions ; aucun
+  // débordement horizontal ; titre de l'onglet, description, data-page="texte", aucune entrée active ; noindex, console vide, aucune requête hors du site.
+  const PAGES_TEXTE = [
+    ['/mentions-legales', { h1: 'Mentions légales', nums: '', sections: 'editeur-du-site hebergement propriete-intellectuelle', gauche: 'titre' }],
+    ['/confidentialite', { h1: 'Politique de confidentialité', nums: '01 02 03 04 05 06 07', sections: 'responsable-du-traitement donnees-traitees destinataires-et-transferts-hors-union-europeenne duree-de-conservation vos-droits cookies modification-de-cette-politique', gauche: 'numero' }],
+    ['/adresse-inconnue', { h1: 'Page introuvable', nums: '', sections: '', gauche: 'aucune', titre: 'Page introuvable — Perpetual' }],
+  ];
+  // l'œil d'une ligne de texte : sa ligne de base (un inline-block de hauteur nulle, inséré en tête) moins la moitié de la hauteur d'x (canvas)
+  const oeil = `(el) => { const s = document.createElement('span'); s.style.cssText = 'display:inline-block;width:0;height:0'; el.prepend(s); const base = s.getBoundingClientRect().bottom; s.remove();
+    const cs = getComputedStyle(el), c = document.createElement('canvas').getContext('2d'); c.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; return base - c.measureText('x').actualBoundingBoxAscent / 2; }`;
+  for (const format of FORMATS) {
+    console.log(`\nPages de texte, ${fmt(format)}`);
+    const tel = format[0] <= 640;
+    const eng = await ouvrir(SITE + '/engagements', format, { reducedMotion: 'reduce' });
+    const repere = await eng.p.evaluate(() => { const r = s => document.querySelector(s).getBoundingClientRect(); const h1 = r('.page__titre'), g = r('#soutenir .rang__verbe'), d = r('#soutenir .eng-texte p'), rang = r('.rang');
+      return { h1x: Math.round(h1.left), h1y: Math.round(h1.top), gauche: Math.round(g.left), droite: Math.round(d.left), filet: Math.round(rang.width) }; });
+    await eng.ctx.close();
+    for (const [chemin, attendu] of PAGES_TEXTE) {
+      const page = await ouvrir(SITE + chemin, format, { reducedMotion: 'reduce' });
+      const m = await page.p.evaluate((oeilSrc) => {
+        const oeil = eval(oeilSrc), r = e => e.getBoundingClientRect(), h1 = document.querySelector('.page__titre'), rangs = [...document.querySelectorAll('.registre > section.rang')], dernier = rangs[rangs.length - 1];
+        const gauches = rangs.map(s => s.querySelector('.rang__g > :first-child')).filter(Boolean), textes = rangs.map(s => s.querySelector('.page-texte > :first-child'));
+        const premier = textes.map(t => t.tagName === 'UL' || t.tagName === 'OL' ? t.querySelector('li') : t);
+        return { h1: h1.textContent, h1x: Math.round(r(h1).left), h1y: Math.round(r(h1).top), page: document.documentElement.dataset.page, title: document.title, description: document.querySelector('meta[name="description"]')?.content ?? '',
+          sections: rangs.map(s => s.id).join(' '), nums: [...document.querySelectorAll('.chapitre__num')].map(e => e.textContent).join(' '), numerotees: document.querySelectorAll('.rang--numerote').length, h2: [...document.querySelectorAll('h2')].map(h => h.className + (h.id ? '#' + h.id : '')).join(' '),
+          gauche: [...new Set(gauches.map(g => Math.round(r(g).left)))].join(','), droite: [...new Set(premier.map(t => Math.round(r(t).left)))].join(','), filets: [...new Set(rangs.map(s => Math.round(r(s).width)))].join(','),
+          ecarts: gauches.map((g, i) => +(oeil(premier[i]) - oeil(g)).toFixed(1)), sousTitre: [...new Set(rangs.map(s => s.querySelector('.chapitre__titre')).filter(Boolean).map((t, i) => Math.round(r(premier[i]).top - r(t).bottom)))].join(','), pied: Math.round(r(document.querySelector('.site-footer')).top), bas: Math.round(Math.max(...[...dernier.querySelectorAll('*')].map(r).filter(b => b.height > 0).map(b => b.bottom))),
+          deb: document.documentElement.scrollWidth - document.documentElement.clientWidth, actifs: document.querySelectorAll('.site-nav .is-active, .site-nav [aria-current]').length, maj: document.querySelector('.page__maj')?.textContent ?? null,
+          liens: [...document.querySelectorAll('.page-texte a')].map(a => `${a.className} ${a.getAttribute('href')}${a.target ? ' ' + a.target : ''}`).join(' | ') };
+      }, oeil);
+      ok(m.h1 === attendu.h1 && m.h1x === repere.h1x && m.h1y === repere.h1y, `${chemin} : h1 « ${m.h1} » au même x et au même y qu'Engagements (${m.h1x}, ${m.h1y} ; Engagements ${repere.h1x}, ${repere.h1y})`);
+      ok(m.sections === attendu.sections && m.nums === attendu.nums && m.numerotees === attendu.nums.split(' ').filter(Boolean).length && !/#/.test(m.h2),
+        `${chemin} : rangées ${m.sections || '(une, sans titre)'} ; numéros ${m.nums || 'aucun'} ; titres en h2.chapitre__titre sans id (l'id est sur la section)`);
+      ok((attendu.gauche === 'aucune' || m.gauche === String(repere.gauche)) && m.droite === String(repere.droite) && m.filets === String(repere.filet),
+        `${chemin} : colonne de gauche à x = ${m.gauche || '—'} (verbe d'Engagements ${repere.gauche}), texte à x = ${m.droite} (texte d'Engagements ${repere.droite}), filets de ${m.filets} px (${repere.filet})`);
+      if (attendu.gauche !== 'aucune' && !tel) ok(m.ecarts.every(e => Math.abs(e) <= 1), `${chemin} : première ligne du texte à hauteur de l'œil du ${attendu.gauche === 'numero' ? 'numéro' : 'titre'} (écarts ${m.ecarts.join(', ')} px, ± 1 admis)`);
+      if (attendu.gauche !== 'aucune' && tel) ok(m.sousTitre === '16', `${chemin} : une colonne — ${attendu.gauche === 'numero' ? 'le numéro, ' : ''}le titre, puis le texte ${m.sousTitre} px dessous (16 attendus)`);
+      ok(m.pied - m.bas === (tel ? 44 : 72), `${chemin} : bas de la dernière rangée → haut du pied de page, ${m.pied - m.bas} px (${tel ? 44 : 72} attendus)`);
+      ok(m.deb === 0 && m.page === 'texte' && m.title === (attendu.titre ?? `${attendu.h1} — Perpetual`) && (chemin === '/adresse-inconnue' || m.description.length > 20) && m.actifs === 0,
+        `${chemin} : aucun débordement horizontal (${m.deb} px), html data-page="${m.page}", titre « ${m.title} »${m.description ? ', description de l\'en-tête' : ''}, aucune entrée active dans l'en-tête`);
+      if (chemin === '/confidentialite') ok(m.maj === null, `${chemin} : updated vide dans l'en-tête — pas de ligne « Dernière mise à jour » (le build l'a signalé)`);
+      if (chemin === '/adresse-inconnue') ok(m.liens === 'lien-texte /', `${chemin} : la page 404 — un paragraphe, le lien « Revenir à l'accueil » vers / (${m.liens})`);
+      await controlesPage(page, chemin, format[0], ['400 17px "Instrument Sans"', 'italic 400 22px Newsreader'].concat(attendu.gauche === 'aucune' ? [] : ['500 26px "Instrument Sans"']), { statut404: chemin === '/adresse-inconnue' });
+      await page.ctx.close();
+    }
+  }
+
+  // ---------- tout dist/ ----------
+  console.log('\ndist/');
+  {
+    const DIST = path.join(REPO, 'dist');
+    const htmls = []; (function marcher(d) { for (const f of fs.readdirSync(d)) { const q = path.join(d, f); if (fs.statSync(q).isDirectory()) marcher(q); else if (f.endsWith('.html')) htmls.push(path.relative(DIST, q)); } })(DIST);
+    const lire = f => fs.readFileSync(path.join(DIST, f), 'utf8');
+    const siteJson = JSON.parse(fs.readFileSync(path.join(REPO, 'data/site.json'), 'utf8'));
+    // aucune occurrence de « julien@ » ; chaque mailto égal à site.email
+    const juliens = htmls.filter(f => lire(f).includes('julien@')), mailtos = htmls.flatMap(f => [...lire(f).matchAll(/mailto:([^"'\s<>]+)/g)].map(x => x[1]));
+    ok(!juliens.length && mailtos.length > 0 && mailtos.every(m => m === siteJson.email), `${htmls.length} pages : aucune occurrence de « julien@ » ; ${mailtos.length} mailto, tous vers ${siteJson.email}` + (juliens.length ? ' — julien@ dans ' + juliens.join(', ') : ''));
+    // aucun commentaire venu de content/ (les notes internes des fichiers Markdown)
+    const notes = fs.readdirSync(path.join(REPO, 'content')).filter(f => f.endsWith('.md')).flatMap(f => [...fs.readFileSync(path.join(REPO, 'content', f), 'utf8').matchAll(/<!--([\s\S]*?)-->/g)].map(x => x[1].trim()));
+    const commentaires = htmls.flatMap(f => [...lire(f).matchAll(/<!--([\s\S]*?)-->/g)].map(x => ({ f, c: x[1].trim() })));
+    const fuites = commentaires.filter(c => notes.some(n => n && (c.c.includes(n.slice(0, 40)) || n.includes(c.c.slice(0, 40)))));
+    ok(!fuites.length && !commentaires.length, `aucun commentaire HTML dans les pages (${notes.length} notes dans content/, ${commentaires.length} commentaires publiés)` + (commentaires.length ? ' — ' + commentaires.map(c => `${c.f} : ${c.c.slice(0, 50)}`).join(' ; ') : ''));
+    // espaces insécables avant « : » dans les textes rendus (le <main> de chaque page, balises et scripts retirés)
+    // (les pages de ce lot, dont les textes passent par enLigne ou le plugin ; la Home et /dev/photos insèrent leurs textes tels quels, comme la maquette : en information)
+    const LOT = ['engagements.html', 'mentions-legales.html', 'confidentialite.html', '404.html'];
+    const textes = htmls.map(f => ({ f, t: (lire(f).match(/<main>([\s\S]*?)<\/main>/) || ['', ''])[1].replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, '') }));
+    const simples = textes.filter(x => LOT.includes(x.f) && / :/.test(x.t)), insecables = textes.filter(x => LOT.includes(x.f)).reduce((n, x) => n + (x.t.match(/\u00A0:/g) || []).length, 0), autres = textes.filter(x => !LOT.includes(x.f) && / :/.test(x.t)).map(x => x.f);
+    ok(LOT.every(f => htmls.includes(f)) && !simples.length && insecables > 0, `espaces insécables avant « : » dans les textes rendus des quatre pages (${insecables} « : », aucune espace simple devant)` + (simples.length ? ' — espace simple dans ' + simples.map(x => x.f).join(', ') : '') + (autres.length ? ` ; textes insérés tels quels, non vérifiés : ${autres.join(', ')}` : ''));
+    // tous les liens internes répondent, sauf /realisations (lot 5 : listé, pas compté comme échec)
+    const liens = new Map();
+    for (const f of htmls) for (const m of lire(f).matchAll(/<a [^>]*href="([^"]+)"/g)) { const h = m[1]; if (/^(https?:|mailto:|tel:)/.test(h)) continue; const cible = h.startsWith('#') ? '/' + f.replace(/index\.html$/, '').replace(/\.html$/, '') + h : h; liens.set(cible, (liens.get(cible) || new Set()).add(f)); }
+    const reponses = [];
+    for (const [cible] of liens) { const chemin = cible.replace(/#.*$/, ''), r = await fetch(SITE + chemin), html = r.ok ? await r.text() : ''; const ancre = cible.includes('#') ? cible.slice(cible.indexOf('#') + 1) : null;
+      reponses.push({ cible, chemin, statut: r.status, ancre: ancre ? new RegExp(`id="${ancre}"`).test(html) : true }); }
+    const attendus = reponses.filter(r => r.chemin !== '/realisations'), echecs = attendus.filter(r => r.statut !== 200 || !r.ancre), real = reponses.find(r => r.chemin === '/realisations');
+    ok(!echecs.length && attendus.length >= 5, `${reponses.length} liens internes : ${attendus.length} répondent (ancres comprises)${real ? ` ; /realisations → ${real.statut} (lot 5, listé, pas compté)` : ''}` + (echecs.length ? ' — en échec : ' + echecs.map(r => `${r.cible} (${r.statut}${r.ancre ? '' : ', ancre absente'})`).join(', ') : ''));
+    // une adresse inconnue sert la 404 (astro preview, comme GitHub Pages), en chemins absolus
+    const r404 = await fetch(SITE + '/une/adresse/inconnue'), h404 = await r404.text();
+    const relatifs = [...h404.matchAll(/(?:href|src)="([^"]+)"/g)].map(x => x[1]).filter(u => !/^(\/|https?:|mailto:|#)/.test(u));
+    ok(r404.status === 404 && h404.includes('Page introuvable') && !relatifs.length, `une adresse inconnue répond ${r404.status} avec la page « Page introuvable » (dist/404.html), chemins absolus partout` + (relatifs.length ? ' — relatifs : ' + relatifs.join(', ') : ''));
   }
 
   console.log('\n/dev/photos');
