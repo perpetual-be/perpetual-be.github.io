@@ -9,7 +9,8 @@
 //     jamais agrandie à 1× et la plus grande à 2×, capture comparée avec une tolérance de compression (l'AVIF du site n'est pas le JPEG de la maquette :
 //     l'écart moyen par canal doit rester faible), l'accroche en blanc dessus identique au pixel près une fois la photo masquée ; le remplissage de l'anneau
 //     sans réduire les animations : vide avant l'arrivée à l'écran, encore vide quand la section est à moitié visible mais l'anneau coupé par le bas de la
-//     fenêtre (retouche du 01/10 : il démarre quand l'anneau est entièrement à l'écran), en cours à 500 ms, plein à 2,3 s ;
+//     fenêtre (retouche du 01/10 : il démarre quand l'anneau est entièrement à l'écran), en cours à 500 ms, plein à 2,3 s ; « Contact » → #contact en
+//     défilement fluide (scroll-behavior: smooth, site seulement), saut immédiat en mouvement réduit ;
 //   · Engagements (lot 6), comparée à design/maquette/engagements.html?panneau=off : même hauteur de page ; captures identiques au pixel près de
 //     .page-head et de chaque section.rang, l'image de l'œuvre masquée ; l'œuvre — même boîte, version servie jamais agrandie à 1× et assez grande à 2×,
 //     capture comparée avec la tolérance de la photo du premier écran ; mêmes positions (titre, verbes, paragraphes, cimaise, cartel, haut du pied de
@@ -67,11 +68,12 @@ async function ouvrir(url, [w, h], options = {}) {
   p.on('request', r => requetes.push(r.url()));
   await p.goto(url, { waitUntil: 'networkidle' });
   await p.evaluate(() => document.fonts.ready);
-  await p.evaluate(() => window.scrollTo(0, 0));
+  await p.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   return { p, ctx, erreurs, requetes };
 }
 const rect = (p, sel) => p.evaluate(s => { const el = document.querySelector(s); if (!el) return null; const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, width: r.width, height: r.height }; }, sel);
-const haut = p => p.evaluate(() => window.scrollTo(0, 0));
+// Les défilements du script sont instantanés (behavior: 'instant') : le site défile en fluide vers les ancres (scroll-behavior: smooth), pas le script.
+const haut = p => p.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
 // Boîtes des éléments ([x, y, largeur, hauteur] au pixel ; y depuis le haut de la section `origine`, ou depuis le haut du document) : « .site-nav a », « .site-nav a[2] »…
 const boites = (p, sels, origine) => p.evaluate(([sels, origine]) => {
   const o = origine ? document.querySelector(origine).getBoundingClientRect().top : -window.scrollY, r = {};
@@ -86,7 +88,7 @@ function memesBoites(a, b, nom, ou) {
 async function amener(p, sel) {
   await p.evaluate(async s => {
     const zone = document.querySelector(s);
-    zone.scrollIntoView({ block: 'start' });
+    zone.scrollIntoView({ block: 'start', behavior: 'instant' });
     const imgs = [...zone.querySelectorAll('img')];
     await Promise.all(imgs.map(i => (i.complete && i.naturalWidth) ? null : Promise.race([new Promise(r => { i.addEventListener('load', r, { once: true }); i.addEventListener('error', r, { once: true }); }), new Promise(r => setTimeout(r, 5000))])));
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
@@ -99,7 +101,7 @@ async function amener(p, sel) {
 // la fenêtre, à une position entière, des deux côtés. (Sur la Home, les deux pages ont la même mise en page : le padding ajouté est le même des deux côtés.)
 async function preparerPied(p) {
   for (let i = 0; i < 4; i++) {
-    await p.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await p.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
     await p.waitForLoadState('networkidle');
     await p.waitForTimeout(400);
     const entier = await p.evaluate(() => {
@@ -121,7 +123,7 @@ async function captureSection(p, sel) {
   const z = await p.evaluate(s => { const r = document.querySelector(s).getBoundingClientRect(); return { top: r.top + window.scrollY, left: r.left, width: r.width, height: r.height }; }, sel);
   const tranches = [];
   for (let y = 0; y < z.height - 0.01; y += vh) {
-    await p.evaluate(t => window.scrollTo(0, t), z.top + y);
+    await p.evaluate(t => window.scrollTo({ top: t, behavior: 'instant' }), z.top + y);
     await p.waitForTimeout(100);
     const haut = z.top + y - (await p.evaluate(() => window.scrollY));   // 0, sauf en fin de page où le défilement est borné
     const h = Math.min(vh - haut, z.height - y);
@@ -267,25 +269,29 @@ try {
 
     // polices et requêtes, noindex, console (la page du site telle qu'elle s'est chargée)
     await controlesPage(site, '/', format[0], ['400 17px "Instrument Sans"', 'italic 400 22px Newsreader', '400 34px Newsreader']);
+    // en mouvement réduit, « Contact » saute au pied de page sans défiler (scroll-behavior: auto)
+    const saut = await site.p.evaluate(() => { window.scrollTo({ top: 0, behavior: 'instant' }); document.querySelector('.site-nav a[href="#contact"]').click();
+      return { y: Math.round(window.scrollY), attendu: Math.round(Math.min(document.querySelector('#contact').getBoundingClientRect().top + window.scrollY, document.documentElement.scrollHeight - window.innerHeight)), comportement: getComputedStyle(document.documentElement).scrollBehavior }; });
+    ok(saut.y === saut.attendu && saut.comportement === 'auto', `« Contact », mouvement réduit : saut immédiat au pied de page (scrollY ${saut.y} px, attendu ${saut.attendu} ; scroll-behavior ${saut.comportement})`);
     await site.ctx.close(); await maq.ctx.close();
 
     // en-tête collant, sans réduire les animations : la page est allongée pour pouvoir défiler quelle que soit sa hauteur
     const normal = await ouvrir(SITE + '/', format);
     const avant = await dasharrays(normal.p), classesAvant = await normal.p.evaluate(() => ({ aRemplir: document.querySelector('.graph').classList.contains('a-remplir'), estRempli: document.querySelector('.graph').classList.contains('est-rempli') }));
-    await normal.p.evaluate(() => { window.scrollTo(0, 0); document.querySelector('main').style.minHeight = '4000px'; });
+    await normal.p.evaluate(() => { window.scrollTo({ top: 0, behavior: 'instant' }); document.querySelector('main').style.minHeight = '4000px'; });
     await normal.p.waitForFunction(() => document.querySelector('.entete-collante').getBoundingClientRect().top === 0, null, { timeout: 2000 }).catch(() => {});
     const hauteur = (await rect(normal.p, '.entete-collante')).height;
     const transition = await normal.p.evaluate(() => getComputedStyle(document.querySelector('.entete-collante')).transitionDuration);
     ok((await rect(normal.p, '.entete-collante')).top === 0 && hauteur === (await rect(normal.p, '.site-header')).height && transition === '0.3s',
       `en-tête collant : en haut de la fenêtre au départ, ${hauteur} px de haut (celle de .site-header), transition de ${transition}`);
-    await normal.p.evaluate(() => window.scrollTo(0, 600));
+    await normal.p.evaluate(() => window.scrollTo({ top: 600, behavior: 'instant' }));
     const cache = await normal.p.waitForFunction(() => document.querySelector('.entete-collante').getBoundingClientRect().bottom <= 0, null, { timeout: 2000 }).then(() => true, () => false);
     ok(cache, `en-tête collant : hors de l'écran après un défilement de 600 px vers le bas (bas à ${(await rect(normal.p, '.entete-collante')).bottom} px)`);
-    await normal.p.evaluate(() => window.scrollTo(0, 500));
+    await normal.p.evaluate(() => window.scrollTo({ top: 500, behavior: 'instant' }));
     const revenu = await normal.p.waitForFunction(() => document.querySelector('.entete-collante').getBoundingClientRect().top === 0, null, { timeout: 2000 }).then(() => true, () => false);
     const r1 = await rect(normal.p, '.entete-collante');
     ok(revenu && r1.top === 0 && r1.height === hauteur && (await normal.p.evaluate(() => window.scrollY)) === 500, `en-tête collant : revenu en haut de la fenêtre après une remontée de 100 px (haut à ${r1.top} px, défilement ${await normal.p.evaluate(() => window.scrollY)})`);
-    await normal.p.evaluate(() => window.scrollTo(0, 1200));
+    await normal.p.evaluate(() => window.scrollTo({ top: 1200, behavior: 'instant' }));
     await normal.p.waitForFunction(() => document.querySelector('.entete-collante').getBoundingClientRect().bottom <= 0, null, { timeout: 2000 }).catch(() => {});
     await normal.p.evaluate(() => document.querySelector('.entete-collante').dispatchEvent(new FocusEvent('focusin', { bubbles: true })));
     const focus = await normal.p.waitForFunction(() => document.querySelector('.entete-collante').getBoundingClientRect().top === 0, null, { timeout: 2000 }).then(() => true, () => false);
@@ -294,6 +300,16 @@ try {
     ok(liens === 'Réalisations → /realisations · Engagements → /engagements · Contact → #contact' && (await normal.p.evaluate(() => document.querySelector('.logo').getAttribute('href') + ' ' + document.querySelector('.logo').getAttribute('aria-label'))) === '/ Perpetual — accueil',
       `navigation : ${liens} ; logo vers / (« Perpetual — accueil »), aucun lien actif sur la Home`);
     ok((await normal.p.evaluate(() => document.title)) === 'Perpetual — Le trait d’union entre les idées et le capital.', `titre de l'onglet : « ${await normal.p.evaluate(() => document.title)} »`);
+    // « Contact » → #contact en défilement fluide (scroll-behavior: smooth, demande d'Axel du 01/10) : en route 80 ms après le clic, arrivé au pied de page ensuite
+    await normal.p.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await normal.p.waitForTimeout(400);
+    const attendu = await normal.p.evaluate(() => Math.round(Math.min(document.querySelector('#contact').getBoundingClientRect().top + window.scrollY, document.documentElement.scrollHeight - window.innerHeight)));
+    await normal.p.click('.site-nav a[href="#contact"]');
+    await normal.p.waitForTimeout(80);
+    const enRoute = await normal.p.evaluate(() => window.scrollY);
+    const arrive = await normal.p.waitForFunction(a => Math.abs(window.scrollY - a) < 1, attendu, { timeout: 3000 }).then(() => true, () => false);
+    ok(enRoute > 0 && enRoute < attendu - 1 && arrive && (await normal.p.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)) === 'smooth',
+      `« Contact » : défilement fluide vers #contact (scrollY ${Math.round(enRoute)} px à 80 ms, ${attendu} px à l'arrivée ; html scroll-behavior smooth)`);
     await normal.ctx.close();
 
     // le remplissage de l'anneau, sans réduire les animations : vide avant l'arrivée à l'écran, en cours à 500 ms, plein à 2,3 s
@@ -301,14 +317,14 @@ try {
     const vide = await dasharrays(rempl.p), cl0 = await rempl.p.evaluate(() => ({ a: document.querySelector('.graph').classList.contains('a-remplir'), e: document.querySelector('.graph').classList.contains('est-rempli'), visible: document.querySelector('.section--chart').getBoundingClientRect().top < window.innerHeight / 2 }));
     ok(cl0.a && !cl0.e && !cl0.visible && vide.every(d => d.v === 0) && vide.length === 3, `remplissage : avant l'arrivée à l'écran, l'anneau est vide (.a-remplir, traits à ${vide.map(d => d.v).join(', ')} sur ${vide.map(d => d.l).join(', ')})`);
     // la section à moitié visible mais l'anneau coupé par le bas de la fenêtre : il reste vide (retouche du 01/10 : le remplissage démarre quand l'anneau est entier à l'écran)
-    await rempl.p.evaluate(() => { const s = document.querySelector('.section--chart').getBoundingClientRect(); window.scrollTo(0, s.top + window.scrollY - (window.innerHeight - s.height / 2)); });
+    await rempl.p.evaluate(() => { const s = document.querySelector('.section--chart').getBoundingClientRect(); window.scrollTo({ top: s.top + window.scrollY - (window.innerHeight - s.height / 2), behavior: 'instant' }); });
     await rempl.p.waitForTimeout(600);
     const moitie = await rempl.p.evaluate(() => { const s = document.querySelector('.section--chart').getBoundingClientRect(), a = document.querySelector('.graph__svg').getBoundingClientRect(), h = window.innerHeight;
       return { section: Math.round((Math.min(s.bottom, h) - Math.max(s.top, 0)) / s.height * 100), coupe: a.top < h && a.bottom > h, estRempli: document.querySelector('.graph').classList.contains('est-rempli') }; });
     const encoreVide = await dasharrays(rempl.p);
     ok(moitie.section >= 50 && moitie.coupe && !moitie.estRempli && encoreVide.every(d => d.v === 0), `remplissage : la section à moitié visible (${moitie.section} %) mais l'anneau coupé par le bas de la fenêtre → l'anneau reste vide (traits à ${encoreVide.map(d => d.v).join(', ')})`);
     const t0 = Date.now();
-    await rempl.p.evaluate(() => document.querySelector('.section--chart').scrollIntoView({ block: 'center' }));
+    await rempl.p.evaluate(() => document.querySelector('.section--chart').scrollIntoView({ block: 'center', behavior: 'instant' }));
     await rempl.p.waitForTimeout(500 - (Date.now() - t0));
     const encours = await dasharrays(rempl.p), cl1 = await rempl.p.evaluate(() => document.querySelector('.graph').classList.contains('est-rempli'));
     ok(cl1 && encours.some(d => d.v > 0.5 && d.v < d.l - 0.5), `remplissage : en cours à 500 ms (.est-rempli ; traits à ${encours.map(d => d.v.toFixed(1)).join(', ')} sur ${encours.map(d => d.l).join(', ')})`);
