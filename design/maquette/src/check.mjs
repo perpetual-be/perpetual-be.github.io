@@ -130,7 +130,7 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok(h2.length === 2 && graphique && /m² en cours de transformation/.test(graphique.texte) && graphique.ff.startsWith('"Instrument Sans"') && graphique.fw === '500' && graphique.fs === '28px', `titre du graphique : sans medium 28 px (.h2--sans) — « ${graphique && graphique.texte} »`);
   // titre de la carte calculé (30/09) : nombre de biens avec une adresse en toutes lettres, villes extrêmes de belgique.json ; autant de points que de biens
   const nAdresses = JSON.parse(fs.readFileSync(path.resolve(MAQ, '../../data/projects.json'), 'utf8')).filter(x => x.address).length;
-  const villesCarte = JSON.parse(fs.readFileSync(path.join(HERE, 'carte/belgique.json'), 'utf8')).villes;
+  const villesCarte = JSON.parse(fs.readFileSync(path.resolve(MAQ, '../../data/carte/belgique.json'), 'utf8')).villes;
   ok(carteH2 && carteH2.texte.startsWith(capitale(enLettres(nAdresses, true)) + (nAdresses > 1 ? ' adresses, ' : ' adresse, ')) && carteH2.ff.startsWith('Newsreader') && carteH2.fw === '400' && carteH2.fs === '34px', `titre de la carte : serif 34 px (.h2--serif), nombre calculé — « ${carteH2 && carteH2.texte} »`);
   ok(villesCarte.length === nAdresses, `carte : un point par bien avec une adresse (${villesCarte.length} dans belgique.json, ${nAdresses} dans projects.json)`);
   ok([[1, 'un'], [17, 'dix-sept'], [20, 'vingt'], [71, 'soixante et onze'], [80, 'quatre-vingts'], [91, 'quatre-vingt-onze'], [200, 'deux cents'], [201, 'deux cent un']].every(([n, s]) => enLettres(n) === s) && enLettres(21, true) === 'vingt et une' && enLettres(1, true) === 'une', 'nombres.mjs : nombres en toutes lettres (vingt et une, soixante et onze, quatre-vingts…)');

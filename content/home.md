@@ -2,6 +2,7 @@
 title: Home
 subtitle: Positionnement et preuves
 description: Perpetual — le trait d’union entre les idées et le capital. Promoteur et développeur immobilier, Bruxelles, actif depuis 2002.
+hero: { photo: community-05, focal: "50% 20%" }
 stats:
   - value: "2002"
     label: Nos débuts

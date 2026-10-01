@@ -1,0 +1,106 @@
+/* Home du site (lot 4, 01/10/2026) : les règles de design/maquette/maquette.css pour la Home, reprises telles quelles — premier écran et bande des
+   chiffres, graphique en anneau (sans les barres ni la bascule), carte, Collectif et partenaires (section 4) ; .section--chart (section 3) ; leurs règles
+   téléphone (sections 5 et 7) et mouvement réduit (section 5). Rien de la liste des 4, qui n'est plus sur la Home. Importé par src/pages/index.astro,
+   après le socle (src/styles/base.css…). Balisage : src/components/home/. */
+.section--chart{padding-top:64px}   /* 64 px entre la fin des paragraphes de la Home et « 11 150 m² … » (gel du 23/09) */
+
+/* premier écran (structure F, figée le 23/09) : la photo pleine largeur porte l'accroche en blanc, en haut à gauche du container ; la bande des
+   chiffres vient juste après la photo, puis les paragraphes en deux colonnes — le premier à gauche, le second à droite avec la signature
+   dessous (gel du 23/09 : les deux colonnes s'équilibrent). La grille du hero passe en display:contents, ses enfants (accroche, texte)
+   se replacent dans une grille à une colonne avec la photo et la bande. */
+.hero{display:grid;grid-template-columns:minmax(0,1fr);padding:0}
+.hero__grid{display:contents}
+.hero__title{grid-area:1/1/2/2;position:relative;z-index:1;align-self:start;justify-self:center;width:100%;max-width:var(--max);padding:var(--photo-haut) var(--gutter) 0;font-family:var(--serif);font-weight:400;font-size:var(--fs-accroche);line-height:1.08;letter-spacing:-.012em;text-wrap:balance;color:var(--photo-texte)}
+.hero__title span{display:inline-block;max-width:24ch}
+.hero__text{grid-area:3/1/4/2;justify-self:center;width:100%;max-width:var(--max);margin:0;padding:56px var(--gutter) 0;display:grid;grid-template-columns:1fr 1fr;column-gap:56px;align-items:start}
+.hero__text p{margin-bottom:16px;max-width:none}
+.hero__text>p,.hero__col p:last-child{margin-bottom:0}   /* le premier paragraphe est seul dans sa colonne : pas de marge sous lui */
+.signature{margin-top:8px;font-family:var(--serif);font-style:italic;font-size:var(--fs-signature);line-height:1.3;color:var(--c-signature)}
+.hero__photo{display:block;grid-area:1/1/2/2;position:relative;overflow:hidden;height:var(--photo-hauteur)}
+.hero__photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}   /* object-position : le point focal de la photo (content/home.md, hero.focal), posé en style sur l'<img> par ProjectPhoto */
+/* voile depuis le coin haut-gauche, celui de l'accroche, pas depuis tout le haut */
+.hero__photo::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 110% 160% at 0 0,rgba(0,0,0,.62) 0%,rgba(0,0,0,.48) 32%,rgba(0,0,0,.22) 60%,transparent 88%)}
+
+/* bande des chiffres : les quatre chiffres et les anneaux (figés le 23/09), juste après la photo */
+.band{background:var(--surface-bande)}
+.stats-band{position:relative;overflow:hidden;padding:var(--bande-haut) 0 var(--bande-bas);grid-area:2/1/3/2}
+.stats-band>.container{position:relative;z-index:1}
+.stats{display:grid;grid-template-columns:repeat(4,1fr)}
+.stat{padding:4px 32px 4px 28px;border-left:1px solid var(--filet)}
+.stat:first-child{border-left:0;padding-left:0}
+.stat__value{display:block;font-family:var(--serif);font-weight:400;font-size:var(--fs-chiffre);line-height:1;color:var(--c-chiffre);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.stat__label{display:block;font-size:var(--fs-etiquette-chiffre);color:var(--c-etiquette-chiffre);margin-top:10px;max-width:22ch;line-height:1.4}
+.deco{position:absolute;inset:0;pointer-events:none}
+.deco__svg{display:block;position:absolute;top:0;right:0;height:100%;width:420px;color:var(--c-deco)}
+.deco__2{color:var(--c-deco-2)}
+
+/* graphique en anneau (lot 2b, item 1 : « un cercle qui se remplit », Julien, 30/09 ; variante A retenue par Axel le 01/10, 1,8 s) : un anneau, trois parts
+   (anthracite, or, or clair) séparées par un blanc, légende à droite en rangées à filets ; 220 px (180 au téléphone, légende dessous). Traits de 14 unités
+   sans arrondi (pathLength 100 : --l est la longueur d'une part en centièmes du tour). Le tour suit une seule courbe de décélération, découpée en parts
+   (--d départ et --t durée en fractions de --remplissage, --e la portion de courbe : src/components/home/Graphique.astro).
+   Le remplissage : le script du composant pose .a-remplir (vide), puis .est-rempli quand le graphique arrive à l'écran (à moitié visible) — une seule fois.
+   Sans JavaScript, ou avec « réduire les animations », tout est plein d'emblée. */
+.graph--anneau{display:grid;grid-template-columns:220px minmax(0,340px);column-gap:72px;align-items:center}
+.graph__svg{display:block;overflow:visible;width:220px;height:220px}
+.graph__part{fill:none;stroke-width:14;stroke-dasharray:var(--l) 100}
+.graph.a-remplir .graph__part{stroke-dasharray:0 100}
+.graph.a-remplir.est-rempli .graph__part{stroke-dasharray:var(--l) 100;transition:stroke-dasharray calc(var(--t) * var(--remplissage)) var(--e) calc(var(--d) * var(--remplissage))}
+.graph__part--1{stroke:var(--c-part-1)}.graph__part--2{stroke:var(--c-part-2)}.graph__part--3{stroke:var(--c-part-3)}
+.graph__legende li{display:grid;grid-template-columns:12px 1fr auto;align-items:center;column-gap:14px;padding:12px 0;border-top:1px solid var(--filet);font-size:15px}
+.graph__legende li:last-child{border-bottom:1px solid var(--filet)}
+.graph__cle{width:12px;height:12px}
+.graph__cle--1{background:var(--c-part-1)}.graph__cle--2{background:var(--c-part-2)}.graph__cle--3{background:var(--c-part-3)}
+.graph__val{color:var(--c-meta);font-variant-numeric:tabular-nums}
+
+/* réalisations : la carte (figée le 23/09) */
+.carte{display:grid;grid-template-columns:8fr 4fr;gap:64px;align-items:center}
+.carte__fig{max-width:600px}
+.carte__svg{display:block;width:100%;height:auto;font-family:var(--sans);font-size:11px}
+.carte__pays{fill:var(--surface-carte);stroke:none}
+.carte__pt{fill:var(--c-point);stroke:var(--blanc);stroke-width:1.5}
+.carte__lab{fill:var(--c-meta);pointer-events:none;transition:fill .2s,opacity .2s}
+.carte__lab--groupe{fill:var(--c-texte)}
+.carte__lieu:hover .carte__lab{fill:var(--c-texte);opacity:1}
+.carte__texte .h2{margin-bottom:20px}
+.carte__texte p{max-width:46ch;margin-bottom:24px}
+.autres__lien{display:inline-block;color:var(--c-lien);font-size:15px;padding-bottom:1px}
+
+/* collectif et partenaires */
+.collectif__text{max-width:64ch}
+.collectif__text p{margin-bottom:16px}
+.chute{font-family:var(--serif);font-style:italic;font-size:var(--fs-chute);line-height:1.3;color:var(--c-texte);margin-top:24px}
+.partners{display:flex;gap:var(--logo-gap);align-items:center;flex-wrap:wrap;margin-top:48px;padding-top:32px;border-top:1px solid var(--filet)}
+/* --logo-h est posé sur chaque <li> par Collectif.astro (34 px × √(291 / largeur du viewBox), bornée 34–60 px) ; --logo-echelle la réduit sur mobile.
+   Logos figés en couleur le 22/09 (bascule 14 retirée) */
+.partner__couleur{display:block;height:calc(var(--logo-h)*var(--logo-echelle));width:auto}
+
+/* ---------- téléphone (section 5 de maquette.css) ---------- */
+@media (max-width:640px){
+  .section--chart{padding-top:44px}   /* comme dans maquette.css, où la règle téléphone .section{padding:44px 0} (section 5) passe après .section--chart (section 3) ; ici base.css précède home.css */
+  .stats{grid-template-columns:1fr 1fr;gap:22px 0}
+  .stat{padding:0 12px 0 16px}
+  .stat:nth-child(3){border-left:0;padding-left:0}
+  .stat__label{font-size:13px}
+  .deco__svg{width:220px}
+  .graph--anneau{grid-template-columns:1fr;row-gap:28px}
+  .graph__svg{width:180px;height:180px}
+  .carte{grid-template-columns:1fr;gap:28px}
+  .carte__fig{max-width:none}
+  .carte__lab:not([data-rang="1"]){opacity:0}
+  .partners{gap:22px 28px}
+}
+/* ---------- mouvement réduit (section 5) ---------- */
+@media (prefers-reduced-motion:reduce){
+  .carte__lab,.graph__part{transition:none}
+  .graph.a-remplir .graph__part{stroke-dasharray:var(--l) 100}
+}
+/* ---------- téléphone, premier écran (section 7) ---------- */
+@media (max-width:640px){
+  /* photo de 420 px, accroche en bas à gauche, voile depuis le bas, paragraphes en une colonne */
+  .hero__photo{height:420px}
+  .hero__photo::after{background:linear-gradient(to top,var(--voile-fort) 0%,var(--voile-moyen) 45%,transparent 85%)}
+  .hero__title{align-self:end;padding:0 var(--gutter) 28px}
+  .hero__text{grid-template-columns:1fr;padding-top:36px}
+  .hero__text>p{margin-bottom:16px}
+  .signature{margin-top:4px}
+}

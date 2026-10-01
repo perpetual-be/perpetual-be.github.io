@@ -8,6 +8,8 @@ const pages = defineCollection({
     title: z.string(),
     subtitle: z.string().optional(),
     description: z.string().optional(),
+    // Home uniquement : la photo du premier écran (clé <id>-NN, cf. src/lib/photos.ts) et son point focal (object-position), lus par src/pages/index.astro.
+    hero: z.object({ photo: z.string(), focal: z.string().optional() }).optional(),
     // Home uniquement : chiffres clés et répartition du portefeuille.
     stats: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
     portfolio: z
