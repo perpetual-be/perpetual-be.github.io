@@ -377,12 +377,13 @@
   });
 })();
 
-// ---- Home, graphique 11 150 m² (lot 2b, item 1 ; bascule 13) : barres et anneaux se remplissent une fois, quand le graphique arrive à l'écran
-// (à moitié visible), et de nouveau quand on change de variante dans le panneau. Sans IntersectionObserver ou avec « réduire les
-// animations » : rien, tout reste plein (le CSS ne vide que sous .a-remplir). ----
+// ---- Home, graphique 11 150 m² (lot 2b, item 1 ; bascule 13) : barres et anneaux se remplissent une fois, quand le graphique affiché est entièrement
+// à l'écran — retouche du 01/10 : l'anneau lui-même (.graph__svg, threshold 1), plus la section à moitié visible, qui le laissait en partie sous le bas
+// de la fenêtre ; les barres de même quand elles sont la variante affichée (l'autre, masquée, ne croise jamais le seuil) —, et de nouveau quand on change
+// de variante dans le panneau. Sans IntersectionObserver ou avec « réduire les animations » : rien, tout reste plein (le CSS ne vide que sous .a-remplir). ----
 (function () {
-  var graphs = document.querySelectorAll('.graph, .bars'), section = document.querySelector('.section--chart');
-  if (!graphs.length || !section || !('IntersectionObserver' in window)) return;
+  var graphs = document.querySelectorAll('.graph, .bars'), section = document.querySelector('.section--chart'), cibles = document.querySelectorAll('.graph__svg, .bars');
+  if (!graphs.length || !section || !cibles.length || !('IntersectionObserver' in window)) return;
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   var vu = false;
   function vider() { Array.prototype.forEach.call(graphs, function (g) { g.classList.remove('est-rempli'); g.classList.add('a-remplir'); }); }
@@ -395,9 +396,9 @@
   }
   vider();
   var io = new IntersectionObserver(function (entrees) {
-    if (vu || !entrees.some(function (e) { return e.isIntersecting; })) return;
+    if (vu || !entrees.some(function (e) { return e.intersectionRatio >= 1; })) return;   // entier dans la fenêtre (isIntersecting ignore le seuil dans certains navigateurs)
     vu = true; io.disconnect(); jouer();
-  }, { threshold: 0.5 });
-  io.observe(section);
+  }, { threshold: 1 });
+  Array.prototype.forEach.call(cibles, function (c) { io.observe(c); });
   new MutationObserver(function () { if (vu) jouer(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-graphique'] });
 })();
