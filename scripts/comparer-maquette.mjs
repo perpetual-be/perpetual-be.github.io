@@ -19,7 +19,9 @@
 //   · les pages de texte sans maquette (lot 6 : mentions légales, confidentialité, 404), alignées sur Engagements : h1 au même x et au même y, colonnes de
 //     gauche et de droite au même x que le verbe et le texte d'Engagements (la première ligne du texte à hauteur de l'œil du numéro ou du titre), filets
 //     de même largeur, 72 px (44 à 390) entre la dernière rangée et le pied de page, numéros 01 à 07 sur la confidentialité et aucun sur les mentions, aucun
-//     débordement horizontal, titre, description, aucune entrée active, noindex, console, requêtes ;
+//     débordement horizontal, titre, description, aucune entrée active, noindex, console, requêtes ; la 404 (retouche du 01/10) tout dans la colonne de
+//     gauche au-dessus de 640 px (filet et texte au x et à la largeur de la colonne du verbe, 30 px du filet au texte, le lien sur une ligne), inchangée au
+//     téléphone ; aucune ligne ne finit par « e- » (« e-mail » insécable) ;
 //   · tout dist/ : aucune occurrence de « julien@ » et chaque mailto égal à site.email, aucun commentaire venu de content/, espaces insécables avant « : »
 //     dans les textes rendus, tous les liens internes répondent sauf /realisations (lot 5 : listé, pas compté), une adresse inconnue sert la 404.
 // En cas d'écart sur une capture : le nombre de pixels différents et une image des écarts (en rouge) dans scripts/ecarts/ (dossier ignoré par Git), avec
@@ -420,7 +422,7 @@ try {
   const PAGES_TEXTE = [
     ['/mentions-legales', { h1: 'Mentions légales', nums: '', sections: 'editeur-du-site hebergement propriete-intellectuelle', gauche: 'titre' }],
     ['/confidentialite', { h1: 'Politique de confidentialité', nums: '01 02 03 04 05 06 07', sections: 'responsable-du-traitement donnees-traitees destinataires-et-transferts-hors-union-europeenne duree-de-conservation vos-droits cookies modification-de-cette-politique', gauche: 'numero' }],
-    ['/adresse-inconnue', { h1: 'Page introuvable', nums: '', sections: '', gauche: 'aucune', titre: 'Page introuvable — Perpetual' }],
+    ['/adresse-inconnue', { h1: 'Page introuvable', nums: '', sections: '', gauche: 'colonne', titre: 'Page introuvable — Perpetual' }],   // retouche du 01/10 : tout dans la colonne de gauche au-dessus de 640 px
   ];
   // l'œil d'une ligne de texte : sa ligne de base (un inline-block de hauteur nulle, inséré en tête) moins la moitié de la hauteur d'x (canvas)
   const oeil = `(el) => { const s = document.createElement('span'); s.style.cssText = 'display:inline-block;width:0;height:0'; el.prepend(s); const base = s.getBoundingClientRect().bottom; s.remove();
@@ -429,8 +431,8 @@ try {
     console.log(`\nPages de texte, ${fmt(format)}`);
     const tel = format[0] <= 640;
     const eng = await ouvrir(SITE + '/engagements', format, { reducedMotion: 'reduce' });
-    const repere = await eng.p.evaluate(() => { const r = s => document.querySelector(s).getBoundingClientRect(); const h1 = r('.page__titre'), g = r('#soutenir .rang__verbe'), d = r('#soutenir .eng-texte p'), rang = r('.rang');
-      return { h1x: Math.round(h1.left), h1y: Math.round(h1.top), gauche: Math.round(g.left), droite: Math.round(d.left), filet: Math.round(rang.width) }; });
+    const repere = await eng.p.evaluate(() => { const r = s => document.querySelector(s).getBoundingClientRect(); const h1 = r('.page__titre'), g = r('#soutenir .rang__verbe'), col = r('#soutenir .rang__g'), d = r('#soutenir .eng-texte p'), rang = r('.rang');
+      return { h1x: Math.round(h1.left), h1y: Math.round(h1.top), gauche: Math.round(g.left), colonne: Math.round(col.width), droite: Math.round(d.left), filet: Math.round(rang.width) }; });
     await eng.ctx.close();
     for (const [chemin, attendu] of PAGES_TEXTE) {
       const page = await ouvrir(SITE + chemin, format, { reducedMotion: 'reduce' });
@@ -441,6 +443,10 @@ try {
         return { h1: h1.textContent, h1x: Math.round(r(h1).left), h1y: Math.round(r(h1).top), page: document.documentElement.dataset.page, title: document.title, description: document.querySelector('meta[name="description"]')?.content ?? '',
           sections: rangs.map(s => s.id).join(' '), nums: [...document.querySelectorAll('.chapitre__num')].map(e => e.textContent).join(' '), numerotees: document.querySelectorAll('.rang--numerote').length, h2: [...document.querySelectorAll('h2')].map(h => h.className + (h.id ? '#' + h.id : '')).join(' '),
           gauche: [...new Set(gauches.map(g => Math.round(r(g).left)))].join(','), droite: [...new Set(premier.map(t => Math.round(r(t).left)))].join(','), filets: [...new Set(rangs.map(s => Math.round(r(s).width)))].join(','),
+          // le filet : la bordure haute de la rangée, ou de sa colonne de gauche (la 404 au-dessus de 640 px) — x, largeur, et l'écart au texte
+          filet: (() => { const el = [document.querySelector('.rang__g'), rangs[0]].find(e => e && getComputedStyle(e).borderTopWidth !== '0px'); const b = r(el); return { x: Math.round(b.left), l: Math.round(b.width), texte: Math.round(r(premier[0]).top - b.top - parseFloat(getComputedStyle(el).borderTopWidth)) }; })(),   // l'écart se compte sous le filet
+          lignes: [...document.querySelectorAll('.page-texte a')].map(a => a.getClientRects().length).join(','),
+          finEnE: (() => { const n = []; const w = document.createTreeWalker(document.querySelector('.registre'), NodeFilter.SHOW_TEXT); let t; while ((t = w.nextNode())) { for (const m of t.nodeValue.matchAll(/e-\w/gi)) { const rg = document.createRange(); rg.setStart(t, m.index); rg.setEnd(t, m.index + 3); if (rg.getClientRects().length > 1) n.push(m[0]); } } return n; })(),
           ecarts: gauches.map((g, i) => +(oeil(premier[i]) - oeil(g)).toFixed(1)), sousTitre: [...new Set(rangs.map(s => s.querySelector('.chapitre__titre')).filter(Boolean).map((t, i) => Math.round(r(premier[i]).top - r(t).bottom)))].join(','), pied: Math.round(r(document.querySelector('.site-footer')).top), bas: Math.round(Math.max(...[...dernier.querySelectorAll('*')].map(r).filter(b => b.height > 0).map(b => b.bottom))),
           deb: document.documentElement.scrollWidth - document.documentElement.clientWidth, actifs: document.querySelectorAll('.site-nav .is-active, .site-nav [aria-current]').length, maj: document.querySelector('.page__maj')?.textContent ?? null,
           liens: [...document.querySelectorAll('.page-texte a')].map(a => `${a.className} ${a.getAttribute('href')}${a.target ? ' ' + a.target : ''}`).join(' | ') };
@@ -448,16 +454,21 @@ try {
       ok(m.h1 === attendu.h1 && m.h1x === repere.h1x && m.h1y === repere.h1y, `${chemin} : h1 « ${m.h1} » au même x et au même y qu'Engagements (${m.h1x}, ${m.h1y} ; Engagements ${repere.h1x}, ${repere.h1y})`);
       ok(m.sections === attendu.sections && m.nums === attendu.nums && m.numerotees === attendu.nums.split(' ').filter(Boolean).length && !/#/.test(m.h2),
         `${chemin} : rangées ${m.sections || '(une, sans titre)'} ; numéros ${m.nums || 'aucun'} ; titres en h2.chapitre__titre sans id (l'id est sur la section)`);
-      ok((attendu.gauche === 'aucune' || m.gauche === String(repere.gauche)) && m.droite === String(repere.droite) && m.filets === String(repere.filet),
+      if (attendu.gauche === 'colonne' && !tel) ok(m.filet.x === repere.gauche && m.filet.l === repere.colonne && m.droite === String(repere.gauche) && m.filet.texte === 30 && m.lignes === '1',
+        `${chemin} : tout dans la colonne de gauche — filet à x = ${m.filet.x}, ${m.filet.l} px de large (colonne du verbe d'Engagements : ${repere.gauche}, ${repere.colonne} px), texte à x = ${m.droite}, ${m.filet.texte} px sous le filet, le lien « Revenir à l'accueil » sur une ligne`);
+      else if (attendu.gauche === 'colonne') ok(m.droite === String(repere.gauche) && m.filets === String(repere.filet) && m.filet.l === repere.filet && m.filet.texte === 22,
+        `${chemin} : au téléphone, comme avant — une colonne, texte à x = ${m.droite}, filet du container (${m.filet.l} px), ${m.filet.texte} px sous le filet`);
+      else ok(m.gauche === String(repere.gauche) && m.droite === String(repere.droite) && m.filets === String(repere.filet),
         `${chemin} : colonne de gauche à x = ${m.gauche || '—'} (verbe d'Engagements ${repere.gauche}), texte à x = ${m.droite} (texte d'Engagements ${repere.droite}), filets de ${m.filets} px (${repere.filet})`);
-      if (attendu.gauche !== 'aucune' && !tel) ok(m.ecarts.every(e => Math.abs(e) <= 1), `${chemin} : première ligne du texte à hauteur de l'œil du ${attendu.gauche === 'numero' ? 'numéro' : 'titre'} (écarts ${m.ecarts.join(', ')} px, ± 1 admis)`);
-      if (attendu.gauche !== 'aucune' && tel) ok(m.sousTitre === '16', `${chemin} : une colonne — ${attendu.gauche === 'numero' ? 'le numéro, ' : ''}le titre, puis le texte ${m.sousTitre} px dessous (16 attendus)`);
+      ok(!m.finEnE.length, `${chemin} : aucune ligne ne finit par « e- » (« e-mail » insécable)` + (m.finEnE.length ? ' — coupés : ' + m.finEnE.join(', ') : ''));
+      if (attendu.gauche !== 'colonne' && !tel) ok(m.ecarts.every(e => Math.abs(e) <= 1), `${chemin} : première ligne du texte à hauteur de l'œil du ${attendu.gauche === 'numero' ? 'numéro' : 'titre'} (écarts ${m.ecarts.join(', ')} px, ± 1 admis)`);
+      if (attendu.gauche !== 'colonne' && tel) ok(m.sousTitre === '16', `${chemin} : une colonne — ${attendu.gauche === 'numero' ? 'le numéro, ' : ''}le titre, puis le texte ${m.sousTitre} px dessous (16 attendus)`);
       ok(m.pied - m.bas === (tel ? 44 : 72), `${chemin} : bas de la dernière rangée → haut du pied de page, ${m.pied - m.bas} px (${tel ? 44 : 72} attendus)`);
-      ok(m.deb === 0 && m.page === 'texte' && m.title === (attendu.titre ?? `${attendu.h1} — Perpetual`) && (chemin === '/adresse-inconnue' || m.description.length > 20) && m.actifs === 0,
+      ok(m.deb === 0 && m.page === (attendu.gauche === 'colonne' ? 'introuvable' : 'texte') && m.title === (attendu.titre ?? `${attendu.h1} — Perpetual`) && (chemin === '/adresse-inconnue' || m.description.length > 20) && m.actifs === 0,
         `${chemin} : aucun débordement horizontal (${m.deb} px), html data-page="${m.page}", titre « ${m.title} »${m.description ? ', description de l\'en-tête' : ''}, aucune entrée active dans l'en-tête`);
       if (chemin === '/confidentialite') ok(m.maj === null, `${chemin} : updated vide dans l'en-tête — pas de ligne « Dernière mise à jour » (le build l'a signalé)`);
       if (chemin === '/adresse-inconnue') ok(m.liens === 'lien-texte /', `${chemin} : la page 404 — un paragraphe, le lien « Revenir à l'accueil » vers / (${m.liens})`);
-      await controlesPage(page, chemin, format[0], ['400 17px "Instrument Sans"', 'italic 400 22px Newsreader'].concat(attendu.gauche === 'aucune' ? [] : ['500 26px "Instrument Sans"']), { statut404: chemin === '/adresse-inconnue' });
+      await controlesPage(page, chemin, format[0], ['400 17px "Instrument Sans"', 'italic 400 22px Newsreader'].concat(attendu.gauche === 'colonne' ? [] : ['500 26px "Instrument Sans"']), { statut404: chemin === '/adresse-inconnue' });
       await page.ctx.close();
     }
   }
