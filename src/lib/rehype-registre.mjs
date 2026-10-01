@@ -7,7 +7,9 @@
 //     (« 1. Responsable du traitement » ; la section prend alors .rang--numerote et le titre perd son numéro) ; à droite (.rang__d) le reste de la
 //     section, tel que rendu par Astro (gras, italique, listes, liens, retours à la ligne forcés), dans .page-texte ; un bloc hors d'une section arrête le
 //     build, comme pour Engagements ;
-//   · typographie : espaces insécables avant « : ; ? ! » et à l'intérieur des guillemets français (pas dans le code) ;
+//   · typographie : espaces insécables avant « : ; ? ! » et à l'intérieur des guillemets français (pas dans le code) ; « e-mail » et « e-mails » ne se
+//     coupent plus au trait d'union (retouche du 01/10 : un span en white-space: nowrap — Instrument Sans n'a pas le trait d'union insécable U+2011,
+//     qui viendrait d'une autre police) ;
 //   · liens : .lien-texte, mailto compris ; un autre site (http…) s'ouvre dans un nouvel onglet (target _blank, rel noopener), suivi d'un « (nouvel
 //     onglet) » visuellement masqué — comme enLigne() de build.mjs ;
 //   · les commentaires HTML de content/ (des notes internes) ne sont pas publiés.
@@ -23,6 +25,20 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 const SANS_TYPOGRAPHIE = new Set(['code', 'pre', 'script', 'style']);
 /** Les espaces insécables : avant « : ; ? ! » (quand une espace les précède), à l'intérieur de « et ». */
 export const typographie = s => s.replace(/ ([:;?!])/g, ' $1').replace(/«\s/g, '« ').replace(/\s»/g, ' »');
+/** Les mots qui ne se coupent pas au trait d'union (« e-mail », « e-mails »), chacun dans un span en white-space: nowrap (en style : aucune feuille
+ *  partagée à toucher) : le texte devient une suite de nœuds hast — tel quel s'il n'en contient aucun. */
+const INSECABLE = /\b(e-mails?)\b/gi;
+export const insecables = s => {
+  if (!s.match(INSECABLE)) return [{ type: 'text', value: s }];
+  const noeuds = []; let i = 0;
+  for (const m of s.matchAll(INSECABLE)) {
+    if (m.index > i) noeuds.push({ type: 'text', value: s.slice(i, m.index) });
+    noeuds.push({ type: 'element', tagName: 'span', properties: { style: 'white-space:nowrap' }, children: [{ type: 'text', value: m[0] }] });
+    i = m.index + m[0].length;
+  }
+  if (i < s.length) noeuds.push({ type: 'text', value: s.slice(i) });
+  return noeuds;
+};
 /** Un nœud hast copié en objet simple (les nœuds reçus sont des vues sur l'arbre natif de Sätteri). */
 const copier = n => {
   const o = { type: n.type };
@@ -47,8 +63,9 @@ export default function registre({ fichiers }) {
       text(node, c) {
         const parent = c.parent(node);
         if (parent && parent.type === 'element' && SANS_TYPOGRAPHIE.has(parent.tagName)) return;
-        const v = typographie(node.value);
-        if (v !== node.value) c.replaceNode(node, { type: 'text', value: v });
+        const v = typographie(node.value), noeuds = insecables(v);
+        if (noeuds.length > 1) c.replaceNode(node, noeuds);
+        else if (v !== node.value) c.replaceNode(node, { type: 'text', value: v });
       },
       element: {
         filter: ['a'],

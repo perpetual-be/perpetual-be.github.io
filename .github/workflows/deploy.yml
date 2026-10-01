@@ -27,6 +27,10 @@ jobs:
           path: .astro-cache
           key: astro-${{ hashFiles('design/directions/img/**', 'src/components/ProjectPhoto.astro', 'package-lock.json') }}
           restore-keys: astro-
+      # Le cache garde aussi .astro-cache/data-store.json, le Markdown des pages de texte rendu par Astro : il ne se renouvelle que si le fichier Markdown
+      # change, pas quand le plugin qui le met en forme change (src/lib/rehype-registre.mjs). Retiré avant chaque construction : les pages sont rendues à neuf.
+      - name: Rendu du Markdown à neuf
+        run: rm -f .astro-cache/data-store.json
       - name: Install, build, and upload
         uses: withastro/action@v3
         with:

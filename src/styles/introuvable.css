@@ -1,0 +1,13 @@
+/* Page 404 (retouche du lot 6, choix d'Axel du 01/10) : html[data-page="introuvable"]. Les règles de titre des pages de texte, recopiées de
+   src/styles/page.css (ne pas y ajouter ce sélecteur : page.css est dans toutes les pages de texte, qui ne doivent pas bouger) ; puis, au-dessus de
+   640 px, tout dans la colonne de gauche (.rang__g, celle du verbe d'Engagements) : le filet sur cette colonne seulement, 30 px du filet au texte comme
+   dans les rangées, 72 px avant le pied de page (le padding de la rangée, page.css), et le lien « Revenir à l'accueil » entier sur une ligne. Au téléphone,
+   rien ne change (une colonne, le filet du container). Importé par src/pages/404.astro après page.css et texte.css. */
+html[data-page="introuvable"] .page__titre{font-family:var(--sans);font-weight:400;letter-spacing:-.028em;line-height:1.02}
+@media (min-width:641px){
+  html[data-page="introuvable"] .page-head{padding-top:32px;padding-bottom:30px}
+  html[data-page="introuvable"] .rang{border-top:0;padding-top:0}
+  html[data-page="introuvable"] .rang__g{border-top:1px solid var(--filet);padding-top:30px}
+  html[data-page="introuvable"] .page-texte{padding-top:0}
+  html[data-page="introuvable"] .lien-texte{white-space:nowrap}
+}
