@@ -20,7 +20,8 @@
 //     gauche et de droite au même x que le verbe et le texte d'Engagements (la première ligne du texte à hauteur de l'œil du numéro ou du titre), filets
 //     de même largeur, 72 px (44 à 390) entre la dernière rangée et le pied de page, numéros 01 à 07 sur la confidentialité et aucun sur les mentions, aucun
 //     débordement horizontal, titre, description, aucune entrée active, noindex, console, requêtes ; la 404 (retouche du 01/10) tout dans la colonne de
-//     gauche au-dessus de 640 px (filet et texte au x et à la largeur de la colonne du verbe, 30 px du filet au texte, le lien sur une ligne), inchangée au
+//     gauche au-dessus de 640 px (filet et texte au x et à la largeur de la colonne du verbe, 30 px du filet au texte, la phrase sur une ligne et le lien
+//     seul sur la suivante), inchangée au
 //     téléphone ; aucune ligne ne finit par « e- » (« e-mail » insécable) ;
 //   · tout dist/ : aucune occurrence de « julien@ » et chaque mailto égal à site.email, aucun commentaire venu de content/, espaces insécables avant « : »
 //     dans les textes rendus, tous les liens internes répondent sauf /realisations (lot 5 : listé, pas compté), une adresse inconnue sert la 404.
@@ -446,6 +447,9 @@ try {
           // le filet : la bordure haute de la rangée, ou de sa colonne de gauche (la 404 au-dessus de 640 px) — x, largeur, et l'écart au texte
           filet: (() => { const el = [document.querySelector('.rang__g'), rangs[0]].find(e => e && getComputedStyle(e).borderTopWidth !== '0px'); const b = r(el); return { x: Math.round(b.left), l: Math.round(b.width), texte: Math.round(r(premier[0]).top - b.top - parseFloat(getComputedStyle(el).borderTopWidth)) }; })(),   // l'écart se compte sous le filet
           lignes: [...document.querySelectorAll('.page-texte a')].map(a => a.getClientRects().length).join(','),
+          // la 404 : la phrase avant le lien sur une ligne, le lien seul sur la suivante (sa boîte ne dépasse pas son texte)
+          phrase: (() => { const a = document.querySelector('.page-texte a'); if (!a || !a.previousSibling) return null; const rg = document.createRange(); rg.selectNodeContents(a.previousSibling); const t = rg.getClientRects(); const ra = r(a), rp = r(a.parentElement);
+            return { lignes: t.length, lienDessous: Math.round(ra.top) >= Math.round(t[t.length - 1].bottom), lienX: Math.round(ra.left) === Math.round(rp.left), lienLarge: Math.round(ra.width) < Math.round(rp.width) }; })(),
           finEnE: (() => { const n = []; const w = document.createTreeWalker(document.querySelector('.registre'), NodeFilter.SHOW_TEXT); let t; while ((t = w.nextNode())) { for (const m of t.nodeValue.matchAll(/e-\w/gi)) { const rg = document.createRange(); rg.setStart(t, m.index); rg.setEnd(t, m.index + 3); if (rg.getClientRects().length > 1) n.push(m[0]); } } return n; })(),
           ecarts: gauches.map((g, i) => +(oeil(premier[i]) - oeil(g)).toFixed(1)), sousTitre: [...new Set(rangs.map(s => s.querySelector('.chapitre__titre')).filter(Boolean).map((t, i) => Math.round(r(premier[i]).top - r(t).bottom)))].join(','), pied: Math.round(r(document.querySelector('.site-footer')).top), bas: Math.round(Math.max(...[...dernier.querySelectorAll('*')].map(r).filter(b => b.height > 0).map(b => b.bottom))),
           deb: document.documentElement.scrollWidth - document.documentElement.clientWidth, actifs: document.querySelectorAll('.site-nav .is-active, .site-nav [aria-current]').length, maj: document.querySelector('.page__maj')?.textContent ?? null,
@@ -454,8 +458,8 @@ try {
       ok(m.h1 === attendu.h1 && m.h1x === repere.h1x && m.h1y === repere.h1y, `${chemin} : h1 « ${m.h1} » au même x et au même y qu'Engagements (${m.h1x}, ${m.h1y} ; Engagements ${repere.h1x}, ${repere.h1y})`);
       ok(m.sections === attendu.sections && m.nums === attendu.nums && m.numerotees === attendu.nums.split(' ').filter(Boolean).length && !/#/.test(m.h2),
         `${chemin} : rangées ${m.sections || '(une, sans titre)'} ; numéros ${m.nums || 'aucun'} ; titres en h2.chapitre__titre sans id (l'id est sur la section)`);
-      if (attendu.gauche === 'colonne' && !tel) ok(m.filet.x === repere.gauche && m.filet.l === repere.colonne && m.droite === String(repere.gauche) && m.filet.texte === 30 && m.lignes === '1',
-        `${chemin} : tout dans la colonne de gauche — filet à x = ${m.filet.x}, ${m.filet.l} px de large (colonne du verbe d'Engagements : ${repere.gauche}, ${repere.colonne} px), texte à x = ${m.droite}, ${m.filet.texte} px sous le filet, le lien « Revenir à l'accueil » sur une ligne`);
+      if (attendu.gauche === 'colonne' && !tel) ok(m.filet.x === repere.gauche && m.filet.l === repere.colonne && m.droite === String(repere.gauche) && m.filet.texte === 30 && m.lignes === '1' && m.phrase && m.phrase.lignes === 1 && m.phrase.lienDessous && m.phrase.lienX && m.phrase.lienLarge && m.deb === 0,
+        `${chemin} : tout dans la colonne de gauche — filet à x = ${m.filet.x}, ${m.filet.l} px de large (colonne du verbe d'Engagements : ${repere.gauche}, ${repere.colonne} px), texte à x = ${m.droite}, ${m.filet.texte} px sous le filet ; la phrase sur une ligne, le lien « Revenir à l'accueil » seul sur la ligne suivante, à la largeur de son texte`);
       else if (attendu.gauche === 'colonne') ok(m.droite === String(repere.gauche) && m.filets === String(repere.filet) && m.filet.l === repere.filet && m.filet.texte === 22,
         `${chemin} : au téléphone, comme avant — une colonne, texte à x = ${m.droite}, filet du container (${m.filet.l} px), ${m.filet.texte} px sous le filet`);
       else ok(m.gauche === String(repere.gauche) && m.droite === String(repere.droite) && m.filets === String(repere.filet),
