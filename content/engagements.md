@@ -1,6 +1,12 @@
 ---
 title: Engagements
 description: Aider bénévolement, transmettre à La Cambre-Horta, soutenir le Créahmbxl — les trois engagements de Perpetual.
+oeuvre:
+  rang: soutenir
+  photo: ines-reddah-2024-recadree
+  legende: Ines Reddah, 2024
+  detail: Feutres et acrylique, 65 × 82 cm
+  alt: "Peinture d’Ines Reddah, 2024 : deux grands visages ronds cernés de bleu et de rose, entourés de traits verticaux de couleur."
 ---
 
 <!-- Texte brut de Julien (PDF v2 du 10/09/2026), tel quel. -->
@@ -16,7 +22,7 @@ Nous mettons en place avec eux un soutien logistique et financier de longue dur�
 
 <!--
 Le lien Créahmbxl s’ouvre dans un nouvel onglet (liens externes : target="_blank" rel="noopener" au rendu).
-Œuvre — Créahmbxl : l’œuvre (Ines Reddah, 2024, recadrée) est sur une cimaise sous « Soutenir » ; ses données sont dans build.mjs (design/maquette/src/, objet oeuvre).
+Œuvre — Créahmbxl : l’œuvre (Ines Reddah, 2024, recadrée) est sur une cimaise sous « Soutenir » ; ses données sont dans l’en-tête de ce fichier (oeuvre : la rangée, la clé de la photo — design/directions/img/<clé>.jpg —, la légende et le détail du cartel, qui garde ses espaces insécables, le texte alternatif), lues par la maquette et par le site.
 -->
 
 ## Aider

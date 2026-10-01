@@ -5,7 +5,11 @@
 // maquette (`focal`, ex. « 50% 20% »). Texte alternatif fourni par la page : alt="" pour une photo décorative (c'est le cas partout dans la maquette) ;
 // les légendes viendront des données au lot 5. Photo du premier écran : loading="eager" et fetchpriority="high". Le `src` de repli (navigateurs
 // sans srcset) est plafonné à 1 200 px : sinon Astro le produirait à la taille de la source, un gros JPEG par photo pour presque personne.
+// `ratioSource` (lot 6) : le format de la source posé en aspect-ratio sur l'<img>, pour une photo entière en width: 100 % / height: auto (l'œuvre
+// d'Engagements) — sans lui, la hauteur de la boîte suit la version servie, dont la hauteur est arrondie au pixel (340 × 442 pour 870 × 1132 :
+// 442 px au lieu de 442,39), et tout ce qui suit se décale d'une fraction de pixel selon la version choisie par le navigateur.
 import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import { photoSource } from '../lib/photos';
 
 interface Props {
@@ -18,10 +22,16 @@ interface Props {
   loading?: 'lazy' | 'eager';
   fetchpriority?: 'high' | 'low' | 'auto';
   class?: string;
+  /** Vrai : la boîte de l'<img> garde le format de la source (aspect-ratio en style), quelle que soit la version servie. */
+  ratioSource?: boolean;
 }
 
-const { cle, alt = '', sizes = '100vw', largeurs = [800, 1200, 1800, 2800], focal, loading = 'lazy', fetchpriority, class: className } = Astro.props;
+const { cle, alt = '', sizes = '100vw', largeurs = [800, 1200, 1800, 2800], focal, loading = 'lazy', fetchpriority, class: className, ratioSource = false } = Astro.props;
 const source = await photoSource(cle);
+// Les dimensions de la source sans la lire directement : l'image importée est un Proxy d'Astro qui, à la première propriété lue, garde le fichier original
+// dans le site publié (500 Ko pour l'œuvre) ; sa copie (`clone`), que getImage() d'Astro utilise lui-même, ne le fait pas.
+const dims = ratioSource ? ((source as ImageMetadata & { clone?: ImageMetadata }).clone ?? source) : undefined;
+const style = [focal ? `object-position:${focal}` : '', dims ? `aspect-ratio:${dims.width}/${dims.height}` : ''].filter(Boolean).join(';') || undefined;
 ---
 
 <Picture
@@ -36,6 +46,6 @@ const source = await photoSource(cle);
   decoding="async"
   fetchpriority={fetchpriority}
   class={className}
-  style={focal ? `object-position:${focal}` : undefined}
+  style={style}
   data-cle={cle}
 />

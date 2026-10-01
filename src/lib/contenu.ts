@@ -44,3 +44,53 @@ export async function lireAgences(): Promise<string> {
   if (!agences || agences.startsWith('#')) throw new Error('content/realisations.md : paragraphe du programme agences introuvable');
   return agences;
 }
+
+/** Slug d'un titre, comme build.mjs : accents retirés, minuscules, tirets (« Soutenir » → soutenir, « 1. Responsable du traitement » → 1-responsable-du-traitement). */
+export const slug = (s: string): string =>
+  s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+/** Le Markdown en ligne d'un paragraphe, comme enLigne() de build.mjs : les liens seuls sont rendus, en .lien-texte — une ancre ou une page telle quelle
+ *  ([Écrivez-nous](#contact)), un autre site dans un nouvel onglet (target _blank, rel noopener, « (nouvel onglet) » visuellement masqué) ; puis l'espace
+ *  insécable avant « : ». Le reste du texte est inséré tel quel. */
+export const enLigne = (md: string): string =>
+  md.replace(/ :/g, ' :').replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, texte, href) =>
+    /^https?:\/\//.test(href)
+      ? `<a class="lien-texte" href="${esc(href)}" target="_blank" rel="noopener">${texte}<span class="visuellement-masque"> (nouvel onglet)</span></a>`
+      : `<a class="lien-texte" href="${esc(href)}">${texte}</a>`,
+  );
+
+/** L'œuvre de la page Engagements (en-tête de content/engagements.md, oeuvre) : la rangée qui la porte, la clé de la photo, la légende et le détail du
+ *  cartel, le texte alternatif. */
+export interface Oeuvre {
+  rang: string;
+  photo: string;
+  legende: string;
+  detail: string;
+  alt: string;
+}
+/** Une rangée du registre d'Engagements : le verbe (un titre ##), son id (slug), ses paragraphes (les blocs jusqu'au titre suivant). */
+export interface RangEngagement {
+  verbe: string;
+  id: string;
+  paragraphes: string[];
+}
+
+/** Engagements (content/engagements.md), lu comme par build.mjs : le titre et la description de l'en-tête, puis une rangée par titre ## — le verbe,
+ *  l'id tiré du verbe, les paragraphes qui le suivent jusqu'au titre suivant (un bloc hors d'une rangée arrête le build) — et l'œuvre de l'en-tête,
+ *  dont la rangée doit exister. */
+export async function lireEngagements() {
+  const { data, blocs } = await corps('engagements');
+  const rangs: RangEngagement[] = [];
+  for (const b of blocs) {
+    if (b.startsWith('## ')) rangs.push({ verbe: b.slice(3).trim(), id: slug(b.slice(3)), paragraphes: [] });
+    else if (rangs.length && !b.startsWith('#')) rangs[rangs.length - 1].paragraphes.push(b);
+    else throw new Error('content/engagements.md : bloc hors d’une rangée ## — ' + b.slice(0, 60));
+  }
+  const oeuvre = data.oeuvre as Oeuvre | undefined;
+  if (!oeuvre) throw new Error('content/engagements.md : oeuvre (rang, photo, legende, detail, alt) manquante dans l’en-tête');
+  if (!rangs.some((r) => r.id === oeuvre.rang)) throw new Error(`content/engagements.md : pas de rangée #${oeuvre.rang} pour l’œuvre`);
+  return { titre: data.title as string, description: data.description as string | undefined, rangs, oeuvre };
+}
+

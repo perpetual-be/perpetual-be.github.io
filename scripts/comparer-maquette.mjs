@@ -9,7 +9,12 @@
 //     jamais agrandie à 1× et la plus grande à 2×, capture comparée avec une tolérance de compression (l'AVIF du site n'est pas le JPEG de la maquette :
 //     l'écart moyen par canal doit rester faible), l'accroche en blanc dessus identique au pixel près une fois la photo masquée ; le remplissage de l'anneau
 //     sans réduire les animations : vide avant l'arrivée à l'écran, encore vide quand la section est à moitié visible mais l'anneau coupé par le bas de la
-//     fenêtre (retouche du 01/10 : il démarre quand l'anneau est entièrement à l'écran), en cours à 500 ms, plein à 2,3 s.
+//     fenêtre (retouche du 01/10 : il démarre quand l'anneau est entièrement à l'écran), en cours à 500 ms, plein à 2,3 s ;
+//   · Engagements (lot 6), comparée à design/maquette/engagements.html?panneau=off : même hauteur de page ; captures identiques au pixel près de
+//     .page-head et de chaque section.rang, l'image de l'œuvre masquée ; l'œuvre — même boîte, version servie jamais agrandie à 1× et assez grande à 2×,
+//     capture comparée avec la tolérance de la photo du premier écran ; mêmes positions (titre, verbes, paragraphes, cimaise, cartel, haut du pied de
+//     page) ; liens (Créahmbxl avec target, rel et « (nouvel onglet) », Écrivez-nous vers #contact) ; « Engagements » actif avec aria-current dans
+//     l'en-tête, sur cette page seulement ; polices, requêtes, noindex, console.
 // En cas d'écart sur une capture : le nombre de pixels différents et une image des écarts (en rouge) dans scripts/ecarts/ (dossier ignoré par Git), avec
 // les deux captures. Affiche « Tout est identique » quand tout passe (code de sortie 1 sinon).
 // Usage, depuis la racine du dépôt, après npm run build : NODE_PATH=$(npm root -g) npm run comparer
@@ -29,6 +34,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '..');
 const ECARTS = path.join(HERE, 'ecarts');
 const MAQUETTE = pathToFileURL(path.join(REPO, 'design/maquette/index.html')).href + '?panneau=off';
+const MAQUETTE_ENGAGEMENTS = pathToFileURL(path.join(REPO, 'design/maquette/engagements.html')).href + '?panneau=off';
 const FORMATS = [[1521, 705], [1920, 1080], [390, 844]];
 const CHROMIUM_PREINSTALLE = '/opt/pw-browsers/chromium';
 const TOLERANCE_PHOTO = 4;   // écart moyen par canal (sur 255) admis entre l'AVIF du site et le JPEG de la maquette, dans la zone de la photo du premier écran
@@ -151,8 +157,12 @@ async function comparer(nom, site, maquette) {
   }
   return { differents, taille, detail };
 }
-// Écart moyen par canal (R, V, B, sur 255) entre deux captures de même taille : la photo du premier écran, AVIF contre JPEG.
-async function ecartMoyen(nom, site, maquette) {
+// Écart moyen par canal (R, V, B, sur 255) entre deux captures de même taille : la photo du premier écran, AVIF contre JPEG. `flou` (sigma, en px) :
+// les deux captures sont floutées avant la mesure — pour l'œuvre d'Engagements, dont le site sert une réduction faite par sharp (340 px) quand la maquette
+// réduit le JPEG de 870 px dans le navigateur : deux ré-échantillonnages des traits fins, qui diffèrent d'environ 11/255 en moyenne sans flou (18 entre deux
+// réductions sans perte) ; flouté, ce qui reste est une erreur de couleur, de cadrage ou de position.
+async function ecartMoyen(nom, site, maquette, flou = 0) {
+  if (flou) [site, maquette] = await Promise.all([site, maquette].map(b => sharp(b).blur(flou).png().toBuffer()));
   const { A, B, memeTaille, taille, tailleB } = await decoder(site, maquette);
   if (!memeTaille) { garder(nom, site, maquette); return { ok: false, taille, detail: `tailles différentes : site ${taille}, maquette ${tailleB}` }; }
   const n = A.info.width * A.info.height, somme = [0, 0, 0];
@@ -171,7 +181,25 @@ const infosPhoto = p => p.evaluate(() => {
   const z = document.querySelector('.hero__photo'), i = z.querySelector('img'), b = z.getBoundingClientRect(), bi = i.getBoundingClientRect(), s = getComputedStyle(i);
   return { boite: { left: b.left, top: b.top, width: b.width, height: b.height }, img: [Math.round(bi.left), Math.round(bi.top), Math.round(bi.width), Math.round(bi.height)], position: s.objectPosition, fit: s.objectFit, src: i.currentSrc, w: bi.width, h: bi.height };
 });
-const masquerPhoto = (p, oui) => p.evaluate(m => { let st = document.getElementById('masque-photo'); if (m && !st) { st = document.createElement('style'); st.id = 'masque-photo'; st.textContent = '.hero__photo img{visibility:hidden}'; document.head.appendChild(st); } if (!m && st) st.remove(); }, oui);
+// Une feuille de style posée (oui) ou retirée (non) dans la page : masquer une image (visibility: hidden, sa boîte reste), ou l'en-tête collant du site.
+const masquer = (p, id, css, oui) => p.evaluate(([id, css, m]) => { let st = document.getElementById(id); if (m && !st) { st = document.createElement('style'); st.id = id; st.textContent = css; document.head.appendChild(st); } if (!m && st) st.remove(); }, [id, css, oui]);
+const masquerPhoto = (p, oui) => masquer(p, 'masque-photo', '.hero__photo img{visibility:hidden}', oui);
+// L'en-tête collant du site (absent de la maquette) revient dès qu'on remonte dans la page et recouvre le haut de la fenêtre : masqué pendant les captures
+// d'une page qui n'est pas parcourue de haut en bas (sa boîte reste, la mise en page ne bouge pas).
+const masquerEntete = (p, oui) => masquer(p, 'masque-entete', '.entete-collante{visibility:hidden}', oui);
+// Hauteur totale d'une page : le défilement et le corps.
+const hauteurDe = p => p.evaluate(() => ({ defilement: document.documentElement.scrollHeight, corps: document.body.getBoundingClientRect().height }));
+// Une page du site telle qu'elle s'est chargée : les polices qu'elle utilise (plus Jost au-dessus de 640 px), toutes depuis /fonts/ (les trois préchargées
+// comprises), aucune requête hors du site, meta robots noindex, console vide.
+async function controlesPage(site, chemin, largeur, polices) {
+  const f = await site.p.evaluate(([fs, w]) => ({ ok: fs.concat(w > 640 ? ['400 27.7px Jost'] : []).every(f => document.fonts.check(f)), etat: document.fonts.status, chargees: [...new Set([...document.fonts].filter(f => f.status === 'loaded').map(f => f.family))].join(', ') }), [polices, largeur]);
+  const woff = site.requetes.filter(u => u.endsWith('.woff2')).map(u => u.replace(/^.*\//, '')), hors = site.requetes.filter(u => !u.startsWith(SITE + '/'));
+  const prechargees = ['instrument-sans-latin-wght-normal.woff2', 'newsreader-latin-opsz-normal.woff2', 'jost-latin-wght-normal.woff2'].every(f => woff.includes(f));
+  ok(f.ok && f.etat === 'loaded' && prechargees && site.requetes.filter(u => u.endsWith('.woff2')).every(u => u.startsWith(SITE + '/fonts/')) && !hors.length,
+    `polices : ${f.chargees} chargées, ${woff.length} fichiers woff2 depuis /fonts/ (les trois préchargées comprises), aucune requête hors du site (${site.requetes.length} requêtes)` + (hors.length ? ' — HORS SITE : ' + hors.join(', ') : ''));
+  ok((await site.p.evaluate(() => document.querySelector('meta[name="robots"]')?.getAttribute('content'))) === 'noindex', `meta robots noindex sur ${chemin}`);
+  ok(!site.erreurs.length, `aucune erreur dans la console sur ${chemin}` + (site.erreurs.length ? ' — ' + site.erreurs.join(' | ') : ''));
+}
 const dasharrays = p => p.evaluate(() => [...document.querySelectorAll('.graph__part')].map(c => ({ l: parseFloat(c.style.getPropertyValue('--l')), v: parseFloat(getComputedStyle(c).strokeDasharray) })));
 
 try {
@@ -194,7 +222,6 @@ try {
     memesBoites(await boites(site.p, ENTETE, '.site-header'), await boites(maq.p, ENTETE, '.site-header'), 'en-tête', 'le haut de la section');
 
     // Home : la même hauteur totale de page
-    const hauteurDe = p => p.evaluate(() => ({ defilement: document.documentElement.scrollHeight, corps: document.body.getBoundingClientRect().height }));
     const hs = await hauteurDe(site.p), hm = await hauteurDe(maq.p);
     ok(hs.defilement === hm.defilement && Math.abs(hs.corps - hm.corps) < 0.01, `Home : même hauteur totale de page (site ${hs.defilement} px, maquette ${hm.defilement} px ; corps ${hs.corps} / ${hm.corps})`);
 
@@ -232,13 +259,7 @@ try {
     await masquerPhoto(site.p, false); await masquerPhoto(maq.p, false);
 
     // polices et requêtes, noindex, console (la page du site telle qu'elle s'est chargée)
-    const polices = await site.p.evaluate(w => ({ ok: ['400 17px "Instrument Sans"', 'italic 400 22px Newsreader', '400 34px Newsreader'].concat(w > 640 ? ['400 27.7px Jost'] : []).every(f => document.fonts.check(f)), etat: document.fonts.status, chargees: [...new Set([...document.fonts].filter(f => f.status === 'loaded').map(f => f.family))].join(', ') }), format[0]);
-    const woff = site.requetes.filter(u => u.endsWith('.woff2')).map(u => u.replace(/^.*\//, '')), hors = site.requetes.filter(u => !u.startsWith(SITE + '/'));
-    const prechargees = ['instrument-sans-latin-wght-normal.woff2', 'newsreader-latin-opsz-normal.woff2', 'jost-latin-wght-normal.woff2'].every(f => woff.includes(f));
-    ok(polices.ok && polices.etat === 'loaded' && prechargees && site.requetes.filter(u => u.endsWith('.woff2')).every(u => u.startsWith(SITE + '/fonts/')) && !hors.length,
-      `polices : ${polices.chargees} chargées, ${woff.length} fichiers woff2 depuis /fonts/ (les trois préchargées comprises), aucune requête hors du site (${site.requetes.length} requêtes)` + (hors.length ? ' — HORS SITE : ' + hors.join(', ') : ''));
-    ok((await site.p.evaluate(() => document.querySelector('meta[name="robots"]')?.getAttribute('content'))) === 'noindex', 'meta robots noindex sur /');
-    ok(!site.erreurs.length, 'aucune erreur dans la console sur /' + (site.erreurs.length ? ' — ' + site.erreurs.join(' | ') : ''));
+    await controlesPage(site, '/', format[0], ['400 17px "Instrument Sans"', 'italic 400 22px Newsreader', '400 34px Newsreader']);
     await site.ctx.close(); await maq.ctx.close();
 
     // en-tête collant, sans réduire les animations : la page est allongée pour pouvoir défiler quelle que soit sa hauteur
@@ -299,6 +320,73 @@ try {
   const sources = await Promise.all(fs.readdirSync(path.join(REPO, 'design/directions/img')).filter(f => new RegExp(`^${cle.replace(/-l$/, '')}(-l)?\\.jpg$`).test(f)).map(async f => (await sharp(path.join(REPO, 'design/directions/img', f)).metadata()).width));
   ok(tr.largeur === Math.max(...sources), `photo du premier écran à 2× : ${tr.nom} (${tr.format} ${tr.largeur} × ${tr.hauteur}) servi, la plus grande version disponible (${Math.max(...sources)} px) pour ${pr.w} px × 2`);
   await retina.ctx.close();
+
+  // ---------- Engagements (lot 6) : comparée à design/maquette/engagements.html?panneau=off, aux trois formats, l'œuvre masquée pour les captures ----------
+  const ENGAGEMENTS = ['.page-head', '.page__titre', '.registre', '.rang', '.rang__g', '.rang__d', '.rang__verbe', '.eng-texte', '.eng-texte p', '.lien-texte', '.cimaise', '.oeuvre', '.oeuvre img', '.cartel', '.cartel b', '.cartel span', '.site-footer'];
+  const masquerOeuvre = (p, oui) => masquer(p, 'masque-oeuvre', '.oeuvre img{visibility:hidden}', oui);
+  const infosOeuvre = p => p.evaluate(() => {
+    const i = document.querySelector('.oeuvre img'), b = i.getBoundingClientRect(), s = getComputedStyle(i);
+    return { boite: [Math.round(b.left), Math.round(b.top + window.scrollY), Math.round(b.width), Math.round(b.height)], zone: { left: b.left, top: b.top, width: b.width, height: b.height }, fit: s.objectFit, lien: !!i.closest('a'),
+      attrs: i.getAttribute('width') + ' × ' + i.getAttribute('height'), src: i.currentSrc, w: b.width, h: b.height, alt: i.alt, lazy: i.getAttribute('loading'), dans: !!i.closest('#soutenir .rang__g > .cimaise > figure.oeuvre') };
+  });
+  for (const format of FORMATS) {
+    console.log(`\nEngagements, ${fmt(format)}`);
+    const nom = `engagements-${format[0]}x${format[1]}`;
+    const site = await ouvrir(SITE + '/engagements', format, { reducedMotion: 'reduce' }), maq = await ouvrir(MAQUETTE_ENGAGEMENTS, format, { reducedMotion: 'reduce' });
+    ok(!maq.erreurs.length, `maquette ouverte sans erreur (${MAQUETTE_ENGAGEMENTS.replace(/^.*design\//, 'design/')})` + (maq.erreurs.length ? ' — ' + maq.erreurs.join(' | ') : ''));
+    const hs = await hauteurDe(site.p), hm = await hauteurDe(maq.p);
+    ok(hs.defilement === hm.defilement && Math.abs(hs.corps - hm.corps) < 0.01, `Engagements : même hauteur totale de page (site ${hs.defilement} px, maquette ${hm.defilement} px ; corps ${hs.corps} / ${hm.corps})`);
+    // l'ouverture et chaque rangée, l'image de l'œuvre masquée (sa boîte reste : AVIF côté site, JPEG côté maquette, elle est comparée à part) ; l'en-tête
+    // collant du site masqué (il recouvrirait .page-head, juste sous lui, puis l'œuvre quand on remonte vers elle)
+    await masquerEntete(site.p, true);
+    const rangs = await site.p.evaluate(() => [...document.querySelectorAll('.registre > section.rang')].map(s => '#' + s.id)), rangsMaq = await maq.p.evaluate(() => [...document.querySelectorAll('.registre > section.rang')].map(s => '#' + s.id));
+    ok(rangs.length === 3 && rangs.join(' ') === rangsMaq.join(' '), `rangées du registre : ${rangs.join(' ')} (maquette : ${rangsMaq.join(' ')})`);
+    await masquerOeuvre(site.p, true); await masquerOeuvre(maq.p, true);
+    for (const sel of ['.page-head', ...rangs]) {
+      const c = await comparer(`${slug(sel)}-${nom}`, await captureSection(site.p, sel), await captureSection(maq.p, sel));
+      ok(c.differents === 0, `${sel} : capture identique au pixel près, l'œuvre masquée (${c.taille})` + (c.differents ? ' — ' + c.detail : ''));
+    }
+    await masquerOeuvre(site.p, false); await masquerOeuvre(maq.p, false);
+    // l'œuvre : même boîte, version servie jamais agrandie à 1×, capture comparée avec la tolérance de la photo du premier écran
+    await amener(site.p, '.cimaise'); await amener(maq.p, '.cimaise');
+    const os = await infosOeuvre(site.p), om = await infosOeuvre(maq.p);
+    ok(JSON.stringify(os.boite) === JSON.stringify(om.boite) && os.fit === 'fill' && om.fit === 'fill' && !os.lien && os.dans && os.attrs === om.attrs && os.alt === om.alt && os.lazy === 'lazy',
+      `l'œuvre : même boîte (${os.boite[2]} × ${os.boite[3]} à y = ${os.boite[1]}) dans la cimaise de #soutenir, width / height ${os.attrs}, object-fit ${os.fit} / ${om.fit}, pas un lien, chargement paresseux, même texte alternatif`);
+    const ts = await tailleServie(os.src), tm = await tailleServie(om.src);
+    ok(ts.largeur >= Math.round(os.w) && ts.largeur <= tm.largeur, `l'œuvre : ${ts.nom} (${ts.format} ${ts.largeur} × ${ts.hauteur}) servi par le site, jamais agrandi à 1× (${Math.round(os.w)} px affichés) ; maquette : ${tm.nom} (${tm.largeur} × ${tm.hauteur})`);
+    const po = await ecartMoyen(`oeuvre-${nom}`, await captureZone(site.p, os.zone), await captureZone(maq.p, om.zone), 2.5);
+    ok(po.ok, `l'œuvre : capture de l'image (${po.taille}) comparée avec tolérance, les deux captures floutées (sigma 2,5 : la maquette réduit le JPEG de 870 px dans le navigateur, le site sert la réduction de sharp) — ${po.detail}`);
+    // positions dans le document, défilement à 0 : titre, verbes, paragraphes, cimaise, cartel, haut du pied de page
+    await haut(site.p); await haut(maq.p); await site.p.waitForTimeout(350);
+    memesBoites(await boites(site.p, ENGAGEMENTS, null), await boites(maq.p, ENGAGEMENTS, null), 'Engagements', 'le haut du document');
+    await masquerEntete(site.p, false);
+    // liens dans le texte : Créahmbxl dans un nouvel onglet, annoncé ; Écrivez-nous vers #contact, le pied de page
+    const l = await site.p.evaluate(() => ({ liens: [...document.querySelectorAll('.eng-texte a')].map(a => `${a.className} ${a.firstChild.textContent} → ${a.getAttribute('href')}${a.target ? ' ' + a.target : ''}${a.rel ? ' ' + a.rel : ''}${a.querySelector('.visuellement-masque') ? ' +' + JSON.stringify(a.querySelector('.visuellement-masque').textContent) : ''}`).join(' | '),
+      contact: document.getElementById('contact')?.tagName, masque: document.querySelector('.visuellement-masque') ? Math.round(document.querySelector('.visuellement-masque').getBoundingClientRect().width) + '×' + Math.round(document.querySelector('.visuellement-masque').getBoundingClientRect().height) : null }));
+    ok(l.liens === 'lien-texte Créahmbxl → https://creahmbxl.be _blank noopener +" (nouvel onglet)" | lien-texte Écrivez-nous → #contact' && l.contact === 'FOOTER' && l.masque === '1×1', `liens : ${l.liens.replace(/lien-texte /g, '')} ; #contact est le pied de page ; « (nouvel onglet) » masqué visuellement (${l.masque})`);
+    // navigation : Engagements actif, avec aria-current, sur cette page
+    const nav = await site.p.evaluate(() => [...document.querySelectorAll('.site-nav a')].map(a => `${a.textContent}${a.classList.contains('is-active') ? ' actif' : ''}${a.hasAttribute('aria-current') ? ' aria-current=' + a.getAttribute('aria-current') : ''} → ${a.getAttribute('href')}`).join(' | '));
+    ok(nav === 'Réalisations → /realisations | Engagements actif aria-current=page → /engagements | Contact → #contact', 'navigation : ' + nav);
+    ok((await site.p.evaluate(() => [document.documentElement.dataset.page, document.title, document.querySelector('.page__titre').textContent, document.querySelector('meta[name="description"]')?.content].join(' · '))) === 'engagements · Engagements — Perpetual · Engagements · Aider bénévolement, transmettre à La Cambre-Horta, soutenir le Créahmbxl — les trois engagements de Perpetual.',
+      `html data-page="engagements", titre « Engagements — Perpetual », h1 « Engagements » seul, description de l'en-tête`);
+    await controlesPage(site, '/engagements', format[0], ['400 17px "Instrument Sans"', '400 42px Newsreader', 'italic 400 22px Newsreader']);
+    await site.ctx.close(); await maq.ctx.close();
+  }
+  // à 2× (1521 × 705) : l'œuvre servie assez grande, sans dépasser la source
+  {
+    const retina = await ouvrir(SITE + '/engagements', [1521, 705], { deviceScaleFactor: 2, reducedMotion: 'reduce' });
+    await amener(retina.p, '.cimaise');
+    const oe = await infosOeuvre(retina.p), te = await tailleServie(oe.src);
+    ok(te.largeur >= 2 * oe.w && te.largeur <= 870, `l'œuvre à 2× : ${te.nom} (${te.format} ${te.largeur} × ${te.hauteur}) servi pour ${Math.round(oe.w)} px × 2, assez grand sans dépasser la source (870 px)`);
+    await retina.ctx.close();
+  }
+  // « Engagements » actif (aria-current) sur sa page seulement : les pages construites
+  {
+    const pages = fs.readdirSync(path.join(REPO, 'dist')).filter(f => f.endsWith('.html')).sort();
+    const actifs = pages.map(f => { const h = fs.readFileSync(path.join(REPO, 'dist', f), 'utf8'); const m = h.match(/<a href="([^"]+)" class="trait is-active"[^>]*aria-current="page"[^>]*>([^<]+)<\/a>/g) || []; return `${f} : ${m.length ? m.map(x => x.replace(/^.*>([^<]+)<\/a>$/, '$1')).join(', ') : '—'}`; });
+    ok(pages.includes('engagements.html') && actifs.every(a => a === 'engagements.html : Engagements' || a.endsWith(' : —')) && pages.every(f => (fs.readFileSync(path.join(REPO, 'dist', f), 'utf8').match(/aria-current/g) || []).length === (f === 'engagements.html' ? 1 : 0)),
+      `aria-current="page" sur le lien « Engagements » de engagements.html seulement — ${actifs.join(' · ')}`);
+  }
 
   console.log('\n/dev/photos');
   const dev = await ouvrir(SITE + '/dev/photos', FORMATS[0]);

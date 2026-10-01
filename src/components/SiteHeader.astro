@@ -17,7 +17,8 @@ interface Props {
 
 const { active = '' } = Astro.props;
 const markPath = favicon.match(/<g[\s\S]*<\/g>/)?.[0] ?? '';
-const courante = Astro.url.pathname.replace(/\/$/, '') || '/';
+// le chemin de la page : en construction (build.format: file), il se termine par .html (/engagements.html) — retiré pour retrouver le href de la navigation
+const courante = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
 ---
 
 <div class="entete-collante">

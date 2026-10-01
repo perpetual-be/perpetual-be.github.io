@@ -135,16 +135,16 @@ for (const b of blocks(engagementsMd.body)) {
   else if (engagements.rangs.length && !b.startsWith('#')) engagements.rangs[engagements.rangs.length - 1].paragraphes.push(b);
   else throw new Error('content/engagements.md : bloc hors d’une rangée ## — ' + b.slice(0, 60));
 }
-// L'œuvre du Créahmbxl, sur une cimaise dans la colonne de gauche de la rangée `rang` (« Soutenir »), sous le verbe : le fichier, recadré sur la feuille
-// (870 × 1132, copié tel quel de design/revue-engagements/propositions/img/, jamais recompressé ; width et height lus dans l'en-tête JPEG), la légende et
-// le détail du cartel, le texte alternatif (provisoire, lot 3). Entière : jamais recadrée par le CSS ni agrandie au-delà de 340 px ; pas un lien, pas de zoom.
-const oeuvre = {
-  rang: 'soutenir',
-  fichier: 'ines-reddah-2024-recadree.jpg',
-  legende: 'Ines Reddah, 2024',
-  detail: 'Feutres et acrylique, 65\u00A0×\u00A082\u00A0cm',
-  alt: 'Peinture d’Ines Reddah, 2024 : deux grands visages ronds cernés de bleu et de rose, entourés de traits verticaux de couleur.',
-};
+// L'œuvre du Créahmbxl, sur une cimaise dans la colonne de gauche de la rangée `rang` (« Soutenir »), sous le verbe. Ses données sont dans l'en-tête de
+// content/engagements.md (oeuvre, lu aussi par le site — lot 6, 01/10) : la rangée, la clé de la photo (design/directions/img/<clé>.jpg — recadrée sur la
+// feuille, 870 × 1132, copiée telle quelle de design/revue-engagements/propositions/img/, jamais recompressée ; width et height lus dans l'en-tête JPEG), la
+// légende et le détail du cartel (ses espaces insécables, autour de × et avant cm, sont dans la valeur), le texte alternatif (provisoire, lot 3).
+// Entière : jamais recadrée par le CSS ni agrandie au-delà de 340 px ; pas un lien, pas de zoom.
+const oeuvreFm = (engagementsMd.fm.match(/^oeuvre:[ \t]*\n((?:[ \t]+\S.*\n?)+)/m) || [])[1];
+if (!oeuvreFm) throw new Error('content/engagements.md : oeuvre (rang, photo, legende, detail, alt) manquante dans l’en-tête');
+const oeuvre = Object.fromEntries([...oeuvreFm.matchAll(/^[ \t]+([a-z]+):[ \t]*"?(.+?)"?[ \t]*$/gm)].map(x => [x[1], x[2]]));
+for (const k of ['rang', 'photo', 'legende', 'detail', 'alt']) if (!oeuvre[k]) throw new Error(`content/engagements.md : oeuvre.${k} manquant dans l’en-tête`);
+oeuvre.fichier = `${oeuvre.photo}.jpg`;
 if (!engagements.rangs.some(r => r.id === oeuvre.rang)) throw new Error(`content/engagements.md : pas de rangée #${oeuvre.rang} pour l'œuvre`);
 
 // Premier écran (structure F, figée le 23/09) : la photo, en 1800 px (<nom>.jpg) puis 2800 px (<nom>-l.jpg) pour les grands écrans ;

@@ -10,6 +10,9 @@ const pages = defineCollection({
     description: z.string().optional(),
     // Home uniquement : la photo du premier écran (clé <id>-NN, cf. src/lib/photos.ts) et son point focal (object-position), lus par src/pages/index.astro.
     hero: z.object({ photo: z.string(), focal: z.string().optional() }).optional(),
+    // Engagements uniquement : l'œuvre sur sa cimaise — la rangée (l'id d'un titre ##, ex. soutenir), la clé de la photo (design/directions/img/<clé>.jpg),
+    // la légende et le détail du cartel, le texte alternatif ; lue aussi par design/maquette/src/build.mjs.
+    oeuvre: z.object({ rang: z.string(), photo: z.string(), legende: z.string(), detail: z.string(), alt: z.string() }).optional(),
     // Home uniquement : chiffres clés et répartition du portefeuille.
     stats: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
     portfolio: z

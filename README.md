@@ -25,6 +25,7 @@ Les pull requests ouvertes depuis une branche de ce dépôt sont fusionnées aut
 | Je veux… | Fichier |
 |---|---|
 | Changer le texte d'une page | `content/<page>.md` (`home`, `realisations`, `collectif`, `engagements`, `contact`) |
+| Engagements : les rangées (un titre `##` par verbe, puis ses paragraphes ; seuls les liens sont rendus) et l'œuvre sur sa cimaise | `content/engagements.md` ; l'œuvre dans son en-tête (`oeuvre` : `rang`, la rangée qui la porte ; `photo`, la clé du fichier `design/directions/img/<clé>.jpg` ; `legende` et `detail` du cartel, le détail avec ses espaces insécables ; `alt`), lue aussi par la maquette |
 | Chiffres clés et répartition du portefeuille (Home) | en-tête de `content/home.md` (`stats`, `portfolio`) |
 | Textes de la Home : accroche, paragraphes et signature ; Collectif et sa chute ; le paragraphe à côté de la carte | `content/home.md`, `content/collectif.md`, `content/realisations.md` (le paragraphe qui suit « ## Le programme agences »), lus comme par la maquette : blocs séparés par une ligne vide, commentaires HTML ignorés, texte brut |
 | Photo du premier écran de la Home et son cadrage | en-tête de `content/home.md` (`hero` : `photo`, la clé de la photo ; `focal`, le point focal, ex. `"50% 20%"`) |
@@ -34,6 +35,7 @@ Les pull requests ouvertes depuis une branche de ce dépôt sont fusionnées aut
 | Ajouter un logo partenaire | `data/partners.json` + les fichiers dans `public/partners/couleur/`, `mono/` et `encre/` |
 | Ajouter des photos | réduire les originaux du Drive avec `design/directions/src/reduire-photos.mjs`, committer les fichiers produits dans `design/directions/img/`, puis citer leurs clés dans `data/projects.json` (`selection`) — voir plus bas |
 | Changer la mise en page ou les styles | `src/` (pages, gabarits, composants, `styles/`) — une couleur ou une taille se change dans `src/styles/jetons.css`, en reprenant la valeur de `design/maquette/maquette.css` |
+| Vérifier qu'une page est identique à sa maquette | `npm run build`, puis `NODE_PATH=$(npm root -g) npm run comparer` (`scripts/comparer-maquette.mjs` : Home et Engagements, au pixel près ; les écarts en images dans `scripts/ecarts/`) |
 | Palette, typographies, maquettes | `design/` — la maquette (`design/maquette/`) est la référence du site |
 
 Le contenu est de la donnée, pas du code : ajouter un projet consiste à ajouter une entrée dans `data/projects.json`, sans toucher au HTML.
@@ -51,12 +53,14 @@ design/                palette, typographies, maquettes exportées ; design/maqu
 public/                favicon, logo, fichiers statiques servis tels quels
 public/fonts/          les quatre polices du site (woff2), copiées de design/maquette/fonts/ : aucune police chargée chez un tiers
 src/                   layouts, pages, composants, styles (Astro)
-src/layouts/Base.astro mise en page commune à toutes les pages : head (titre, description, noindex, favicon, préchargement des polices), styles, en-tête, <main>, pied de page
-src/components/        SiteHeader.astro (en-tête collant : logo, navigation), SiteFooter.astro (pied de page, id="contact"), ProjectPhoto.astro (photos)
+src/layouts/Base.astro mise en page commune à toutes les pages : head (titre, description, noindex, favicon, préchargement des polices), styles, en-tête, <main>, pied de page ; la prop page est posée en data-page sur <html>, comme dans la maquette
+src/pages/             index.astro (la Home), engagements.astro (Engagements, identique à la maquette), dev/photos.astro (contrôle des photos)
+src/components/        SiteHeader.astro (en-tête collant : logo, navigation ; trait et aria-current sur l'entrée active), SiteFooter.astro (pied de page, id="contact"), ProjectPhoto.astro (photos ; ratioSource : la boîte garde le format de la source)
 src/components/home/   les sections de la Home, une par composant : PremierEcran (photo, accroche, bande des chiffres, paragraphes), Graphique (l'anneau qui se remplit), Carte, Collectif (textes et logos partenaires)
-src/lib/               contenu.ts (les textes de content/ lus comme par la maquette : blocs), carte.ts (la carte et son titre calculé), nombres.ts (nombres en toutes lettres), photos.ts (photos)
-src/styles/            le système de la maquette, importé dans cet ordre : polices.css, jetons.css (le :root de maquette.css, la couche de rôles que lisent les composants), base.css, entete.css, pied.css ; home.css (les règles de la Home), importé par la page
-scripts/comparer-maquette.mjs  vérification : Home, en-tête et pied de page identiques au pixel près à la maquette (photo du premier écran avec tolérance), en-tête collant, remplissage de l'anneau, polices locales, noindex (npm run comparer)
+src/components/engagements/  le gabarit des pages de texte : PageHead (le titre seul, .page-head), Registre (.registre), Rang (une rangée d'Engagements : le verbe, les paragraphes, l'œuvre sur sa cimaise avec son cartel)
+src/lib/               contenu.ts (les textes de content/ lus comme par la maquette : blocs ; Engagements : rangées, œuvre, liens en ligne), carte.ts (la carte et son titre calculé), nombres.ts (nombres en toutes lettres), photos.ts (photos)
+src/styles/            le système de la maquette, importé dans cet ordre : polices.css, jetons.css (le :root de maquette.css, la couche de rôles que lisent les composants), base.css, entete.css, pied.css ; puis, importés par la page : home.css (la Home) ; page.css (ce que partagent les pages de texte : titre, registre, rangées, liens) et engagements.css (verbe, texte, cimaise, œuvre, cartel)
+scripts/comparer-maquette.mjs  vérification : Home et Engagements identiques au pixel près à la maquette (en-tête et pied de page compris ; photo du premier écran et œuvre avec tolérance), en-tête collant, remplissage de l'anneau, polices locales, noindex (npm run comparer)
 design/directions/img/ photos réduites (1 800 et 2 800 px pour le site, 800 px pour la maquette), versionnées : la source des photos du site
 ```
 
