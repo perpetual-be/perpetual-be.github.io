@@ -33,6 +33,14 @@ jobs:
           node-version: 22
           cache: npm
 
+      # Les photos déjà produites par Astro (.astro-cache, cf. astro.config.mjs) d'un déploiement à l'autre : seules les nouvelles sont refaites.
+      - name: Cache des photos
+        uses: actions/cache@v4
+        with:
+          path: .astro-cache
+          key: astro-${{ hashFiles('design/directions/img/**', 'src/components/ProjectPhoto.astro', 'package-lock.json') }}
+          restore-keys: astro-
+
       - name: Vérifier que le site se construit
         run: |
           npm ci

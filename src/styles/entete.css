@@ -1,0 +1,31 @@
+/* En-tête du site (lot 4, 01/10/2026) : .site-header, .logo, .site-nav de la section 4 de design/maquette/maquette.css, repris tels quels, et leurs règles
+   téléphone (section 5). Balisage : src/components/SiteHeader.astro.
+   Logo et liens aux marges de la grille large, la même limite que le contenu large (--max-large, gouttière comprise ; 26/09) — rien ne change
+   sous ~1 680 px de fenêtre, au-delà logo et navigation restent alignés sur le contenu large au lieu de coller aux bords. L'en-tête est le même sur toutes
+   les pages, sur la grille large, quelle que soit la grille du contenu ; le pied de page, lui, est sur --max (1 200 px) partout. */
+.site-header{display:grid;grid-template-columns:auto 1fr auto;align-items:center;height:76px;max-width:var(--max-large);margin-left:auto;margin-right:auto;padding:0 var(--gutter)}
+.logo{display:inline-flex;align-items:center;gap:15px;color:var(--c-texte)}
+.logo__mark{width:19px;height:20px;color:var(--c-phi);fill:currentColor;flex:none;position:relative;top:1px}
+/* wordmark figé : Jost 400, capitales, interlettrage 0,18 em, hauteur de capitale calée sur l'ancien tracé — même règle à toutes les largeurs */
+.logo__texte{display:inline-block;font-family:"Jost",system-ui,sans-serif;font-weight:400;font-size:27.7px;letter-spacing:.18em;text-transform:uppercase;line-height:1;color:var(--c-wordmark);white-space:nowrap;position:relative;top:1px}
+.site-nav{grid-column:3;display:flex;gap:36px;font-size:var(--fs-nav);font-weight:500}
+.site-nav a{padding:6px 0;color:var(--c-texte)}
+
+/* en-tête collant (décision d'Axel du 19/09, absent de la maquette) : un conteneur pleine largeur, collé en haut de la fenêtre, fond blanc, au-dessus du
+   contenu ; .site-header dedans, inchangé (1 600 px au plus, centré). Il disparaît quand on fait défiler vers le bas (.est-cachee, posée par le script de
+   SiteHeader.astro) et revient dès qu'on remonte, ou quand le focus clavier entre dedans ; toujours visible en haut de page. Ni filet ni ombre
+   (garde-fous de la maquette : ni ombre, ni arrondi). */
+.entete-collante{position:sticky;top:0;z-index:10;background:var(--blanc);transition:transform .3s}
+.entete-collante.est-cachee{transform:translateY(-100%)}
+
+/* téléphone : Φ seul dans l'en-tête */
+@media (max-width:640px){
+  .site-header{height:64px}
+  .logo__texte{display:none}
+  .logo__mark{width:22px;height:23px}
+  .site-nav{gap:20px;font-size:14px}
+}
+/* mouvement réduit : l'en-tête se cache et revient sans glisser */
+@media (prefers-reduced-motion:reduce){
+  .entete-collante{transition:none}
+}

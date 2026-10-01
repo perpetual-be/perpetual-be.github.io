@@ -1,13 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
+import site from '../../data/site.json';
 ---
 
-<Base title="Perpetual" description="Perpetual — le trait d'union entre les idées et le capital." noindex>
-  <section class="wrap soon">
+<Base title="Perpetual" fullTitle description="Perpetual — le trait d'union entre les idées et le capital.">
+  <section class="container soon">
     <p class="soon-kicker">Actifs depuis 2002</p>
     <h1>Un nouveau site est en préparation.</h1>
     <p class="soon-text">
-      En attendant, écrivez-nous&nbsp;: <a href="mailto:julien@perpetual.be">julien@perpetual.be</a>
+      En attendant, écrivez-nous&nbsp;: <a href={`mailto:${site.email}`}>{site.email}</a>
     </p>
   </section>
 </Base>
@@ -15,12 +16,10 @@ import Base from '../layouts/Base.astro';
 <style>
   .soon {
     padding-block: clamp(4rem, 15vh, 10rem);
-    max-width: var(--measure);
-    margin-inline: auto;
   }
   .soon-kicker {
     margin: 0 0 1rem;
-    color: var(--color-muted);
+    color: var(--c-meta);
     font-size: 0.875rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;

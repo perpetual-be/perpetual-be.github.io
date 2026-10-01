@@ -11,6 +11,7 @@ npm install
 npm run dev        # http://localhost:4321
 npm run build      # génère le site dans dist/
 npm run preview    # sert dist/ pour vérification
+npm run comparer   # après npm run build : en-tête et pied de page identiques au pixel près à ceux de la maquette (Playwright global : NODE_PATH=$(npm root -g))
 ```
 
 ## Déployer
@@ -26,11 +27,11 @@ Les pull requests ouvertes depuis une branche de ce dépôt sont fusionnées aut
 | Changer le texte d'une page | `content/<page>.md` (`home`, `realisations`, `collectif`, `engagements`, `contact`) |
 | Chiffres clés et répartition du portefeuille (Home) | en-tête de `content/home.md` (`stats`, `portfolio`) |
 | Ajouter ou modifier un projet (détaillé, programme agences, galerie) | `data/projects.json` |
-| Navigation, e-mail, ville, TVA, citation de pied de site | `data/site.json` |
+| Navigation de l'en-tête (`nav`), plan et nom du contact du pied de page (`plan`, `contact`), e-mail, ville, TVA, citation, indexation (`indexation` : faux jusqu'à la mise en ligne, toutes les pages sont en `noindex`) | `data/site.json` |
 | Ajouter un logo partenaire | `data/partners.json` + les fichiers dans `public/partners/couleur/`, `mono/` et `encre/` |
 | Ajouter des photos | réduire les originaux du Drive avec `design/directions/src/reduire-photos.mjs`, committer les fichiers produits dans `design/directions/img/`, puis citer leurs clés dans `data/projects.json` (`selection`) — voir plus bas |
-| Changer la mise en page ou les styles | `src/` (pages, gabarits, `styles/`) |
-| Palette, typographies, maquettes | `design/` |
+| Changer la mise en page ou les styles | `src/` (pages, gabarits, composants, `styles/`) — une couleur ou une taille se change dans `src/styles/jetons.css`, en reprenant la valeur de `design/maquette/maquette.css` |
+| Palette, typographies, maquettes | `design/` — la maquette (`design/maquette/`) est la référence du site |
 
 Le contenu est de la donnée, pas du code : ajouter un projet consiste à ajouter une entrée dans `data/projects.json`, sans toucher au HTML.
 
@@ -41,10 +42,15 @@ content/               textes des pages (Markdown), un fichier par page
 data/projects.json     projets détaillés, programme agences, galerie
 data/partners.json     logos partenaires
 public/partners/       logos partenaires en SVG : couleur/, mono/ et encre/ (currentColor)
-data/site.json         navigation, coordonnées, citation de pied de site
-design/                palette, typographies, maquettes exportées
+data/site.json         navigation de l'en-tête (nav), plan et contact du pied de page (plan, contact), coordonnées, citation, réglage d'indexation (indexation : faux jusqu'au lot 9, toutes les pages en noindex)
+design/                palette, typographies, maquettes exportées ; design/maquette/ est la référence du site (en-tête, pied de page, jetons)
 public/                favicon, logo, fichiers statiques servis tels quels
+public/fonts/          les quatre polices du site (woff2), copiées de design/maquette/fonts/ : aucune police chargée chez un tiers
 src/                   layouts, pages, composants, styles (Astro)
+src/layouts/Base.astro mise en page commune à toutes les pages : head (titre, description, noindex, favicon, préchargement des polices), styles, en-tête, <main>, pied de page
+src/components/        SiteHeader.astro (en-tête collant : logo, navigation), SiteFooter.astro (pied de page, id="contact"), ProjectPhoto.astro (photos)
+src/styles/            le système de la maquette, importé dans cet ordre : polices.css, jetons.css (le :root de maquette.css, la couche de rôles que lisent les composants), base.css, entete.css, pied.css
+scripts/comparer-maquette.mjs  vérification du socle : en-tête et pied de page identiques au pixel près à ceux de la maquette, en-tête collant, polices locales, noindex (npm run comparer)
 design/directions/img/ photos réduites (1 800 et 2 800 px pour le site, 800 px pour la maquette), versionnées : la source des photos du site
 ```
 

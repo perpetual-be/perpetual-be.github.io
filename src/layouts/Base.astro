@@ -1,14 +1,28 @@
 ---
-import '../styles/global.css';
+// Mise en page commune à toutes les pages (lot 4, 01/10/2026) : le système de la maquette (design/maquette/maquette.css) — polices, jetons, base,
+// en-tête, pied de page, dans cet ordre —, l'en-tête collant et le pied de page, puis <main> pour la page. Le <title> est « <titre> — Perpetual »,
+// ou le titre complet passé par la page (fullTitle). noindex sur toutes les pages tant que le réglage `indexation` de data/site.json est faux
+// (public/robots.txt ne change pas) : au lot 9, passer ce seul réglage à vrai suffira, avec robots.txt.
+import '../styles/polices.css';
+import '../styles/jetons.css';
+import '../styles/base.css';
+import '../styles/entete.css';
+import '../styles/pied.css';
+import site from '../../data/site.json';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 
 interface Props {
   title: string;
+  /** Vrai quand `title` est le titre complet de l'onglet (pas de « — Perpetual » ajouté). */
+  fullTitle?: boolean;
   description?: string;
-  noindex?: boolean;
+  /** Entrée de navigation active (son href, ex. « /realisations ») : trait sous le lien de l'en-tête. */
+  active?: string;
 }
 
-const { title, description = '', noindex = false } = Astro.props;
-const pageTitle = title === 'Perpetual' ? title : `${title} — Perpetual`;
+const { title, fullTitle = false, description = '', active = '' } = Astro.props;
+const pageTitle = fullTitle ? title : `${title} — ${site.name}`;
 ---
 
 <!doctype html>
@@ -18,25 +32,18 @@ const pageTitle = title === 'Perpetual' ? title : `${title} — Perpetual`;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     {description && <meta name="description" content={description} />}
-    {noindex && <meta name="robots" content="noindex" />}
+    {!site.indexation && <meta name="robots" content="noindex" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/newsreader-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/jost-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <meta name="generator" content={Astro.generator} />
   </head>
   <body>
-    <header class="site-header">
-      <div class="wrap">
-        <a href="/" aria-label="Perpetual — accueil">Perpetual</a>
-      </div>
-    </header>
-
+    <SiteHeader active={active} />
     <main>
       <slot />
     </main>
-
-    <footer class="site-footer">
-      <div class="wrap">
-        <p>© {new Date().getFullYear()} Perpetual · 1030 Bruxelles</p>
-      </div>
-    </footer>
+    <SiteFooter />
   </body>
 </html>
