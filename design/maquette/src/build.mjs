@@ -1,7 +1,7 @@
 // Génère les pages de la maquette du lot 2 (design/maquette/*.html : la Home, les quatre fiches projet, la vue Réalisations, la page Engagements) à partir des données du dépôt.
 // Exécuter depuis la racine : node design/maquette/src/build.mjs
 // Lit data/*.json, content/home.md, content/collectif.md, content/realisations.md, content/engagements.md, public/favicon.svg, public/partners/encre/*.svg (hauteurs des logos),
-// design/maquette/src/carte/belgique.{svg,json}, et les dimensions des photos de design/directions/img/ (srcset, ratios de la mosaïque, œuvre). N'écrit que dans design/maquette/.
+// data/carte/belgique.{svg,json} (la carte, déplacée là le 01/10 : partagée avec le site), et les dimensions des photos de design/directions/img/ (srcset, ratios de la mosaïque, œuvre). N'écrit que dans design/maquette/.
 // Aucune dépendance hors Node.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -397,13 +397,13 @@ function projets() {
 </div></section>`;
 }
 
-// Carte des réalisations : src/carte/belgique.svg (contour, 17 points, 17 étiquettes placées à la main ; les quatre adresses bruxelloises
+// Carte des réalisations : data/carte/belgique.svg (contour, 17 points, 17 étiquettes placées à la main ; les quatre adresses bruxelloises
 // — groupe « Bruxelles » de belgique.json — sont un seul point plus gros, r 6,5, nommé comme l'étiquette). Chaque étiquette est regroupée
 // avec son point (même nom, ou membre de son groupe) dans un <g class="carte__lieu"> : le survol d'un point colore l'étiquette en CSS seul
 // (les villes sont figées sur « toutes », visibles sans survol). data-rang="1" sur une étiquette du SVG la garde visible sur mobile.
 function carteSvg() {
-  const svg = fs.readFileSync(path.join(HERE, 'carte/belgique.svg'), 'utf8').replace(/<!--[\s\S]*?-->\s*/g, '');
-  const groupes = JSON.parse(fs.readFileSync(path.join(HERE, 'carte/belgique.json'), 'utf8')).groupes;
+  const svg = fs.readFileSync(path.join(REPO, 'data/carte/belgique.svg'), 'utf8').replace(/<!--[\s\S]*?-->\s*/g, '');
+  const groupes = JSON.parse(fs.readFileSync(path.join(REPO, 'data/carte/belgique.json'), 'utf8')).groupes;
   const ouverture = svg.match(/<svg[^>]*>/)[0];
   const pays = svg.match(/<path class="carte__pays"[^>]*\/>/)[0];
   const points = [...svg.matchAll(/<circle[^>]*>\s*<title>([^<]*)<\/title>\s*<\/circle>/g)].map(m => ({ nom: m[1], html: m[0] }));
@@ -427,7 +427,7 @@ function carteSvg() {
 // du groupe pour une commune bruxelloise). « de » s'élide devant une voyelle.
 function titreCarte() {
   const n = projects.filter(p => p.address).length;
-  const villes = JSON.parse(fs.readFileSync(path.join(HERE, 'carte/belgique.json'), 'utf8')).villes;
+  const villes = JSON.parse(fs.readFileSync(path.join(REPO, 'data/carte/belgique.json'), 'utf8')).villes;
   const nom = v => v.groupe || v.ville;
   const ouest = nom(villes.reduce((a, v) => (v.lon < a.lon ? v : a))), est = nom(villes.reduce((a, v) => (v.lon > a.lon ? v : a)));
   const de = /^[aeiouyàâéèêîôûh]/i.test(ouest) && !/^h/i.test(ouest) ? 'd’' : 'de ';

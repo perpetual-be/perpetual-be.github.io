@@ -11,7 +11,7 @@ npm install
 npm run dev        # http://localhost:4321
 npm run build      # génère le site dans dist/
 npm run preview    # sert dist/ pour vérification
-npm run comparer   # après npm run build : en-tête et pied de page identiques au pixel près à ceux de la maquette (Playwright global : NODE_PATH=$(npm root -g))
+npm run comparer   # après npm run build : Home, en-tête et pied de page identiques au pixel près à la maquette (Playwright global : NODE_PATH=$(npm root -g))
 ```
 
 ## Déployer
@@ -26,6 +26,9 @@ Les pull requests ouvertes depuis une branche de ce dépôt sont fusionnées aut
 |---|---|
 | Changer le texte d'une page | `content/<page>.md` (`home`, `realisations`, `collectif`, `engagements`, `contact`) |
 | Chiffres clés et répartition du portefeuille (Home) | en-tête de `content/home.md` (`stats`, `portfolio`) |
+| Textes de la Home : accroche, paragraphes et signature ; Collectif et sa chute ; le paragraphe à côté de la carte | `content/home.md`, `content/collectif.md`, `content/realisations.md` (le paragraphe qui suit « ## Le programme agences »), lus comme par la maquette : blocs séparés par une ligne vide, commentaires HTML ignorés, texte brut |
+| Photo du premier écran de la Home et son cadrage | en-tête de `content/home.md` (`hero` : `photo`, la clé de la photo ; `focal`, le point focal, ex. `"50% 20%"`) |
+| Carte des réalisations (contour, points, étiquettes, villes et groupes) | `data/carte/belgique.svg` et `belgique.json`, partagés par le site et la maquette ; le titre de la carte est calculé (`src/lib/carte.ts`, `titreCarte`) |
 | Ajouter ou modifier un projet (détaillé, programme agences, galerie) | `data/projects.json` |
 | Navigation de l'en-tête (`nav`), plan et nom du contact du pied de page (`plan`, `contact`), e-mail, ville, TVA, citation, indexation (`indexation` : faux jusqu'à la mise en ligne, toutes les pages sont en `noindex`) | `data/site.json` |
 | Ajouter un logo partenaire | `data/partners.json` + les fichiers dans `public/partners/couleur/`, `mono/` et `encre/` |
@@ -43,14 +46,17 @@ data/projects.json     projets détaillés, programme agences, galerie
 data/partners.json     logos partenaires
 public/partners/       logos partenaires en SVG : couleur/, mono/ et encre/ (currentColor)
 data/site.json         navigation de l'en-tête (nav), plan et contact du pied de page (plan, contact), coordonnées, citation, réglage d'indexation (indexation : faux jusqu'au lot 9, toutes les pages en noindex)
+data/carte/            la carte des réalisations de la Home : belgique.svg (contour, points, étiquettes), belgique.json (villes, longitudes, groupes), partagée par le site et la maquette
 design/                palette, typographies, maquettes exportées ; design/maquette/ est la référence du site (en-tête, pied de page, jetons)
 public/                favicon, logo, fichiers statiques servis tels quels
 public/fonts/          les quatre polices du site (woff2), copiées de design/maquette/fonts/ : aucune police chargée chez un tiers
 src/                   layouts, pages, composants, styles (Astro)
 src/layouts/Base.astro mise en page commune à toutes les pages : head (titre, description, noindex, favicon, préchargement des polices), styles, en-tête, <main>, pied de page
 src/components/        SiteHeader.astro (en-tête collant : logo, navigation), SiteFooter.astro (pied de page, id="contact"), ProjectPhoto.astro (photos)
-src/styles/            le système de la maquette, importé dans cet ordre : polices.css, jetons.css (le :root de maquette.css, la couche de rôles que lisent les composants), base.css, entete.css, pied.css
-scripts/comparer-maquette.mjs  vérification du socle : en-tête et pied de page identiques au pixel près à ceux de la maquette, en-tête collant, polices locales, noindex (npm run comparer)
+src/components/home/   les sections de la Home, une par composant : PremierEcran (photo, accroche, bande des chiffres, paragraphes), Graphique (l'anneau qui se remplit), Carte, Collectif (textes et logos partenaires)
+src/lib/               contenu.ts (les textes de content/ lus comme par la maquette : blocs), carte.ts (la carte et son titre calculé), nombres.ts (nombres en toutes lettres), photos.ts (photos)
+src/styles/            le système de la maquette, importé dans cet ordre : polices.css, jetons.css (le :root de maquette.css, la couche de rôles que lisent les composants), base.css, entete.css, pied.css ; home.css (les règles de la Home), importé par la page
+scripts/comparer-maquette.mjs  vérification : Home, en-tête et pied de page identiques au pixel près à la maquette (photo du premier écran avec tolérance), en-tête collant, remplissage de l'anneau, polices locales, noindex (npm run comparer)
 design/directions/img/ photos réduites (1 800 et 2 800 px pour le site, 800 px pour la maquette), versionnées : la source des photos du site
 ```
 

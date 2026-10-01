@@ -1,0 +1,51 @@
+---
+// Graphique 11 150 m² de la Home (lot 2b, variante A retenue par Axel le 01/10 ; lot 4, 01/10/2026) : l'anneau seul — pas de barres ni de bascule —,
+// mêmes balises et classes que chart() et graphAnneau() de design/maquette/src/build.mjs, mêmes valeurs (partsDuTour, arcs : --l, --d, --t, --e et
+// stroke-dashoffset au millième). Trois parts (anthracite, or, or clair) séparées par un blanc de 0,5 centième du tour, légende à droite ; géométrie :
+// viewBox 240 × 240, rayon 100, pathLength 100 (longueurs en centièmes du tour), départ à midi (rotation de −90°).
+// Le remplissage (script en ligne, repris de la fin de design/maquette/maquette.js, sans le MutationObserver ni les barres) : .a-remplir vide l'anneau
+// au chargement, .est-rempli le remplit quand la section est à moitié à l'écran, une seule fois, en --remplissage (1,8 s, jetons.css) ; sans
+// IntersectionObserver, sans JavaScript ou sous prefers-reduced-motion, l'anneau reste plein (le CSS ne vide que sous .a-remplir). Le script est dans la
+// section, pas entre deux sections : un frère entre elles casserait .section+.section (le filet de 1 px au-dessus de la carte).
+// Le tour suit une seule courbe de décélération, f(t) = 1 − (1 − t)², découpée en parts : une part tracée de a à b centièmes démarre à t0 = f⁻¹(a) et finit
+// à t1 = f⁻¹(b) ; sur [t0, t1], f normalisée vaut αx + βx² (α = 2(1 − t0)Δ / D, β = −Δ² / D, Δ = t1 − t0, D = b − a), soit exactement
+// cubic-bezier(1/3, α/3, 2/3, (2α + β)/3) : les parts s'enchaînent sans à-coup. --d et --t sont des fractions de --remplissage.
+interface Props {
+  title: string;
+  items: { label: string; percent: number }[];
+}
+
+const { title, items } = Astro.props;
+const ANNEAU = { r: 100, joint: 0.5 };   // joint : le blanc entre deux parts, en centièmes du tour (≈ 3 px)
+const r4 = (v: number) => +v.toFixed(4);
+const total = items.reduce((s, i) => s + i.percent, 0);
+let debut = 0;
+const parts = items.map((i, k) => { const part = (i.percent * 100) / total, p = { ...i, k: k + 1, debut, part }; debut += part; return p; });
+const finv = (p: number) => 1 - Math.sqrt(1 - Math.min(1, Math.max(0, p)));
+const arcs = parts.map((p) => {
+  const a = (p.debut + ANNEAU.joint / 2) / 100, b = (p.debut + p.part - ANNEAU.joint / 2) / 100;
+  const t0 = finv(a), t1 = finv(b), dt = t1 - t0, D = b - a, al = (2 * (1 - t0) * dt) / D, be = (-dt * dt) / D;
+  return { k: p.k, style: `--l:${r4(p.part - ANNEAU.joint)};--d:${r4(t0)};--t:${r4(dt)};--e:cubic-bezier(.3333,${r4(al / 3)},.6667,${r4((2 * al + be) / 3)})`, offset: -r4(p.debut + ANNEAU.joint / 2) };
+});
+---
+
+<section class="section section--chart"><div class="container">
+  <h2 class="h2 h2--sans">{title}</h2>
+  <div class="graph graph--anneau"><svg class="graph__svg" viewBox="12 12 216 216" aria-hidden="true"><g transform="rotate(-90 120 120)">{arcs.map((a) => <circle class={`graph__part graph__part--${a.k}`} cx="120" cy="120" r={ANNEAU.r} pathLength="100" style={a.style} stroke-dashoffset={a.offset} />)}</g></svg><ul class="graph__legende">{parts.map((p) => <li><span class={`graph__cle graph__cle--${p.k}`} aria-hidden="true"></span><span class="graph__nom">{p.label}</span><span class="graph__val">{`${p.percent} %`}</span></li>)}</ul></div>
+</div>
+<script is:inline>
+  (function () {
+    var graph = document.querySelector('.graph'), section = document.querySelector('.section--chart');
+    if (!graph || !section || !('IntersectionObserver' in window)) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    graph.classList.add('a-remplir');
+    var io = new IntersectionObserver(function (entrees) {
+      if (!entrees.some(function (e) { return e.isIntersecting; })) return;
+      io.disconnect();
+      void section.offsetWidth;   // l'état vide est appliqué avant la transition
+      requestAnimationFrame(function () { requestAnimationFrame(function () { graph.classList.add('est-rempli'); }); });
+    }, { threshold: 0.5 });
+    io.observe(section);
+  })();
+</script>
+</section>
