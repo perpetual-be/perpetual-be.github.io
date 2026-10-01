@@ -8,7 +8,8 @@
 //     anneau, légende, carte et étiquettes, logos) ; photo du premier écran — même boîte, même cadrage (object-position, object-fit cover), version servie
 //     jamais agrandie à 1× et la plus grande à 2×, capture comparée avec une tolérance de compression (l'AVIF du site n'est pas le JPEG de la maquette :
 //     l'écart moyen par canal doit rester faible), l'accroche en blanc dessus identique au pixel près une fois la photo masquée ; le remplissage de l'anneau
-//     sans réduire les animations : vide avant l'arrivée à l'écran, en cours à 500 ms, plein à 2,3 s.
+//     sans réduire les animations : vide avant l'arrivée à l'écran, encore vide quand la section est à moitié visible mais l'anneau coupé par le bas de la
+//     fenêtre (retouche du 01/10 : il démarre quand l'anneau est entièrement à l'écran), en cours à 500 ms, plein à 2,3 s.
 // En cas d'écart sur une capture : le nombre de pixels différents et une image des écarts (en rouge) dans scripts/ecarts/ (dossier ignoré par Git), avec
 // les deux captures. Affiche « Tout est identique » quand tout passe (code de sortie 1 sinon).
 // Usage, depuis la racine du dépôt, après npm run build : NODE_PATH=$(npm root -g) npm run comparer
@@ -271,6 +272,13 @@ try {
     const rempl = await ouvrir(SITE + '/', format);
     const vide = await dasharrays(rempl.p), cl0 = await rempl.p.evaluate(() => ({ a: document.querySelector('.graph').classList.contains('a-remplir'), e: document.querySelector('.graph').classList.contains('est-rempli'), visible: document.querySelector('.section--chart').getBoundingClientRect().top < window.innerHeight / 2 }));
     ok(cl0.a && !cl0.e && !cl0.visible && vide.every(d => d.v === 0) && vide.length === 3, `remplissage : avant l'arrivée à l'écran, l'anneau est vide (.a-remplir, traits à ${vide.map(d => d.v).join(', ')} sur ${vide.map(d => d.l).join(', ')})`);
+    // la section à moitié visible mais l'anneau coupé par le bas de la fenêtre : il reste vide (retouche du 01/10 : le remplissage démarre quand l'anneau est entier à l'écran)
+    await rempl.p.evaluate(() => { const s = document.querySelector('.section--chart').getBoundingClientRect(); window.scrollTo(0, s.top + window.scrollY - (window.innerHeight - s.height / 2)); });
+    await rempl.p.waitForTimeout(600);
+    const moitie = await rempl.p.evaluate(() => { const s = document.querySelector('.section--chart').getBoundingClientRect(), a = document.querySelector('.graph__svg').getBoundingClientRect(), h = window.innerHeight;
+      return { section: Math.round((Math.min(s.bottom, h) - Math.max(s.top, 0)) / s.height * 100), coupe: a.top < h && a.bottom > h, estRempli: document.querySelector('.graph').classList.contains('est-rempli') }; });
+    const encoreVide = await dasharrays(rempl.p);
+    ok(moitie.section >= 50 && moitie.coupe && !moitie.estRempli && encoreVide.every(d => d.v === 0), `remplissage : la section à moitié visible (${moitie.section} %) mais l'anneau coupé par le bas de la fenêtre → l'anneau reste vide (traits à ${encoreVide.map(d => d.v).join(', ')})`);
     const t0 = Date.now();
     await rempl.p.evaluate(() => document.querySelector('.section--chart').scrollIntoView({ block: 'center' }));
     await rempl.p.waitForTimeout(500 - (Date.now() - t0));

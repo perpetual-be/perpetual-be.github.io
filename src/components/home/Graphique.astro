@@ -4,7 +4,8 @@
 // stroke-dashoffset au millième). Trois parts (anthracite, or, or clair) séparées par un blanc de 0,5 centième du tour, légende à droite ; géométrie :
 // viewBox 240 × 240, rayon 100, pathLength 100 (longueurs en centièmes du tour), départ à midi (rotation de −90°).
 // Le remplissage (script en ligne, repris de la fin de design/maquette/maquette.js, sans le MutationObserver ni les barres) : .a-remplir vide l'anneau
-// au chargement, .est-rempli le remplit quand la section est à moitié à l'écran, une seule fois, en --remplissage (1,8 s, jetons.css) ; sans
+// au chargement, .est-rempli le remplit quand l'anneau lui-même (.graph__svg) est entièrement à l'écran — threshold 1 ; retouche du 01/10 : à moitié de
+// section, l'anneau était encore en partie sous le bas de la fenêtre —, une seule fois, en --remplissage (1,8 s, jetons.css) ; sans
 // IntersectionObserver, sans JavaScript ou sous prefers-reduced-motion, l'anneau reste plein (le CSS ne vide que sous .a-remplir). Le script est dans la
 // section, pas entre deux sections : un frère entre elles casserait .section+.section (le filet de 1 px au-dessus de la carte).
 // Le tour suit une seule courbe de décélération, f(t) = 1 − (1 − t)², découpée en parts : une part tracée de a à b centièmes démarre à t0 = f⁻¹(a) et finit
@@ -35,17 +36,17 @@ const arcs = parts.map((p) => {
 </div>
 <script is:inline>
   (function () {
-    var graph = document.querySelector('.graph'), section = document.querySelector('.section--chart');
-    if (!graph || !section || !('IntersectionObserver' in window)) return;
+    var graph = document.querySelector('.graph'), anneau = document.querySelector('.graph__svg');
+    if (!graph || !anneau || !('IntersectionObserver' in window)) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     graph.classList.add('a-remplir');
     var io = new IntersectionObserver(function (entrees) {
-      if (!entrees.some(function (e) { return e.isIntersecting; })) return;
+      if (!entrees.some(function (e) { return e.intersectionRatio >= 1; })) return;   // l'anneau entier dans la fenêtre (isIntersecting ignore le seuil dans certains navigateurs)
       io.disconnect();
-      void section.offsetWidth;   // l'état vide est appliqué avant la transition
+      void graph.offsetWidth;   // l'état vide est appliqué avant la transition
       requestAnimationFrame(function () { requestAnimationFrame(function () { graph.classList.add('est-rempli'); }); });
-    }, { threshold: 0.5 });
-    io.observe(section);
+    }, { threshold: 1 });
+    io.observe(anneau);
   })();
 </script>
 </section>

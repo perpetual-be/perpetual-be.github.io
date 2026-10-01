@@ -38,7 +38,7 @@
    (anthracite, or, or clair) séparées par un blanc, légende à droite en rangées à filets ; 220 px (180 au téléphone, légende dessous). Traits de 14 unités
    sans arrondi (pathLength 100 : --l est la longueur d'une part en centièmes du tour). Le tour suit une seule courbe de décélération, découpée en parts
    (--d départ et --t durée en fractions de --remplissage, --e la portion de courbe : src/components/home/Graphique.astro).
-   Le remplissage : le script du composant pose .a-remplir (vide), puis .est-rempli quand le graphique arrive à l'écran (à moitié visible) — une seule fois.
+   Le remplissage : le script du composant pose .a-remplir (vide), puis .est-rempli quand l'anneau est entièrement à l'écran (retouche du 01/10) — une seule fois.
    Sans JavaScript, ou avec « réduire les animations », tout est plein d'emblée. */
 .graph--anneau{display:grid;grid-template-columns:220px minmax(0,340px);column-gap:72px;align-items:center}
 .graph__svg{display:block;overflow:visible;width:220px;height:220px}

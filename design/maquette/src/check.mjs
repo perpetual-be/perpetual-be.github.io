@@ -327,6 +327,12 @@ console.log('\n5 bis · Graphique 11 150 m² (lot 2b, item 1) : l’anneau, rete
     const { p, ctx } = await ouvrir('', [1521, 705], { reducedMotion: 'no-preference' });
     const da = () => p.evaluate(() => [...document.querySelectorAll('.graph--anneau .graph__part')].map(c => parseFloat(getComputedStyle(c).strokeDasharray)));
     const avant = await da();
+    // retouche du 01/10 : le remplissage démarre quand l'anneau lui-même est entièrement à l'écran — la section à moitié visible mais l'anneau coupé par le bas de la fenêtre, il reste vide
+    await p.evaluate(() => { const s = document.querySelector('.section--chart').getBoundingClientRect(); window.scrollTo(0, s.top + window.scrollY - (window.innerHeight - s.height / 2)); });
+    await p.waitForTimeout(600);
+    const moitie = await p.evaluate(() => { const s = document.querySelector('.section--chart').getBoundingClientRect(), a = document.querySelector('.graph__svg').getBoundingClientRect(), h = window.innerHeight; return { section: Math.round((Math.min(s.bottom, h) - Math.max(s.top, 0)) / s.height * 100), coupe: a.top < h && a.bottom > h }; });
+    const encoreVide = await da();
+    ok(moitie.section >= 50 && moitie.coupe && encoreVide.every(x => x === 0), `remplissage : la section à moitié visible (${moitie.section} %) mais l'anneau coupé par le bas de la fenêtre → l'anneau reste vide`);
     await p.evaluate(() => document.querySelector('.section--chart').scrollIntoView({ block: 'center' }));
     await p.waitForTimeout(500);
     const pendant = await da();
