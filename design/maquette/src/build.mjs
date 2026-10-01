@@ -317,13 +317,12 @@ function lead() {
 </section>`;
 }
 
-// Graphique 11 150 m² — lot 2b, item 1 (retour de Julien, 30/09 : « un cercle qui se remplit », à montrer en variante à côté des barres). Bascule 13
-// reprise (l'anneau fixe du 18/09 avait été écarté), temporaire, jusqu'au choix d'Axel : barres (défaut, l'existant, qui se remplissent aussi depuis le
-// 01/10) / A « anneau » : un anneau, trois parts (anthracite, or, or clair), légende à droite / B « anneaux » : un anneau par usage, anthracite sur piste
-// sable, le pourcentage au centre (C « sobre », un anneau d'une couleur avec étiquettes autour, écartée par Axel le 01/10). Même donnée pour toutes
-// (frontmatter portfolio de content/home.md) ; l'ordre du tour (depuis midi, sens horaire) est celui de la légende. Tout se remplit une fois, quand le
-// graphique arrive à l'écran (maquette.js : .a-remplir puis .est-rempli), en --duree (bascule 13b, vitesse) ; sans JavaScript ou avec « réduire les
-// animations », tout est plein d'emblée.
+// Graphique 11 150 m² — lot 2b, item 1 (retour de Julien, 30/09 : « un cercle qui se remplit »). Variante A retenue par Axel le 01/10 : un anneau, trois
+// parts (anthracite, or, or clair) séparées par un blanc, légende à droite ; tout se remplit en 1,8 s (--remplissage). Les barres, l'existant, restent dans
+// la page, masquées, pour la bascule 13 (anneau / barres) du rendez-vous du 7/10. Comparées puis retirées le 01/10 : B (un anneau par usage), A′ (l'anneau
+// dans la colonne de droite), C (un anneau d'une couleur, étiquettes autour) — l'historique git les garde. Même donnée pour l'anneau et les barres
+// (frontmatter portfolio de content/home.md) ; l'ordre du tour (depuis midi, sens horaire) est celui de la légende. Remplissage une fois, quand le graphique
+// arrive à l'écran (maquette.js : .a-remplir puis .est-rempli) ; sans JavaScript ou avec « réduire les animations », tout est plein d'emblée.
 // Géométrie : viewBox 240 × 240, rayon 100, pathLength 100 (longueurs des traits en centièmes du tour), départ à midi (rotation de −90°).
 const ANNEAU = { r: 100, joint: 0.5 };   // joint : le blanc entre deux parts, en centièmes du tour (≈ 3 px)
 const pct = n => `${n} %`;
@@ -334,7 +333,7 @@ function partsDuTour(items) {
   return items.map((i, k) => { const part = i.percent * 100 / total, p = { ...i, k: k + 1, debut, part }; debut += part; return p; });
 }
 const cercle = (cls, attrs = '') => `<circle class="${cls}" cx="120" cy="120" r="${ANNEAU.r}" pathLength="100"${attrs}/>`;
-// A : le tour suit une seule courbe de décélération, f(t) = 1 − (1 − t)² (t, f en fractions de la durée et du tour), découpée en parts. Une part tracée
+// Le tour suit une seule courbe de décélération, f(t) = 1 − (1 − t)² (t, f en fractions de la durée et du tour), découpée en parts. Une part tracée
 // de a à b centièmes démarre à t0 = f⁻¹(a) et finit à t1 = f⁻¹(b) ; sur [t0, t1], f normalisée vaut αx + βx² (α = 2(1 − t0)Δ / D, β = −Δ² / D, Δ = t1 − t0,
 // D = b − a), soit exactement cubic-bezier(1/3, α/3, 2/3, (2α + β)/3) : les parts s'enchaînent sans à-coup. --d et --t sont des fractions de --duree.
 // Une part : un trait de (part − joint) centièmes, décalé de (début + joint / 2) ; --l sa longueur.
@@ -351,19 +350,13 @@ const tour = contenu => `<svg class="graph__svg" viewBox="12 12 216 216" aria-hi
 function graphAnneau(parts) {
   return `<div class="graph graph--anneau">${tour(arcs(parts))}<ul class="graph__legende">${parts.map(p => `<li><span class="graph__cle graph__cle--${p.k}" aria-hidden="true"></span><span class="graph__nom">${esc(p.label)}</span><span class="graph__val">${pct(p.percent)}</span></li>`).join('')}</ul></div>`;
 }
-// B : les trois anneaux ensemble, en décélération, décalés d'un dixième de --duree (--i) ; le pourcentage au centre en Instrument Sans (Axel, 01/10).
-function graphAnneaux(parts) {
-  return `<ul class="graph graph--anneaux">${parts.map((p, i) => `<li class="graph__un" style="--i:${i}"><div class="graph__tour">${tour(cercle('graph__piste') + cercle('graph__part', ` style="--l:${p.percent}"`))}<span class="graph__centre">${pct(p.percent)}</span></div><span class="graph__nom">${esc(p.label)}</span></li>`).join('')}</ul>`;
-}
-
-// Les barres (défaut) se remplissent aussi depuis le 01/10 (Axel), comme B : ensemble, décalées (--i sur chaque barre).
+// Les barres (bascule 13) se remplissent aussi depuis le 01/10 (Axel) : ensemble, décalées (--i sur chaque barre).
 function chart() {
   const parts = partsDuTour(portfolio.items);
   return `<section class="section section--chart"><div class="container">
   <h2 class="h2 h2--sans">${esc(portfolio.title)}</h2>
   <div class="bars">${portfolio.items.map((i, k) => `<div class="bar" style="--i:${k}"><span class="bar__label">${esc(i.label)}</span><span class="bar__track"><span class="bar__fill" style="width:${i.percent}%"></span></span><span class="bar__value">${i.percent} %</span></div>`).join('')}</div>
   ${graphAnneau(parts)}
-  ${graphAnneaux(parts)}
 </div></section>`;
 }
 
