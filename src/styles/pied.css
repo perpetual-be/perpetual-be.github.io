@@ -1,0 +1,21 @@
+/* Pied de page du site (lot 4, 01/10/2026) : .site-footer et .footer__* de la section 4 de design/maquette/maquette.css, repris tels quels, et leurs règles
+   téléphone (section 5). Balisage : src/components/SiteFooter.astro.
+   Resserré le 23/09 : 48 px en haut, 32 px entre la dernière ligne des colonnes et le filet du bas (le gap vertical de la grille, sans marge sur le bloc légal).
+   Sur le container de 1 200 px (--max, celui de .container), sur toutes les pages, Réalisations comprise (26/09) : pas de max-width propre, seul l'en-tête
+   est sur la grille large. */
+.site-footer{padding:48px 0 40px;font-size:15px;background:var(--surface-pied)}
+.footer__grid{display:grid;grid-template-columns:4fr 3fr 5fr;gap:32px 48px;align-items:start}
+.footer__name{font-weight:500}
+.footer__mail{display:inline-block;color:var(--c-mail);border-bottom:1px solid var(--c-trait-fin);margin:4px 0}
+.footer__addr{color:var(--c-meta)}
+.footer__nav{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.footer__nav a{padding-bottom:1px}
+.footer__quote p{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1.35;color:var(--c-texte)}
+.footer__quote cite{display:block;font-style:normal;font-size:var(--fs-etiquette);color:var(--c-meta);margin-top:10px}
+.footer__legal{grid-column:1/-1;font-size:12px;color:var(--c-meta);padding-top:20px;border-top:1px solid var(--filet)}
+
+/* téléphone : une colonne */
+@media (max-width:640px){
+  .footer__grid{grid-template-columns:1fr;gap:28px}
+  .footer__legal{margin-top:4px}
+}

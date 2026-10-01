@@ -1,0 +1,16 @@
+---
+// Pied de page commun à toutes les pages (lot 4, 01/10/2026) : mêmes balises et classes que footer() de design/maquette/src/build.mjs, la maquette
+// étant la référence (styles : src/styles/pied.css). Tout vient de data/site.json : le nom du contact (contact), le mail (email, lien mailto),
+// « Perpetual, 1030 Bruxelles » (name, city), le plan (plan), la citation (quote, guillemets français et espaces insécables comme build.mjs) ;
+// l'année est celle du build. id="contact" : la cible du lien « Contact » de l'en-tête, sur toutes les pages.
+import site from '../../data/site.json';
+
+const annee = new Date().getFullYear();
+---
+
+<footer class="site-footer" id="contact"><div class="container footer__grid">
+  <div class="footer__contact"><p class="footer__name">{site.contact}</p><a class="footer__mail" href={`mailto:${site.email}`}>{site.email}</a><p class="footer__addr">{`${site.name}, ${site.city}`}</p></div>
+  <nav class="footer__nav" aria-label="Plan du site">{site.plan.map((n) => <a class="trait" href={n.href}>{n.label}</a>)}</nav>
+  <blockquote class="footer__quote"><p>{`«\u00A0${site.quote.text}\u00A0»`}</p><cite>{site.quote.author}</cite></blockquote>
+  <p class="footer__legal">{`© ${annee} ${site.name}`}</p>
+</div></footer>

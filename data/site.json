@@ -2,16 +2,23 @@
   "name": "Perpetual",
   "tagline": "Le trait d’union entre les idées et le capital.",
   "signature": "Everything is already inside.",
+  "contact": "Julien De Dobbeleer",
   "email": "contact@perpetual.be",
   "city": "1030 Bruxelles",
   "vat": "BE 0812.325.906",
   "since": 2002,
+  "indexation": false,
   "nav": [
-    { "label": "Home", "href": "/" },
     { "label": "Réalisations", "href": "/realisations" },
-    { "label": "Collectif", "href": "/collectif" },
     { "label": "Engagements", "href": "/engagements" },
-    { "label": "Contact", "href": "/contact" }
+    { "label": "Contact", "href": "#contact" }
+  ],
+  "plan": [
+    { "label": "Réalisations", "href": "/realisations" },
+    { "label": "Collectif", "href": "/#collectif" },
+    { "label": "Engagements", "href": "/engagements" },
+    { "label": "Mentions légales", "href": "/mentions-legales" },
+    { "label": "Confidentialité", "href": "/confidentialite" }
   ],
   "quote": {
     "text": "Pour ce qui est de l’avenir, il ne s’agit pas de le prévoir, mais de le rendre possible.",

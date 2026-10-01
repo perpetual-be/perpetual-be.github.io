@@ -1,0 +1,45 @@
+---
+// En-tête commun à toutes les pages (lot 4, 01/10/2026) : mêmes balises et classes que header() de design/maquette/src/build.mjs, la maquette étant la
+// référence (styles : src/styles/entete.css). Le logo — le Φ en SVG inline, tiré de public/favicon.svg comme le fait build.mjs (markPath), peint en
+// currentColor, couleur --c-phi — puis « Perpetual » en texte (Jost en capitales par le CSS) ; la navigation lue dans data/site.json (nav).
+// Page active : prop `active` de la mise en page (le href de l'entrée, ex. « /realisations », active aussi sur les fiches) → trait sous le lien
+// (.is-active) ; aria-current="page" sur le lien de la page elle-même seulement.
+// En-tête collant (décision d'Axel du 19/09, absent de la maquette) : le conteneur .entete-collante est collé en haut de la fenêtre ; le script en ligne
+// ci-dessous le cache quand on fait défiler vers le bas et le fait revenir dès qu'on remonte — toujours visible en haut de page (tant que le
+// défilement est inférieur à sa hauteur), seuil de quelques pixels pour ne pas trembler, retour aussi quand le focus clavier entre dedans.
+import favicon from '../../public/favicon.svg?raw';
+import site from '../../data/site.json';
+
+interface Props {
+  /** Le href de l'entrée de navigation à souligner (ex. « /realisations »). */
+  active?: string;
+}
+
+const { active = '' } = Astro.props;
+const markPath = favicon.match(/<g[\s\S]*<\/g>/)?.[0] ?? '';
+const courante = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+
+<div class="entete-collante">
+<header class="site-header">
+  <a class="logo" href="/" aria-label="Perpetual — accueil"><svg class="logo__mark" viewBox="0 0 100 104.02" aria-hidden="true" set:html={markPath} /><span class="logo__texte">Perpetual</span></a>
+  <nav class="site-nav" aria-label="Navigation">{site.nav.map((n) => <a href={n.href} class:list={['trait', { 'is-active': n.href === active }]} aria-current={n.href === courante ? 'page' : undefined}>{n.label}</a>)}</nav>
+</header>
+</div>
+<script is:inline>
+  (function () {
+    var en = document.querySelector('.entete-collante');
+    if (!en) return;
+    var SEUIL = 4, dernier = window.scrollY, prevu = false;
+    function placer() {
+      prevu = false;
+      var y = window.scrollY;
+      if (y <= en.offsetHeight) { en.classList.remove('est-cachee'); dernier = y; return; }   // en haut de page : toujours visible
+      if (Math.abs(y - dernier) < SEUIL) return;                                             // quelques pixels : rien ne bouge
+      en.classList.toggle('est-cachee', y > dernier);                                        // vers le bas : il disparaît ; vers le haut : il revient
+      dernier = y;
+    }
+    window.addEventListener('scroll', function () { if (!prevu) { prevu = true; requestAnimationFrame(placer); } }, { passive: true });
+    en.addEventListener('focusin', function () { en.classList.remove('est-cachee'); dernier = window.scrollY; });
+  })();
+</script>

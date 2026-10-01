@@ -1,0 +1,8 @@
+/* Polices du site (lot 4, 01/10/2026) : les quatre fichiers de la maquette (design/maquette/fonts/), copiés dans public/fonts/ et servis depuis le site —
+   aucune requête vers un tiers (politique de confidentialité). Mêmes @font-face que la section 1 de design/maquette/maquette.css, plus font-display: swap
+   (le texte s'affiche tout de suite dans la police de repli, puis dans la bonne). Instrument Sans, Newsreader normal et Jost sont préchargées par
+   src/layouts/Base.astro. */
+@font-face{font-family:"Newsreader";font-style:normal;font-weight:200 800;font-display:swap;src:url(/fonts/newsreader-latin-opsz-normal.woff2) format("woff2-variations")}
+@font-face{font-family:"Newsreader";font-style:italic;font-weight:200 800;font-display:swap;src:url(/fonts/newsreader-latin-opsz-italic.woff2) format("woff2-variations")}
+@font-face{font-family:"Instrument Sans";font-style:normal;font-weight:400 700;font-display:swap;src:url(/fonts/instrument-sans-latin-wght-normal.woff2) format("woff2-variations")}
+@font-face{font-family:"Jost";font-style:normal;font-weight:100 900;font-display:swap;src:url(/fonts/jost-latin-wght-normal.woff2) format("woff2-variations")}

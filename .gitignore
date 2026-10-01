@@ -24,3 +24,6 @@ Thumbs.db
 # lot 2 : images de travail des planches
 design/photos-candidates/
 design/directions/*.png
+
+# écarts entre le site et la maquette (scripts/comparer-maquette.mjs) : captures et images des différences, non versionnées
+scripts/ecarts/
