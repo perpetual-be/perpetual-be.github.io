@@ -96,7 +96,7 @@ const rangees = [['a', [['community', 7], ['ateliers-118', 5]]], ['b', [['the-ba
 // Le programme agences, vue Réalisations (lot 2b, 04/10/2026 — retours de Julien du 30/09, choix d'Axel ; page de travail : design/revue-mosaique/) : la
 // mosaïque des seize biens (kind agency et gallery), en rangées de 4 et de 3 cases (4-3-4-3-4), chaque photo au format entier — la largeur de sa case suit le
 // format du fichier, les cases d'une rangée ont la même hauteur, rien n'est recadré ni agrandi. L'énoncé de Julien en deux cases de texte : la première phrase
-// en haut à gauche (sous « Programme agences »), la seconde en bas à droite. Les photos les plus solides dans les rangées de 3 (cases plus grandes), les plus
+// en haut à gauche (sans titre depuis le 05/10), la seconde en bas à droite. Les photos les plus solides dans les rangées de 3 (cases plus grandes), les plus
 // faibles et les trois photos en hauteur (Pont-à-Celles, Perwez, Schaerbeek) dans les rangées de 4 ; les deux couloirs Bancontact en photo n° 1 (Bois-de-Villers,
 // Belgrade : l'ordre de leur champ selection) ne se touchent pas. Une case : l'id d'un bien, ou cas:debut / cas:fin ; CAS_R, le format des cases de texte.
 const MOSAIQUE = [
@@ -524,12 +524,13 @@ ${visio('Photos du projet')}`;
 // ---------- vue Réalisations ----------
 // P2 (revue du 26/09), puis lot 2b (04/10/2026 : retours de Julien du 30/09, choix d'Axel ; page de travail design/revue-mosaique/), sur la grille large :
 // l'ouverture — le titre en sans léger, la phrase du subtitle de content/realisations.md (provisoire, lot 3), sur une ligne — → les projets en 2-2-1 : les
-// quatre projets à fiche (blocs-liens, qui gardent leur id), puis Brosse seule sur toute la largeur (sans fiche : un bouton qui ouvre la visionneuse) ; nom
+// quatre projets à fiche (blocs-liens, qui gardent leur id), puis Brosse seule sur toute la largeur (sans fiche : un album, ses photos et la visionneuse) ; nom
 // en serif blanc sur la photo, faits au survol et au focus, zoom 1,035 → le programme agences : la mosaïque 4-3-4-3-4 (MOSAIQUE), photos au format entier,
-// l'énoncé dans deux cases de texte ; chaque tuile, un bouton qui ouvre la visionneuse sur les photos du bien, avec le même survol que les blocs (nom sur la
-// photo, faits, zoom) → pied de page. La visionneuse (maquette.js) lit window.BIENS : un album par bouton — la ville, la surface et l'usage d'un bien, ou
-// une légende toute faite (Brosse), et les photos 1800 px —, déjà échappé pour innerHTML. Le carrousel des agences et les projets de l'ancien site (bascules 22
-// et 23) sont retirés.
+// l'énoncé dans deux cases de texte (sans l'intitulé « Programme agences », que Julien n'aimait pas : retiré le 05/10) ; chaque tuile, avec le même survol que
+// les blocs (nom sur la photo, faits, zoom) → pied de page. Tuiles et bloc de Brosse : leurs photos se parcourent sur place (rétabli le 05/10, demande
+// d'Axel) — flèches au survol, « 1 / n » en haut à droite, au doigt sur la piste — et un clic sur la photo ouvre la visionneuse sur la photo affichée
+// (albumPhotos, maquette.js). La visionneuse lit window.BIENS : un album par tuile — la ville, la surface et l'usage d'un bien, ou une légende toute faite
+// (Brosse), et les photos 1800 px —, déjà échappé pour innerHTML. Le carrousel des agences et les projets de l'ancien site (bascules 22 et 23) sont retirés.
 function realisationsPage() {
   const rmd = frontmatter(read('content/realisations.md'));
   const phrase = (rmd.fm.match(/subtitle:\s*(.+)/) || [])[1];
@@ -543,15 +544,28 @@ function realisationsPage() {
       + `<span class="bloc__texte"><span class="bloc__nom">${esc(byId[id].name)}</span><span class="bloc__faits">${fait('Lieu', f.lieu)}${fait('Surface', f.surface)}${fait('Usage', f.usage)}</span><span class="bloc__mobile">${esc(f.lieu)} · ${esc(f.surface)}</span></span>`;
     return `<a class="bloc" id="${id}" href="${f.href}">${contenu}</a>`;
   };
-  // sans fiche : le même bloc, en bouton qui ouvre la visionneuse ; sur toute la largeur, la version 2 362 px (<clé>-l.jpg, la taille de l'original) s'ajoute au srcset
+  // Les photos d'une tuile ou d'un bloc, parcourables sur place : un bouton (toute la surface) porte la piste des photos — chacune dans sa vue, qui rogne le
+  // zoom du survol — et le texte ; la vue n° 1 a la classe photos__une ; s'il y a plusieurs photos, « 1 / n » et deux flèches, à côté du bouton (un bouton
+  // ne contient pas d'autres boutons). imgs : les <img> déjà faites, dans l'ordre ; texte : le contenu posé sur la photo.
+  const albumPhotos = ({ cls, id, style = '', k, label, imgs, texte }) => {
+    const n = imgs.length;
+    const vues = imgs.map((img, i) => `<span class="photos__vue">${i === 0 ? img.replace('<img', '<img class="photos__une"') : img}</span>`).join('');
+    const nav = n > 1 ? `<span class="photos__compteur" aria-hidden="true">1 / ${n}</span><button type="button" class="photos__fleche photos__fleche--g" aria-label="Photo précédente">${FLECHE_G}</button><button type="button" class="photos__fleche photos__fleche--d" aria-label="Photo suivante">${FLECHE_D}</button>` : '';
+    return `<div class="${cls}" id="${id}"${style} data-album="${k}" data-n="${n}"><button type="button" class="photos__ouvrir" aria-label="${label}"><span class="photos" tabindex="-1">${vues}</span>${texte}</button>${nav}</div>`;
+  };
+  // sans fiche : le même bloc, ses photos parcourables, un clic ouvre la visionneuse ; sur toute la largeur, la version 2 362 px (<clé>-l.jpg, la taille de
+  // l'original) s'ajoute au srcset de la photo n° 1
   const blocSansFiche = (id, fr) => {
-    const p = byId[id], f = SANS_FICHE[id], k = albums.length, cle = p.selection[0];
+    const p = byId[id], f = SANS_FICHE[id], k = albums.length, n = p.selection.length;
     albums.push({ legende: `<b>${esc(p.name)}</b>${esc(f.lieu)} · ${esc(f.surface)}`, l: p.selection.map(c => `${IMG}/${grande(c)}`) });
-    let img = photoImgPetit(cle, null, sizesBloc(cle, fr), ` style="object-position:${f.blocFocal}"`);
-    const l = path.join(REPO, 'design/directions/img', `${cle}-l.jpg`);
-    if (fs.existsSync(l)) img = img.replace(/ srcset="([^"]*)"/, (m, v) => ` srcset="${v}, ${IMG}/${cle}-l.jpg ${jpegSize(l).width}w"`);
-    return `<button type="button" class="bloc bloc--album" id="${id}" data-ouvrir="${k}">${img}`
-      + `<span class="bloc__texte"><span class="bloc__nom">${esc(p.name)}</span><span class="bloc__faits">${fait('Lieu', f.lieu)}${fait('Surface', f.surface)}<span class="provisoire" title="intitulé du site 2020, provisoire (lot 3)"><span class="fait__et">Projet</span><span class="fait__val">${esc(f.projet)}</span></span></span><span class="bloc__mobile">${esc(f.lieu)} · ${esc(f.surface)}</span></span></button>`;
+    const imgs = p.selection.map((cle, i) => {
+      let img = photoImgPetit(cle, null, sizesBloc(cle, fr), i === 0 ? ` style="object-position:${f.blocFocal}"` : ' loading="lazy"');
+      const l = path.join(REPO, 'design/directions/img', `${cle}-l.jpg`);
+      if (fs.existsSync(l)) img = img.replace(/ srcset="([^"]*)"/, (m, v) => ` srcset="${v}, ${IMG}/${cle}-l.jpg ${jpegSize(l).width}w"`);
+      return img;
+    });
+    const texte = `<span class="bloc__texte" aria-hidden="true"><span class="bloc__nom">${esc(p.name)}</span><span class="bloc__faits">${fait('Lieu', f.lieu)}${fait('Surface', f.surface)}<span class="provisoire" title="intitulé du site 2020, provisoire (lot 3)"><span class="fait__et">Projet</span><span class="fait__val">${esc(f.projet)}</span></span></span><span class="bloc__mobile">${esc(f.lieu)} · ${esc(f.surface)}</span></span>`;
+    return albumPhotos({ cls: 'bloc bloc--album', id, k, label: `${esc(p.name)}, ${esc(f.lieu)}, ${esc(f.surface)} — ${n} photos`, imgs, texte });
   };
   const rangeesHtml = rangees.map(([cls, blocs]) => `<div class="alt__rang alt__rang--${cls}">${blocs.map(([id, fr]) => SANS_FICHE[id] ? blocSansFiche(id, fr) : blocLien(id, fr)).join('')}</div>`).join('\n  ');
   // la mosaïque : par rangée, la part de chaque case (son format ÷ la somme des formats de la rangée) donne sa largeur, et le sizes de sa photo (sur
@@ -560,13 +574,18 @@ function realisationsPage() {
     const cases = rang.map(x => x.startsWith('cas:') ? { cas: x.slice(4), r: CAS_R } : (() => { const b = bienDe(x), [s] = photoSourcesPetit(b.photos[0]); return { b, r: s.width / s.height }; })());
     const somme = cases.reduce((t, c) => t + c.r, 0), ecarts = (cases.length - 1) * 14;
     const html = cases.map(c => {
-      if (c.cas === 'debut') return `<div class="cas cas--enonce" style="--r:${CAS_R}"><div class="cas__in"><p class="eyebrow eyebrow--sans-marge">Programme agences</p><h2 class="cas__enonce">${enonce}</h2></div></div>`;
+      if (c.cas === 'debut') return `<div class="cas cas--enonce" style="--r:${CAS_R}"><div class="cas__in"><h2 class="cas__enonce">${enonce}</h2></div></div>`;
       if (c.cas === 'fin') return `<div class="cas cas--phrase" style="--r:${CAS_R}"><div class="cas__in"><p class="cas__phrase">${enonceSuite}</p></div></div>`;
-      const b = c.b, k = albums.length, n = b.photos.length, tel = Math.max(1, c.r / 0.8);
+      const b = c.b, k = albums.length, n = b.photos.length, part = (c.r / somme).toFixed(4);
       albums.push({ ville: esc(b.ville), surface: esc(b.surface), usage: esc(b.usage), l: b.photos.map(x => `${IMG}/${grande(x)}`) });
-      const img = photoImgPetit(b.photos[0], null, [['(max-width:640px)', `(100vw - 50px) / 2 * ${tel.toFixed(3)}`], ['', `(min(100vw, 1600px) - ${80 + ecarts}px) * ${(c.r / somme).toFixed(4)}`]], ' loading="lazy"');
-      return `<button type="button" class="tuile" id="${b.id}" style="--r:${c.r.toFixed(3)}" data-ouvrir="${k}" aria-label="${esc(b.ville)}, ${esc(b.surface)}, ${esc(b.usage)} — ${n} photo${n > 1 ? 's' : ''}">${img}`
-        + `<span class="tuile__texte" aria-hidden="true"><span class="tuile__nom">${esc(b.ville)}</span><span class="tuile__faits">${fait('Surface', b.surface)}${fait('Usage', b.usage)}</span><span class="tuile__mobile">${esc(b.surface)}</span></span></button>`;
+      // sizes : la largeur de la case (sa part de la rangée ; sur téléphone, une colonne sur deux) × le recadrage de chaque photo dans la case — aucun pour
+      // la n° 1, qui donne son format à la case ; au téléphone, case 4:5
+      const imgs = b.photos.map(x => {
+        const [s0] = photoSourcesPetit(x), pr = s0.width / s0.height, kTel = Math.max(1, pr / 0.8), kCase = Math.max(1, pr / c.r);
+        return photoImgPetit(x, null, [['(max-width:640px)', `(100vw - 50px) / 2 * ${kTel.toFixed(3)}`], ['', `(min(100vw, 1600px) - ${80 + ecarts}px) * ${part} * ${kCase.toFixed(3)}`]], ' loading="lazy"');
+      });
+      const texte = `<span class="tuile__texte" aria-hidden="true"><span class="tuile__nom">${esc(b.ville)}</span><span class="tuile__faits">${fait('Surface', b.surface)}${fait('Usage', b.usage)}</span><span class="tuile__mobile">${esc(b.surface)}</span></span>`;
+      return albumPhotos({ cls: 'tuile', id: b.id, style: ` style="--r:${c.r.toFixed(3)}"`, k, label: `${esc(b.ville)}, ${esc(b.surface)}, ${esc(b.usage)} — ${n} photo${n > 1 ? 's' : ''}`, imgs, texte });
     }).join('');
     return `<div class="mos__rang mos__rang--${cases.length}">${html}</div>`;
   }).join('\n    ');

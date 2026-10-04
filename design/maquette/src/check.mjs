@@ -5,7 +5,8 @@
 // page sans JavaScript, polices, contrastes ; puis les quatre fiches, P6 (débordement, erreurs et images, alignement sur le logo, pied de page, photo de tête
 // et son cadre, photo qui suit, rangées de la mosaïque, contenu, précédent / suivant en boucle, visionneuse, téléphone, sans JavaScript), la vue Réalisations
 // (P2, puis lot 2b du 04/10 : débordement et erreurs, alignement sur la grille large, ouverture, projets en 2-2-1 — les 4 blocs-liens et Brosse —, mosaïque
-// 4-3-4-3-4 des agences au format entier, cases de texte, survols, visionneuse, photos servies, bascules 22 et 23 retirées, mobile, sans JavaScript) et la page Engagements (débordement et erreurs, ouverture, registre, œuvre sur sa
+// 4-3-4-3-4 des agences au format entier, cases de texte, survols, photos parcourables sur place — rétablies le 05/10 —, visionneuse, photos servies, bascules 22 et 23
+// retirées, mobile, sans JavaScript) et la page Engagements (débordement et erreurs, ouverture, registre, œuvre sur sa
 // cimaise, cartel, liens, espacements, téléphone, panneau, sans JavaScript ; liens « Engagements » des sept pages).
 // Usage, depuis la racine du dépôt : NODE_PATH=$(npm root -g) node design/maquette/src/check.mjs
 import path from 'node:path';
@@ -672,6 +673,8 @@ const realMd = fs.readFileSync(path.resolve(MAQ, '../../content/realisations.md'
 const phraseAttendue = realMd.match(/subtitle:\s*(.+)/)[1].trim();
 const paragrapheAgences = realMd.split('## Le programme agences')[1].replace(/<!--[\s\S]*?-->/g, '').trim().split(/\n\s*\n/)[0].trim();
 const TRANSPARENT = 'rgba(0, 0, 0, 0)';
+// la photo affichée de chaque bloc (les quatre liens, puis Brosse : la première de sa piste, hors clones de la boucle) et de chaque tuile
+const BLOC_IMG = '.bloc > img, .bloc .photos__vue:not([data-clone]) .photos__une', TUILE_IMG = '.mos .photos__vue:not([data-clone]) .photos__une';
 ok(donnees.filter(d => d.kind === 'agency' || d.kind === 'gallery').length === 16 && TUILES.length === 16 && new Set(TUILES.map(t => t.id)).size === 16,
   'données : les 16 biens (agency et gallery) dans la mosaïque attendue, une fois chacun');
 ok(BROSSE && BROSSE.kind === 'project' && BROSSE.selection.join(' ') === 'brosse-31 brosse-16 brosse-29 brosse-27 brosse-23 brosse-61 brosse-19 brosse-22 brosse-70',
@@ -701,7 +704,7 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
       && Math.abs(a.l[0] / a.l[1] - 7 / 5) < 0.02 && Math.abs(b.l[1] / b.l[0] - 7 / 5) < 0.02 && c.l.length === 1 && Math.abs(c.l[0] - r.large) <= 1,
       `${w} × ${h} : projets en 2-2-1 — 7/5, 5/7, puis une rangée seule sur toute la largeur (${r.rangs.map(x => x.l.join(' / ')).join(', ')}), ${a.h} px de haut (clamp → ${attendu}), écarts de 14 px`);
     // la mosaïque : 4-3-4-3-4, toute la largeur, cases d'une rangée à la même hauteur, chaque case au format de sa photo (photo entière), écarts de 14 px
-    const m = await p.evaluate(() => [...document.querySelectorAll('.mos__rang')].map(r => { const rr = r.getBoundingClientRect(), cases = [...r.children].map(c => { const b = c.getBoundingClientRect(), img = c.querySelector('img');
+    const m = await p.evaluate(() => [...document.querySelectorAll('.mos__rang')].map(r => { const rr = r.getBoundingClientRect(), cases = [...r.children].map(c => { const b = c.getBoundingClientRect(), img = c.querySelector('.photos__vue:not([data-clone]) .photos__une');
       return { w: b.width, h: b.height, r: parseFloat(c.style.getPropertyValue('--r')), nat: img ? img.naturalWidth / img.naturalHeight : null, left: b.left, right: b.right }; });
       return { n: cases.length, w: rr.width, h: Math.round(rr.height), cases, gaps: cases.slice(1).map((c, i) => Math.round(c.left - cases[i].right)) }; }));
     const large = r.large;
@@ -719,7 +722,7 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
     return { logo: l('.logo'), titre: l('.page__titre'), photo: l('.bloc'), mos: l('.mos'), cas: l('.mos .cas'), nav: r('.site-nav'), photoD: r('.alt__rang--a .bloc:last-child'), seul: r('.alt__rang--seul .bloc'), mosD: r('.mos'), finD: r('.mos__rang:last-child > :last-child') }; });
   ok(x.logo === 200 && x.titre === 200 && x.photo === 200 && x.mos === 200 && x.cas === 200, `1920 : le logo, le titre, la première photo et la mosaïque (sa première case) commencent au même x (${x.logo}, ${x.titre}, ${x.photo}, ${x.mos}, ${x.cas})`);
   ok(x.nav === 1720 && x.photoD === 1720 && x.seul === 1720 && x.mosD === 1720 && Math.abs(x.finD - 1720) <= 1, `1920 : la navigation finit avec les photos, la rangée de Brosse et la mosaïque (${x.nav}, ${x.photoD}, ${x.seul}, ${x.mosD}, ${x.finD})`);
-  const blocs = await photosImg(p, '.bloc img');
+  const blocs = await photosImg(p, BLOC_IMG);
   ok(blocs.every(i => i.echelle <= 1), `blocs à 1920 × 1080, 1× : aucune photo agrandie (${blocs.map(i => `${i.cle} ${i.w}×${i.h} ← ${i.pixels} ×${i.echelle}`).join(', ')})`);
   await ctx.close();
 }
@@ -743,13 +746,13 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   ok(t.phrase === phraseAttendue && t.mw === 'none' && t.provisoire, `phrase d'ouverture : le subtitle de content/realisations.md, sans max-width, marquée provisoire (lot 3) — « ${t.phrase} »`);
   // les projets : les quatre à fiche, puis Brosse
   const b = await p.evaluate(() => [...document.querySelectorAll('.bloc')].map(e => { const r = e.getBoundingClientRect(), nom = e.querySelector('.bloc__nom'), tx = e.querySelector('.bloc__texte'), f = e.querySelector('.bloc__faits'), s = getComputedStyle(nom);
-    return { tag: e.tagName.toLowerCase(), id: e.id, href: e.getAttribute('href'), ouvrir: e.getAttribute('data-ouvrir'), nom: nom.textContent, ff: s.fontFamily.split(',')[0], fs: s.fontSize, c: s.color, gauche: Math.round(nom.getBoundingClientRect().left - r.left), bas: Math.round(r.bottom - tx.getBoundingClientRect().bottom),
+    return { tag: e.tagName.toLowerCase(), id: e.id, href: e.getAttribute('href'), ouvrir: e.getAttribute('data-album'), nom: nom.textContent, ff: s.fontFamily.split(',')[0], fs: s.fontSize, c: s.color, gauche: Math.round(nom.getBoundingClientRect().left - r.left), bas: Math.round(r.bottom - tx.getBoundingClientRect().bottom),
       faits: [...f.querySelectorAll('.fait__et')].map(x => x.textContent + ' ' + x.nextElementSibling.textContent).join(' · '), repos: getComputedStyle(f).opacity + ' ' + Math.round(f.getBoundingClientRect().height),
       mobile: getComputedStyle(e.querySelector('.bloc__mobile')).display }; }));
   ok(b.map(x => x.nom).join(' · ') === 'Community · Ateliers 118 · The Bank · Data Box · Brosse' && b.every(x => x.ff === 'Newsreader' && x.fs === '38px' && x.c === BLANC && x.gauche === 28 && x.bas === 24),
     `5 projets : ${b.map(x => x.nom).join(' · ')}, nom en serif blanc 38 px, en bas à gauche (28 / 24 px)`);
-  ok(b.map(x => `${x.tag}#${x.id}${x.href ? ' → ' + x.href : ''}${x.ouvrir !== null ? ' ouvre ' + x.ouvrir : ''}`).join(' | ') === 'a#community → projet-community.html | a#ateliers-118 → projet-ateliers-118.html | a#the-bank → projet-the-bank.html | a#data-box → projet-data-box.html | button#brosse ouvre 0',
-    'les quatre projets à fiche sont des liens vers leur fiche (ids gardés) ; Brosse, sans fiche, un bouton qui ouvre la visionneuse : ' + b.map(x => `${x.tag}#${x.id}`).join(' · '));
+  ok(b.map(x => `${x.tag}#${x.id}${x.href ? ' → ' + x.href : ''}${x.ouvrir !== null ? ' ouvre ' + x.ouvrir : ''}`).join(' | ') === 'a#community → projet-community.html | a#ateliers-118 → projet-ateliers-118.html | a#the-bank → projet-the-bank.html | a#data-box → projet-data-box.html | div#brosse ouvre 0',
+    'les quatre projets à fiche sont des liens vers leur fiche (ids gardés) ; Brosse, sans fiche, un album (album 0 de la visionneuse) : ' + b.map(x => `${x.tag}#${x.id}`).join(' · '));
   ok(b.map(x => x.faits).join(' | ') === 'Lieu Uccle · Surface 14 unités · Usage Co-living | Lieu Molenbeek-Saint-Jean · Surface 1 200 m² · Usage Ateliers | Lieu Liège · Surface 1 100 m² · Usage Logements & commerce | Lieu Jemelle · Surface 4 200 m² · Usage Site technique | Lieu Forest · Surface 800 m² · Projet Rafraîchissement et division d’un ancien atelier de brosses'
     && b.every(x => x.repos === '0 0' && x.mobile === 'none'), 'trois faits par projet, masqués au repos ; Brosse : Lieu, Surface, et « Projet » (intitulé du site 2020, provisoire)');
   // au survol, les faits et le zoom (photos cliquables : les cinq) ; au focus clavier, les faits — de « Contact » aux cinq blocs, puis la première tuile
@@ -757,16 +760,18 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   await p.evaluate(() => document.querySelector('.mq').classList.add('is-plie'));
   for (const id of ['community', 'ateliers-118', 'the-bank', 'data-box', 'brosse']) {
     await p.hover('#' + id); await p.waitForTimeout(80);
-    survols.push(await p.evaluate(id => { const f = document.querySelector(`#${id} .bloc__faits`); return `${id} ${getComputedStyle(f).opacity} ${f.getBoundingClientRect().height > 30} ${getComputedStyle(document.querySelector(`#${id} img`)).transform}`; }, id));
+    survols.push(await p.evaluate(id => { const f = document.querySelector(`#${id} .bloc__faits`), img = document.querySelector(`#${id} > img, #${id} .photos__vue:not([data-clone]) img`); return `${id} ${getComputedStyle(f).opacity} ${f.getBoundingClientRect().height > 30} ${getComputedStyle(img).transform}`; }, id));
   }
   await p.evaluate(() => document.querySelector('.mq').classList.remove('is-plie'));
   await p.mouse.move(1, 1);
   await p.focus('.site-nav a:last-child');
   const focus = [];
-  for (let k = 0; k < 6; k++) { await p.keyboard.press('Tab'); focus.push(await p.evaluate(() => { const a = document.activeElement, f = a.querySelector('.bloc__faits, .tuile__faits'); return `${a.id} ${a.matches(':focus-visible')} ${f ? getComputedStyle(f).opacity : '-'}`; })); }
-  ok(survols.every(x => / 1 true matrix\(1\.035, 0, 0, 1\.035/.test(x)) && focus.join(' | ') === 'community true 1 | ateliers-118 true 1 | the-bank true 1 | data-box true 1 | brosse true 1 | bnp-braine-le-comte true 1',
-    `au survol, les faits s'affichent et la photo zoome (1,035) sur les cinq blocs ; au focus clavier, les faits aussi (${focus.map(x => x.split(' ')[0]).join(', ')})`);
-  const photos = await photosImg(p, '.bloc img');
+  for (let k = 0; k < 9; k++) { await p.keyboard.press('Tab'); focus.push(await p.evaluate(() => { const a = document.activeElement, c = a.closest('.bloc, .tuile'), f = c && c.querySelector('.bloc__faits, .tuile__faits'), fl = c && c.querySelector('.photos__fleche');
+    const quoi = a.classList.contains('photos__ouvrir') ? 'photo' : a.classList.contains('photos__fleche--g') ? '←' : a.classList.contains('photos__fleche--d') ? '→' : a.tagName.toLowerCase();
+    return `${c ? c.id : a.id} ${quoi} ${a.matches(':focus-visible')} ${f ? getComputedStyle(f).opacity : '-'} ${fl ? getComputedStyle(fl).opacity : '-'}`; })); }
+  ok(survols.every(x => / 1 true matrix\(1\.035, 0, 0, 1\.035/.test(x)) && focus.join(' | ') === 'community a true 1 - | ateliers-118 a true 1 - | the-bank a true 1 - | data-box a true 1 - | brosse photo true 1 1 | brosse ← true 1 1 | brosse → true 1 1 | bnp-braine-le-comte photo true 1 1 | bnp-braine-le-comte ← true 1 1',
+    `au survol, les faits s'affichent et la photo zoome (1,035) sur les cinq blocs ; au clavier, les quatre liens, puis la photo et les deux flèches de Brosse et de chaque tuile, faits et flèches affichés (${focus.map(x => x.split(' ').slice(0, 2).join(' ')).join(', ')})`);
+  const photos = await photosImg(p, BLOC_IMG);
   ok(photos.map(i => `${i.cle} ${i.focal}`).join(' · ') === 'community-05 50% 50% · ateliers-118-01 50% 30% · the-bank-01 50% 40% · data-box-03 50% 50% · brosse-31 50% 40%' && photos.every(i => donnees.some(x => (x.kind === 'detailed' || x.kind === 'project') && x.selection[0] === i.cle)),
     'photos des blocs (la première clé de selection de chaque projet) et points focaux : ' + photos.map(i => `${i.cle} ${i.focal}`).join(' · '));
   verifierSrcset(photos.filter(i => i.cle !== 'brosse-31'), 'blocs');
@@ -776,13 +781,15 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   ok(await p.evaluate(() => [...document.querySelectorAll('[id]')].map(e => e.id).filter((id, i, a) => a.indexOf(id) !== i).length === 0), 'aucun id en double');
   // le programme agences : la mosaïque (le focus quitte la première tuile, atteinte au clavier ci-dessus)
   await p.evaluate(() => document.activeElement.blur());
-  const tu = await p.evaluate(() => [...document.querySelectorAll('.mos .tuile')].map(t => ({ id: t.id, nom: t.querySelector('.tuile__nom').textContent, label: t.getAttribute('aria-label'), ouvrir: +t.getAttribute('data-ouvrir'), tag: t.tagName,
-    faits: [...t.querySelectorAll('.fait__et')].map(x => x.textContent + ' ' + x.nextElementSibling.textContent).join(' · '), photo: t.querySelector('img').getAttribute('src').replace(/^.*\//, '').replace(/-s\.jpg$/, ''),
-    lazy: t.querySelector('img').getAttribute('loading'), nomStyle: (s => `${s.fontFamily.split(',')[0]} ${s.color}`)(getComputedStyle(t.querySelector('.tuile__nom'))), repos: getComputedStyle(t.querySelector('.tuile__faits')).opacity })));
-  ok(tu.length === 16 && tu.map(t => t.id).join(' ') === TUILES.map(t => t.id).join(' ') && tu.every((t, i) => t.tag === 'BUTTON' && t.nom === TUILES[i].ville && t.faits === `Surface ${TUILES[i].surface} · Usage ${TUILES[i].usage}` && t.repos === '0' && t.nomStyle === `Newsreader ${BLANC}`),
+  const tu = await p.evaluate(() => [...document.querySelectorAll('.mos .tuile')].map(t => { const une = t.querySelector('.photos__vue:not([data-clone]) .photos__une'), cle = i => i.getAttribute('src').replace(/^.*\//, '').replace(/-s\.jpg$/, ''); return { id: t.id, nom: t.querySelector('.tuile__nom').textContent, label: t.querySelector('.photos__ouvrir').getAttribute('aria-label'), ouvrir: +t.getAttribute('data-album'), tag: t.tagName,
+    faits: [...t.querySelectorAll('.fait__et')].map(x => x.textContent + ' ' + x.nextElementSibling.textContent).join(' · '), photo: cle(une), lazy: une.getAttribute('loading'),
+    vues: [...t.querySelectorAll('.photos__vue:not([data-clone]) img')].map(cle).join(' '), n: +t.dataset.n, clones: t.querySelectorAll('.photos__vue[data-clone][aria-hidden="true"]').length, cpt: (t.querySelector('.photos__compteur') || {}).textContent || '', fl: t.querySelectorAll('.photos__fleche').length, nav: t.classList.contains('photos--nav'), nomStyle: (s => `${s.fontFamily.split(',')[0]} ${s.color}`)(getComputedStyle(t.querySelector('.tuile__nom'))), repos: getComputedStyle(t.querySelector('.tuile__faits')).opacity }; }));
+  ok(tu.length === 16 && tu.map(t => t.id).join(' ') === TUILES.map(t => t.id).join(' ') && tu.every((t, i) => t.tag === 'DIV' && t.nom === TUILES[i].ville && t.faits === `Surface ${TUILES[i].surface} · Usage ${TUILES[i].usage}` && t.repos === '0' && t.nomStyle === `Newsreader ${BLANC}`),
     `mosaïque : les 16 biens dans l'ordre de MOSAIQUE (${tu.map(t => t.nom).join(' · ')}), nom en serif blanc, Surface / Usage masqués au repos`);
   ok(tu.every((t, i) => t.photo === TUILES[i].photos[0] && t.lazy === 'lazy' && t.label === `${TUILES[i].ville}, ${TUILES[i].surface}, ${TUILES[i].usage} — ${TUILES[i].photos.length} photo${TUILES[i].photos.length > 1 ? 's' : ''}` && t.ouvrir === i + 1),
     'mosaïque : chaque tuile montre la première photo de son selection, a un nom accessible (ville, surface, usage, nombre de photos) et ouvre son album');
+  ok(tu.every((t, i) => { const n = TUILES[i].photos.length; return t.vues === TUILES[i].photos.join(' ') && t.n === n && t.clones === (n > 1 ? 2 * n : 0) && t.cpt === (n > 1 ? `1 / ${n}` : '') && t.fl === (n > 1 ? 2 : 0) && t.nav === n > 1; }),
+    `mosaïque : chaque tuile porte toutes les photos de son selection, dans l'ordre (${tu.reduce((a, t) => a + t.n, 0)} vues) ; à plus d'une photo, « 1 / n » et deux flèches, la boucle (clones masqués aux lecteurs d'écran) ; ${tu.filter(t => t.n === 1).map(t => t.nom).join(', ')} : une photo, ni compteur ni flèches`);
   const USAGES = ['Service finance de la commune', 'Auto-école', 'École de danse et commerce de proximité', 'Quatre logements'];
   ok(donnees.filter(x => x.kind === 'agency').sort((a, b) => a.order - b.order).map(x => x.use).join(' | ') === USAGES.join(' | ') && !donnees.some(x => /Bancontact/.test(x.use || '')) && tu.every(t => !/Bancontact/.test(t.faits)),
     'usages des 4 agences sans « Point Bancontact » (data/projects.json et page) : ' + USAGES.join(' · '));
@@ -792,16 +799,16 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   const cs = await p.evaluate(() => [...document.querySelectorAll('.mos .cas')].map(c => { const i = c.querySelector('.cas__in'), r = c.getBoundingClientRect(), rang = c.parentElement, cases = [...rang.children];
     return { cls: c.className, eyebrow: (c.querySelector('.eyebrow') || {}).textContent || '', h2: c.querySelector('h2') ? c.querySelector('h2').textContent : '', p: c.querySelector('.cas__phrase') ? c.querySelector('.cas__phrase').textContent : '',
       fond: getComputedStyle(c).backgroundColor, rogne: i.scrollHeight > i.clientHeight + 1, place: `${[...document.querySelectorAll('.mos__rang')].indexOf(rang) + 1}.${cases.indexOf(c) + 1}`, ff: getComputedStyle(c.querySelector('h2, .cas__phrase')).fontFamily.split(',')[0] }; }));
-  ok(cs.length === 2 && cs[0].place === '1.1' && cs[1].place === '5.4' && cs[0].eyebrow === 'Programme agences' && `${cs[0].h2} ${cs[1].p}` === paragrapheAgences && cs.every(c => c.fond === PAPIER && !c.rogne && c.ff === 'Newsreader'),
-    `deux cases de texte sur papier, en serif, jamais rognées : « Programme agences » et la première phrase de l'énoncé (h2) en haut à gauche (${cs[0].place}), la seconde en bas à droite (${cs[1] && cs[1].place})`);
+  ok(cs.length === 2 && cs[0].place === '1.1' && cs[1].place === '5.4' && cs[0].eyebrow === '' && !(await p.evaluate(() => document.querySelector('.mos').textContent.includes('Programme agences'))) && `${cs[0].h2} ${cs[1].p}` === paragrapheAgences && cs.every(c => c.fond === PAPIER && !c.rogne && c.ff === 'Newsreader'),
+    `deux cases de texte sur papier, en serif, jamais rognées, sans le titre « Programme agences » (retiré le 05/10, Julien ne l'aimait pas) : la première phrase de l'énoncé (h2) en haut à gauche (${cs[0].place}), la seconde en bas à droite (${cs[1] && cs[1].place})`);
   // survol d'une tuile : faits, zoom, dégradé renforcé
   await p.evaluate(() => document.querySelector('.mq').classList.add('is-plie'));
   const st = [];
   for (const id of ['bnp-braine-le-comte', 'ing-haaltert', 'consolation']) {
     await p.hover('#' + id); await p.waitForTimeout(400);
-    st.push(await p.evaluate(id => { const t = document.getElementById(id), f = t.querySelector('.tuile__faits'); return `${getComputedStyle(f).opacity} ${f.scrollHeight <= f.clientHeight + 1} ${getComputedStyle(t.querySelector('img')).transform}`; }, id));
+    st.push(await p.evaluate(id => { const t = document.getElementById(id), f = t.querySelector('.tuile__faits'); return `${getComputedStyle(f).opacity} ${f.scrollHeight <= f.clientHeight + 1} ${getComputedStyle(t.querySelector('.photos__vue:not([data-clone]) img')).transform} ${getComputedStyle(t.querySelector('.photos__fleche')).opacity}`; }, id));
   }
-  ok(st.every(x => /^1 true matrix\(1\.035, 0, 0, 1\.035/.test(x)), 'tuiles : au survol, Surface et Usage s’affichent en entier et la photo zoome (1,035), comme les blocs des projets — ' + st.map(x => x.split(' ').slice(0, 2).join(' ')).join(' · '));
+  ok(st.every(x => /^1 true matrix\(1\.035, 0, 0, 1\.035.* 1$/.test(x)), 'tuiles : au survol, Surface et Usage s’affichent en entier, la photo zoome (1,035), comme les blocs des projets, et les flèches paraissent — ' + st.map(x => x.split(' ').slice(0, 2).join(' ')).join(' · '));
   await ctx.close();
 }
 {
@@ -810,7 +817,7 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   const vis = () => p.evaluate(() => { const v = document.querySelector('.visio'), vp = v.querySelector('.visio__piste'), img = vp.children[Math.round(vp.scrollLeft / vp.clientWidth)], cadre = v.querySelector('.visio__cadre').getBoundingClientRect();
     return { ouvert: !v.hidden && getComputedStyle(v).display !== 'none', cpt: v.querySelector('.visio__compteur').textContent, src: img ? img.getAttribute('src').replace(/^.*\//, '') : null, legende: v.querySelector('.visio__legende').innerHTML,
       focus: document.activeElement && document.activeElement.textContent, corps: document.body.classList.contains('visio-ouverte'), fit: img && getComputedStyle(img).objectFit, ratio: cadre.width / cadre.height, fond: getComputedStyle(v).backgroundColor,
-      fleches: [...v.querySelectorAll('.visio__fleche')].map(f => !f.hidden && getComputedStyle(f).display !== 'none').join(' '), retour: document.activeElement && document.activeElement.id }; });
+      fleches: [...v.querySelectorAll('.visio__fleche')].map(f => !f.hidden && getComputedStyle(f).display !== 'none').join(' '), retour: document.activeElement && ((document.activeElement.closest('[id]') || {}).id + ' ' + document.activeElement.className) }; });
   await p.click('#brosse'); await p.waitForTimeout(150);
   const v1 = await vis();
   ok(v1.ouvert && v1.cpt === '1 / 9' && v1.src === 'brosse-31.jpg' && v1.legende === '<b>Brosse</b>Forest · 800 m²' && v1.focus === 'Fermer' && v1.corps && v1.fond === BLANC && v1.fit === 'contain' && Math.abs(v1.ratio - 4 / 3) < 0.01 && v1.fleches === 'true true',
@@ -819,8 +826,8 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   const tab = [];
   for (let i = 0; i < 6; i++) { await p.keyboard.press(i < 4 ? 'Tab' : 'Shift+Tab'); tab.push(await p.evaluate(() => document.activeElement.closest('.visio') ? (document.activeElement.textContent || document.activeElement.className) : 'HORS : ' + document.activeElement.className)); }
   await p.keyboard.press('Escape'); await p.waitForTimeout(100); const v3 = await vis();
-  ok(v2.cpt === '2 / 9' && v2.src === 'brosse-16.jpg' && tab.every(t => !t.startsWith('HORS')) && !v3.ouvert && !v3.corps && v3.retour === 'brosse',
-    `visionneuse : → ${v2.cpt} (${v2.src}) ; Tab et Maj+Tab restent dedans ; Échap la ferme et rend le focus au bloc de Brosse`);
+  ok(v2.cpt === '2 / 9' && v2.src === 'brosse-16.jpg' && tab.every(t => !t.startsWith('HORS')) && !v3.ouvert && !v3.corps && v3.retour === 'brosse photos__ouvrir',
+    `visionneuse : → ${v2.cpt} (${v2.src}) ; Tab et Maj+Tab restent dedans ; Échap la ferme et rend le focus à la photo de Brosse`);
   await p.click('#bnp-braine-le-comte'); await p.waitForTimeout(150); const v4 = await vis();
   await p.click('.visio [data-v-suiv]'); await p.waitForTimeout(150); const v5 = await vis();
   await p.click('.visio [data-fermer]'); await p.waitForTimeout(100);
@@ -834,17 +841,40 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   await ctx.close();
 }
 {
+  // les photos se parcourent sur place (rétabli le 05/10) : flèches en boucle, « 1 / n », clavier ; un clic sur la photo ouvre la visionneuse sur la photo
+  // affichée ; la souris partie, flèches et faits se retirent même si une flèche cliquée garde le focus
+  const { p, ctx } = await ouvrir('panneau=off', [1440, 900], {}, REAL);
+  const etat = id => p.evaluate(id => { const t = document.getElementById(id), pi = t.querySelector('.photos'), c = pi.children, pas = c[1] ? c[1].getBoundingClientRect().left - c[0].getBoundingClientRect().left : pi.clientWidth, vue = c[Math.round(pi.scrollLeft / pas)];
+    return `${(t.querySelector('.photos__compteur') || {}).textContent || '-'} ${vue.querySelector('img').getAttribute('src').replace(/^.*\//, '').replace(/-s\.jpg$/, '')}${vue.hasAttribute('data-clone') ? ' (clone)' : ''}`; }, id);
+  const fleche = async (id, sens) => { await p.click(`#${id} .photos__fleche--${sens}`); await p.waitForTimeout(120); return etat(id); };
+  await p.locator('#bnp-braine-le-comte').scrollIntoViewIfNeeded(); await p.hover('#bnp-braine-le-comte');
+  const bl = [await etat('bnp-braine-le-comte'), await fleche('bnp-braine-le-comte', 'd'), await fleche('bnp-braine-le-comte', 'd'), await fleche('bnp-braine-le-comte', 'g')];
+  ok(bl.join(' → ') === '1 / 2 bnp-braine-le-comte-01 → 2 / 2 bnp-braine-le-comte-03 → 1 / 2 bnp-braine-le-comte-01 → 2 / 2 bnp-braine-le-comte-03', `Braine-le-Comte, aux flèches, en boucle : ${bl.join(' → ')}`);
+  await p.click('#bnp-braine-le-comte .photos__ouvrir', { position: { x: 120, y: 80 } }); await p.waitForTimeout(150);
+  const v = await p.evaluate(() => { const v = document.querySelector('.visio'), vp = v.querySelector('.visio__piste'); return `${!v.hidden} ${v.querySelector('.visio__compteur').textContent} ${vp.children[Math.round(vp.scrollLeft / vp.clientWidth)].getAttribute('src').replace(/^.*\//, '')}`; });
+  await p.keyboard.press('Escape'); await p.waitForTimeout(100);
+  ok(v === 'true 2 / 2 bnp-braine-le-comte-03.jpg', `un clic sur la photo affichée ouvre la visionneuse sur elle (${v})`);
+  await p.locator('#brosse').scrollIntoViewIfNeeded(); await p.hover('#brosse');
+  const br = [await etat('brosse'), await fleche('brosse', 'g'), await fleche('brosse', 'd'), await fleche('brosse', 'd')];
+  await p.focus('#brosse .photos__fleche--d'); await p.keyboard.press('Enter'); await p.waitForTimeout(120); br.push(await etat('brosse'));
+  ok(br.join(' → ') === '1 / 9 brosse-31 → 9 / 9 brosse-70 → 1 / 9 brosse-31 → 2 / 9 brosse-16 → 3 / 9 brosse-29', `Brosse : ← depuis la première mène à la dernière, puis → à la souris et au clavier : ${br.join(' → ')}`);
+  await p.locator('#bnp-jambes').scrollIntoViewIfNeeded(); await p.click('#bnp-jambes .photos__fleche--d'); await p.mouse.move(1, 1); await p.waitForTimeout(450);
+  const apres = await p.evaluate(() => { const t = document.getElementById('bnp-jambes'); return `${document.activeElement.className} ${getComputedStyle(t.querySelector('.photos__fleche')).opacity} ${getComputedStyle(t.querySelector('.tuile__faits')).opacity}`; });
+  ok(apres === 'photos__fleche photos__fleche--d 0 0', `la souris partie, une flèche cliquée garde le focus mais flèches et faits se retirent (${apres})`);
+  await ctx.close();
+}
+{
   // photos des blocs, cadre variable (largeur et hauteur suivent la fenêtre) : à 1×, le plus petit fichier suffisant est servi — jamais agrandi, jamais trop lourd ;
   // photos des tuiles : à 1×, le 800 px suffit partout (la plus grande case fait ~500 px de large)
   const ecarts = [];
   for (const [w, h] of [[641, 800], [800, 800], [1024, 768], [1280, 800], [1366, 703], [1440, 900], [1521, 705], [1920, 1080]]) {
     const { p, ctx } = await ouvrir('panneau=off', [w, h], {}, REAL);
-    for (const i of await photosImg(p, '.bloc img')) {
+    for (const i of await photosImg(p, BLOC_IMG)) {
       const petit = tailleJpeg(path.join(IMG_DIR, `${i.cle}-s.jpg`)), besoin = Math.max(i.w, i.h * petit.width / petit.height);
       const attendu = petit.width >= besoin ? `${i.cle}-s.jpg` : `${i.cle}.jpg`;
       if (i.servi !== attendu) ecarts.push(`${w}×${h} ${i.cle} : ${i.servi} au lieu de ${attendu} (besoin ${Math.round(besoin)} px)`);
     }
-    for (const i of await photosImg(p, '.mos .tuile img')) {
+    for (const i of await photosImg(p, TUILE_IMG)) {
       const petit = tailleJpeg(path.join(IMG_DIR, `${i.cle}-s.jpg`)), attendu = petit.width >= i.w - 1 ? `${i.cle}-s.jpg` : `${i.cle}.jpg`;
       if (i.servi !== attendu || i.echelle > 1.01) ecarts.push(`${w}×${h} tuile ${i.cle} : ${i.servi} (${i.w} px, attendu ${attendu}, ×${i.echelle})`);
     }
@@ -876,17 +906,23 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   ok(m.mosCols === 2 && gauche === 8 && droite === 8 && m.tuiles.every(t => Math.abs(t.ratio - 0.8) < 0.01 && t.faits === 'none' && t.nom === '19px' && /^block \d/.test(t.mob)) && m.cas.every(w => w === m.large),
     `mobile : la mosaïque en deux colonnes de tuiles 4:5 (${gauche} + ${droite}, sans trou), nom 19 px et surface dessous ; les cases de texte sur toute la largeur`);
   ok(m.titre === '44px' && m.fleches === 'none', 'mobile : titre 44 px, visionneuse sans flèches');
+  const glisse = await p.evaluate(async () => { const t = document.getElementById('bnp-jambes'), pi = t.querySelector('.photos'), r = [];
+    t.scrollIntoView(); for (let k = 0; k < 2; k++) { pi.scrollBy({ left: pi.clientWidth }); await new Promise(f => setTimeout(f, 500)); r.push(t.querySelector('.photos__compteur').textContent); } return r.join(' → '); });
+  ok(glisse === '2 / 2 → 1 / 2', `mobile : la tuile se fait glisser, le compteur suit, en boucle (Jambes : ${glisse})`);
   await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('', [1440, 900], { javaScriptEnabled: false }, REAL);
   ok(await p.evaluate(() => !document.querySelector('.mq') && document.querySelectorAll('.bloc').length === 5 && document.querySelectorAll('.mos .tuile').length === 16 && getComputedStyle(document.querySelector('.visio')).display === 'none'
     && getComputedStyle(document.querySelector('.mos')).display === 'flex'), 'sans JavaScript : les 5 projets et la mosaïque des 16 (visionneuse masquée), sans panneau');
+  ok(await p.evaluate(() => !document.querySelector('[data-clone], .photos--nav') && [...document.querySelectorAll('.photos__compteur, .photos__fleche')].every(e => getComputedStyle(e).display === 'none')
+    && [...document.querySelectorAll('[data-album]:not([data-n="1"]) .photos')].every(pi => pi.scrollWidth > pi.clientWidth + 10 && getComputedStyle(pi).overflowX === 'auto')),
+    'sans JavaScript : ni compteur ni flèches, la piste de chaque album se fait glisser (sans boucle)');
   await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('', [1440, 900], { deviceScaleFactor: 2 }, REAL);
-  const blocs2 = await photosImg(p, '.bloc img'), tuiles2 = await photosImg(p, '.mos .tuile img');
+  const blocs2 = await photosImg(p, BLOC_IMG), tuiles2 = await photosImg(p, TUILE_IMG);
   ok(blocs2.every(i => i.servi === (i.cle === 'brosse-31' ? 'brosse-31-l.jpg' : `${i.cle}.jpg`)), `blocs à 1440 × 2 : le 1800 px est servi, et le 2 362 px pour Brosse sur toute la largeur (${blocs2.map(i => i.servi).join(', ')})`);
   ok(tuiles2.every(i => i.servi === `${i.cle}.jpg` || (i.servi === `${i.cle}-s.jpg` && 2 * i.w <= tailleJpeg(path.join(IMG_DIR, i.servi)).width)), `tuiles à 1440 × 2 : le fichier assez grand pour l'écran haute densité est servi (${tuiles2.filter(i => /-s\.jpg$/.test(i.servi)).length} en 800 px, ${tuiles2.filter(i => !/-s\.jpg$/.test(i.servi)).length} en 1800 px)`);
   await ctx.close();

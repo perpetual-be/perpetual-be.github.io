@@ -242,7 +242,7 @@ html[data-page="realisations"] .page__titre{font-family:var(--sans);font-weight:
 .eyebrow--sans-marge{margin-bottom:0}
 /* les projets : rangées de blocs photo, 7/5 puis 5/7, puis Brosse seule sur toute la largeur (lot 2b, 04/10 : 2-2-1), hauteur calée sur la fenêtre ; le nom
    en serif blanc sur un dégradé, en bas à gauche ; au survol et au focus, les trois faits (Lieu / Surface / Usage). Depuis la P6 (26/09), les quatre blocs des
-   projets à fiche sont des liens vers leur fiche (ils gardent leur id) ; Brosse, sans fiche, est un bouton qui ouvre la visionneuse. Leur photo zoome
+   projets à fiche sont des liens vers leur fiche (ils gardent leur id) ; Brosse, sans fiche, est un album (photos parcourables sur place, plus bas). Leur photo zoome
    (1,035 : photos cliquables) */
 .alt{display:grid;gap:14px}
 .alt__rang{display:grid;gap:14px;height:clamp(340px,calc(100vh - 262px),540px)}
@@ -251,15 +251,14 @@ html[data-page="realisations"] .page__titre{font-family:var(--sans);font-weight:
 .alt__rang--seul{grid-template-columns:1fr}
 .bloc{position:relative;display:block;overflow:hidden;color:var(--photo-texte);background:var(--surface)}
 .bloc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}   /* object-position : blocFocal, posé en style par build.mjs */
-a.bloc:hover img,.bloc--album:hover img{transform:scale(var(--zoom))}
-.bloc--album{width:100%;height:100%;padding:0;border:0;font:inherit;text-align:left;cursor:pointer}   /* bouton : la remise à zéro du navigateur */
+a.bloc:hover img{transform:scale(var(--zoom))}
 .bloc::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,.58) 0%,rgba(0,0,0,.26) 32%,transparent 58%);transition:background .3s}
-.bloc:hover::after,.bloc:focus-visible::after{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.4) 40%,transparent 72%)}
+.bloc:hover::after,.bloc:focus-visible::after,.bloc:has(:focus-visible)::after{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.4) 40%,transparent 72%)}
 .bloc__texte{position:absolute;left:28px;right:28px;bottom:24px;z-index:1}
 .bloc__nom{display:block;font-family:var(--serif);font-size:38px;line-height:1.05;letter-spacing:-.012em}
 .bloc__faits{display:flex;gap:0 40px;flex-wrap:wrap;max-height:0;opacity:0;overflow:hidden;transition:max-height .35s ease,opacity .3s,margin .35s}
-.bloc:hover .bloc__faits,.bloc:focus-visible .bloc__faits{max-height:90px;opacity:1;margin-top:18px}
-@media (max-width:1240px){.bloc:hover .bloc__faits,.bloc:focus-visible .bloc__faits{max-height:180px}}   /* sous ~1 230 px, les trois faits passent sur deux ou trois lignes : rien n'est rogné */
+.bloc:hover .bloc__faits,.bloc:focus-visible .bloc__faits,.bloc:has(:focus-visible) .bloc__faits{max-height:90px;opacity:1;margin-top:18px}
+@media (max-width:1240px){.bloc:hover .bloc__faits,.bloc:focus-visible .bloc__faits,.bloc:has(:focus-visible) .bloc__faits{max-height:180px}}   /* sous ~1 230 px, les trois faits passent sur deux ou trois lignes : rien n'est rogné */
 .fait__et{display:block;font-size:12px;opacity:.82}
 .fait__val{display:block;font-family:var(--serif);font-size:21px;line-height:1.2;margin-top:2px}
 .bloc__mobile{display:none}
@@ -273,20 +272,37 @@ a.bloc:hover img,.bloc--album:hover img{transform:scale(var(--zoom))}
 /* nom et faits : une taille par sorte de rangée, pas par tuile */
 .mos__rang--4{--nom:clamp(19px,1.6vw,25px);--val:clamp(15px,1.15vw,18px)}
 .mos__rang--3{--nom:clamp(21px,1.9vw,29px);--val:clamp(15px,1.25vw,19px)}
-/* tuile = un bien, dans le style des blocs des projets : photo, dégradé, nom en serif blanc, Surface / Usage au survol et au focus, zoom 1,035 (la tuile
-   ouvre la visionneuse sur les photos du bien) */
-.tuile{position:relative;display:block;overflow:hidden;padding:0;border:0;font:inherit;text-align:left;color:var(--photo-texte);background:var(--surface);cursor:pointer;container-type:inline-size}
-.tuile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
-.tuile:hover img,.tuile:focus-visible img{transform:scale(var(--zoom))}
-.tuile:focus-visible{outline:2px solid var(--c-trait);outline-offset:-2px}
+/* tuile = un bien, dans le style des blocs des projets : photo, dégradé, nom en serif blanc, Surface / Usage au survol et au focus, zoom 1,035 ; ses photos
+   se parcourent sur place et un clic ouvre la visionneuse (.photos, plus bas) */
+.tuile{position:relative;overflow:hidden;color:var(--photo-texte);background:var(--surface);container-type:inline-size}
 .tuile::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,.58) 0%,rgba(0,0,0,.24) 34%,transparent 60%);transition:background .3s}
-.tuile:hover::after,.tuile:focus-visible::after{background:linear-gradient(to top,rgba(0,0,0,.72) 0%,rgba(0,0,0,.42) 46%,transparent 78%)}
+.tuile:hover::after,.tuile:has(:focus-visible)::after{background:linear-gradient(to top,rgba(0,0,0,.72) 0%,rgba(0,0,0,.42) 46%,transparent 78%)}
 .tuile__texte{position:absolute;left:clamp(16px,7cqi,26px);right:clamp(16px,7cqi,26px);bottom:clamp(14px,6cqi,22px);z-index:1}
 .tuile__nom{display:block;font-family:var(--serif);font-size:var(--nom);line-height:1.05;letter-spacing:-.012em}
 .tuile__faits{display:flex;flex-wrap:wrap;gap:6px 28px;max-height:0;opacity:0;overflow:hidden;transition:max-height .35s ease,opacity .3s,margin .35s}
-.tuile:hover .tuile__faits,.tuile:focus-visible .tuile__faits{max-height:150px;opacity:1;margin-top:12px}
+.tuile:hover .tuile__faits,.tuile:has(:focus-visible) .tuile__faits{max-height:150px;opacity:1;margin-top:12px}
 .tuile .fait__val{font-size:var(--val)}
 .tuile__mobile{display:none}
+/* photos parcourables sur place (tuiles et bloc de Brosse ; rétabli le 05/10, comme les vignettes du carrousel) : un bouton sur toute la surface porte la piste
+   — une vue par photo, qui rogne le zoom du survol ; à accroche, en boucle (maquette.js) ; un clic ouvre la visionneuse sur la photo affichée — ; s'il y a
+   plusieurs photos (avec JavaScript), « 1 / n » en haut à droite sur un léger voile dans le coin, et deux flèches fines au survol ; au doigt, la piste se fait glisser */
+.photos__ouvrir{position:absolute;inset:0;display:block;width:100%;height:100%;margin:0;padding:0;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.photos__ouvrir:focus-visible{outline:2px solid var(--c-trait);outline-offset:-2px}
+.photos{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.photos::-webkit-scrollbar{display:none}
+.photos__vue{position:relative;flex:0 0 100%;height:100%;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always}
+.photos__vue img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
+.tuile:hover .photos__vue img,.tuile:has(:focus-visible) .photos__vue img,.bloc--album:hover .photos__vue img,.bloc--album:has(:focus-visible) .photos__vue img{transform:scale(var(--zoom))}
+.photos--nav::before{content:"";position:absolute;top:0;right:0;z-index:2;width:120px;height:64px;pointer-events:none;background:radial-gradient(ellipse at 100% 0,rgba(0,0,0,.38) 0%,rgba(0,0,0,.16) 45%,transparent 75%)}
+.photos__compteur{position:absolute;z-index:3;top:10px;right:12px;font-size:12px;line-height:1;letter-spacing:.02em;color:var(--photo-texte);font-variant-numeric:tabular-nums;text-shadow:0 0 6px rgba(0,0,0,.5);pointer-events:none}
+.photos__fleche{position:absolute;z-index:3;top:50%;transform:translateY(-50%);width:52px;height:96px;display:flex;align-items:center;justify-content:center;background:none;border:0;padding:0;color:var(--photo-texte);cursor:pointer;opacity:0;transition:opacity .25s}
+.photos__fleche--g{left:0}.photos__fleche--d{right:0}
+.photos__fleche svg{width:13px;height:26px;filter:drop-shadow(0 0 3px rgba(0,0,0,.65))}
+.photos__fleche:focus-visible{outline:2px solid var(--photo-texte);outline-offset:-8px}
+[data-album]:hover .photos__fleche,[data-album]:has(:focus-visible) .photos__fleche{opacity:1}
+/* compteur, voile et flèches posés par maquette.js (classe photos--nav, album de plus d'une photo) : sans JavaScript, la piste se fait glisser, sans eux */
+[data-album]:not(.photos--nav) .photos__compteur,[data-album]:not(.photos--nav) .photos__fleche{display:none}
+@media (hover:none){.photos__fleche{display:none}}
 /* cases de texte : l'énoncé de Julien sur papier, comme la bande des chiffres de la Home — la première phrase en serif en haut à gauche, sous « Programme
    agences » ; la seconde en bas à droite. Le contenu est posé dans la case (position absolue) : sa marge intérieure ne compte pas dans le partage des largeurs. */
 .cas{position:relative;background:var(--surface);container-type:inline-size;overflow:hidden}
@@ -436,7 +452,7 @@ html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:4
   :root{--bande-haut:36px;--bande-bas:32px}
 }
 @media (prefers-reduced-motion:reduce){
-  .trait::after,.four__name::after,.four__preview img,.carte__lab,.bloc img,.bloc::after,.bloc__faits,.tuile img,.tuile::after,.tuile__faits,.lien-texte,.fiche__tuile img,.graph__part,.bar__fill{transition:none}
+  .trait::after,.four__name::after,.four__preview img,.carte__lab,.bloc img,.bloc::after,.bloc__faits,.photos__vue img,.photos__fleche,.tuile::after,.tuile__faits,.lien-texte,.fiche__tuile img,.graph__part,.bar__fill{transition:none}
   .graph.a-remplir .graph__part{stroke-dasharray:var(--l) 100}
   .bars.a-remplir .bar__fill{transform:none}
 }

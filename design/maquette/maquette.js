@@ -253,8 +253,8 @@
 
 // ---- la visionneuse (repris de la proposition P2, revue du 26/09) : vue Réalisations et fiches ----
 // Elle reçoit un album : ses photos (l) et, pour un bien, la ville, la surface et l'usage — ou une légende toute faite (Brosse) ; sur une fiche, le
-// compteur seul (section 4). Lot 2b (04/10) : la rangée des agences en boucle et les photos parcourables de chaque vignette sont retirées (la mosaïque
-// les remplace) ; la boucle (Boucle) reste, c'est elle qui fait défiler la visionneuse.
+// compteur seul (section 4). Lot 2b (04/10) : la rangée des agences en boucle est retirée (la mosaïque la remplace) ; les photos de chaque bien (et de
+// Brosse) restent parcourables sur place — rétabli le 05/10 —, avec la même boucle (Boucle) que la visionneuse.
 (function(){
   if (!document.querySelector('.visio')) return;
   var BIENS = window.BIENS || [], doux = !matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -308,9 +308,9 @@
   // sans l'une ni l'autre, le compteur seul
   var v = document.querySelector('.visio'), vl = v.querySelector('.visio__legende'), vc = v.querySelector('.visio__compteur'),
       vg = v.querySelector('[data-v-prec]'), vd = v.querySelector('[data-v-suiv]'), vb = null, retour = null;
-  function ouvrir(b, depart){
+  function ouvrir(b, depart, de){
     var n = b.l.length, ancienne = v.querySelector('.visio__piste'), vp = ancienne.cloneNode(false);
-    ancienne.replaceWith(vp); retour = document.activeElement;
+    ancienne.replaceWith(vp); retour = de || document.activeElement;   // de : l'élément qui reprend le focus à la fermeture
     vp.innerHTML = b.l.map(function(s){ return '<img src="' + s + '" alt="" decoding="async">' }).join('');
     vl.innerHTML = b.legende || (b.ville ? '<b>' + b.ville + '</b>' + b.surface + ' · ' + b.usage : '');
     vg.hidden = vd.hidden = n < 2;
@@ -320,8 +320,18 @@
     v.querySelector('[data-fermer]').focus();
   }
   function fermer(){ v.hidden = true; document.body.classList.remove('visio-ouverte'); if (retour) retour.focus() }
-  // vue Réalisations : chaque tuile de la mosaïque et le bloc de Brosse (data-ouvrir = leur album dans window.BIENS), depuis la première photo
-  document.querySelectorAll('[data-ouvrir]').forEach(function(el){ el.addEventListener('click', function(){ ouvrir(BIENS[+el.getAttribute('data-ouvrir')], 0) }) });
+  // vue Réalisations : les tuiles de la mosaïque et le bloc de Brosse (data-album = leur album dans window.BIENS, data-n = son nombre de photos). Leurs
+  // photos se parcourent sur place — flèches, « 1 / n », au doigt —, en boucle ; un clic sur la photo ouvre la visionneuse sur la photo affichée.
+  document.querySelectorAll('[data-album]').forEach(function(el){
+    var piste = el.querySelector('.photos'), n = +el.getAttribute('data-n'), cpt = el.querySelector('.photos__compteur'), album = BIENS[+el.getAttribute('data-album')];
+    var pb = n > 1 ? new Boucle(piste, function(i){ cpt.textContent = (i + 1) + ' / ' + n }) : null;
+    if (pb) {
+      el.classList.add('photos--nav');
+      el.querySelector('.photos__fleche--g').addEventListener('click', function(){ pb.aller(-1) });
+      el.querySelector('.photos__fleche--d').addEventListener('click', function(){ pb.aller(1) });
+    }
+    el.querySelector('.photos__ouvrir').addEventListener('click', function(){ ouvrir(album, pb ? pb.courant : 0, this) });   // un clic donne le focus à la piste (tabindex -1) : il revient au bouton
+  });
   // les fiches (P6, 26/09) : chaque tuile de la mosaïque ouvre la visionneuse sur sa photo (<clé>.jpg, data-grande), le compteur seul (« 3 / 10 »)
   var tuiles = document.querySelectorAll('.fiche__agrandir');
   if (tuiles.length) {
