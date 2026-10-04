@@ -172,7 +172,7 @@
       "bnp-braine-le-comte-04.jpg"
     ],
     "selection": [
-      "bnp-braine-le-comte-01",
+      "bnp-braine-le-comte-02",
       "bnp-braine-le-comte-03"
     ]
   },
@@ -249,9 +249,9 @@
       "belfius-braine-l-alleud-04.jpg"
     ],
     "selection": [
+      "belfius-braine-l-alleud-03",
       "belfius-braine-l-alleud-01",
       "belfius-braine-l-alleud-02",
-      "belfius-braine-l-alleud-03",
       "belfius-braine-l-alleud-04"
     ]
   },
@@ -404,6 +404,7 @@
       "waremme-04.jpg"
     ],
     "selection": [
+      "waremme-02",
       "waremme-03",
       "waremme-04",
       "waremme-01"
@@ -423,6 +424,7 @@
       "gilly-02.jpg"
     ],
     "selection": [
+      "gilly-02",
       "gilly-01"
     ]
   },

@@ -657,20 +657,20 @@ for (const page of ['index', FICHE, REAL, ENG]) {
 }
 
 console.log('\n9 · Vue Réalisations (P2 du 26/09, puis lot 2b du 04/10 : projets en 2-2-1 avec Brosse, mosaïque des agences)');
-// la mosaïque, rangée par rangée (MOSAIQUE de build.mjs, choix du 04/10 : 4-3-4-3-4) ; la ville est le nom d'une agence, le lieu d'un bien de la galerie ;
-// les photos, son champ selection (Bois-de-Villers et Belgrade commencent par l'intérieur)
+// la mosaïque, rangée par rangée (MOSAIQUE de build.mjs, choix du 04/10 : 4-3-4-3-4 ; 05/10 : Waremme et Jambes échangées) ; la ville est le nom d'une agence, le lieu d'un bien de la galerie ;
+// les photos, son champ selection (Waremme, Bois-de-Villers et Belgrade commencent par l'intérieur ; choix d'Axel du 05/10 : Braine-l'Alleud 03, Braine-le-Comte 02
+// recadrée, Gilly 02, Tervuren 01 recadrée, Waremme 02)
 const MOSAIQUE = [
-  ['cas:debut', 'bnp-braine-le-comte', 'bnp-pont-a-celles', 'bnp-jambes'],
+  ['cas:debut', 'bnp-braine-le-comte', 'bnp-pont-a-celles', 'waremme'],
   ['belfius-braine-l-alleud', 'ing-haaltert', 'belfius-mettet'],
   ['bnp-bois-de-villers', 'ing-tervuren', 'perwez', 'ing-welkenraedt'],
-  ['wayez-27', 'ing-landen', 'waremme'],
+  ['wayez-27', 'ing-landen', 'bnp-jambes'],
   ['gilly', 'consolation', 'ing-belgrade', 'cas:fin'],
 ];
 const bienAttendu = id => { const x = donnees.find(d => d.id === id); return { id, ville: x.kind === 'agency' ? x.name : x.location, surface: x.surface, usage: x.use, photos: x.selection && x.selection.length ? x.selection : [`${x.id}-01`] }; };
 const TUILES = MOSAIQUE.flat().filter(x => !x.startsWith('cas:')).map(bienAttendu);
 const BROSSE = donnees.find(d => d.id === 'brosse');
 const realMd = fs.readFileSync(path.resolve(MAQ, '../../content/realisations.md'), 'utf8').replace(/\r\n?/g, '\n');
-const phraseAttendue = realMd.match(/subtitle:\s*(.+)/)[1].trim();
 const paragrapheAgences = realMd.split('## Le programme agences')[1].replace(/<!--[\s\S]*?-->/g, '').trim().split(/\n\s*\n/)[0].trim();
 const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 // la photo affichée de chaque bloc (les quatre liens, puis Brosse : la première de sa piste, hors clones de la boucle) et de chaque tuile
@@ -679,8 +679,18 @@ ok(donnees.filter(d => d.kind === 'agency' || d.kind === 'gallery').length === 1
   'données : les 16 biens (agency et gallery) dans la mosaïque attendue, une fois chacun');
 ok(BROSSE && BROSSE.kind === 'project' && BROSSE.selection.join(' ') === 'brosse-31 brosse-16 brosse-29 brosse-27 brosse-23 brosse-61 brosse-19 brosse-22 brosse-70',
   'données : Brosse, kind project (sans fiche), ses 9 photos dans l’ordre d’Axel (31, 16, 29, 27, 23, 61, 19, 22, 70)');
-ok(bienAttendu('ing-belgrade').photos[0] === 'ing-belgrade-02' && bienAttendu('bnp-bois-de-villers').photos[0] === 'bnp-bois-de-villers-01',
-  'données : Belgrade et Bois-de-Villers commencent par l’intérieur (ing-belgrade-02, bnp-bois-de-villers-01)');
+const INTERIEURS = ['waremme', 'bnp-bois-de-villers', 'ing-belgrade'];
+const PREMIERES = { 'waremme': 'waremme-02', 'bnp-bois-de-villers': 'bnp-bois-de-villers-01', 'ing-belgrade': 'ing-belgrade-02', 'belfius-braine-l-alleud': 'belfius-braine-l-alleud-03', 'bnp-braine-le-comte': 'bnp-braine-le-comte-02', 'gilly': 'gilly-02', 'ing-tervuren': 'ing-tervuren-01' };
+ok(Object.entries(PREMIERES).every(([id, k]) => bienAttendu(id).photos[0] === k),
+  'données : photo n° 1 — Waremme, Bois-de-Villers et Belgrade commencent par l’intérieur ; Braine-l’Alleud 03, Braine-le-Comte 02, Gilly 02, Tervuren 01 (choix d’Axel du 05/10) : ' + Object.keys(PREMIERES).map(id => bienAttendu(id).photos[0]).join(', '));
+{
+  // recadrages (design/directions/src/recadrages.json, appliqués par reduire-photos.mjs) : les versions réduites ont le format du recadrage
+  const rec = JSON.parse(fs.readFileSync(path.resolve(MAQ, '../directions/src/recadrages.json'), 'utf8')), cles = Object.keys(rec).filter(k => k !== '_');
+  const formats = cles.map(k => { const s = tailleJpeg(path.join(IMG_DIR, `${k}-s.jpg`)), g = tailleJpeg(path.join(IMG_DIR, `${k}.jpg`)); return { k, s: s.width / s.height, g: g.width / g.height, grand: Math.max(g.width, g.height) }; });
+  ok(cles.length === 2 && formats.every(f => Math.abs(f.s - f.g) < 0.01 && f.grand === 1800), `recadrages : ${formats.map(f => `${f.k} (${f.s.toFixed(2)})`).join(', ')} — 800 et 1800 px au même format`);
+  const blc = tailleJpeg(path.join(IMG_DIR, 'bnp-braine-le-comte-02-s.jpg')), terv = tailleJpeg(path.join(IMG_DIR, 'ing-tervuren-01-s.jpg'));
+  ok(Math.abs(blc.width / blc.height - 1.04) < 0.02 && Math.abs(terv.width / terv.height - 4 / 3) < 0.01, `Braine-le-Comte 02 recadrée presque carrée (${(blc.width / blc.height).toFixed(2)}), Tervuren 01 garde le 4:3 (${(terv.width / terv.height).toFixed(2)})`);
+}
 {
   // chaque fichier cité par la page existe : src et srcset, et les photos 1800 px de la visionneuse (window.BIENS), que la page ne charge qu'à l'ouverture
   const html = fs.readFileSync(path.join(MAQ, REAL + '.html'), 'utf8');
@@ -727,23 +737,15 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   await ctx.close();
 }
 {
-  const lignes = [];
-  for (const w of [1025, 1280, 1440, 1521, 1920]) {
-    const { p, ctx } = await ouvrir('', [w, 900], {}, REAL);
-    lignes.push(await p.evaluate(() => { const e = document.querySelector('.p2-ouv .ouv__texte'), r = document.createRange(); r.selectNodeContents(e); return new Set([...r.getClientRects()].map(x => Math.round(x.top))).size; }));
-    await ctx.close();
-  }
-  ok(lignes.every(n => n === 1), `la phrase d'ouverture tient sur une ligne au-dessus de 1024 px (1025, 1280, 1440, 1521, 1920 : ${lignes.join(', ')} ligne(s))`);
-}
-{
   const { p, ctx } = await ouvrir('', [1440, 900], {}, REAL);
   await polices(p, 'réalisations');
-  const t = await p.evaluate(() => { const h1 = document.querySelector('.page__titre'), s = getComputedStyle(h1), ph = document.querySelector('.p2-ouv .ouv__texte');
-    return { title: document.title, h1: h1.textContent, ff: s.fontFamily, fw: s.fontWeight, fs: s.fontSize, ls: s.letterSpacing, lh: s.lineHeight, phrase: ph.textContent, mw: getComputedStyle(ph).maxWidth, provisoire: ph.classList.contains('provisoire') && !!ph.title,
+  const t = await p.evaluate(() => { const h1 = document.querySelector('.page__titre'), s = getComputedStyle(h1), ouv = document.querySelector('.p2-ouv');
+    return { title: document.title, h1: h1.textContent, ff: s.fontFamily, fw: s.fontWeight, fs: s.fontSize, ls: s.letterSpacing, lh: s.lineHeight, ouv: [...ouv.children].map(e => e.tagName).join(' '),
+      ecart: Math.round(document.querySelector('#projets').getBoundingClientRect().top - h1.getBoundingClientRect().bottom),
       actif: document.querySelector('.site-nav a.is-active') && document.querySelector('.site-nav a.is-active').textContent }; });
   ok(t.title === 'Réalisations — Perpetual' && t.h1 === 'Réalisations' && t.actif === 'Réalisations', `titre « ${t.h1} », « ${t.actif} » actif dans la navigation`);
   ok(t.ff.startsWith('"Instrument Sans"') && t.fw === '400' && t.fs === '64px' && t.ls === '-1.792px' && t.lh === '65.28px', `titre en Instrument Sans 400, 64 px, interlettrage −0,028 em, interligne 1,02 (${t.ff.split(',')[0]} ${t.fw}, ${t.ls}, ${t.lh})`);
-  ok(t.phrase === phraseAttendue && t.mw === 'none' && t.provisoire, `phrase d'ouverture : le subtitle de content/realisations.md, sans max-width, marquée provisoire (lot 3) — « ${t.phrase} »`);
+  ok(t.ouv === 'H1' && !(await p.evaluate(() => document.querySelector('.ouv__texte'))), `ouverture : le titre seul — la phrase d'ouverture est retirée (05/10, Axel) ; ${t.ecart} px du titre aux projets`);
   // les projets : les quatre à fiche, puis Brosse
   const b = await p.evaluate(() => [...document.querySelectorAll('.bloc')].map(e => { const r = e.getBoundingClientRect(), nom = e.querySelector('.bloc__nom'), tx = e.querySelector('.bloc__texte'), f = e.querySelector('.bloc__faits'), s = getComputedStyle(nom);
     return { tag: e.tagName.toLowerCase(), id: e.id, href: e.getAttribute('href'), ouvrir: e.getAttribute('data-album'), nom: nom.textContent, ff: s.fontFamily.split(',')[0], fs: s.fontSize, c: s.color, gauche: Math.round(nom.getBoundingClientRect().left - r.left), bas: Math.round(r.bottom - tx.getBoundingClientRect().bottom),
@@ -789,18 +791,18 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   ok(tu.every((t, i) => t.photo === TUILES[i].photos[0] && t.lazy === 'lazy' && t.label === `${TUILES[i].ville}, ${TUILES[i].surface}, ${TUILES[i].usage} — ${TUILES[i].photos.length} photo${TUILES[i].photos.length > 1 ? 's' : ''}` && t.ouvrir === i + 1),
     'mosaïque : chaque tuile montre la première photo de son selection, a un nom accessible (ville, surface, usage, nombre de photos) et ouvre son album');
   ok(tu.every((t, i) => { const n = TUILES[i].photos.length; return t.vues === TUILES[i].photos.join(' ') && t.n === n && t.clones === (n > 1 ? 2 * n : 0) && t.cpt === (n > 1 ? `1 / ${n}` : '') && t.fl === (n > 1 ? 2 : 0) && t.nav === n > 1; }),
-    `mosaïque : chaque tuile porte toutes les photos de son selection, dans l'ordre (${tu.reduce((a, t) => a + t.n, 0)} vues) ; à plus d'une photo, « 1 / n » et deux flèches, la boucle (clones masqués aux lecteurs d'écran) ; ${tu.filter(t => t.n === 1).map(t => t.nom).join(', ')} : une photo, ni compteur ni flèches`);
+    `mosaïque : chaque tuile porte toutes les photos de son selection, dans l'ordre (${tu.reduce((a, t) => a + t.n, 0)} vues) ; à plus d'une photo, « 1 / n » et deux flèches, la boucle (clones masqués aux lecteurs d'écran) ${tu.some(t => t.n === 1) ? ' ; ' + tu.filter(t => t.n === 1).map(t => t.nom).join(', ') + ' : une photo, ni compteur ni flèches' : ' ; aucune tuile d’une seule photo'}`);
   const USAGES = ['Service finance de la commune', 'Auto-école', 'École de danse et commerce de proximité', 'Quatre logements'];
   ok(donnees.filter(x => x.kind === 'agency').sort((a, b) => a.order - b.order).map(x => x.use).join(' | ') === USAGES.join(' | ') && !donnees.some(x => /Bancontact/.test(x.use || '')) && tu.every(t => !/Bancontact/.test(t.faits)),
     'usages des 4 agences sans « Point Bancontact » (data/projects.json et page) : ' + USAGES.join(' · '));
   const rangs = MOSAIQUE.map(r => r.filter(x => !x.startsWith('cas:')));
   const rangDe = id => rangs.findIndex(r => r.includes(id));
-  ok(Math.abs(rangDe('bnp-bois-de-villers') - rangDe('ing-belgrade')) >= 2, `les deux couloirs en photo n° 1 (Bois-de-Villers, rangée ${rangDe('bnp-bois-de-villers') + 1} ; Belgrade, rangée ${rangDe('ing-belgrade') + 1}) ne se touchent pas`);
+  ok(INTERIEURS.every((a, i) => INTERIEURS.every((b, j) => i === j || Math.abs(rangDe(a) - rangDe(b)) >= 2)), `les trois intérieurs en photo n° 1 un rang sur deux, sans se toucher (${INTERIEURS.map(id => `${id} : rangée ${rangDe(id) + 1}`).join(' ; ')})`);
   const cs = await p.evaluate(() => [...document.querySelectorAll('.mos .cas')].map(c => { const i = c.querySelector('.cas__in'), r = c.getBoundingClientRect(), rang = c.parentElement, cases = [...rang.children];
     return { cls: c.className, eyebrow: (c.querySelector('.eyebrow') || {}).textContent || '', h2: c.querySelector('h2') ? c.querySelector('h2').textContent : '', p: c.querySelector('.cas__phrase') ? c.querySelector('.cas__phrase').textContent : '',
-      fond: getComputedStyle(c).backgroundColor, rogne: i.scrollHeight > i.clientHeight + 1, place: `${[...document.querySelectorAll('.mos__rang')].indexOf(rang) + 1}.${cases.indexOf(c) + 1}`, ff: getComputedStyle(c.querySelector('h2, .cas__phrase')).fontFamily.split(',')[0] }; }));
-  ok(cs.length === 2 && cs[0].place === '1.1' && cs[1].place === '5.4' && cs[0].eyebrow === '' && !(await p.evaluate(() => document.querySelector('.mos').textContent.includes('Programme agences'))) && `${cs[0].h2} ${cs[1].p}` === paragrapheAgences && cs.every(c => c.fond === PAPIER && !c.rogne && c.ff === 'Newsreader'),
-    `deux cases de texte sur papier, en serif, jamais rognées, sans le titre « Programme agences » (retiré le 05/10, Julien ne l'aimait pas) : la première phrase de l'énoncé (h2) en haut à gauche (${cs[0].place}), la seconde en bas à droite (${cs[1] && cs[1].place})`);
+      fond: getComputedStyle(c).backgroundColor, rogne: i.scrollHeight > i.clientHeight + 1, place: `${[...document.querySelectorAll('.mos__rang')].indexOf(rang) + 1}.${cases.indexOf(c) + 1}`, ff: getComputedStyle(c.querySelector('h2, .cas__phrase')).fontFamily.split(',')[0].replace(/"/g, '') }; }));
+  ok(cs.length === 2 && cs[0].place === '1.1' && cs[1].place === '5.4' && cs[0].eyebrow === '' && !(await p.evaluate(() => document.querySelector('.mos').textContent.includes('Programme agences'))) && `${cs[0].h2} ${cs[1].p}` === paragrapheAgences && cs.every(c => c.fond === PAPIER && !c.rogne && c.ff === 'Instrument Sans'),
+    `deux cases de texte sur papier, en sans (05/10, Axel), jamais rognées, sans le titre « Programme agences » (retiré le 05/10, Julien ne l'aimait pas) : la première phrase de l'énoncé (h2) en haut à gauche (${cs[0].place}), la seconde en bas à droite (${cs[1] && cs[1].place})`);
   // survol d'une tuile : faits, zoom, dégradé renforcé
   await p.evaluate(() => document.querySelector('.mq').classList.add('is-plie'));
   const st = [];
@@ -831,13 +833,18 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   await p.click('#bnp-braine-le-comte'); await p.waitForTimeout(150); const v4 = await vis();
   await p.click('.visio [data-v-suiv]'); await p.waitForTimeout(150); const v5 = await vis();
   await p.click('.visio [data-fermer]'); await p.waitForTimeout(100);
-  ok(v4.ouvert && v4.cpt === '1 / 2' && v4.src === 'bnp-braine-le-comte-01.jpg' && v4.legende === '<b>Braine-le-Comte</b>600 m² · Service finance de la commune' && v5.cpt === '2 / 2' && v5.src === 'bnp-braine-le-comte-03.jpg' && !(await vis()).ouvert,
+  ok(v4.ouvert && v4.cpt === '1 / 2' && v4.src === 'bnp-braine-le-comte-02.jpg' && v4.legende === '<b>Braine-le-Comte</b>600 m² · Service finance de la commune' && v5.cpt === '2 / 2' && v5.src === 'bnp-braine-le-comte-03.jpg' && !(await vis()).ouvert,
     `tuile Braine-le-Comte : « ${v4.legende.replace(/<\/?b>/g, '|')} », ${v4.cpt} → ${v5.cpt} à la flèche, « Fermer »`);
   await p.click('#ing-belgrade'); await p.waitForTimeout(150); const v6 = await vis();
   await p.keyboard.press('Escape');
-  await p.click('#gilly'); await p.waitForTimeout(150); const v7 = await vis();
-  await p.keyboard.press('Escape');
-  ok(v6.src === 'ing-belgrade-02.jpg' && v6.cpt === '1 / 2' && v7.ouvert && v7.cpt === '' && v7.fleches === 'false false', `Belgrade s'ouvre sur l'intérieur (${v6.src}) ; Gilly, une seule photo : ni compteur ni flèches`);
+  ok(v6.src === 'ing-belgrade-02.jpg' && v6.cpt === '1 / 2', `Belgrade s'ouvre sur l'intérieur (${v6.src})`);
+  // un bien d'une seule photo (Gilly jusqu'au 05/10) : ni compteur ni flèches dans la visionneuse
+  const seul = TUILES.find(t => t.photos.length === 1);
+  if (seul) {
+    await p.click('#' + seul.id); await p.waitForTimeout(150); const v7 = await vis();
+    await p.keyboard.press('Escape');
+    ok(v7.ouvert && v7.cpt === '' && v7.fleches === 'false false', `${seul.ville}, une seule photo : ni compteur ni flèches dans la visionneuse`);
+  } else console.log('  info  plus aucun bien d\'une seule photo dans la mosaïque (Gilly en a deux depuis le 05/10) : la visionneuse sans compteur ni flèches n\'est pas vérifiée ici');
   await ctx.close();
 }
 {
@@ -849,7 +856,7 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   const fleche = async (id, sens) => { await p.click(`#${id} .photos__fleche--${sens}`); await p.waitForTimeout(120); return etat(id); };
   await p.locator('#bnp-braine-le-comte').scrollIntoViewIfNeeded(); await p.hover('#bnp-braine-le-comte');
   const bl = [await etat('bnp-braine-le-comte'), await fleche('bnp-braine-le-comte', 'd'), await fleche('bnp-braine-le-comte', 'd'), await fleche('bnp-braine-le-comte', 'g')];
-  ok(bl.join(' → ') === '1 / 2 bnp-braine-le-comte-01 → 2 / 2 bnp-braine-le-comte-03 → 1 / 2 bnp-braine-le-comte-01 → 2 / 2 bnp-braine-le-comte-03', `Braine-le-Comte, aux flèches, en boucle : ${bl.join(' → ')}`);
+  ok(bl.join(' → ') === '1 / 2 bnp-braine-le-comte-02 → 2 / 2 bnp-braine-le-comte-03 → 1 / 2 bnp-braine-le-comte-02 → 2 / 2 bnp-braine-le-comte-03', `Braine-le-Comte, aux flèches, en boucle : ${bl.join(' → ')}`);
   await p.click('#bnp-braine-le-comte .photos__ouvrir', { position: { x: 120, y: 80 } }); await p.waitForTimeout(150);
   const v = await p.evaluate(() => { const v = document.querySelector('.visio'), vp = v.querySelector('.visio__piste'); return `${!v.hidden} ${v.querySelector('.visio__compteur').textContent} ${vp.children[Math.round(vp.scrollLeft / vp.clientWidth)].getAttribute('src').replace(/^.*\//, '')}`; });
   await p.keyboard.press('Escape'); await p.waitForTimeout(100);

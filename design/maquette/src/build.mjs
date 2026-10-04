@@ -97,13 +97,14 @@ const rangees = [['a', [['community', 7], ['ateliers-118', 5]]], ['b', [['the-ba
 // mosaïque des seize biens (kind agency et gallery), en rangées de 4 et de 3 cases (4-3-4-3-4), chaque photo au format entier — la largeur de sa case suit le
 // format du fichier, les cases d'une rangée ont la même hauteur, rien n'est recadré ni agrandi. L'énoncé de Julien en deux cases de texte : la première phrase
 // en haut à gauche (sans titre depuis le 05/10), la seconde en bas à droite. Les photos les plus solides dans les rangées de 3 (cases plus grandes), les plus
-// faibles et les trois photos en hauteur (Pont-à-Celles, Perwez, Schaerbeek) dans les rangées de 4 ; les deux couloirs Bancontact en photo n° 1 (Bois-de-Villers,
-// Belgrade : l'ordre de leur champ selection) ne se touchent pas. Une case : l'id d'un bien, ou cas:debut / cas:fin ; CAS_R, le format des cases de texte.
+// faibles et les trois photos en hauteur (Pont-à-Celles, Perwez, Schaerbeek) dans les rangées de 4 ; les trois intérieurs Bancontact en photo n° 1 (Waremme,
+// Bois-de-Villers, Belgrade : l'ordre de leur champ selection ; Waremme depuis le 05/10, choix d'Axel) un rang sur deux, dans les rangées 1, 3 et 5 — Waremme
+// monte à la place de Jambes, qui descend dans la rangée 4. Une case : l'id d'un bien, ou cas:debut / cas:fin ; CAS_R, le format des cases de texte.
 const MOSAIQUE = [
-  ['cas:debut', 'bnp-braine-le-comte', 'bnp-pont-a-celles', 'bnp-jambes'],
+  ['cas:debut', 'bnp-braine-le-comte', 'bnp-pont-a-celles', 'waremme'],
   ['belfius-braine-l-alleud', 'ing-haaltert', 'belfius-mettet'],
   ['bnp-bois-de-villers', 'ing-tervuren', 'perwez', 'ing-welkenraedt'],
-  ['wayez-27', 'ing-landen', 'waremme'],
+  ['wayez-27', 'ing-landen', 'bnp-jambes'],
   ['gilly', 'consolation', 'ing-belgrade', 'cas:fin'],
 ];
 const CAS_R = 1.15;
@@ -523,7 +524,7 @@ ${visio('Photos du projet')}`;
 
 // ---------- vue Réalisations ----------
 // P2 (revue du 26/09), puis lot 2b (04/10/2026 : retours de Julien du 30/09, choix d'Axel ; page de travail design/revue-mosaique/), sur la grille large :
-// l'ouverture — le titre en sans léger, la phrase du subtitle de content/realisations.md (provisoire, lot 3), sur une ligne — → les projets en 2-2-1 : les
+// l'ouverture — le titre en sans léger, seul (la phrase d'ouverture, le subtitle de content/realisations.md, est retirée le 05/10) — → les projets en 2-2-1 : les
 // quatre projets à fiche (blocs-liens, qui gardent leur id), puis Brosse seule sur toute la largeur (sans fiche : un album, ses photos et la visionneuse) ; nom
 // en serif blanc sur la photo, faits au survol et au focus, zoom 1,035 → le programme agences : la mosaïque 4-3-4-3-4 (MOSAIQUE), photos au format entier,
 // l'énoncé dans deux cases de texte (sans l'intitulé « Programme agences », que Julien n'aimait pas : retiré le 05/10) ; chaque tuile, avec le même survol que
@@ -533,7 +534,6 @@ ${visio('Photos du projet')}`;
 // (Brosse), et les photos 1800 px —, déjà échappé pour innerHTML. Le carrousel des agences et les projets de l'ancien site (bascules 22 et 23) sont retirés.
 function realisationsPage() {
   const rmd = frontmatter(read('content/realisations.md'));
-  const phrase = (rmd.fm.match(/subtitle:\s*(.+)/) || [])[1];
   const fait = (etiquette, valeur) => `<span><span class="fait__et">${etiquette}</span><span class="fait__val">${esc(valeur)}</span></span>`;
   const grande = c => fs.existsSync(path.join(REPO, 'design/directions/img', `${c}.jpg`)) ? `${c}.jpg` : `${c}-s.jpg`;
   const albums = [];
@@ -590,7 +590,7 @@ function realisationsPage() {
     return `<div class="mos__rang mos__rang--${cases.length}">${html}</div>`;
   }).join('\n    ');
   return `<div class="large p2-ouv">
-  <h1 class="page__titre">${esc(rmd.fm.match(/title:\s*(.+)/)[1].trim())}</h1>${phrase ? `\n  <p class="ouv__texte provisoire" title="texte provisoire, lot 3">${esc(phrase.trim())}</p>` : ''}
+  <h1 class="page__titre">${esc(rmd.fm.match(/title:\s*(.+)/)[1].trim())}</h1>
 </div>
 <section class="large alt" id="projets" aria-label="Projets">
   ${rangeesHtml}
