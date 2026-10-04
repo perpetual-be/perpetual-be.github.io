@@ -3,9 +3,9 @@
 // sur le container de 1 200 px (les quatre pages), carte des réalisations sous « Réalisations » et plus de liste des 4
 // (30/09), logos partenaires, photo 2800 px, aucune photo deux fois sur la Home, mode présentation,
 // page sans JavaScript, polices, contrastes ; puis les quatre fiches, P6 (débordement, erreurs et images, alignement sur le logo, pied de page, photo de tête
-// et son cadre, photo qui suit, rangées de la mosaïque, contenu, précédent / suivant en boucle, visionneuse, téléphone, sans JavaScript), la vue Réalisations,
-// proposition P2 (débordement et erreurs, alignement sur la grille large, ouverture, blocs-liens des 4 projets, programme agences, rangée en boucle, photos
-// d'un bien, visionneuse, bascules 22 et 23, mobile, sans JavaScript) et la page Engagements (débordement et erreurs, ouverture, registre, œuvre sur sa
+// et son cadre, photo qui suit, rangées de la mosaïque, contenu, précédent / suivant en boucle, visionneuse, téléphone, sans JavaScript), la vue Réalisations
+// (P2, puis lot 2b du 04/10 : débordement et erreurs, alignement sur la grille large, ouverture, projets en 2-2-1 — les 4 blocs-liens et Brosse —, mosaïque
+// 4-3-4-3-4 des agences au format entier, cases de texte, survols, visionneuse, photos servies, bascules 22 et 23 retirées, mobile, sans JavaScript) et la page Engagements (débordement et erreurs, ouverture, registre, œuvre sur sa
 // cimaise, cartel, liens, espacements, téléphone, panneau, sans JavaScript ; liens « Engagements » des sept pages).
 // Usage, depuis la racine du dépôt : NODE_PATH=$(npm root -g) node design/maquette/src/check.mjs
 import path from 'node:path';
@@ -182,7 +182,7 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   ok((await style(p, '.partner__couleur', 'display')) === 'block' && !(await p.evaluate(() => document.querySelector('.partner__encre'))), 'logos partenaires : couleur, figés (plus d’encre inline)');
   const cles = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle));
   const inactives = await p.evaluate(() => [...document.querySelectorAll('.mq__b.is-inactif')].map(f => f.dataset.cle));
-  ok(cles.join(' ') === 'graphique papier bas' && inactives.join(' ') === 'papier bas', 'panneau : ' + cles.join(' · ') + ' (13 graphique, lot 2b : anneau retenu le 01/10 / barres pour le 7/10 ; 9c et 15a figées le 26/09, 20 et 21 retirées ; 22 et 23, vue Réalisations, sans effet sur la Home)');
+  ok(cles.join(' ') === 'graphique' && !inactives.length, 'panneau : ' + cles.join(' · ') + ' (13 graphique, lot 2b : anneau retenu le 01/10 / barres pour le 7/10 ; 9c et 15a figées le 26/09, 20 et 21 retirées ; 22 et 23, vue Réalisations, retirées le 04/10)');
   // aucune photo deux fois sur la Home (30/09 : la liste des 4 et ses aperçus sont retirés, il reste la photo du premier écran)
   const photosHome = await p.evaluate(() => [...document.querySelectorAll('img')].map(i => i.getAttribute('src')).filter(s => /directions\/img\//.test(s)).map(s => s.replace(/^.*\//, '').replace(/(-s|-l)?\.jpg$/, '')));
   const premier = await p.evaluate(() => document.querySelector('.hero__photo img').dataset.photo);
@@ -578,7 +578,7 @@ for (const [w, h] of [[1521, 705], [1920, 1080], [1200, 800], [390, 844]]) {
   const zoom = await style(p, '.fiche__tuile img', 'transform');
   ok(/^matrix\(1\.035, 0, 0, 1\.035/.test(zoom) && (await style(p, '.fiche__agrandir', 'cursor')) === 'zoom-in', `mosaïque : zoom 1,035 au survol d'une tuile (${zoom.split(',')[0]}), curseur zoom-in`);
   const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '')).join(' · '));
-  ok(panneau === 'graphique (sans effet) · papier (sans effet) · bas (sans effet)', 'panneau : ' + panneau + ' (aucune bascule sur les fiches)');
+  ok(panneau === 'graphique (sans effet)', 'panneau : ' + panneau + ' (aucune bascule sur les fiches)');
   await ctx.close();
 }
 {
@@ -655,23 +655,37 @@ for (const page of ['index', FICHE, REAL, ENG]) {
   await ctx.close();
 }
 
-console.log('\n9 · Vue Réalisations (proposition P2, revue du 26/09)');
-const parOrdre = kind => donnees.filter(x => x.kind === kind).sort((a, b) => a.order - b.order);
-// la rangée : kind agency dans l'ordre, puis kind gallery dans l'ordre ; la ville est le nom d'une agence, le lieu d'un bien de la galerie ; les photos, son champ selection
-const biensAttendus = [...parOrdre('agency'), ...parOrdre('gallery')].map(x => ({ ville: x.kind === 'agency' ? x.name : x.location, surface: x.surface, usage: x.use, photos: x.selection && x.selection.length ? x.selection : [`${x.id}-01`] }));
-const VILLES = biensAttendus.map(b => b.ville);
+console.log('\n9 · Vue Réalisations (P2 du 26/09, puis lot 2b du 04/10 : projets en 2-2-1 avec Brosse, mosaïque des agences)');
+// la mosaïque, rangée par rangée (MOSAIQUE de build.mjs, choix du 04/10 : 4-3-4-3-4) ; la ville est le nom d'une agence, le lieu d'un bien de la galerie ;
+// les photos, son champ selection (Bois-de-Villers et Belgrade commencent par l'intérieur)
+const MOSAIQUE = [
+  ['cas:debut', 'bnp-braine-le-comte', 'bnp-pont-a-celles', 'bnp-jambes'],
+  ['belfius-braine-l-alleud', 'ing-haaltert', 'belfius-mettet'],
+  ['bnp-bois-de-villers', 'ing-tervuren', 'perwez', 'ing-welkenraedt'],
+  ['wayez-27', 'ing-landen', 'waremme'],
+  ['gilly', 'consolation', 'ing-belgrade', 'cas:fin'],
+];
+const bienAttendu = id => { const x = donnees.find(d => d.id === id); return { id, ville: x.kind === 'agency' ? x.name : x.location, surface: x.surface, usage: x.use, photos: x.selection && x.selection.length ? x.selection : [`${x.id}-01`] }; };
+const TUILES = MOSAIQUE.flat().filter(x => !x.startsWith('cas:')).map(bienAttendu);
+const BROSSE = donnees.find(d => d.id === 'brosse');
 const realMd = fs.readFileSync(path.resolve(MAQ, '../../content/realisations.md'), 'utf8').replace(/\r\n?/g, '\n');
 const phraseAttendue = realMd.match(/subtitle:\s*(.+)/)[1].trim();
 const paragrapheAgences = realMd.split('## Le programme agences')[1].replace(/<!--[\s\S]*?-->/g, '').trim().split(/\n\s*\n/)[0].trim();
 const TRANSPARENT = 'rgba(0, 0, 0, 0)';
+ok(donnees.filter(d => d.kind === 'agency' || d.kind === 'gallery').length === 16 && TUILES.length === 16 && new Set(TUILES.map(t => t.id)).size === 16,
+  'données : les 16 biens (agency et gallery) dans la mosaïque attendue, une fois chacun');
+ok(BROSSE && BROSSE.kind === 'project' && BROSSE.selection.join(' ') === 'brosse-31 brosse-16 brosse-29 brosse-27 brosse-23 brosse-61 brosse-19 brosse-22 brosse-70',
+  'données : Brosse, kind project (sans fiche), ses 9 photos dans l’ordre d’Axel (31, 16, 29, 27, 23, 61, 19, 22, 70)');
+ok(bienAttendu('ing-belgrade').photos[0] === 'ing-belgrade-02' && bienAttendu('bnp-bois-de-villers').photos[0] === 'bnp-bois-de-villers-01',
+  'données : Belgrade et Bois-de-Villers commencent par l’intérieur (ing-belgrade-02, bnp-bois-de-villers-01)');
 {
   // chaque fichier cité par la page existe : src et srcset, et les photos 1800 px de la visionneuse (window.BIENS), que la page ne charge qu'à l'ouverture
   const html = fs.readFileSync(path.join(MAQ, REAL + '.html'), 'utf8');
-  const biens = JSON.parse(html.match(/window\.BIENS=(\[.*?\]);<\/script>/)[1]);
-  const cites = new Set([...html.matchAll(/(?:src|srcset)="([^"]+)"/g)].flatMap(m => m[1].split(',').map(x => x.trim().split(' ')[0])).concat(biens.flatMap(b => b.l)).filter(u => /\.jpg$/.test(u)));
+  const albums = JSON.parse(html.match(/window\.BIENS=(\[.*?\]);<\/script>/)[1]);
+  const cites = new Set([...html.matchAll(/(?:src|srcset)="([^"]+)"/g)].flatMap(m => m[1].split(',').map(x => x.trim().split(' ')[0])).concat(albums.flatMap(b => b.l)).filter(u => /\.jpg$/.test(u)));
   const manquants = [...cites].filter(u => !fs.existsSync(path.resolve(MAQ, u)));
-  const attendues = 2 * (biensAttendus.reduce((n, b) => n + b.photos.length, 0) + 4);   // 800 et 1800 px de chaque vue des biens et des 4 blocs
-  ok(cites.size === attendues && !manquants.length, `réalisations : les ${cites.size} photos citées par la page (src, srcset, visionneuse ; ${attendues} attendues) existent` + (manquants.length ? ' — manquent : ' + manquants.join(', ') : ''));
+  ok(!manquants.length && albums.length === 17, `réalisations : les ${cites.size} photos citées par la page (src, srcset, visionneuse) existent ; ${albums.length} albums (16 biens et Brosse)` + (manquants.length ? ' — manquent : ' + manquants.join(', ') : ''));
+  ok(!/class="(defil|vignette|bien|anciens|bloc-agences)/.test(html), 'réalisations : plus de carrousel des agences ni de projets de l’ancien site (retirés le 04/10)');
 }
 for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   const { p, ctx, erreurs } = await ouvrir('', [w, h], {}, REAL);
@@ -680,19 +694,31 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   const deb = await largeur(p);
   ok(deb === 0 && !erreurs.length, `réalisations · ${w} × ${h} : aucun débordement horizontal (${deb} px), aucune erreur` + (erreurs.length ? ' — ' + erreurs.join(' | ') : ''));
   if (w > 640) {
-    const r = await p.evaluate(() => [...document.querySelectorAll('.alt__rang')].map(r => { const b = [...r.children].map(c => c.getBoundingClientRect()); return { h: Math.round(r.getBoundingClientRect().height), l: b.map(x => Math.round(x.width)), gap: Math.round(b[1].left - b[0].right), bas: r.getBoundingClientRect().bottom, haut: r.getBoundingClientRect().top }; }));
-    const attendu = Math.min(540, Math.max(340, h - 262)), ecart = Math.round(r[1].haut - r[0].bas);
-    ok(r.length === 2 && r.every(x => x.h === attendu && x.gap === 14) && ecart === 14 && Math.abs(r[0].l[0] / r[0].l[1] - 7 / 5) < 0.02 && Math.abs(r[1].l[1] / r[1].l[0] - 7 / 5) < 0.02,
-      `${w} × ${h} : deux rangées, 7/5 puis 5/7 (${r.map(x => x.l.join(' / ')).join(', ')}), ${r[0].h} px de haut (clamp → ${attendu}), écarts de 14 px`);
+    const r = await p.evaluate(() => { const contenu = document.querySelector('#projets').getBoundingClientRect(), pad = parseFloat(getComputedStyle(document.querySelector('#projets')).paddingLeft);
+      return { large: Math.round(contenu.width - 2 * pad), rangs: [...document.querySelectorAll('#projets .alt__rang')].map(r => { const b = [...r.children].map(c => c.getBoundingClientRect()); return { cls: r.className.replace('alt__rang alt__rang--', ''), h: Math.round(r.getBoundingClientRect().height), l: b.map(x => Math.round(x.width)), gap: b.length > 1 ? Math.round(b[1].left - b[0].right) : 14, haut: Math.round(r.getBoundingClientRect().top), bas: Math.round(r.getBoundingClientRect().bottom) }; }) }; });
+    const attendu = Math.min(540, Math.max(340, h - 262)), [a, b, c] = r.rangs;
+    ok(r.rangs.length === 3 && a.cls === 'a' && b.cls === 'b' && c.cls === 'seul' && r.rangs.every(x => x.h === attendu && x.gap === 14) && b.haut - a.bas === 14 && c.haut - b.bas === 14
+      && Math.abs(a.l[0] / a.l[1] - 7 / 5) < 0.02 && Math.abs(b.l[1] / b.l[0] - 7 / 5) < 0.02 && c.l.length === 1 && Math.abs(c.l[0] - r.large) <= 1,
+      `${w} × ${h} : projets en 2-2-1 — 7/5, 5/7, puis une rangée seule sur toute la largeur (${r.rangs.map(x => x.l.join(' / ')).join(', ')}), ${a.h} px de haut (clamp → ${attendu}), écarts de 14 px`);
+    // la mosaïque : 4-3-4-3-4, toute la largeur, cases d'une rangée à la même hauteur, chaque case au format de sa photo (photo entière), écarts de 14 px
+    const m = await p.evaluate(() => [...document.querySelectorAll('.mos__rang')].map(r => { const rr = r.getBoundingClientRect(), cases = [...r.children].map(c => { const b = c.getBoundingClientRect(), img = c.querySelector('img');
+      return { w: b.width, h: b.height, r: parseFloat(c.style.getPropertyValue('--r')), nat: img ? img.naturalWidth / img.naturalHeight : null, left: b.left, right: b.right }; });
+      return { n: cases.length, w: rr.width, h: Math.round(rr.height), cases, gaps: cases.slice(1).map((c, i) => Math.round(c.left - cases[i].right)) }; }));
+    const large = r.large;
+    const formes = m.map(x => x.n).join('-'), memes = m.every(x => x.cases.every(c => Math.abs(c.h - x.cases[0].h) <= 1)), pleines = m.every(x => Math.abs(x.w - large) <= 1),
+      entieres = m.every(x => x.cases.every(c => Math.abs(c.w / c.h - c.r) / c.r < 0.012 && (c.nat === null || Math.abs(c.nat - c.r) / c.r < 0.012))), ecarts = m.every(x => x.gaps.every(g => g === 14));
+    const h4 = m.filter(x => x.n === 4).map(x => x.h), h3 = m.filter(x => x.n === 3).map(x => x.h);
+    ok(formes === '4-3-4-3-4' && memes && pleines && entieres && ecarts && Math.min(...h3) > Math.max(...h4),
+      `${w} × ${h} : mosaïque ${formes}, sur toute la largeur (${large} px), cases d'une rangée à la même hauteur (${m.map(x => x.h).join(' / ')} px ; les rangées de 3 plus hautes), chaque case au format de sa photo (photo entière), écarts de 14 px`);
   }
   await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('', [1920, 1080], {}, REAL);
   const x = await p.evaluate(() => { const l = s => Math.round(document.querySelector(s).getBoundingClientRect().left), r = s => Math.round(document.querySelector(s).getBoundingClientRect().right);
-    return { logo: l('.logo'), titre: l('.page__titre'), photo: l('.bloc'), rangee: l('.defil__piste'), eyebrow: l('.bloc-agences .eyebrow'), nav: r('.site-nav'), photoD: r('.alt__rang--a .bloc:last-child'), rangeeD: r('.defil__piste') }; });
-  ok(x.logo === 200 && x.titre === 200 && x.photo === 200 && x.rangee === 200, `1920 : le logo, le titre, la première photo et la rangée commencent au même x (${x.logo}, ${x.titre}, ${x.photo}, ${x.rangee})`);
-  ok(x.eyebrow === 200 && x.nav === 1720 && x.photoD === 1720 && x.rangeeD === 1720, `1920 : « Programme agences » sur la même grille (x ${x.eyebrow}) ; la navigation finit avec les photos et la rangée (${x.nav}, ${x.photoD}, ${x.rangeeD})`);
+    return { logo: l('.logo'), titre: l('.page__titre'), photo: l('.bloc'), mos: l('.mos'), cas: l('.mos .cas'), nav: r('.site-nav'), photoD: r('.alt__rang--a .bloc:last-child'), seul: r('.alt__rang--seul .bloc'), mosD: r('.mos'), finD: r('.mos__rang:last-child > :last-child') }; });
+  ok(x.logo === 200 && x.titre === 200 && x.photo === 200 && x.mos === 200 && x.cas === 200, `1920 : le logo, le titre, la première photo et la mosaïque (sa première case) commencent au même x (${x.logo}, ${x.titre}, ${x.photo}, ${x.mos}, ${x.cas})`);
+  ok(x.nav === 1720 && x.photoD === 1720 && x.seul === 1720 && x.mosD === 1720 && Math.abs(x.finD - 1720) <= 1, `1920 : la navigation finit avec les photos, la rangée de Brosse et la mosaïque (${x.nav}, ${x.photoD}, ${x.seul}, ${x.mosD}, ${x.finD})`);
   const blocs = await photosImg(p, '.bloc img');
   ok(blocs.every(i => i.echelle <= 1), `blocs à 1920 × 1080, 1× : aucune photo agrandie (${blocs.map(i => `${i.cle} ${i.w}×${i.h} ← ${i.pixels} ×${i.echelle}`).join(', ')})`);
   await ctx.close();
@@ -713,184 +739,103 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
     return { title: document.title, h1: h1.textContent, ff: s.fontFamily, fw: s.fontWeight, fs: s.fontSize, ls: s.letterSpacing, lh: s.lineHeight, phrase: ph.textContent, mw: getComputedStyle(ph).maxWidth, provisoire: ph.classList.contains('provisoire') && !!ph.title,
       actif: document.querySelector('.site-nav a.is-active') && document.querySelector('.site-nav a.is-active').textContent }; });
   ok(t.title === 'Réalisations — Perpetual' && t.h1 === 'Réalisations' && t.actif === 'Réalisations', `titre « ${t.h1} », « ${t.actif} » actif dans la navigation`);
-  ok(t.ff.startsWith('"Instrument Sans"') && t.fw === '400' && t.fs === '64px' && t.ls === '-1.792px' && t.lh === '65.28px', `titre en Instrument Sans 400, 64 px, interlettrage −0,028 em, interligne 1,02 (${t.ff.split(',')[0]} ${t.fw}, ${t.ls}, ${t.lh}) — la fiche garde la serif`);
-  ok(t.phrase === phraseAttendue && t.phrase === 'Vingt adresses où l’usage d’un bâtiment a été changé pour le rendre à nouveau pertinent.' && t.mw === 'none' && t.provisoire, `phrase d'ouverture : le subtitle de content/realisations.md, sans max-width, signalée provisoire — « ${t.phrase} »`);
-  // les quatre projets
+  ok(t.ff.startsWith('"Instrument Sans"') && t.fw === '400' && t.fs === '64px' && t.ls === '-1.792px' && t.lh === '65.28px', `titre en Instrument Sans 400, 64 px, interlettrage −0,028 em, interligne 1,02 (${t.ff.split(',')[0]} ${t.fw}, ${t.ls}, ${t.lh})`);
+  ok(t.phrase === phraseAttendue && t.mw === 'none' && t.provisoire, `phrase d'ouverture : le subtitle de content/realisations.md, sans max-width, marquée provisoire (lot 3) — « ${t.phrase} »`);
+  // les projets : les quatre à fiche, puis Brosse
   const b = await p.evaluate(() => [...document.querySelectorAll('.bloc')].map(e => { const r = e.getBoundingClientRect(), nom = e.querySelector('.bloc__nom'), tx = e.querySelector('.bloc__texte'), f = e.querySelector('.bloc__faits'), s = getComputedStyle(nom);
-    return { tag: e.tagName.toLowerCase(), id: e.id, href: e.getAttribute('href'), tab: e.getAttribute('tabindex'), nom: nom.textContent, ff: s.fontFamily.split(',')[0], fs: s.fontSize, c: s.color, gauche: Math.round(nom.getBoundingClientRect().left - r.left), bas: Math.round(r.bottom - tx.getBoundingClientRect().bottom),
-      faits: [...f.children].map(x => x.querySelector('.fait__et').textContent + ' ' + x.querySelector('.fait__val').textContent).join(' · '), repos: getComputedStyle(f).opacity + ' ' + Math.round(f.getBoundingClientRect().height),
-      et: getComputedStyle(f.querySelector('.fait__et')).fontSize, val: getComputedStyle(f.querySelector('.fait__val')).fontFamily.split(',')[0] + ' ' + getComputedStyle(f.querySelector('.fait__val')).fontSize, mobile: getComputedStyle(e.querySelector('.bloc__mobile')).display }; }));
-  ok(b.map(x => x.nom).join(' · ') === 'Community · Ateliers 118 · The Bank · Data Box' && b.every(x => x.ff === 'Newsreader' && x.fs === '38px' && x.c === BLANC && x.gauche === 28 && x.bas === 24),
-    `4 projets : ${b.map(x => x.nom).join(' · ')}, nom en serif blanc 38 px, en bas à gauche (28 / 24 px)`);
-  ok(b.map(x => `${x.tag}${x.id ? '#' + x.id : ''}${x.href ? ' → ' + x.href : ''}${x.tab ? ' tabindex ' + x.tab : ''}`).join(' | ') === 'a#community → projet-community.html | a#ateliers-118 → projet-ateliers-118.html | a#the-bank → projet-the-bank.html | a#data-box → projet-data-box.html',
-    'les quatre blocs sont des liens vers leur fiche (P6) et gardent leur id : ' + b.map(x => `${x.tag}#${x.id} → ${x.href}`).join(' · '));
-  ok(b.map(x => x.faits).join(' | ') === 'Lieu Uccle · Surface 14 unités · Usage Co-living | Lieu Molenbeek-Saint-Jean · Surface 1 200 m² · Usage Ateliers | Lieu Liège · Surface 1 100 m² · Usage Logements & commerce | Lieu Jemelle · Surface 4 200 m² · Usage Site technique'
-    && b.every(x => x.repos === '0 0' && x.et === '12px' && x.val === 'Newsreader 21px' && x.mobile === 'none'), 'trois faits Lieu / Surface / Usage (étiquette 12 px, valeur en serif 21 px), masqués au repos');
-  // au survol, les faits et le zoom (photos cliquables : les quatre) ; au focus clavier, les faits — la souris écartée, de « Contact » aux quatre blocs
+    return { tag: e.tagName.toLowerCase(), id: e.id, href: e.getAttribute('href'), ouvrir: e.getAttribute('data-ouvrir'), nom: nom.textContent, ff: s.fontFamily.split(',')[0], fs: s.fontSize, c: s.color, gauche: Math.round(nom.getBoundingClientRect().left - r.left), bas: Math.round(r.bottom - tx.getBoundingClientRect().bottom),
+      faits: [...f.querySelectorAll('.fait__et')].map(x => x.textContent + ' ' + x.nextElementSibling.textContent).join(' · '), repos: getComputedStyle(f).opacity + ' ' + Math.round(f.getBoundingClientRect().height),
+      mobile: getComputedStyle(e.querySelector('.bloc__mobile')).display }; }));
+  ok(b.map(x => x.nom).join(' · ') === 'Community · Ateliers 118 · The Bank · Data Box · Brosse' && b.every(x => x.ff === 'Newsreader' && x.fs === '38px' && x.c === BLANC && x.gauche === 28 && x.bas === 24),
+    `5 projets : ${b.map(x => x.nom).join(' · ')}, nom en serif blanc 38 px, en bas à gauche (28 / 24 px)`);
+  ok(b.map(x => `${x.tag}#${x.id}${x.href ? ' → ' + x.href : ''}${x.ouvrir !== null ? ' ouvre ' + x.ouvrir : ''}`).join(' | ') === 'a#community → projet-community.html | a#ateliers-118 → projet-ateliers-118.html | a#the-bank → projet-the-bank.html | a#data-box → projet-data-box.html | button#brosse ouvre 0',
+    'les quatre projets à fiche sont des liens vers leur fiche (ids gardés) ; Brosse, sans fiche, un bouton qui ouvre la visionneuse : ' + b.map(x => `${x.tag}#${x.id}`).join(' · '));
+  ok(b.map(x => x.faits).join(' | ') === 'Lieu Uccle · Surface 14 unités · Usage Co-living | Lieu Molenbeek-Saint-Jean · Surface 1 200 m² · Usage Ateliers | Lieu Liège · Surface 1 100 m² · Usage Logements & commerce | Lieu Jemelle · Surface 4 200 m² · Usage Site technique | Lieu Forest · Surface 800 m² · Projet Rafraîchissement et division d’un ancien atelier de brosses'
+    && b.every(x => x.repos === '0 0' && x.mobile === 'none'), 'trois faits par projet, masqués au repos ; Brosse : Lieu, Surface, et « Projet » (intitulé du site 2020, provisoire)');
+  // au survol, les faits et le zoom (photos cliquables : les cinq) ; au focus clavier, les faits — de « Contact » aux cinq blocs, puis la première tuile
   const survols = [];
-  await p.evaluate(() => document.querySelector('.mq').classList.add('is-plie'));   // 01/10 : le panneau, plus haut avec 13 et 13b, recouvrait le bloc de Data Box
-  for (const id of ['community', 'ateliers-118', 'the-bank', 'data-box']) {
-    await p.hover('#' + id);
+  await p.evaluate(() => document.querySelector('.mq').classList.add('is-plie'));
+  for (const id of ['community', 'ateliers-118', 'the-bank', 'data-box', 'brosse']) {
+    await p.hover('#' + id); await p.waitForTimeout(80);
     survols.push(await p.evaluate(id => { const f = document.querySelector(`#${id} .bloc__faits`); return `${id} ${getComputedStyle(f).opacity} ${f.getBoundingClientRect().height > 30} ${getComputedStyle(document.querySelector(`#${id} img`)).transform}`; }, id));
   }
   await p.evaluate(() => document.querySelector('.mq').classList.remove('is-plie'));
   await p.mouse.move(1, 1);
   await p.focus('.site-nav a:last-child');
   const focus = [];
-  for (let k = 0; k < 4; k++) { await p.keyboard.press('Tab'); focus.push(await p.evaluate(() => { const a = document.activeElement, f = a.querySelector('.bloc__faits'); return `${a.id} ${a.matches(':focus-visible')} ${f ? getComputedStyle(f).opacity : '-'}`; })); }
-  ok(survols.every(x => / 1 true matrix\(1\.035, 0, 0, 1\.035/.test(x)) && focus.join(' | ') === 'community true 1 | ateliers-118 true 1 | the-bank true 1 | data-box true 1',
-    `au survol, les faits s'affichent et la photo zoome (1,035) sur les quatre blocs-liens ; au focus clavier, les faits aussi (${focus.map(x => x.split(' ')[0]).join(', ')})`);
+  for (let k = 0; k < 6; k++) { await p.keyboard.press('Tab'); focus.push(await p.evaluate(() => { const a = document.activeElement, f = a.querySelector('.bloc__faits, .tuile__faits'); return `${a.id} ${a.matches(':focus-visible')} ${f ? getComputedStyle(f).opacity : '-'}`; })); }
+  ok(survols.every(x => / 1 true matrix\(1\.035, 0, 0, 1\.035/.test(x)) && focus.join(' | ') === 'community true 1 | ateliers-118 true 1 | the-bank true 1 | data-box true 1 | brosse true 1 | bnp-braine-le-comte true 1',
+    `au survol, les faits s'affichent et la photo zoome (1,035) sur les cinq blocs ; au focus clavier, les faits aussi (${focus.map(x => x.split(' ')[0]).join(', ')})`);
   const photos = await photosImg(p, '.bloc img');
-  ok(photos.map(i => `${i.cle} ${i.focal}`).join(' · ') === 'community-05 50% 50% · ateliers-118-01 50% 30% · the-bank-01 50% 40% · data-box-03 50% 50%' && photos.every(i => donnees.some(x => x.kind === 'detailed' && x.selection[0] === i.cle)),
+  ok(photos.map(i => `${i.cle} ${i.focal}`).join(' · ') === 'community-05 50% 50% · ateliers-118-01 50% 30% · the-bank-01 50% 40% · data-box-03 50% 50% · brosse-31 50% 40%' && photos.every(i => donnees.some(x => (x.kind === 'detailed' || x.kind === 'project') && x.selection[0] === i.cle)),
     'photos des blocs (la première clé de selection de chaque projet) et points focaux : ' + photos.map(i => `${i.cle} ${i.focal}`).join(' · '));
-  verifierSrcset(photos, 'blocs');
+  verifierSrcset(photos.filter(i => i.cle !== 'brosse-31'), 'blocs');
+  const br = photos.find(i => i.cle === 'brosse-31');
+  ok(/brosse-31-s\.jpg \d+w, [^,]*brosse-31\.jpg \d+w, [^,]*brosse-31-l\.jpg 2362w$/.test(br.srcset), `Brosse, sur toute la largeur : srcset 800w / 1800w / 2362w (la taille de l'original) — ${br.srcset.replace(/[^ ,]*\//g, '')}`);
   ok(photos.every(i => i.echelle <= 1), `blocs à 1440 × 900, 1× : aucune photo agrandie (${photos.map(i => `${i.cle} ${i.w}×${i.h} ← ${i.pixels} ×${i.echelle}`).join(', ')})`);
-  ok(await p.evaluate(() => ['ateliers-118', 'the-bank', 'data-box', 'community'].every(id => { const e = document.getElementById(id); return e && e.tagName === 'A' && e.classList.contains('bloc'); }) && [...document.querySelectorAll('[id]')].map(e => e.id).filter((x, i, a) => a.indexOf(x) !== i).length === 0),
-    'ids gardés : #ateliers-118, #the-bank, #data-box, #community sur les blocs-liens, aucun id en double');
-  // le programme agences
-  const a = await p.evaluate(() => { const c = s => getComputedStyle(document.querySelector(s)), r = s => document.querySelector(s).getBoundingClientRect(), tete = document.querySelector('.bloc-agences__tete');
-    return { eyebrow: document.querySelector('.bloc-agences .eyebrow').textContent, enonce: document.querySelector('.enonce').textContent, suite: tete.querySelector(':scope > .ouv__texte').textContent, tag: document.querySelector('.enonce').tagName,
-      ff: c('.enonce').fontFamily.split(',')[0] + ' ' + c('.enonce').fontSize, mw: c('.enonce').maxWidth, cols: c('.bloc-agences__tete').gridTemplateColumns.split(' ').map(v => Math.round(parseFloat(v))),
-      basGauche: Math.round(tete.children[0].getBoundingClientRect().bottom), basDroite: Math.round(tete.children[1].getBoundingClientRect().bottom), gaucheDroite: Math.round(tete.children[1].getBoundingClientRect().left),
-      bande: c('.bloc-agences__bande').backgroundColor, pad: c('.bloc-agences__bande').paddingTop + ' ' + c('.bloc-agences__bande').paddingBottom, defil: c('.bloc-agences__defil').backgroundColor + ' ' + c('.bloc-agences__defil').paddingTop + ' ' + c('.bloc-agences__defil').paddingBottom }; });
-  ok(a.eyebrow === 'Programme agences' && a.tag === 'H2' && `${a.enonce} ${a.suite}` === paragrapheAgences && /^Une agence bancaire fermée.*quartier\.$/.test(a.enonce) && a.ff === 'Newsreader 34px' && a.mw !== 'none',
-    `énoncé : la première phrase du paragraphe de content/realisations.md en h2 serif 34 px (max ${a.mw}), la seconde à droite`);
-  ok(Math.abs(a.cols[0] / a.cols[1] - 7 / 5) < 0.02 && a.basGauche === a.basDroite && a.gaucheDroite > 700, `énoncé : grille 7/5 (${a.cols.join(' / ')}), les deux colonnes alignées en bas (${a.basGauche} = ${a.basDroite})`);
-  ok(a.bande === PAPIER && a.pad === '56px 52px' && a.defil === `${TRANSPARENT} 44px 88px`, `bande de l'énoncé sur papier (padding ${a.pad}), la rangée sur blanc (${a.defil.replace(TRANSPARENT + ' ', 'padding ')})`);
-  const v = await p.evaluate(() => { const piste = document.querySelector('.defil__piste'), pr = piste.getBoundingClientRect(), orig = [...piste.children].filter(li => !li.hasAttribute('data-clone'));
-    return { clones: piste.children.length - orig.length, compteur: document.querySelector('.defil__compteur').textContent,
-      items: orig.map(li => ({ ville: li.querySelector('.vignette__nom').firstChild.textContent, surface: li.querySelector('.vignette__nom span').textContent, usage: li.querySelector('.vignette__usage').textContent, n: +li.querySelector('.bien').dataset.n,
-        photos: [...li.querySelectorAll('.bien__piste > img:not([data-clone])')].map(i => i.getAttribute('src').replace(/^.*\//, '').replace(/-s\.jpg$/, '')).join(' '), cpt: li.querySelector('.bien__compteur').textContent,
-        cptVisible: getComputedStyle(li.querySelector('.bien__compteur')).display !== 'none', flechesVisibles: getComputedStyle(li.querySelector('.bien__fleche')).display !== 'none', voile: getComputedStyle(li.querySelector('.bien'), '::after').display })),
-      visibles: orig.filter(li => { const r = li.getBoundingClientRect(); return r.left >= pr.left - 1 && r.right <= pr.right + 1; }).map(li => li.querySelector('.vignette__nom').firstChild.textContent),
-      ratio: (() => { const r = document.querySelector('.vignette__photo').getBoundingClientRect(); return r.width / r.height; })(),
-      droite: (() => { const li = orig[0]; return Math.round(li.getBoundingClientRect().right - li.querySelector('.vignette__nom span').getBoundingClientRect().right); })(),
-      cptStyle: (() => { const s = getComputedStyle(document.querySelector('.bien__compteur')), b = document.querySelector('.bien').getBoundingClientRect(), c = document.querySelector('.bien__compteur').getBoundingClientRect(); return `${s.fontSize} ${s.color} ${Math.round(c.top - b.top)} ${Math.round(b.right - c.right)}`; })() }; });
-  ok(v.items.length === 16 && v.clones === 32 && v.items.map(i => i.ville).join(' · ') === VILLES.join(' · ') && v.items.every((it, i) => it.surface === biensAttendus[i].surface && it.usage === biensAttendus[i].usage),
-    `rangée : les 16 biens (kind agency puis gallery, dans l'ordre), ville (name / location), surface et usage — ${v.items.map(i => i.ville).join(' · ')} ; ${v.clones} clones`);
-  ok(v.visibles.length === 4 && v.visibles.join(' · ') === VILLES.slice(0, 4).join(' · ') && Math.abs(v.ratio - 1.5) < 0.01 && v.droite === 0 && v.compteur === '1–4 / 16',
-    `4 vignettes visibles (${v.visibles.join(' · ')}), photo 3:2, surface à droite du nom, « ${v.compteur} »`);
-  ok(v.items.every((it, i) => it.photos === biensAttendus[i].photos.join(' ') && it.n === biensAttendus[i].photos.length && it.cpt === `1 / ${it.n}`), `photos de chaque bien : le champ selection, dans l'ordre (${v.items.reduce((s, i) => s + i.n, 0)} vues), « 1 / n »`);
-  const seule = v.items.filter(i => i.n === 1), plusieurs = v.items.filter(i => i.n > 1);
-  ok(seule.length >= 1 && seule.every(i => !i.cptVisible && !i.flechesVisibles && i.voile === 'none') && plusieurs.every(i => i.cptVisible && i.voile !== 'none') && v.cptStyle === `12px ${BLANC} 10 12`,
-    `« 1 / n » en haut à droite (blanc 12 px, voile dans le coin : ${v.cptStyle}) ; rien pour une seule photo (${seule.map(i => i.ville).join(', ')})`);
+  ok(await p.evaluate(() => [...document.querySelectorAll('[id]')].map(e => e.id).filter((id, i, a) => a.indexOf(id) !== i).length === 0), 'aucun id en double');
+  // le programme agences : la mosaïque (le focus quitte la première tuile, atteinte au clavier ci-dessus)
+  await p.evaluate(() => document.activeElement.blur());
+  const tu = await p.evaluate(() => [...document.querySelectorAll('.mos .tuile')].map(t => ({ id: t.id, nom: t.querySelector('.tuile__nom').textContent, label: t.getAttribute('aria-label'), ouvrir: +t.getAttribute('data-ouvrir'), tag: t.tagName,
+    faits: [...t.querySelectorAll('.fait__et')].map(x => x.textContent + ' ' + x.nextElementSibling.textContent).join(' · '), photo: t.querySelector('img').getAttribute('src').replace(/^.*\//, '').replace(/-s\.jpg$/, ''),
+    lazy: t.querySelector('img').getAttribute('loading'), nomStyle: (s => `${s.fontFamily.split(',')[0]} ${s.color}`)(getComputedStyle(t.querySelector('.tuile__nom'))), repos: getComputedStyle(t.querySelector('.tuile__faits')).opacity })));
+  ok(tu.length === 16 && tu.map(t => t.id).join(' ') === TUILES.map(t => t.id).join(' ') && tu.every((t, i) => t.tag === 'BUTTON' && t.nom === TUILES[i].ville && t.faits === `Surface ${TUILES[i].surface} · Usage ${TUILES[i].usage}` && t.repos === '0' && t.nomStyle === `Newsreader ${BLANC}`),
+    `mosaïque : les 16 biens dans l'ordre de MOSAIQUE (${tu.map(t => t.nom).join(' · ')}), nom en serif blanc, Surface / Usage masqués au repos`);
+  ok(tu.every((t, i) => t.photo === TUILES[i].photos[0] && t.lazy === 'lazy' && t.label === `${TUILES[i].ville}, ${TUILES[i].surface}, ${TUILES[i].usage} — ${TUILES[i].photos.length} photo${TUILES[i].photos.length > 1 ? 's' : ''}` && t.ouvrir === i + 1),
+    'mosaïque : chaque tuile montre la première photo de son selection, a un nom accessible (ville, surface, usage, nombre de photos) et ouvre son album');
   const USAGES = ['Service finance de la commune', 'Auto-école', 'École de danse et commerce de proximité', 'Quatre logements'];
-  ok(parOrdre('agency').map(x => x.use).join(' | ') === USAGES.join(' | ') && v.items.slice(0, 4).map(i => i.usage).join(' | ') === USAGES.join(' | ') && !donnees.some(x => /Bancontact/.test(x.use || '')) && v.items.every(i => !/Bancontact/.test(i.usage)),
+  ok(donnees.filter(x => x.kind === 'agency').sort((a, b) => a.order - b.order).map(x => x.use).join(' | ') === USAGES.join(' | ') && !donnees.some(x => /Bancontact/.test(x.use || '')) && tu.every(t => !/Bancontact/.test(t.faits)),
     'usages des 4 agences sans « Point Bancontact » (data/projects.json et page) : ' + USAGES.join(' · '));
-  const panneau = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '') + ' [' + [...f.querySelectorAll('input')].map(i => i.value).join(' / ') + ']').join(' · '));
-  ok(panneau === 'graphique (sans effet) [anneau / barres] · papier [enonce / tout] · bas [rien / anciens]', 'panneau : ' + panneau + ' (22 et 23 : la V1 en défaut ; 13, la Home, sans effet ici)');
-  await p.click('.mq__b[data-cle="papier"] label[for="mq-papier-tout"]');
-  ok((await p.evaluate(() => document.documentElement.dataset.papier + ' ' + location.search)) === 'tout ?papier=tout', 'panneau : « toute la section » pose data-papier="tout" et ?papier=tout');
+  const rangs = MOSAIQUE.map(r => r.filter(x => !x.startsWith('cas:')));
+  const rangDe = id => rangs.findIndex(r => r.includes(id));
+  ok(Math.abs(rangDe('bnp-bois-de-villers') - rangDe('ing-belgrade')) >= 2, `les deux couloirs en photo n° 1 (Bois-de-Villers, rangée ${rangDe('bnp-bois-de-villers') + 1} ; Belgrade, rangée ${rangDe('ing-belgrade') + 1}) ne se touchent pas`);
+  const cs = await p.evaluate(() => [...document.querySelectorAll('.mos .cas')].map(c => { const i = c.querySelector('.cas__in'), r = c.getBoundingClientRect(), rang = c.parentElement, cases = [...rang.children];
+    return { cls: c.className, eyebrow: (c.querySelector('.eyebrow') || {}).textContent || '', h2: c.querySelector('h2') ? c.querySelector('h2').textContent : '', p: c.querySelector('.cas__phrase') ? c.querySelector('.cas__phrase').textContent : '',
+      fond: getComputedStyle(c).backgroundColor, rogne: i.scrollHeight > i.clientHeight + 1, place: `${[...document.querySelectorAll('.mos__rang')].indexOf(rang) + 1}.${cases.indexOf(c) + 1}`, ff: getComputedStyle(c.querySelector('h2, .cas__phrase')).fontFamily.split(',')[0] }; }));
+  ok(cs.length === 2 && cs[0].place === '1.1' && cs[1].place === '5.4' && cs[0].eyebrow === 'Programme agences' && `${cs[0].h2} ${cs[1].p}` === paragrapheAgences && cs.every(c => c.fond === PAPIER && !c.rogne && c.ff === 'Newsreader'),
+    `deux cases de texte sur papier, en serif, jamais rognées : « Programme agences » et la première phrase de l'énoncé (h2) en haut à gauche (${cs[0].place}), la seconde en bas à droite (${cs[1] && cs[1].place})`);
+  // survol d'une tuile : faits, zoom, dégradé renforcé
+  await p.evaluate(() => document.querySelector('.mq').classList.add('is-plie'));
+  const st = [];
+  for (const id of ['bnp-braine-le-comte', 'ing-haaltert', 'consolation']) {
+    await p.hover('#' + id); await p.waitForTimeout(400);
+    st.push(await p.evaluate(id => { const t = document.getElementById(id), f = t.querySelector('.tuile__faits'); return `${getComputedStyle(f).opacity} ${f.scrollHeight <= f.clientHeight + 1} ${getComputedStyle(t.querySelector('img')).transform}`; }, id));
+  }
+  ok(st.every(x => /^1 true matrix\(1\.035, 0, 0, 1\.035/.test(x)), 'tuiles : au survol, Surface et Usage s’affichent en entier et la photo zoome (1,035), comme les blocs des projets — ' + st.map(x => x.split(' ').slice(0, 2).join(' ')).join(' · '));
   await ctx.close();
 }
 {
-  // la rangée en boucle, défilement doux (sans « mouvement réduit ») : on suit scrollLeft à chaque image pour vérifier qu'elle ne revient jamais en arrière
-  const { p, ctx } = await ouvrir('', [1440, 900], { reducedMotion: 'no-preference' }, REAL);
-  await p.evaluate(() => document.querySelector('.defil').scrollIntoView({ block: 'center' }));
-  const etat = () => p.evaluate(() => { const piste = document.querySelector('.defil__piste'), g = piste.getBoundingClientRect().left, li = [...piste.children].find(li => Math.abs(li.getBoundingClientRect().left - g) < 2);
-    return document.querySelector('.defil__compteur').textContent + ' · ' + (li ? li.querySelector('.vignette__nom').firstChild.textContent : '?'); });
-  const suivre = () => p.evaluate(() => { const r = document.querySelector('.defil__piste'); window.__pos = []; window.__fin = false; (function f() { window.__pos.push(r.scrollLeft); if (!window.__fin) requestAnimationFrame(f); })(); });
-  const bilan = () => p.evaluate(() => { window.__fin = true; const c = document.querySelector('.defil__piste').children, pas = c[1].getBoundingClientRect().left - c[0].getBoundingClientRect().left, n = 16; let recul = 0, total = 0;
-    for (let i = 1; i < window.__pos.length; i++) { let d = (window.__pos[i] - window.__pos[i - 1]) / pas; if (Math.abs(Math.abs(d) - n) < 0.5) d -= Math.sign(d) * n; if (d < -0.01) recul++; total += d; }   // seul le recentrage (n vignettes d'un coup, invisible) compte pour 0
-    return { recul, total: Math.round(total * 100) / 100, images: window.__pos.length }; });
-  const attendre = () => p.waitForTimeout(1100);
-  await suivre();
-  const suite = [await etat()];
-  for (let i = 0; i < 4; i++) { await p.click('[data-d-suiv]'); await attendre(); suite.push(await etat()); }
-  const avance = await bilan();
-  const attendue = ['1–4', '5–8', '9–12', '13–16', '1–4'].map((c, i) => `${c} / 16 · ${VILLES[(i * 4) % 16]}`);
-  ok(suite.join(' → ') === attendue.join(' → '), 'rangée, → quatre fois : ' + suite.join(' → '));
-  ok(avance.recul === 0 && Math.abs(avance.total - 16) < 0.05, `rangée : toujours vers la droite, sans retour en arrière (${avance.images} images suivies, avance de ${avance.total} vignettes, ${avance.recul} recul)`);
-  await p.click('[data-d-prec]'); await attendre();
-  const prec = await etat();
-  ok(prec === `13–16 / 16 · ${VILLES[12]}`, `rangée : ← depuis 1–4 → ${prec}`);
-  await p.click('[data-d-suiv]'); await attendre();
-  await suivre();
-  await p.evaluate(async () => { const a = document.querySelector('[data-d-suiv]'); for (let i = 0; i < 3; i++) { a.click(); await new Promise(r => setTimeout(r, 80)); } });
-  await attendre();
-  const rapides = await etat(), avance3 = await bilan();
-  ok(rapides === `13–16 / 16 · ${VILLES[12]}` && avance3.recul === 0 && Math.abs(avance3.total - 12) < 0.05, `rangée : trois clics rapides (80 ms) = trois pages, 1–4 → ${rapides} (avance de ${avance3.total} vignettes, ${avance3.recul} recul)`);
-  await ctx.close();
-}
-{
-  // mouvement réduit (défilement instantané) : la rangée, les photos d'un bien, la visionneuse
-  const { p, ctx } = await ouvrir('', [1440, 900], {}, REAL);
-  const compteur = () => p.evaluate(() => document.querySelector('.defil__compteur').textContent);
-  const r = [];
-  for (let i = 0; i < 4; i++) { await p.click('[data-d-suiv]'); await p.waitForTimeout(100); r.push(await compteur()); }
-  await p.click('[data-d-prec]'); await p.waitForTimeout(100); r.push(await compteur());
-  await p.click('[data-d-suiv]'); await p.waitForTimeout(100);
-  ok(r.join(' → ') === '5–8 / 16 → 9–12 / 16 → 13–16 / 16 → 1–4 / 16 → 13–16 / 16', 'rangée en mouvement réduit : ' + r.join(' → '));
-  const B = '.defil__piste > li:not([data-clone]) .bien[data-bien="0"]';
-  const lire = () => p.evaluate(s => { const b = document.querySelector(s), pi = b.querySelector('.bien__piste'), vis = pi.children[Math.round(pi.scrollLeft / pi.clientWidth)]; return b.querySelector('.bien__compteur').textContent + ' ' + vis.getAttribute('src').replace(/^.*\//, ''); }, B);
-  await p.evaluate(s => document.querySelector(s).scrollIntoView({ block: 'center' }), B);
-  const repos = await style(p, B + ' .bien__fleche--d', 'opacity');
-  await p.hover(B);
-  const survol = await style(p, B + ' .bien__fleche--d', 'opacity');
-  const photos = [await lire()];
-  for (let i = 0; i < 2; i++) { await p.click(B + ' .bien__fleche--d'); await p.waitForTimeout(150); photos.push(await lire()); }
-  ok(photos.join(' → ') === '1 / 2 bnp-braine-le-comte-01-s.jpg → 2 / 2 bnp-braine-le-comte-03-s.jpg → 1 / 2 bnp-braine-le-comte-01-s.jpg' && repos === '0' && survol === '1',
-    `vignette à deux photos : ${photos.map(x => x.split(' ').slice(0, 3).join(' ')).join(' → ')} (flèches au survol seulement)`);
-  // visionneuse : ouverte sur la photo affichée dans la vignette
-  await p.click(B + ' .bien__fleche--d'); await p.waitForTimeout(150);
-  await p.click(B + ' .bien__piste');
-  await p.waitForTimeout(150);
+  // la visionneuse : Brosse, un bien à plusieurs photos, Belgrade (l'intérieur d'abord), un bien à une photo
+  const { p, ctx } = await ouvrir('panneau=off', [1440, 900], {}, REAL);
   const vis = () => p.evaluate(() => { const v = document.querySelector('.visio'), vp = v.querySelector('.visio__piste'), img = vp.children[Math.round(vp.scrollLeft / vp.clientWidth)], cadre = v.querySelector('.visio__cadre').getBoundingClientRect();
     return { ouvert: !v.hidden && getComputedStyle(v).display !== 'none', cpt: v.querySelector('.visio__compteur').textContent, src: img ? img.getAttribute('src').replace(/^.*\//, '') : null, legende: v.querySelector('.visio__legende').innerHTML,
       focus: document.activeElement && document.activeElement.textContent, corps: document.body.classList.contains('visio-ouverte'), fit: img && getComputedStyle(img).objectFit, ratio: cadre.width / cadre.height, fond: getComputedStyle(v).backgroundColor,
-      fleches: [...v.querySelectorAll('.visio__fleche')].map(f => !f.hidden && getComputedStyle(f).display !== 'none').join(' ') }; });
+      fleches: [...v.querySelectorAll('.visio__fleche')].map(f => !f.hidden && getComputedStyle(f).display !== 'none').join(' '), retour: document.activeElement && document.activeElement.id }; });
+  await p.click('#brosse'); await p.waitForTimeout(150);
   const v1 = await vis();
-  ok(v1.ouvert && photos[1].startsWith('2 / 2') && v1.cpt === '2 / 2' && v1.src === 'bnp-braine-le-comte-03.jpg' && v1.legende === '<b>Braine-le-Comte</b>600 m² · Service finance de la commune',
-    `visionneuse : ouverte sur la photo de la vignette (${v1.cpt}, ${v1.src}), « ${v1.legende.replace(/<\/?b>/g, '|')} »`);
-  ok(v1.fond === BLANC && v1.fit === 'contain' && Math.abs(v1.ratio - 4 / 3) < 0.01 && v1.fleches === 'true true' && v1.focus === 'Fermer' && v1.corps, 'visionneuse : fond blanc, photo entière (contain) dans un cadre 4:3, flèches de part et d’autre, focus sur « Fermer », page figée');
-  // le panneau (visible par défaut) s'efface devant la visionneuse : ses flèches, sa légende et son compteur restent libres, à la souris aussi
-  const libres = await p.evaluate(() => [...document.querySelectorAll('.visio__fleche, .visio__legende, .visio__compteur')].every(e => { const r = e.getBoundingClientRect(), x = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return x && e.contains(x); }) && getComputedStyle(document.querySelector('.mq')).display === 'none');
-  const cliquer = async s => { try { await p.click(s, { timeout: 2000 }); } catch (e) { /* recouverte : le compteur ne bouge pas, la vérification échoue */ } await p.waitForTimeout(150); return vis(); };
-  const vc1 = await cliquer('.visio [data-v-suiv]'), vc2 = await cliquer('.visio [data-v-prec]');
-  ok(libres && vc1.cpt === '1 / 2' && vc2.cpt === '2 / 2', `visionneuse : le panneau s'efface, les flèches se cliquent à la souris (${v1.cpt} → ${vc1.cpt} → ${vc2.cpt})`);
-  const tab = [];
-  for (let i = 0; i < 6; i++) { await p.keyboard.press(i < 4 ? 'Tab' : 'Shift+Tab'); tab.push(await p.evaluate(() => document.activeElement.closest('.visio') ? (document.activeElement.textContent || document.activeElement.className) : 'HORS : ' + document.activeElement.outerHTML.slice(0, 60))); }
-  ok(tab.every(t => !t.startsWith('HORS')), 'visionneuse modale : Tab et Maj+Tab restent dans ses commandes — ' + tab.join(' → '));
+  ok(v1.ouvert && v1.cpt === '1 / 9' && v1.src === 'brosse-31.jpg' && v1.legende === '<b>Brosse</b>Forest · 800 m²' && v1.focus === 'Fermer' && v1.corps && v1.fond === BLANC && v1.fit === 'contain' && Math.abs(v1.ratio - 4 / 3) < 0.01 && v1.fleches === 'true true',
+    `Brosse ouvre la visionneuse : ${v1.cpt}, ${v1.src}, « ${v1.legende.replace(/<\/?b>/g, '|')} » ; fond blanc, photo entière dans un cadre 4:3, focus sur « Fermer »`);
   await p.keyboard.press('ArrowRight'); await p.waitForTimeout(150); const v2 = await vis();
-  await p.keyboard.press('ArrowRight'); await p.waitForTimeout(150); const v3 = await vis();
-  await p.keyboard.press('ArrowLeft'); await p.waitForTimeout(150); const v4 = await vis();
-  ok([v2, v3, v4].map(x => `${x.cpt} ${x.src}`).join(' → ') === '1 / 2 bnp-braine-le-comte-01.jpg → 2 / 2 bnp-braine-le-comte-03.jpg → 1 / 2 bnp-braine-le-comte-01.jpg', 'visionneuse au clavier, en boucle : ' + [v2, v3, v4].map(x => x.cpt).join(' → '));
-  await p.keyboard.press('Escape'); await p.waitForTimeout(100);
-  const v5 = await vis(), plie = await p.evaluate(() => document.querySelector('.mq').classList.contains('is-plie') || getComputedStyle(document.querySelector('.mq')).display === 'none');
-  ok(!v5.ouvert && !v5.corps && !plie, 'visionneuse : Échap la ferme (le panneau revient, sans se replier)');
-  await p.evaluate(() => document.querySelector('.defil__piste > li:not([data-clone]) .bien[data-n="1"] .bien__piste').click());
-  await p.waitForTimeout(150);
-  const v6 = await vis();
-  ok(v6.ouvert && v6.cpt === '' && v6.fleches === 'false false', 'visionneuse d’un bien à une photo : ni compteur ni flèches');
-  await p.click('.visio [data-fermer]');
-  ok(!(await vis()).ouvert, 'visionneuse : « Fermer »');
+  const tab = [];
+  for (let i = 0; i < 6; i++) { await p.keyboard.press(i < 4 ? 'Tab' : 'Shift+Tab'); tab.push(await p.evaluate(() => document.activeElement.closest('.visio') ? (document.activeElement.textContent || document.activeElement.className) : 'HORS : ' + document.activeElement.className)); }
+  await p.keyboard.press('Escape'); await p.waitForTimeout(100); const v3 = await vis();
+  ok(v2.cpt === '2 / 9' && v2.src === 'brosse-16.jpg' && tab.every(t => !t.startsWith('HORS')) && !v3.ouvert && !v3.corps && v3.retour === 'brosse',
+    `visionneuse : → ${v2.cpt} (${v2.src}) ; Tab et Maj+Tab restent dedans ; Échap la ferme et rend le focus au bloc de Brosse`);
+  await p.click('#bnp-braine-le-comte'); await p.waitForTimeout(150); const v4 = await vis();
+  await p.click('.visio [data-v-suiv]'); await p.waitForTimeout(150); const v5 = await vis();
+  await p.click('.visio [data-fermer]'); await p.waitForTimeout(100);
+  ok(v4.ouvert && v4.cpt === '1 / 2' && v4.src === 'bnp-braine-le-comte-01.jpg' && v4.legende === '<b>Braine-le-Comte</b>600 m² · Service finance de la commune' && v5.cpt === '2 / 2' && v5.src === 'bnp-braine-le-comte-03.jpg' && !(await vis()).ouvert,
+    `tuile Braine-le-Comte : « ${v4.legende.replace(/<\/?b>/g, '|')} », ${v4.cpt} → ${v5.cpt} à la flèche, « Fermer »`);
+  await p.click('#ing-belgrade'); await p.waitForTimeout(150); const v6 = await vis();
+  await p.keyboard.press('Escape');
+  await p.click('#gilly'); await p.waitForTimeout(150); const v7 = await vis();
+  await p.keyboard.press('Escape');
+  ok(v6.src === 'ing-belgrade-02.jpg' && v6.cpt === '1 / 2' && v7.ouvert && v7.cpt === '' && v7.fleches === 'false false', `Belgrade s'ouvre sur l'intérieur (${v6.src}) ; Gilly, une seule photo : ni compteur ni flèches`);
   await ctx.close();
 }
 {
-  // au clavier, de haut en bas : jamais d'arrêt dans les clones de la boucle (aria-hidden), et les flèches des biens restent atteignables
-  const { p, ctx } = await ouvrir('panneau=off', [1440, 900], {}, REAL);
-  const arrets = [];
-  for (let i = 0; i < 80; i++) { await p.keyboard.press('Tab'); arrets.push(await p.evaluate(() => { const a = document.activeElement; return { cache: !!a.closest('[aria-hidden="true"], [data-clone]'), cls: a.className || a.tagName }; })); }
-  const caches = arrets.filter(a => a.cache), fleches = arrets.filter(a => /bien__fleche/.test(a.cls)).length;
-  ok(!caches.length && fleches >= 20, `clavier : ${arrets.length} tabulations, aucun arrêt dans un clone de la boucle (${caches.length}), ${fleches} flèches de biens atteintes`);
-  await ctx.close();
-}
-{
-  // les trois faits ne sont jamais rognés au survol, même quand ils passent sur deux ou trois lignes (blocs étroits)
-  const rognes = [];
-  for (const w of [660, 700, 800, 1100, 1440]) {
-    const { p, ctx } = await ouvrir('panneau=off', [w, 800], {}, REAL);
-    for (const i of [0, 1, 2, 3]) {
-      await p.hover(`.bloc >> nth=${i}`);
-      const r = await p.evaluate(i => { const f = document.querySelectorAll('.bloc__faits')[i]; return { nom: f.closest('.bloc').querySelector('.bloc__nom').textContent, vu: f.clientHeight, plein: f.scrollHeight }; }, i);
-      if (r.plein > r.vu + 1) rognes.push(`${w} ${r.nom} ${r.vu}/${r.plein}`);
-    }
-    await ctx.close();
-  }
-  ok(!rognes.length, 'survol des blocs de 660 à 1440 px : les trois faits entiers, jamais rognés' + (rognes.length ? ' — ' + rognes.join(', ') : ''));
-}
-{
-  // photos des blocs, cadre variable (largeur et hauteur suivent la fenêtre) : à 1×, le plus petit fichier suffisant est servi — jamais agrandi, jamais trop lourd
+  // photos des blocs, cadre variable (largeur et hauteur suivent la fenêtre) : à 1×, le plus petit fichier suffisant est servi — jamais agrandi, jamais trop lourd ;
+  // photos des tuiles : à 1×, le 800 px suffit partout (la plus grande case fait ~500 px de large)
   const ecarts = [];
   for (const [w, h] of [[641, 800], [800, 800], [1024, 768], [1280, 800], [1366, 703], [1440, 900], [1521, 705], [1920, 1080]]) {
     const { p, ctx } = await ouvrir('panneau=off', [w, h], {}, REAL);
@@ -899,59 +844,56 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
       const attendu = petit.width >= besoin ? `${i.cle}-s.jpg` : `${i.cle}.jpg`;
       if (i.servi !== attendu) ecarts.push(`${w}×${h} ${i.cle} : ${i.servi} au lieu de ${attendu} (besoin ${Math.round(besoin)} px)`);
     }
+    for (const i of await photosImg(p, '.mos .tuile img')) {
+      const petit = tailleJpeg(path.join(IMG_DIR, `${i.cle}-s.jpg`)), attendu = petit.width >= i.w - 1 ? `${i.cle}-s.jpg` : `${i.cle}.jpg`;
+      if (i.servi !== attendu || i.echelle > 1.01) ecarts.push(`${w}×${h} tuile ${i.cle} : ${i.servi} (${i.w} px, attendu ${attendu}, ×${i.echelle})`);
+    }
     await ctx.close();
   }
-  ok(!ecarts.length, 'blocs, 641 à 1920 px, 1× : le sizes suit le cadre (largeur ou hauteur × ratio), le plus petit fichier suffisant est servi' + (ecarts.length ? ' — ' + ecarts.join(' ; ') : ''));
+  ok(!ecarts.length, 'blocs et tuiles, 641 à 1920 px, 1× : le sizes suit le cadre, le plus petit fichier suffisant est servi, aucune photo agrandie' + (ecarts.length ? ' — ' + ecarts.join(' ; ') : ''));
 }
-// bascules 22 (papier) et 23 (bas)
-for (const [w, h] of [[1440, 900], [390, 844]]) {
-  const res = [];
-  for (const etat of ['', 'papier=tout', 'bas=anciens', 'papier=tout&bas=anciens']) {
-    const { p, ctx } = await ouvrir(etat, [w, h], {}, REAL);
-    res.push([etat || 'défaut', await p.evaluate(() => { const c = s => getComputedStyle(document.querySelector(s)), r = s => document.querySelector(s).getBoundingClientRect(), anciens = c('.anciens').display !== 'none';
-      return { section: c('.bloc-agences').backgroundColor, bande: c('.bloc-agences__bande').backgroundColor, anciens, avantPied: Math.round(r('.site-footer').top - r(anciens ? '.anciens' : '.bloc-agences').bottom),
-        apresSection: anciens ? Math.round(r('.anciens').top - r('.bloc-agences').bottom) : null, fond: c('.anciens').backgroundColor, n: document.querySelectorAll('.ancien').length, cols: c('.anciens__liste').gridTemplateColumns.split(' ').length,
-        nom: c('.ancien__nom').fontFamily.split(',')[0] + ' ' + c('.ancien__nom').fontSize, titre: document.querySelector('.anciens .enonce').textContent, eyebrow: document.querySelector('.anciens .eyebrow').textContent,
-        premier: document.querySelector('.ancien').textContent }; })]);
-    await ctx.close();
-  }
-  const [def, tout, anc, lesDeux] = res.map(x => x[1]), blanc = w > 640 ? 32 : 20;
-  ok(def.section === TRANSPARENT && def.bande === PAPIER && !def.anciens && def.avantPied === 0, `${w} · défaut (V1) : papier sur l'énoncé seul, pas d'anciens projets`);
-  ok(tout.section === PAPIER && tout.bande === TRANSPARENT && tout.avantPied === blanc, `${w} · 22 papier=tout : toute la section sur papier, puis ${tout.avantPied} px de blanc avant le pied de page (${blanc} attendus)`);
-  ok(anc.anciens && anc.n === 11 && anc.cols === (w > 640 ? 4 : 2) && anc.nom === `Newsreader ${w > 640 ? 24 : 20}px` && anc.fond === TRANSPARENT && anc.eyebrow === 'Autres réalisations' && anc.titre === 'Et, depuis 2002, des projets de toutes tailles.'
-    && anc.premier === 'SerhieuxSeraing · 7 200 m²Valorisation et vente d’un bien à un organisme public' && anc.avantPied === 0 && anc.apresSection === 0,
-    `${w} · 23 bas=anciens : « Autres réalisations », les 11 projets de l'ancien site sur blanc, en ${anc.cols} colonnes, nom ${anc.nom}`);
-  ok(lesDeux.section === PAPIER && lesDeux.anciens && lesDeux.apresSection === 0, `${w} · papier=tout&bas=anciens : la section papier touche les anciens projets (${lesDeux.apresSection} px)`);
+{
+  // bascules 22 et 23 retirées : leurs paramètres restés dans une URL sont sans effet ; le panneau n'a plus de bascule pour cette page
+  const { p, ctx } = await ouvrir('papier=tout&bas=anciens', [1440, 900], {}, REAL);
+  const r = await p.evaluate(() => ({ anciens: !!document.querySelector('.anciens, .bloc-agences'), fond: getComputedStyle(document.querySelector('.mos-section')).backgroundColor,
+    panneau: [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (sans effet)' : '')).join(' · ') }));
+  ok(!r.anciens && r.fond === TRANSPARENT && r.panneau === 'graphique (sans effet)', `?papier=tout&bas=anciens (bascules 22 et 23 retirées le 04/10) : sans effet ; panneau : ${r.panneau}`);
+  await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('', [390, 844], {}, REAL);
+  await parcourir(p);
   const m = await p.evaluate(() => ({
-    blocs: [...document.querySelectorAll('.bloc')].map(b => { const r = b.getBoundingClientRect(), mob = b.querySelector('.bloc__mobile'); return { w: Math.round(r.width), ratio: r.width / r.height, nom: getComputedStyle(b.querySelector('.bloc__nom')).fontSize, mobile: getComputedStyle(mob).display + ' ' + mob.textContent, faits: getComputedStyle(b.querySelector('.bloc__faits')).display }; }),
+    blocs: [...document.querySelectorAll('.bloc')].map(b => { const r = b.getBoundingClientRect(), mob = b.querySelector('.bloc__mobile'); return { w: Math.round(r.width), ratio: r.width / r.height, nom: getComputedStyle(b.querySelector('.bloc__nom')).fontSize, faits: getComputedStyle(b.querySelector('.bloc__faits')).display, mobile: getComputedStyle(mob).display + ' ' + mob.textContent }; }),
     cols: [...document.querySelectorAll('.alt__rang')].map(r => getComputedStyle(r).gridTemplateColumns.split(' ').length),
-    vignette: (() => { const piste = document.querySelector('.defil__piste'), li = piste.querySelector('li:not([data-clone])'), pr = piste.getBoundingClientRect(), r = li.getBoundingClientRect(), s = li.nextElementSibling.getBoundingClientRect(); return { part: r.width / pr.width, bord: s.left > r.right && s.left < pr.right - 10 }; })(),
-    compteur: document.querySelector('.defil__compteur').textContent, titre: getComputedStyle(document.querySelector('.page__titre')).fontSize, enonce: getComputedStyle(document.querySelector('.enonce')).fontSize,
-    tete: getComputedStyle(document.querySelector('.bloc-agences__tete')).gridTemplateColumns.split(' ').length, fleches: getComputedStyle(document.querySelector('.visio__fleche')).display }));
-  ok(m.cols.every(c => c === 1) && m.blocs.every(b => b.w === 350 && Math.abs(b.ratio - 4 / 3) < 0.01 && b.nom === '28px' && b.faits === 'none')
-    && m.blocs.map(b => b.mobile).join(' | ') === 'block Uccle · 14 unités | block Molenbeek-Saint-Jean · 1 200 m² | block Liège · 1 100 m² | block Jemelle · 4 200 m²', 'mobile : un bloc par ligne en 4:3, nom 28 px, « Lieu · surface » dessous, faits masqués');
-  ok(Math.abs(m.vignette.part - 0.78) < 0.005 && m.vignette.bord && m.compteur === '1 / 16', `mobile : une vignette à ${Math.round(m.vignette.part * 100)} % de la rangée et le bord de la suivante, « ${m.compteur} »`);
-  ok(m.titre === '44px' && m.enonce === '26px' && m.tete === 1 && m.fleches === 'none', 'mobile : titre 44 px, énoncé 26 px en une colonne, visionneuse sans flèches');
+    mosCols: getComputedStyle(document.querySelector('.mos')).gridTemplateColumns.split(' ').length,
+    tuiles: [...document.querySelectorAll('.mos .tuile')].map(t => { const r = t.getBoundingClientRect(); return { x: Math.round(r.left), ratio: r.width / r.height, mob: getComputedStyle(t.querySelector('.tuile__mobile')).display + ' ' + t.querySelector('.tuile__mobile').textContent, faits: getComputedStyle(t.querySelector('.tuile__faits')).display, nom: getComputedStyle(t.querySelector('.tuile__nom')).fontSize }; }),
+    cas: [...document.querySelectorAll('.mos .cas')].map(c => Math.round(c.getBoundingClientRect().width)), large: Math.round(document.querySelector('.mos').getBoundingClientRect().width),
+    titre: getComputedStyle(document.querySelector('.page__titre')).fontSize, fleches: getComputedStyle(document.querySelector('.visio__fleche')).display }));
+  ok(m.cols.every(c => c === 1) && m.blocs.length === 5 && m.blocs.every(b => b.w === 350 && Math.abs(b.ratio - 4 / 3) < 0.01 && b.nom === '28px' && b.faits === 'none')
+    && m.blocs.map(b => b.mobile).join(' | ') === 'block Uccle · 14 unités | block Molenbeek-Saint-Jean · 1 200 m² | block Liège · 1 100 m² | block Jemelle · 4 200 m² | block Forest · 800 m²', 'mobile : un projet par ligne en 4:3 (Brosse compris), nom 28 px, « Lieu · surface » dessous, faits masqués');
+  const gauche = m.tuiles.filter(t => t.x === 20).length, droite = m.tuiles.length - gauche;
+  ok(m.mosCols === 2 && gauche === 8 && droite === 8 && m.tuiles.every(t => Math.abs(t.ratio - 0.8) < 0.01 && t.faits === 'none' && t.nom === '19px' && /^block \d/.test(t.mob)) && m.cas.every(w => w === m.large),
+    `mobile : la mosaïque en deux colonnes de tuiles 4:5 (${gauche} + ${droite}, sans trou), nom 19 px et surface dessous ; les cases de texte sur toute la largeur`);
+  ok(m.titre === '44px' && m.fleches === 'none', 'mobile : titre 44 px, visionneuse sans flèches');
   await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('', [1440, 900], { javaScriptEnabled: false }, REAL);
-  ok(await p.evaluate(() => !document.querySelector('.mq') && !document.querySelector('[data-clone]') && document.querySelectorAll('.defil__piste > li').length === 16 && getComputedStyle(document.querySelector('.visio')).display === 'none'
-    && getComputedStyle(document.querySelector('.anciens')).display === 'none' && document.querySelectorAll('.bloc').length === 4), 'sans JavaScript : les 4 blocs, la rangée des 16 (défilement natif), visionneuse et anciens projets masqués, sans panneau');
+  ok(await p.evaluate(() => !document.querySelector('.mq') && document.querySelectorAll('.bloc').length === 5 && document.querySelectorAll('.mos .tuile').length === 16 && getComputedStyle(document.querySelector('.visio')).display === 'none'
+    && getComputedStyle(document.querySelector('.mos')).display === 'flex'), 'sans JavaScript : les 5 projets et la mosaïque des 16 (visionneuse masquée), sans panneau');
   await ctx.close();
 }
 {
   const { p, ctx } = await ouvrir('', [1440, 900], { deviceScaleFactor: 2 }, REAL);
-  const blocs2 = await photosImg(p, '.bloc img');
-  ok(blocs2.every(i => i.servi === `${i.cle}.jpg`), `blocs à 1440 × 2 : le 1800 px est servi (${blocs2.map(i => i.servi).join(', ')})`);
+  const blocs2 = await photosImg(p, '.bloc img'), tuiles2 = await photosImg(p, '.mos .tuile img');
+  ok(blocs2.every(i => i.servi === (i.cle === 'brosse-31' ? 'brosse-31-l.jpg' : `${i.cle}.jpg`)), `blocs à 1440 × 2 : le 1800 px est servi, et le 2 362 px pour Brosse sur toute la largeur (${blocs2.map(i => i.servi).join(', ')})`);
+  ok(tuiles2.every(i => i.servi === `${i.cle}.jpg` || (i.servi === `${i.cle}-s.jpg` && 2 * i.w <= tailleJpeg(path.join(IMG_DIR, i.servi)).width)), `tuiles à 1440 × 2 : le fichier assez grand pour l'écran haute densité est servi (${tuiles2.filter(i => /-s\.jpg$/.test(i.servi)).length} en 800 px, ${tuiles2.filter(i => !/-s\.jpg$/.test(i.servi)).length} en 1800 px)`);
   await ctx.close();
 }
-// photos des biens : la version « 1800 px » d'une vue peut être provisoire (tirée d'une planche) tant que l'original n'est pas réduit — signalé, pas compté en échec
+// photos des biens et de Brosse : un <clé>.jpg de moins de 1800 px est signalé, pas compté en échec
 {
-  const petites = biensAttendus.flatMap(b => b.photos).filter(k => { const t = tailleJpeg(path.join(IMG_DIR, `${k}.jpg`)); return Math.max(t.width, t.height) < 1800; });
+  const petites = [...TUILES.flatMap(b => b.photos), ...BROSSE.selection].filter(k => { const t = tailleJpeg(path.join(IMG_DIR, `${k}.jpg`)); return Math.max(t.width, t.height) < 1800; });
   if (petites.length) console.log(`  info  ${petites.length} vues des biens n'ont pas encore leur 1800 px (plus grand côté < 1800) — reduire-photos.mjs --petit --grand <originaux>, puis rebâtir`);
 }
 
@@ -1048,7 +990,7 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   ok(nav === 'Réalisations → realisations.html | Engagements actif aria-current=page → engagements.html | Contact → #contact', 'navigation : ' + nav);
   const panneau = await p.evaluate(() => ({ b: [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (' + f.querySelector('.mq__note--inactif').textContent + ')' : '')).join(' · '),
     onglets: [...document.querySelectorAll('.mq__pages a')].map(a => a.textContent + (a.classList.contains('is-active') ? ' (actif)' : '')).join(' · ') }));
-  ok(panneau.b === 'graphique (sans effet sur cette page) · papier (sans effet sur cette page) · bas (sans effet sur cette page)' && panneau.onglets === 'Home · Fiche · Réalisations · Engagements (actif)', `panneau : aucune bascule sur cette page — ${panneau.b} ; onglets ${panneau.onglets}`);
+  ok(panneau.b === 'graphique (sans effet sur cette page)' && panneau.onglets === 'Home · Fiche · Réalisations · Engagements (actif)', `panneau : aucune bascule sur cette page — ${panneau.b} ; onglets ${panneau.onglets}`);
   await ctx.close();
 }
 {

@@ -240,17 +240,19 @@ html[data-page="realisations"] .page__titre{font-family:var(--sans);font-weight:
 .ouv__texte{font-size:var(--fs-texte);line-height:1.5;color:var(--c-texte);max-width:40ch;text-wrap:pretty}
 .p2-ouv .ouv__texte{margin-top:14px;max-width:none}
 .eyebrow--sans-marge{margin-bottom:0}
-.enonce{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.18;letter-spacing:-.01em;max-width:26ch;margin-top:14px}
-/* les quatre projets : deux rangées de blocs photo, 7/5 puis 5/7, hauteur calée sur la fenêtre ; le nom en serif blanc sur un dégradé, en bas à gauche ;
-   au survol et au focus, les trois faits (Lieu / Surface / Usage). Depuis la P6 (26/09), les quatre blocs sont des liens vers leur fiche (ils gardent leur
-   id) : leur photo zoome (1,035 : photos cliquables) */
+/* les projets : rangées de blocs photo, 7/5 puis 5/7, puis Brosse seule sur toute la largeur (lot 2b, 04/10 : 2-2-1), hauteur calée sur la fenêtre ; le nom
+   en serif blanc sur un dégradé, en bas à gauche ; au survol et au focus, les trois faits (Lieu / Surface / Usage). Depuis la P6 (26/09), les quatre blocs des
+   projets à fiche sont des liens vers leur fiche (ils gardent leur id) ; Brosse, sans fiche, est un bouton qui ouvre la visionneuse. Leur photo zoome
+   (1,035 : photos cliquables) */
 .alt{display:grid;gap:14px}
 .alt__rang{display:grid;gap:14px;height:clamp(340px,calc(100vh - 262px),540px)}
 .alt__rang--a{grid-template-columns:7fr 5fr}
 .alt__rang--b{grid-template-columns:5fr 7fr}
+.alt__rang--seul{grid-template-columns:1fr}
 .bloc{position:relative;display:block;overflow:hidden;color:var(--photo-texte);background:var(--surface)}
 .bloc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}   /* object-position : blocFocal, posé en style par build.mjs */
-a.bloc:hover img{transform:scale(var(--zoom))}
+a.bloc:hover img,.bloc--album:hover img{transform:scale(var(--zoom))}
+.bloc--album{width:100%;height:100%;padding:0;border:0;font:inherit;text-align:left;cursor:pointer}   /* bouton : la remise à zéro du navigateur */
 .bloc::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,.58) 0%,rgba(0,0,0,.26) 32%,transparent 58%);transition:background .3s}
 .bloc:hover::after,.bloc:focus-visible::after{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.4) 40%,transparent 72%)}
 .bloc__texte{position:absolute;left:28px;right:28px;bottom:24px;z-index:1}
@@ -261,44 +263,39 @@ a.bloc:hover img{transform:scale(var(--zoom))}
 .fait__et{display:block;font-size:12px;opacity:.82}
 .fait__val{display:block;font-family:var(--serif);font-size:21px;line-height:1.2;margin-top:2px}
 .bloc__mobile{display:none}
-/* programme agences : l'énoncé sur papier (eyebrow, la première phrase du paragraphe en serif à gauche, la suite à droite, grille 7/5 alignée en bas),
-   puis la rangée des seize biens sur blanc ; bascule 22 : papier sur toute la section */
-.bloc-agences{margin-top:56px}
-.bloc-agences__bande{background:var(--surface);padding:56px 0 52px}
-.bloc-agences__tete{display:grid;grid-template-columns:7fr 5fr;gap:64px;align-items:end}
-.bloc-agences__tete .ouv__texte{padding-bottom:4px}
-.bloc-agences__defil{padding-top:44px;padding-bottom:88px}
-/* la rangée : quatre vignettes visibles, en boucle (maquette.js : un jeu de clones avant et après, recentrage invisible en fin de défilement) ;
-   sous la rangée, un filet, « 1–4 / 16 » à gauche et ← → à droite */
-.defil__piste{display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
-.defil__piste::-webkit-scrollbar{display:none}
-.defil__piste>li{flex:0 0 calc((100% - 72px) / 4);min-width:0;scroll-snap-align:start}
-.defil__nav{display:flex;justify-content:space-between;align-items:baseline;margin-top:22px;padding-top:14px;border-top:1px solid var(--filet);font-size:var(--fs-etiquette);color:var(--c-meta)}
-.defil__compteur{font-variant-numeric:tabular-nums}
-.defil__fleches{display:flex;gap:22px}
-.defil__fleches a{font-size:17px;line-height:1;color:var(--c-texte);padding-bottom:2px}
-/* vignette : photo 3:2 ; dessous, la ville, la surface à droite, puis l'usage */
-.vignette__photo{display:block;position:relative;aspect-ratio:3/2;overflow:hidden;background:var(--blanc)}
-.vignette__nom{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:12px;font-size:15px;font-weight:500}
-.vignette__nom span{font-weight:400;font-size:var(--fs-etiquette);color:var(--c-meta)}
-.vignette__usage{font-size:14px;line-height:1.45;color:var(--c-texte);margin-top:2px;max-width:34ch}
-/* les photos d'un bien, sur sa vignette : piste à accroche, en boucle ; « 1 / n » en haut à droite sur un léger voile dans le coin, flèches fines aux bords
-   au survol ; rien s'il n'y a qu'une photo ; clic sur la photo → visionneuse */
-.bien{position:relative;width:100%;height:100%;overflow:hidden}
-.bien__piste{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;cursor:zoom-in}
-.bien__piste::-webkit-scrollbar{display:none}
-.bien__piste img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start;scroll-snap-stop:always}
-.bien::after{content:"";position:absolute;top:0;right:0;width:120px;height:64px;pointer-events:none;background:radial-gradient(ellipse at 100% 0,rgba(0,0,0,.38) 0%,rgba(0,0,0,.16) 45%,transparent 75%)}   /* le compteur reste lisible sur un ciel clair */
-.bien[data-n="1"]::after{display:none}
-.bien__compteur{position:absolute;z-index:1;top:10px;right:12px;font-size:12px;line-height:1;letter-spacing:.02em;color:var(--photo-texte);font-variant-numeric:tabular-nums;text-shadow:0 0 6px rgba(0,0,0,.6),0 0 1px rgba(0,0,0,.7);pointer-events:none}
-.bien__fleche{position:absolute;top:0;bottom:0;width:52px;display:flex;align-items:center;justify-content:center;background:none;border:0;padding:0;color:var(--photo-texte);cursor:pointer;opacity:0;transition:opacity .2s}
-.bien__fleche--g{left:0}.bien__fleche--d{right:0}
-.bien__fleche svg{width:13px;height:26px;filter:drop-shadow(0 0 3px rgba(0,0,0,.65))}
-.bien:hover .bien__fleche,.bien:focus-within .bien__fleche{opacity:1}
-.bien[data-n="1"] .bien__compteur,.bien[data-n="1"] .bien__fleche{display:none}
-/* au doigt, la rangée défile ; les photos d'un bien se parcourent dans la visionneuse (un seul geste par zone) */
-@media (hover:none){.bien__fleche{display:none}.defil .bien__piste{overflow-x:hidden}}
-/* visionneuse : fond blanc, photo entière (contain) dans un cadre 4:3, flèches de part et d'autre, la ville puis « surface · usage » et « 1 / n » dessous ;
+/* programme agences (lot 2b, 04/10 ; page de travail design/revue-mosaique/) : la mosaïque des seize biens en rangées de 4 et de 3 cases, sur blanc.
+   Chaque case a le format de sa photo (--r = largeur / hauteur, écrit par build.mjs) et une part de la rangée proportionnelle à ce format : toutes les cases
+   d'une rangée ont la même hauteur, la photo est entière — ni recadrée ni agrandie. Les rangées de 3 sortent plus hautes que celles de 4. */
+.mos-section{margin-top:56px;padding-bottom:88px}
+.mos{display:flex;flex-direction:column;gap:14px}
+.mos__rang{display:flex;gap:14px;align-items:flex-start}
+.mos .tuile,.mos .cas{flex:var(--r) 1 0;aspect-ratio:var(--r);min-width:0}
+/* nom et faits : une taille par sorte de rangée, pas par tuile */
+.mos__rang--4{--nom:clamp(19px,1.6vw,25px);--val:clamp(15px,1.15vw,18px)}
+.mos__rang--3{--nom:clamp(21px,1.9vw,29px);--val:clamp(15px,1.25vw,19px)}
+/* tuile = un bien, dans le style des blocs des projets : photo, dégradé, nom en serif blanc, Surface / Usage au survol et au focus, zoom 1,035 (la tuile
+   ouvre la visionneuse sur les photos du bien) */
+.tuile{position:relative;display:block;overflow:hidden;padding:0;border:0;font:inherit;text-align:left;color:var(--photo-texte);background:var(--surface);cursor:pointer;container-type:inline-size}
+.tuile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
+.tuile:hover img,.tuile:focus-visible img{transform:scale(var(--zoom))}
+.tuile:focus-visible{outline:2px solid var(--c-trait);outline-offset:-2px}
+.tuile::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,.58) 0%,rgba(0,0,0,.24) 34%,transparent 60%);transition:background .3s}
+.tuile:hover::after,.tuile:focus-visible::after{background:linear-gradient(to top,rgba(0,0,0,.72) 0%,rgba(0,0,0,.42) 46%,transparent 78%)}
+.tuile__texte{position:absolute;left:clamp(16px,7cqi,26px);right:clamp(16px,7cqi,26px);bottom:clamp(14px,6cqi,22px);z-index:1}
+.tuile__nom{display:block;font-family:var(--serif);font-size:var(--nom);line-height:1.05;letter-spacing:-.012em}
+.tuile__faits{display:flex;flex-wrap:wrap;gap:6px 28px;max-height:0;opacity:0;overflow:hidden;transition:max-height .35s ease,opacity .3s,margin .35s}
+.tuile:hover .tuile__faits,.tuile:focus-visible .tuile__faits{max-height:150px;opacity:1;margin-top:12px}
+.tuile .fait__val{font-size:var(--val)}
+.tuile__mobile{display:none}
+/* cases de texte : l'énoncé de Julien sur papier, comme la bande des chiffres de la Home — la première phrase en serif en haut à gauche, sous « Programme
+   agences » ; la seconde en bas à droite. Le contenu est posé dans la case (position absolue) : sa marge intérieure ne compte pas dans le partage des largeurs. */
+.cas{position:relative;background:var(--surface);container-type:inline-size;overflow:hidden}
+.cas__in{position:absolute;inset:0;padding:24px 26px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.cas--phrase .cas__in{justify-content:flex-end}
+.cas__enonce{font-family:var(--serif);font-weight:400;font-size:clamp(18px,6.6cqi,28px);line-height:1.2;letter-spacing:-.01em;text-wrap:pretty}
+.cas__phrase{font-family:var(--serif);font-size:clamp(18px,6.2cqi,24px);line-height:1.25;letter-spacing:-.005em;text-wrap:pretty}
+/* visionneuse : fond blanc, photo entière (contain) dans un cadre 4:3, flèches de part et d'autre, la ville (ou le projet) puis « surface · usage » (ou
+   le lieu et la surface) et « 1 / n » dessous ;
    « Fermer », Échap, flèches du clavier */
 .visio{position:fixed;inset:0;z-index:100;background:var(--blanc);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 88px 36px}
 .visio[hidden]{display:none}
@@ -315,14 +312,6 @@ a.bloc:hover img{transform:scale(var(--zoom))}
 .visio__fleche[hidden]{display:none}
 .visio__fermer{position:absolute;top:20px;right:28px;background:none;border:0;padding:4px 0;font:500 14px/1 var(--sans);color:var(--c-texte);cursor:pointer}
 body.visio-ouverte{overflow:hidden}
-/* en réserve (bascule 23) : les projets de l'ancien site, sur blanc, en quatre colonnes à filets — nom en serif 24 px, lieu · surface, usage */
-.anciens{display:none}
-.anciens__tete{display:grid;grid-template-columns:7fr 5fr;gap:64px;align-items:end;margin-bottom:32px}
-.anciens__liste{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 32px}
-.ancien{border-top:1px solid var(--filet);padding:16px 0 26px}
-.ancien__nom{font-family:var(--serif);font-size:24px;line-height:1.15;letter-spacing:-.005em}
-.ancien__lieu{font-size:var(--fs-etiquette);color:var(--c-meta);margin-top:4px}
-.ancien__usage{font-size:15px;line-height:1.45;margin-top:8px;max-width:30ch;text-wrap:pretty}
 /* page Engagements (Cowork, 26/09 ; référence validée : design/revue-engagements/propositions/p1.html), sur le container de 1 200 px comme la Home :
    le titre seul, sans sous-titre, en sans léger comme Réalisations ; puis le registre, une rangée par engagement — le verbe en serif à gauche, le texte
    à droite (grille 5/7), un filet au-dessus ; sous « Soutenir », l'œuvre sur sa cimaise */
@@ -407,8 +396,8 @@ html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:4
   .fiche__mosaique,.fiche__rang{gap:10px}
   .fiche__voisins{padding-bottom:44px;gap:16px}
   .fiche__voisin .suivant__nom{font-size:20px}
-  /* vue Réalisations : un bloc par ligne en 4:3, nom 28 px, « Lieu · surface » dessous, faits masqués ; une vignette à 78 % de large et le bord de la suivante,
-     la ville puis la surface puis l'usage ; au doigt, la rangée défile, les photos d'un bien se parcourent dans la visionneuse */
+  /* vue Réalisations : un bloc par ligne en 4:3, nom 28 px, « Lieu · surface » dessous, faits masqués ; la mosaïque en deux colonnes de tuiles 4:5 (l'ordre
+     des rangées, sans trou avant une case de texte), nom 19 px et surface dessous, les cases de texte sur toute la largeur */
   .p2-ouv{padding-top:24px;padding-bottom:22px}
   .alt__rang{height:auto;grid-template-columns:1fr}
   .alt__rang .bloc{aspect-ratio:4/3}
@@ -417,26 +406,21 @@ html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:4
   .bloc__mobile{display:block;font-size:14px;margin-top:6px}
   .alt .bloc::after{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.36) 38%,transparent 64%)}
   .bloc__texte{left:18px;right:18px;bottom:16px}
-  .bloc-agences{margin-top:40px}
-  .bloc-agences__bande{padding:40px 0 36px}
-  .bloc-agences__tete{grid-template-columns:1fr;gap:16px}
-  .enonce{font-size:26px}
-  .bloc-agences__defil{padding-top:28px;padding-bottom:56px}
-  .defil__piste{gap:12px}
-  .defil__piste>li{flex-basis:78%}
-  .defil .bien__piste{overflow-x:hidden;scroll-snap-type:none}
-  .vignette__nom{display:block;font-size:14px;margin-top:8px}
-  .vignette__nom span{display:block}
-  .vignette__usage{font-size:13px}
+  .mos-section{margin-top:40px;padding-bottom:56px}
+  .mos{display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:row dense;gap:10px}
+  .mos__rang{display:contents}
+  .mos .tuile{aspect-ratio:4/5;flex:none}
+  .mos .cas{grid-column:1/-1;aspect-ratio:auto;flex:none}
+  .cas__in{position:static;padding:22px 20px}
+  .tuile__nom{font-size:19px}
+  .tuile__faits{display:none}
+  .tuile__mobile{display:block;font-size:13px;margin-top:4px}
+  .tuile__texte{left:12px;right:12px;bottom:10px}
   .visio{padding:56px 0 24px}
   .visio__cadre,.visio__bas{width:100%}
   .visio__bas{padding:0 var(--gutter);flex-wrap:wrap;gap:4px 12px;font-size:13px}
   .visio__fleche{display:none}
   .visio__fermer{right:var(--gutter)}
-  .anciens__tete{grid-template-columns:1fr;gap:12px;margin-bottom:20px}
-  .anciens__liste{grid-template-columns:1fr 1fr;gap:0 16px}
-  .ancien__nom{font-size:20px}
-  .ancien__usage{font-size:14px}
   /* page Engagements : une colonne par rangée — le verbe, le texte, puis l'œuvre ; la cimaise reste dans les gouttières, l'œuvre prend la largeur du panneau */
   .registre{padding-top:4px}
   .rang{grid-template-columns:1fr;padding:22px 0 40px}
@@ -452,7 +436,7 @@ html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:4
   :root{--bande-haut:36px;--bande-bas:32px}
 }
 @media (prefers-reduced-motion:reduce){
-  .trait::after,.four__name::after,.four__preview img,.carte__lab,.bloc img,.bloc::after,.bloc__faits,.bien__fleche,.lien-texte,.fiche__tuile img,.graph__part,.bar__fill{transition:none}
+  .trait::after,.four__name::after,.four__preview img,.carte__lab,.bloc img,.bloc::after,.bloc__faits,.tuile img,.tuile::after,.tuile__faits,.lien-texte,.fiche__tuile img,.graph__part,.bar__fill{transition:none}
   .graph.a-remplir .graph__part{stroke-dasharray:var(--l) 100}
   .bars.a-remplir .bar__fill{transform:none}
 }
@@ -464,22 +448,7 @@ html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:4
 html[data-graphique="barres"] .bars{display:block}
 html[data-graphique="barres"] .graph--anneau{display:none}
 /* 20 · fiche, titres de chapitre : figée sur « sans » (revue de la fiche, 23/09) : .chapitre__titre et .chapitre__num, plus haut. */
-/* 22 · vue Réalisations, programme agences, fond papier : énoncé seul (défaut, .bloc-agences__bande) / toute la section (papier sur toute la section,
-   puis 32 px de blanc avant le pied de page, 20 au téléphone) */
-html[data-papier="tout"] .bloc-agences{background:var(--surface);margin-bottom:32px}
-html[data-papier="tout"] .bloc-agences__bande{background:none;padding-bottom:44px}
-html[data-papier="tout"] .bloc-agences__defil{padding-top:0;padding-bottom:56px}
-/* 23 · vue Réalisations, bas de page : rien (défaut) / anciens projets (en réserve, à confirmer avec Julien : .anciens, sur blanc, sous la section agences) */
-html[data-bas="anciens"] .anciens{display:block;padding-top:8px;padding-bottom:96px}
-html[data-bas="anciens"][data-papier="tout"] .bloc-agences{margin-bottom:0}
-html[data-bas="anciens"][data-papier="tout"] .anciens{padding-top:88px}
-@media (max-width:640px){
-  html[data-papier="tout"] .bloc-agences{margin-bottom:20px}
-  html[data-papier="tout"] .bloc-agences__bande{padding-bottom:28px}
-  html[data-papier="tout"] .bloc-agences__defil{padding-bottom:40px}
-  html[data-bas="anciens"] .anciens{padding-bottom:64px}
-  html[data-bas="anciens"][data-papier="tout"] .anciens{padding-top:56px}
-}
+/* 22 et 23 · vue Réalisations (fond papier du programme agences, anciens projets) : retirées le 04/10 avec le carrousel et les projets de l'ancien site (lot 2b). */
 
 /* ---------- 7. Mobile, premier écran ---------- */
 @media (max-width:640px){

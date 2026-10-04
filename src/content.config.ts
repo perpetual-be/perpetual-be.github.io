@@ -29,12 +29,13 @@ const pages = defineCollection({
   }),
 });
 
-// Projets : détaillés, programme agences et galerie, tous dans data/projects.json.
+// Projets : détaillés, programme agences et galerie, tous dans data/projects.json. kind project (04/10/2026) : un projet montré parmi les projets de la
+// vue Réalisations, sans fiche pour l'instant (Brosse : son bloc ouvre la visionneuse sur ses photos) ; il passera en detailed le jour où il a sa fiche.
 const projects = defineCollection({
   loader: file('./data/projects.json'),
   schema: z.object({
     name: z.string(),
-    kind: z.enum(['detailed', 'agency', 'gallery']),
+    kind: z.enum(['detailed', 'project', 'agency', 'gallery']),
     location: z.string().optional(),
     // Adresse complète fournie par Julien (tableau du 13/09) ; pas forcément affichée.
     address: z.string().optional(),

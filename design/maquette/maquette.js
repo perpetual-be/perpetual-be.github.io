@@ -1,6 +1,6 @@
 /* Perpetual — maquette du lot 2 : le panneau de bascules, l'état dans l'URL, l'aperçu de la liste des projets (Home), sur les fiches la mosaïque des
-   photos (P6, 26/09), et sur la vue Réalisations la rangée des agences en boucle, les photos de chaque bien et la visionneuse (revue du 26/09, repris de
-   la proposition P2) — la même visionneuse s'ouvre sur les photos de la mosaïque d'une fiche.
+   photos (P6, 26/09), et la visionneuse (revue du 26/09, repris de la proposition P2) : sur la vue Réalisations, elle s'ouvre sur les photos d'un bien de
+   la mosaïque des agences ou de Brosse (lot 2b, 04/10 ; la rangée des agences en boucle est retirée) ; sur une fiche, sur les photos de sa mosaïque.
    L'état (une valeur par bascule) vit dans la query de l'URL (?papier=tout&bas=anciens) ; le hash reste aux ancres.
    Un script en tête de page pose déjà les attributs data-* avant le premier rendu ; ici on dessine le panneau et on tient l'URL à jour. */
 (function () {
@@ -22,10 +22,9 @@
   // agences et 23 bas de page, la V1 en défaut, la V2 en réserve. Page Engagements (26/09) : aucune bascule, 22 et 23 y sont grisées.
   // Lot 2b (30/09, retours de Julien) : 13 graphique reprise — anneau (variante A, retenue par Axel le 01/10) / barres (l'existant, pour le rendez-vous du
   // 7/10). B, A′, C et 13b (vitesse, 1,8 s retenue) retirées le 01/10. Anneau et barres se remplissent à l'arrivée à l'écran, en 1,8 s.
+  // Lot 2b (04/10) : 22 et 23 retirées avec le carrousel des agences et les projets de l'ancien site (la vue Réalisations n'a plus de bascule).
   var BASCULES = [
-    { n: '13', cle: 'graphique', titre: 'Graphique 11 150 m²', groupe: 'Home', valeurs: [['anneau', 'anneau (retenu le 01/10)'], ['barres', 'barres (avant)']], note: 'lot 2b, item 1 : se remplit en 1,8 s à l’arrivée à l’écran (rejoué au changement)', pages: ['home'] },
-    { n: '22', cle: 'papier', titre: 'Programme agences, fond papier', groupe: 'Réalisations', valeurs: [['enonce', 'énoncé seul'], ['tout', 'toute la section']], note: 'toute la section : puis 32 px de blanc avant le pied de page', pages: ['realisations'] },
-    { n: '23', cle: 'bas', titre: 'Bas de page', groupe: 'Réalisations', valeurs: [['rien', 'rien'], ['anciens', 'anciens projets']], note: 'en réserve : les projets de l’ancien site, à confirmer avec Julien', pages: ['realisations'] }
+    { n: '13', cle: 'graphique', titre: 'Graphique 11 150 m²', groupe: 'Home', valeurs: [['anneau', 'anneau (retenu le 01/10)'], ['barres', 'barres (avant)']], note: 'lot 2b, item 1 : se remplit en 1,8 s à l’arrivée à l’écran (rejoué au changement)', pages: ['home'] }
   ];
   var defauts = {};
   BASCULES.forEach(function (b) { defauts[b.cle] = b.valeurs[0][0]; });
@@ -252,12 +251,13 @@
   }).observe(m);
 })();
 
-// ---- vue Réalisations : la rangée des agences, les photos de chaque bien, la visionneuse (repris de la proposition P2, revue du 26/09) ----
-// Seul ajout depuis, la P6 (26/09) : la visionneuse reçoit un album (ses photos, et la ville, la surface et l'usage d'un bien) et s'ouvre aussi sur la
-// mosaïque d'une fiche — le compteur seul, pas de légende (section 4).
+// ---- la visionneuse (repris de la proposition P2, revue du 26/09) : vue Réalisations et fiches ----
+// Elle reçoit un album : ses photos (l) et, pour un bien, la ville, la surface et l'usage — ou une légende toute faite (Brosse) ; sur une fiche, le
+// compteur seul (section 4). Lot 2b (04/10) : la rangée des agences en boucle et les photos parcourables de chaque vignette sont retirées (la mosaïque
+// les remplace) ; la boucle (Boucle) reste, c'est elle qui fait défiler la visionneuse.
 (function(){
   if (!document.querySelector('.visio')) return;
-  var BIENS = window.BIENS, doux = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var BIENS = window.BIENS || [], doux = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   function cloner(el){
     var c = el.cloneNode(true); c.setAttribute('aria-hidden', 'true'); c.setAttribute('data-clone', '');
     c.querySelectorAll('a,button,[tabindex]').forEach(function(x){ x.setAttribute('tabindex', '-1') });
@@ -304,38 +304,15 @@
     self.montrer(0);
   }
 
-  // 1. la rangée des agences (à construire avant les photos : ses clones copient les vignettes telles quelles)
-  var rangee = document.querySelector('.defil__piste'), cpt = document.querySelector('.defil__compteur'), rb;
-  function parVue(){ var c = rangee.children, p = c.length > 1 ? c[1].offsetLeft - c[0].offsetLeft : rangee.clientWidth; return Math.max(1, Math.round((rangee.clientWidth + 24) / p)) }
-  if (rangee) {
-    rb = new Boucle(rangee, function(i){
-      var k = parVue(), n = rb ? rb.n : rangee.children.length, fin = ((i + k - 1) % n) + 1;
-      cpt.textContent = (k > 1 ? (i + 1) + '–' + fin : (i + 1)) + ' / ' + n;
-    });
-    rb.montrer(0);
-    document.querySelector('[data-d-prec]').addEventListener('click', function(e){ e.preventDefault(); rb.aller(-parVue()) });
-    document.querySelector('[data-d-suiv]').addEventListener('click', function(e){ e.preventDefault(); rb.aller(parVue()) });
-    rangee.addEventListener('keydown', function(e){ if (e.target !== rangee) return;
-      if (e.key === 'ArrowRight'){ e.preventDefault(); rb.aller(parVue()) } if (e.key === 'ArrowLeft'){ e.preventDefault(); rb.aller(-parVue()) } });
-  }
-
-  // 2. les photos de chaque bien (originaux et clones de la rangée)
-  document.querySelectorAll('.bien').forEach(function(b){
-    var cptb = b.querySelector('.bien__compteur'), n = +b.getAttribute('data-n');
-    var bb = new Boucle(b.querySelector('.bien__piste'), function(i){ cptb.textContent = (i + 1) + ' / ' + n });
-    b.querySelector('.bien__fleche--g').addEventListener('click', function(e){ e.stopPropagation(); bb.aller(-1) });
-    b.querySelector('.bien__fleche--d').addEventListener('click', function(e){ e.stopPropagation(); bb.aller(1) });
-    b.querySelector('.bien__piste').addEventListener('click', function(){ ouvrir(BIENS[+b.getAttribute('data-bien')], bb.courant) });
-  });
-
-  // 3. la visionneuse, sur un album : ses photos (l) et, pour un bien, la ville, la surface et l'usage (la légende) ; sans ville, le compteur seul
+  // la visionneuse, sur un album : ses photos (l) et, pour un bien, la ville, la surface et l'usage (la légende), ou sa légende toute faite (legende) ;
+  // sans l'une ni l'autre, le compteur seul
   var v = document.querySelector('.visio'), vl = v.querySelector('.visio__legende'), vc = v.querySelector('.visio__compteur'),
       vg = v.querySelector('[data-v-prec]'), vd = v.querySelector('[data-v-suiv]'), vb = null, retour = null;
   function ouvrir(b, depart){
     var n = b.l.length, ancienne = v.querySelector('.visio__piste'), vp = ancienne.cloneNode(false);
     ancienne.replaceWith(vp); retour = document.activeElement;
     vp.innerHTML = b.l.map(function(s){ return '<img src="' + s + '" alt="" decoding="async">' }).join('');
-    vl.innerHTML = b.ville ? '<b>' + b.ville + '</b>' + b.surface + ' · ' + b.usage : '';
+    vl.innerHTML = b.legende || (b.ville ? '<b>' + b.ville + '</b>' + b.surface + ' · ' + b.usage : '');
     vg.hidden = vd.hidden = n < 2;
     v.hidden = false; document.body.classList.add('visio-ouverte');
     vb = new Boucle(vp, function(i){ vc.textContent = n > 1 ? (i + 1) + ' / ' + n : '' });
@@ -343,8 +320,9 @@
     v.querySelector('[data-fermer]').focus();
   }
   function fermer(){ v.hidden = true; document.body.classList.remove('visio-ouverte'); if (retour) retour.focus() }
+  // vue Réalisations : chaque tuile de la mosaïque et le bloc de Brosse (data-ouvrir = leur album dans window.BIENS), depuis la première photo
   document.querySelectorAll('[data-ouvrir]').forEach(function(el){ el.addEventListener('click', function(){ ouvrir(BIENS[+el.getAttribute('data-ouvrir')], 0) }) });
-  // 4. les fiches (P6, 26/09) : chaque tuile de la mosaïque ouvre la visionneuse sur sa photo (<clé>.jpg, data-grande), le compteur seul (« 3 / 10 »)
+  // les fiches (P6, 26/09) : chaque tuile de la mosaïque ouvre la visionneuse sur sa photo (<clé>.jpg, data-grande), le compteur seul (« 3 / 10 »)
   var tuiles = document.querySelectorAll('.fiche__agrandir');
   if (tuiles.length) {
     var album = { l: Array.prototype.map.call(tuiles, function(t){ return t.getAttribute('data-grande') }) };
@@ -363,7 +341,8 @@
 })();
 
 // La visionneuse est modale (aria-modal) : tant qu'elle est ouverte, Tab et Maj+Tab restent dans ses commandes visibles — la page, sous le fond blanc,
-// n'est plus atteignable au clavier. Ajout à la proposition P2, dont le script ci-dessus ne change, depuis, que pour recevoir un album (P6). Vaut aussi sur les fiches.
+// n'est plus atteignable au clavier. Ajout à la proposition P2, dont le script ci-dessus ne change, depuis, que pour recevoir un album (P6) et une légende
+// toute faite (lot 2b). Vaut aussi sur les fiches.
 (function () {
   var v = document.querySelector('.visio');
   if (!v) return;

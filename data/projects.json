@@ -269,8 +269,8 @@
       "bnp-bois-de-villers-02.jpg"
     ],
     "selection": [
-      "bnp-bois-de-villers-02",
-      "bnp-bois-de-villers-01"
+      "bnp-bois-de-villers-01",
+      "bnp-bois-de-villers-02"
     ]
   },
   {
@@ -287,8 +287,8 @@
       "ing-belgrade-02.jpg"
     ],
     "selection": [
-      "ing-belgrade-01",
-      "ing-belgrade-02"
+      "ing-belgrade-02",
+      "ing-belgrade-01"
     ]
   },
   {
@@ -463,6 +463,24 @@
     "selection": [
       "consolation-01",
       "consolation-02"
+    ]
+  },
+  {
+    "id": "brosse",
+    "name": "Brosse",
+    "kind": "project",
+    "location": "Forest",
+    "surface": "800 m²",
+    "selection": [
+      "brosse-31",
+      "brosse-16",
+      "brosse-29",
+      "brosse-27",
+      "brosse-23",
+      "brosse-61",
+      "brosse-19",
+      "brosse-22",
+      "brosse-70"
     ]
   }
 ]

@@ -8,7 +8,7 @@ import ProjectPhoto from '../../components/ProjectPhoto.astro';
 import { getCollection } from 'astro:content';
 import { clesPhotos, fichierSource } from '../../lib/photos';
 
-const ORDRE: Record<string, number> = { detailed: 0, agency: 1, gallery: 2 };
+const ORDRE: Record<string, number> = { detailed: 0, project: 1, agency: 2, gallery: 3 };
 const projets = (await getCollection('projects')).sort((a, b) =>
   a.data.kind !== b.data.kind ? ORDRE[a.data.kind] - ORDRE[b.data.kind] : (a.data.order ?? 0) - (b.data.order ?? 0),
 );

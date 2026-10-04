@@ -91,32 +91,40 @@ const four = [
   { id: 'community', line: 'Uccle · 600 m² · Quatorze chez-soi autour d’espaces partagés', blocFocal: '50% 50%', lieu: 'Uccle', surface: '14 unités', usage: 'Co-living' },
 ].map(f => ({ ...f, bloc: photoProjet(f.id), href: pageFiche(f.id) }));
 for (const p of DETAILLES) if (!four.some(f => f.id === p.id)) throw new Error(`build.mjs : ${p.id} absent de four (ligne, blocFocal, lieu, surface, usage)`);
-// Vue Réalisations : les quatre blocs en deux rangées, 7fr / 5fr puis 5fr / 7fr (.alt__rang--a, .alt__rang--b).
-const rangees = [[['community', 7], ['ateliers-118', 5]], [['the-bank', 5], ['data-box', 7]]];
-// Le programme agences, vue Réalisations : la rangée des seize biens, kind agency dans l'ordre puis kind gallery dans l'ordre (data/projects.json).
-// La ville est le nom d'une agence, le lieu d'un bien de la galerie ; ses photos sont son champ selection (clés <id>-NN, dans l'ordre d'affichage,
-// la première sur la vignette au repos), <id>-01 à défaut.
-const parOrdre = kind => projects.filter(p => p.kind === kind).sort((a, b) => a.order - b.order);
-const biens = [...parOrdre('agency'), ...parOrdre('gallery')].map(p => {
-  const photos = p.selection && p.selection.length ? p.selection : [`${p.id}-01`];
+// Vue Réalisations : les projets en 2-2-1 (choix d'Axel, 04/10) — 7fr / 5fr, puis 5fr / 7fr, puis Brosse seule (.alt__rang--a, --b, --seul).
+const rangees = [['a', [['community', 7], ['ateliers-118', 5]]], ['b', [['the-bank', 5], ['data-box', 7]]], ['seul', [['brosse', 12]]]];
+// Le programme agences, vue Réalisations (lot 2b, 04/10/2026 — retours de Julien du 30/09, choix d'Axel ; page de travail : design/revue-mosaique/) : la
+// mosaïque des seize biens (kind agency et gallery), en rangées de 4 et de 3 cases (4-3-4-3-4), chaque photo au format entier — la largeur de sa case suit le
+// format du fichier, les cases d'une rangée ont la même hauteur, rien n'est recadré ni agrandi. L'énoncé de Julien en deux cases de texte : la première phrase
+// en haut à gauche (sous « Programme agences »), la seconde en bas à droite. Les photos les plus solides dans les rangées de 3 (cases plus grandes), les plus
+// faibles et les trois photos en hauteur (Pont-à-Celles, Perwez, Schaerbeek) dans les rangées de 4 ; les deux couloirs Bancontact en photo n° 1 (Bois-de-Villers,
+// Belgrade : l'ordre de leur champ selection) ne se touchent pas. Une case : l'id d'un bien, ou cas:debut / cas:fin ; CAS_R, le format des cases de texte.
+const MOSAIQUE = [
+  ['cas:debut', 'bnp-braine-le-comte', 'bnp-pont-a-celles', 'bnp-jambes'],
+  ['belfius-braine-l-alleud', 'ing-haaltert', 'belfius-mettet'],
+  ['bnp-bois-de-villers', 'ing-tervuren', 'perwez', 'ing-welkenraedt'],
+  ['wayez-27', 'ing-landen', 'waremme'],
+  ['gilly', 'consolation', 'ing-belgrade', 'cas:fin'],
+];
+const CAS_R = 1.15;
+{
+  const ids = projects.filter(p => p.kind === 'agency' || p.kind === 'gallery').map(p => p.id), dans = MOSAIQUE.flat().filter(x => !x.startsWith('cas:'));
+  const manque = ids.filter(id => !dans.includes(id)), inconnus = dans.filter(id => !ids.includes(id)), doubles = dans.filter((id, i) => dans.indexOf(id) !== i);
+  if (manque.length || inconnus.length || doubles.length) throw new Error(`build.mjs, MOSAIQUE : chaque bien une fois — manquent ${manque.join(', ') || '—'}, inconnus ${inconnus.join(', ') || '—'}, en double ${doubles.join(', ') || '—'}`);
+}
+// Un bien : la ville (le nom d'une agence, le lieu d'un bien de la galerie), la surface, l'usage et ses photos — son champ selection (clés <id>-NN, dans
+// l'ordre ; la première sur la tuile), <id>-01 à défaut.
+const bienDe = id => {
+  const p = byId[id], photos = p.selection && p.selection.length ? p.selection : [`${p.id}-01`];
   const etrangere = photos.find(k => !k.startsWith(p.id + '-'));
   if (etrangere) throw new Error(`data/projects.json : ${p.id}, selection — ${etrangere} n'est pas une photo de ce bien`);
-  return { ville: p.kind === 'agency' ? p.name : p.location, surface: p.surface, usage: p.use, photos };
-});
-// Réserve, à confirmer avec Julien : les projets de l'ancien site (bascule 23, « anciens projets » ; masqués par défaut).
-const ANCIENS = [
-  { nom: 'Serhieux', lieu: 'Seraing', surface: '7 200 m²', usage: 'Valorisation et vente d’un bien à un organisme public' },
-  { nom: 'Le petit Julien', lieu: 'Bruxelles', surface: '90 m²', usage: 'Restauration d’un immeuble classé en micro-hôtel de quatre chambres' },
-  { nom: 'Brosse', lieu: 'Forest', surface: '800 m²', usage: 'Rafraîchissement et division d’un ancien atelier de brosses' },
-  { nom: 'Robin-sur-les-Bois', lieu: 'Saint-Georges-sur-Meuse', surface: '5 200 m²', usage: 'Conversion d’un établissement d’hébergement et construction de logements' },
-  { nom: 'Stéphanie', lieu: 'Bruxelles', surface: '250 m²', usage: 'Démolition et reconstruction d’un immeuble de logements collectifs' },
-  { nom: 'Omalius', lieu: 'Méan', surface: '3 200 m²', usage: 'Transformation en logements à loyers modérés' },
-  { nom: 'Ixelles', lieu: 'Ixelles', surface: '500 m²', usage: 'Deux maisons unifamiliales entièrement restaurées' },
-  { nom: 'Batar', lieu: 'Bruxelles', surface: '45 m²', usage: 'Ouverture d’un bar à pistolets' },
-  { nom: 'Maître', lieu: 'Forest', surface: '500 m²', usage: 'Réorganisation d’une maison unifamiliale en co-living' },
-  { nom: 'Meuhh', lieu: 'Méan', surface: '3,2 ha', usage: 'Urbanisation d’un ensemble de terrains à bâtir' },
-  { nom: 'Genval', lieu: 'Genval', surface: '180 m²', usage: 'Rénovation complète d’une maison unifamiliale dans un style contemporain' },
-];
+  return { id, ville: p.kind === 'agency' ? p.name : p.location, surface: p.surface, usage: p.use, photos };
+};
+// Projets sans fiche (kind project) : Brosse (ancien site, repris le 30/09). Choix d'Axel du 04/10 : la rangée seule, en bas des projets (2-2-1), sur toute
+// la largeur ; ses photos, son champ selection dans son ordre ; la n° 1, la 31, cadrée à 40 % de sa hauteur. Son bloc ouvre la visionneuse. Faits provisoires
+// (lot 3) : son usage aujourd'hui est à demander à Julien ; en attendant, « Projet » et l'intitulé du site 2020.
+const SANS_FICHE = { brosse: { blocFocal: '50% 40%', lieu: 'Forest', surface: '800 m²', projet: 'Rafraîchissement et division d’un ancien atelier de brosses' } };
+for (const p of projects.filter(x => x.kind === 'project')) if (!SANS_FICHE[p.id] || !(p.selection || []).length) throw new Error(`build.mjs : ${p.id} (kind project) absent de SANS_FICHE, ou sans selection`);
 // Les quatre fiches (P6, Cowork, 26/09 ; références validées : design/revue-fiche/propositions/p6.html, p6-ateliers-118.html, p6-data-box.html,
 // p6-community.html), un seul gabarit. Par projet (valeurs provisoires, lot 3) : la région (eyebrow), les trois infos — lieu, surface, usage —, le cadre
 // de la photo de tête et son point focal (object-position, posé en style sur l'<img>). Cadre paysage : 50 % de la page, format 2100 / 1694 ; carré :
@@ -217,10 +225,7 @@ function photoImgPetit(key, cadre, sizes, attrs = '', facteur = null) {
 }
 // Largeur affichée : le cadre de l'aperçu de la liste = 5/12 du container moins la gouttière de 64 px (440 px à partir de 1280 px de fenêtre ; masqué sous
 // 641 px) ; l'<img> qu'il contient est 1 / largeur de son cadre fois plus large (apercuImg).
-// Vue Réalisations, sur la grille large (1600 px, gouttières comprises) : vignette = le quart de la rangée moins trois écarts de 24 px (362 px à partir
-// de 1600 ; 78 % de la rangée sur téléphone).
 const SIZES_APERCU = [['(max-width:1280px)', '(100vw - 144px) * 5 / 12'], ['', '440px']];
-const SIZES_VIGNETTE = [['(max-width:640px)', '(100vw - 40px) * .78'], ['(max-width:1600px)', '(100vw - 152px) / 4'], ['', '362px']];
 // Bloc de la vue Réalisations : sa largeur suit la fenêtre (7/12 ou 5/12 de la rangée moins l'écart de 14 px, 879 et 628 px à partir de 1600 px) et sa
 // hauteur aussi (clamp(340px, 100vh − 262px, 540px)) : son cadre change de forme, un facteur fixe ne suffit pas. En object-fit: cover, la photo a besoin
 // de la plus grande des deux largeurs, celle du cadre ou la hauteur × son propre ratio ; sur téléphone, un cadre 4:3 pleine largeur.
@@ -517,58 +522,67 @@ ${visio('Photos du projet')}`;
 }
 
 // ---------- vue Réalisations ----------
-// Revue du 26/09, proposition P2 retenue (design/revue-realisations/propositions/p2-defilement.html), sur la grille large (.large, 1600 px gouttières
-// comprises) : l'ouverture — le titre en sans léger, puis la phrase du subtitle de content/realisations.md (provisoire, lot 3), sur une ligne —
-// → les quatre projets en deux rangées de blocs photo (nom en serif sur la photo, Lieu / Surface / Usage au survol et au focus) ; depuis la P6 (26/09), les
-// quatre blocs sont des liens vers leur fiche et gardent leur id (#ateliers-118, #the-bank, #data-box, #community) → le programme agences : l'énoncé sur
-// papier (eyebrow, première phrase en serif à gauche, la suite à droite), puis la rangée des seize biens, quatre visibles, en boucle, chacun avec ses photos
-// et la visionneuse (maquette.js, qui lit window.BIENS : ville, surface, usage et photos 1800 px, déjà échappés pour innerHTML) → en réserve (bascule 23),
-// les projets de l'ancien site → pied de page. La piste des photos d'un bien a un tabindex="-1" : Chromium rend focalisable un conteneur qui défile, et ses
-// clones (aria-hidden) seraient sinon autant d'arrêts de tabulation invisibles ; au clavier, les photos se parcourent avec les flèches du bien.
+// P2 (revue du 26/09), puis lot 2b (04/10/2026 : retours de Julien du 30/09, choix d'Axel ; page de travail design/revue-mosaique/), sur la grille large :
+// l'ouverture — le titre en sans léger, la phrase du subtitle de content/realisations.md (provisoire, lot 3), sur une ligne — → les projets en 2-2-1 : les
+// quatre projets à fiche (blocs-liens, qui gardent leur id), puis Brosse seule sur toute la largeur (sans fiche : un bouton qui ouvre la visionneuse) ; nom
+// en serif blanc sur la photo, faits au survol et au focus, zoom 1,035 → le programme agences : la mosaïque 4-3-4-3-4 (MOSAIQUE), photos au format entier,
+// l'énoncé dans deux cases de texte ; chaque tuile, un bouton qui ouvre la visionneuse sur les photos du bien, avec le même survol que les blocs (nom sur la
+// photo, faits, zoom) → pied de page. La visionneuse (maquette.js) lit window.BIENS : un album par bouton — la ville, la surface et l'usage d'un bien, ou
+// une légende toute faite (Brosse), et les photos 1800 px —, déjà échappé pour innerHTML. Le carrousel des agences et les projets de l'ancien site (bascules 22
+// et 23) sont retirés.
 function realisationsPage() {
   const rmd = frontmatter(read('content/realisations.md'));
   const phrase = (rmd.fm.match(/subtitle:\s*(.+)/) || [])[1];
   const fait = (etiquette, valeur) => `<span><span class="fait__et">${etiquette}</span><span class="fait__val">${esc(valeur)}</span></span>`;
-  const bloc = ([id, fr]) => {
+  const grande = c => fs.existsSync(path.join(REPO, 'design/directions/img', `${c}.jpg`)) ? `${c}.jpg` : `${c}-s.jpg`;
+  const albums = [];
+  // un lien vers sa fiche : ses faits s'affichent au survol comme au focus clavier, et sa photo zoome (photo cliquable)
+  const blocLien = (id, fr) => {
     const f = four.find(x => x.id === id);
     const contenu = photoImgPetit(f.bloc, null, sizesBloc(f.bloc, fr), ` style="object-position:${f.blocFocal}"`)
       + `<span class="bloc__texte"><span class="bloc__nom">${esc(byId[id].name)}</span><span class="bloc__faits">${fait('Lieu', f.lieu)}${fait('Surface', f.surface)}${fait('Usage', f.usage)}</span><span class="bloc__mobile">${esc(f.lieu)} · ${esc(f.surface)}</span></span>`;
-    // un lien vers sa fiche : ses faits s'affichent au survol comme au focus clavier, et sa photo zoome (photo cliquable)
     return `<a class="bloc" id="${id}" href="${f.href}">${contenu}</a>`;
   };
-  const rangeesHtml = rangees.map((r, i) => `<div class="alt__rang alt__rang--${'ab'[i]}">${r.map(bloc).join('')}</div>`).join('\n  ');
-  const vignettes = biens.map((b, k) => `<li><div class="vignette__photo"><div class="bien" data-bien="${k}" data-n="${b.photos.length}"><div class="bien__piste" tabindex="-1">${b.photos.map(c => photoImgPetit(c, 3 / 2, SIZES_VIGNETTE, ' loading="lazy"')).join('')}</div>`
-    + `<span class="bien__compteur" aria-hidden="true">1 / ${b.photos.length}</span><button type="button" class="bien__fleche bien__fleche--g" aria-label="Photo précédente">${FLECHE_G}</button><button type="button" class="bien__fleche bien__fleche--d" aria-label="Photo suivante">${FLECHE_D}</button></div></div>`
-    + `<p class="vignette__nom">${esc(b.ville)}<span>${esc(b.surface)}</span></p><p class="vignette__usage">${esc(b.usage)}</p></li>`).join('\n      ');
-  const grande = c => fs.existsSync(path.join(REPO, 'design/directions/img', `${c}.jpg`)) ? `${c}.jpg` : `${c}-s.jpg`;
-  const BIENS = biens.map(b => ({ ville: esc(b.ville), surface: esc(b.surface), usage: esc(b.usage), l: b.photos.map(c => `${IMG}/${grande(c)}`) }));
-  const anciens = ANCIENS.map(a => `<li class="ancien"><p class="ancien__nom">${esc(a.nom)}</p><p class="ancien__lieu">${esc(a.lieu)} · ${esc(a.surface)}</p><p class="ancien__usage">${esc(a.usage)}</p></li>`).join('\n    ');
+  // sans fiche : le même bloc, en bouton qui ouvre la visionneuse ; sur toute la largeur, la version 2 362 px (<clé>-l.jpg, la taille de l'original) s'ajoute au srcset
+  const blocSansFiche = (id, fr) => {
+    const p = byId[id], f = SANS_FICHE[id], k = albums.length, cle = p.selection[0];
+    albums.push({ legende: `<b>${esc(p.name)}</b>${esc(f.lieu)} · ${esc(f.surface)}`, l: p.selection.map(c => `${IMG}/${grande(c)}`) });
+    let img = photoImgPetit(cle, null, sizesBloc(cle, fr), ` style="object-position:${f.blocFocal}"`);
+    const l = path.join(REPO, 'design/directions/img', `${cle}-l.jpg`);
+    if (fs.existsSync(l)) img = img.replace(/ srcset="([^"]*)"/, (m, v) => ` srcset="${v}, ${IMG}/${cle}-l.jpg ${jpegSize(l).width}w"`);
+    return `<button type="button" class="bloc bloc--album" id="${id}" data-ouvrir="${k}">${img}`
+      + `<span class="bloc__texte"><span class="bloc__nom">${esc(p.name)}</span><span class="bloc__faits">${fait('Lieu', f.lieu)}${fait('Surface', f.surface)}<span class="provisoire" title="intitulé du site 2020, provisoire (lot 3)"><span class="fait__et">Projet</span><span class="fait__val">${esc(f.projet)}</span></span></span><span class="bloc__mobile">${esc(f.lieu)} · ${esc(f.surface)}</span></span></button>`;
+  };
+  const rangeesHtml = rangees.map(([cls, blocs]) => `<div class="alt__rang alt__rang--${cls}">${blocs.map(([id, fr]) => SANS_FICHE[id] ? blocSansFiche(id, fr) : blocLien(id, fr)).join('')}</div>`).join('\n  ');
+  // la mosaïque : par rangée, la part de chaque case (son format ÷ la somme des formats de la rangée) donne sa largeur, et le sizes de sa photo (sur
+  // téléphone, deux colonnes de tuiles 4:5, la photo recadrée : sa largeur × max(1, format ÷ 0,8))
+  const mosaique = MOSAIQUE.map(rang => {
+    const cases = rang.map(x => x.startsWith('cas:') ? { cas: x.slice(4), r: CAS_R } : (() => { const b = bienDe(x), [s] = photoSourcesPetit(b.photos[0]); return { b, r: s.width / s.height }; })());
+    const somme = cases.reduce((t, c) => t + c.r, 0), ecarts = (cases.length - 1) * 14;
+    const html = cases.map(c => {
+      if (c.cas === 'debut') return `<div class="cas cas--enonce" style="--r:${CAS_R}"><div class="cas__in"><p class="eyebrow eyebrow--sans-marge">Programme agences</p><h2 class="cas__enonce">${enonce}</h2></div></div>`;
+      if (c.cas === 'fin') return `<div class="cas cas--phrase" style="--r:${CAS_R}"><div class="cas__in"><p class="cas__phrase">${enonceSuite}</p></div></div>`;
+      const b = c.b, k = albums.length, n = b.photos.length, tel = Math.max(1, c.r / 0.8);
+      albums.push({ ville: esc(b.ville), surface: esc(b.surface), usage: esc(b.usage), l: b.photos.map(x => `${IMG}/${grande(x)}`) });
+      const img = photoImgPetit(b.photos[0], null, [['(max-width:640px)', `(100vw - 50px) / 2 * ${tel.toFixed(3)}`], ['', `(min(100vw, 1600px) - ${80 + ecarts}px) * ${(c.r / somme).toFixed(4)}`]], ' loading="lazy"');
+      return `<button type="button" class="tuile" id="${b.id}" style="--r:${c.r.toFixed(3)}" data-ouvrir="${k}" aria-label="${esc(b.ville)}, ${esc(b.surface)}, ${esc(b.usage)} — ${n} photo${n > 1 ? 's' : ''}">${img}`
+        + `<span class="tuile__texte" aria-hidden="true"><span class="tuile__nom">${esc(b.ville)}</span><span class="tuile__faits">${fait('Surface', b.surface)}${fait('Usage', b.usage)}</span><span class="tuile__mobile">${esc(b.surface)}</span></span></button>`;
+    }).join('');
+    return `<div class="mos__rang mos__rang--${cases.length}">${html}</div>`;
+  }).join('\n    ');
   return `<div class="large p2-ouv">
   <h1 class="page__titre">${esc(rmd.fm.match(/title:\s*(.+)/)[1].trim())}</h1>${phrase ? `\n  <p class="ouv__texte provisoire" title="texte provisoire, lot 3">${esc(phrase.trim())}</p>` : ''}
 </div>
-<section class="large alt" id="projets" aria-label="Quatre projets">
+<section class="large alt" id="projets" aria-label="Projets">
   ${rangeesHtml}
 </section>
-<section class="bloc-agences" id="agences">
-  <div class="bloc-agences__bande"><div class="large bloc-agences__tete">
-    <div><p class="eyebrow eyebrow--sans-marge">Programme agences</p><h2 class="enonce">${enonce}</h2></div>
-    <p class="ouv__texte">${enonceSuite}</p>
-  </div></div>
-  <div class="large bloc-agences__defil"><div class="defil">
-    <ul class="defil__piste" tabindex="0" aria-label="${biens.length} agences">
-      ${vignettes}
-    </ul>
-    <div class="defil__nav"><span class="defil__compteur">1–4 / ${biens.length}</span><span class="defil__fleches"><a href="#" class="trait" data-d-prec aria-label="Agences précédentes">←</a><a href="#" class="trait" data-d-suiv aria-label="Agences suivantes">→</a></span></div>
-  </div></div>
+<section class="large mos-section" id="agences" aria-label="Programme agences">
+  <div class="mos">
+    ${mosaique}
+  </div>
 </section>
-<section class="large anciens" id="autres" aria-label="Autres réalisations">
-  <div class="anciens__tete"><div><p class="eyebrow eyebrow--sans-marge">Autres réalisations</p><h2 class="enonce provisoire" title="intitulé provisoire">Et, depuis 2002, des projets de toutes tailles.</h2></div></div>
-  <ul class="anciens__liste">
-    ${anciens}
-  </ul>
-</section>
-${visio('Photos du bien')}
-<script>window.BIENS=${JSON.stringify(BIENS)};</script>`;
+${visio('Photos')}
+<script>window.BIENS=${JSON.stringify(albums)};</script>`;
 }
 
 // ---------- page Engagements ----------
