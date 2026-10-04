@@ -1,0 +1,68 @@
+/* Lot 2b, items 10 et 11 (Cowork, 04/10/2026) — mosaïque des agences, trois options. Page de travail : se charge après ../../maquette/maquette.css
+   et n'emploie que ses jetons. Tuiles dans le style des blocs des 4 projets (.bloc) : photo en cover, nom en serif blanc, faits au survol et au focus,
+   zoom 1,035 (ce sont des photos cliquables : elles ouvrent la visionneuse). */
+
+/* hauteurs de rangée : réglées pour 1 521 px de large (écran d'Axel), proportionnelles à la largeur, plafonnées à la grille de 1 600 px */
+:root{--h-a:clamp(220px,19vw,306px);--h-b-haut:clamp(260px,25vw,400px);--h-b-bas:clamp(170px,15.1vw,242px);--h-c:clamp(240px,21.7vw,348px)}
+.h-a{height:var(--h-a)}.h-b-haut{height:var(--h-b-haut)}.h-b-bas{height:var(--h-b-bas)}.h-c{height:var(--h-c)}
+/* nom et faits : une taille par rangée (pas par tuile), comme les 38 px des 4 projets ; plus grand dans les rangées hautes */
+.h-a{--nom:clamp(19px,1.6vw,25px);--val:clamp(15px,1.15vw,18px)}
+.h-b-haut{--nom:clamp(22px,2vw,31px);--val:clamp(15px,1.3vw,20px)}
+.h-b-bas{--nom:clamp(18px,1.45vw,23px);--val:clamp(14px,1.05vw,17px)}
+.h-c{--nom:clamp(22px,1.95vw,30px);--val:clamp(15px,1.3vw,20px)}
+
+.mos-section{margin-top:56px;padding-bottom:88px}
+.mos{display:none;gap:14px}
+html[data-option="a"] .mos[data-option="a"],html[data-option="b"] .mos[data-option="b"],html[data-option="c"] .mos[data-option="c"]{display:grid}
+.mos__rang{display:grid;gap:14px}
+
+/* tuile = un bien */
+.tuile{position:relative;display:block;overflow:hidden;width:100%;height:100%;padding:0;border:0;font:inherit;text-align:left;color:var(--photo-texte);background:var(--surface);cursor:pointer;container-type:inline-size}
+.tuile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease;display:none}
+html[data-photo="actuelles"] .tuile img[data-pour~="actuelles"],html[data-photo="julien"] .tuile img[data-pour~="julien"],html[data-photo="plus"] .tuile img[data-pour~="plus"]{display:block}
+.tuile:hover img,.tuile:focus-visible img{transform:scale(var(--zoom))}
+.tuile::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,.58) 0%,rgba(0,0,0,.24) 34%,transparent 60%);transition:background .3s}
+.tuile:hover::after,.tuile:focus-visible::after{background:linear-gradient(to top,rgba(0,0,0,.72) 0%,rgba(0,0,0,.42) 46%,transparent 78%)}
+.tuile:focus-visible{outline:2px solid var(--or-fonce);outline-offset:3px}
+.tuile__texte{position:absolute;left:clamp(16px,7cqi,26px);right:clamp(16px,7cqi,26px);bottom:clamp(14px,6cqi,22px);z-index:1}
+.tuile__nom{display:block;font-family:var(--serif);font-size:var(--nom);line-height:1.05;letter-spacing:-.012em}
+.tuile__faits{display:flex;flex-wrap:wrap;gap:6px 28px;max-height:0;opacity:0;overflow:hidden;transition:max-height .35s ease,opacity .3s,margin .35s}
+.tuile:hover .tuile__faits,.tuile:focus-visible .tuile__faits{max-height:150px;opacity:1;margin-top:12px}
+.tuile .fait__val{font-size:var(--val)}
+.tuile__mobile{display:none}
+.tuile__compte{position:absolute;top:12px;right:14px;z-index:1;font-size:12px;color:#fff;opacity:0;transition:opacity .3s}
+.tuile::before{content:"";position:absolute;top:0;right:0;width:150px;height:70px;z-index:1;pointer-events:none;background:radial-gradient(ellipse at top right,rgba(0,0,0,.42),transparent 70%);opacity:0;transition:opacity .3s}   /* léger voile dans le coin, comme le compteur des vignettes */
+.tuile:hover .tuile__compte,.tuile:focus-visible .tuile__compte,.tuile:hover::before,.tuile:focus-visible::before{opacity:1}
+
+/* cases de texte : sur papier, comme la bande des chiffres de la Home ; textes provisoires (lot 3) */
+.cas{background:var(--surface);padding:24px 26px;display:flex;flex-direction:column;justify-content:space-between;container-type:inline-size;min-width:0}
+.cas__enonce{font-family:var(--serif);font-weight:400;font-size:clamp(19px,7.6cqi,30px);line-height:1.2;letter-spacing:-.01em;text-wrap:pretty}
+.cas__suite{font-size:15px;line-height:1.5;margin-top:14px;max-width:44ch;text-wrap:pretty}
+.cas--chiffre,.cas--phrase{justify-content:flex-end}
+.cas--chiffre .stat__value{font-size:clamp(44px,20cqi,58px)}
+.cas__phrase{font-family:var(--serif);font-size:clamp(18px,6.6cqi,24px);line-height:1.25;letter-spacing:-.005em;text-wrap:pretty}
+
+/* panneau de la page de travail */
+.mo-panneau{position:fixed;left:16px;bottom:16px;z-index:60;background:#fff;border:1px solid var(--filet);padding:12px 16px 12px;font-size:13px;line-height:1.5;max-width:330px}
+.mo-panneau__titre{font-weight:500;margin-bottom:6px}
+.mo-panneau fieldset{border:0;margin:0 0 6px}
+.mo-panneau legend{color:var(--c-meta);font-size:12px}
+.mo-panneau label{display:block;cursor:pointer}
+.mo-panneau__note{color:var(--c-meta);font-size:12px;line-height:1.4}
+html[data-panneau="off"] .mo-panneau,body.visio-ouverte .mo-panneau{display:none}
+
+/* téléphone : les trois options deviennent la même grille de deux colonnes (l'ordre suit les rangées), les textes sur toute la largeur */
+@media (max-width:640px){
+  .mos-section{margin-top:40px;padding-bottom:56px}
+  html[data-option] .mos{grid-template-columns:1fr 1fr;grid-auto-flow:row dense;gap:10px}   /* dense : pas de trou avant une case de texte */
+  .mos__rang{display:contents}
+  .tuile{aspect-ratio:4/5;height:auto}
+  .cas{grid-column:1/-1;padding:22px 20px}
+  .cas--chiffre{flex-direction:row}
+  .tuile__nom{font-size:19px}
+  .tuile__faits,.tuile__compte,.tuile::before{display:none}
+  .tuile__mobile{display:block;font-size:13px;margin-top:4px}
+  .tuile__texte{left:12px;right:12px;bottom:10px}
+  .mo-panneau{left:8px;right:8px;bottom:8px;max-width:none}
+}
+@media (prefers-reduced-motion:reduce){.tuile img,.tuile::after,.tuile__faits,.tuile__compte{transition:none}}
