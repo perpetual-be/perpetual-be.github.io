@@ -21,9 +21,12 @@ portfolio:
       percent: 34
     - label: Commerce
       percent: 25
+carte:
+  title: "Chez nous, de Haaltert à Welkenraedt."
+  text: "Depuis 2002, nous transformons des bâtiments de toutes tailles, de l’agence bancaire à l’ancienne usine. Nous partons de ce qui est là et cherchons ce que le lieu peut encore apporter autour de lui."
 ---
 
-<!-- Texte de Julien (PDF v2 du 10/09/2026). Accroche et signature de Julien conservées ; les deux paragraphes ont été réécrits par Axel le 30/09/2026 (lot 3). Les commentaires sont des indications de mise en page, non publiées. -->
+<!-- Texte de Julien (PDF v2 du 10/09/2026). Accroche et signature de Julien conservées ; les deux paragraphes ont été réécrits par Axel le 30/09/2026 (lot 3). Titre et paragraphe de la carte (section « Réalisations », en-tête `carte`) écrits par Axel le 04/10/2026 (lot 2b, items 3 et 14) : titre sans nombre, à retoucher ici si un projet arrive plus à l’ouest que Haaltert ou plus à l’est que Welkenraedt ; le paragraphe parle de tous les projets, pas du seul programme agences (qui reste sur Réalisations). Les commentaires sont des indications de mise en page, non publiées. -->
 
 # Le trait d’union entre les idées et le capital.
 

@@ -1,18 +1,18 @@
 ---
 // Section « Réalisations » de la Home (lot 4, 01/10/2026) : la carte des réalisations (data/carte/, src/lib/carte.ts) avec le texte à droite — mêmes
-// balises et classes que autres() de design/maquette/src/build.mjs. L'eyebrow est le libellé de l'entrée /realisations de data/site.json ; le titre est
-// calculé (titreCarte) ; le paragraphe est celui du programme agences (content/realisations.md), inséré tel quel comme build.mjs.
+// balises et classes que autres() de design/maquette/src/build.mjs. L'eyebrow est le libellé de l'entrée /realisations de data/site.json ; le titre et le
+// paragraphe viennent de l'en-tête carte de content/home.md (lot 2b, 04/10/2026 : titre sans nombre, paragraphe propre à la Home), insérés tels quels.
 import site from '../../../data/site.json';
-import { carteSvg, titreCarte } from '../../lib/carte';
+import { carteSvg } from '../../lib/carte';
 
 interface Props {
-  agences: string;
+  titre: string;
+  texte: string;
 }
 
-const { agences } = Astro.props;
+const { titre, texte } = Astro.props;
 const realisations = site.nav.find((n) => n.href === '/realisations');
 if (!realisations) throw new Error('data/site.json : entrée de navigation /realisations introuvable');
-const titre = await titreCarte();
 ---
 
 <section class="section section--autres" id="realisations">
@@ -22,7 +22,7 @@ const titre = await titreCarte();
     <div class="carte__fig" set:html={carteSvg()} />
     <div class="carte__texte">
       <h2 class="h2 h2--serif">{titre}</h2>
-      <p set:html={agences} />
+      <p set:html={texte} />
       <a class="autres__lien trait" href="/realisations">Toutes les réalisations →</a>
     </div>
   </div>

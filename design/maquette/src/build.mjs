@@ -6,7 +6,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { enLettres, capitale } from './nombres.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(HERE, '..');            // design/maquette/
@@ -54,6 +53,14 @@ const portfolio = {
   title: (homeMd.fm.match(/portfolio:\s*\n\s+title:\s*(.+)/) || [])[1].trim(),
   items: [...homeMd.fm.matchAll(/-\s+label:\s*(.+)\n\s+percent:\s*(\d+)/g)].map(x => ({ label: x[1].trim(), percent: Number(x[2]) })),
 };
+// Section Réalisations de la Home (la carte) : titre et paragraphe écrits dans l'en-tête carte de content/home.md (lot 2b, 04/10 : plus de nombre
+// calculé dans le titre, et un paragraphe propre à la Home — le programme agences reste sur Réalisations). Guillemets du YAML retirés.
+const deq = v => (v || '').trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
+const carte = {
+  title: deq((homeMd.fm.match(/\ncarte:\s*\n\s+title:\s*(.+)/) || [])[1]),
+  text: deq((homeMd.fm.match(/\ncarte:\s*\n\s+title:.*\n\s+text:\s*(.+)/) || [])[1]),
+};
+if (!carte.title || !carte.text) throw new Error('content/home.md : carte (title, text) manquante dans l’en-tête');
 const homeBlocks = blocks(homeMd.body);
 const home = {
   h1: homeBlocks.find(b => b.startsWith('# ')).slice(2).trim(),
@@ -62,7 +69,7 @@ const home = {
 };
 const collectifBlocks = blocks(frontmatter(read('content/collectif.md')).body);
 const collectif = { paragraphs: collectifBlocks.slice(0, -1), chute: collectifBlocks[collectifBlocks.length - 1] };
-// Section Réalisations : le paragraphe est celui du programme agences (content/realisations.md), tel quel.
+// Programme agences (content/realisations.md), tel quel : l'énoncé de la vue Réalisations (jusqu'au 04/10, aussi le paragraphe de la carte de la Home).
 const realisationsBlocks = blocks(frontmatter(read('content/realisations.md')).body);
 const agences = realisationsBlocks[realisationsBlocks.indexOf('## Le programme agences') + 1];
 if (!agences || agences.startsWith('#')) throw new Error('content/realisations.md : paragraphe du programme agences introuvable');
@@ -422,17 +429,8 @@ function carteSvg() {
 
 // Section « Réalisations » de la Home (30/09 : la liste des 4 est retirée, la carte reprend l'intitulé, qui est le libellé de la navigation — data/site.json ;
 // « En Belgique », du 28/09, évitait le doublon avec la liste) : la carte, avec le texte à droite (figée le 23/09 ; la bande de vignettes et « aucune » sont retirées).
-// Titre de la carte, calculé (lot 3, 30/09 : le nombre ne doit pas être retouché à chaque nouveau projet) : le nombre de biens de data/projects.json
-// qui ont une adresse, en toutes lettres, puis les villes la plus à l'ouest et la plus à l'est de la carte (belgique.json, longitudes ; le nom
-// du groupe pour une commune bruxelloise). « de » s'élide devant une voyelle.
-function titreCarte() {
-  const n = projects.filter(p => p.address).length;
-  const villes = JSON.parse(fs.readFileSync(path.join(REPO, 'data/carte/belgique.json'), 'utf8')).villes;
-  const nom = v => v.groupe || v.ville;
-  const ouest = nom(villes.reduce((a, v) => (v.lon < a.lon ? v : a))), est = nom(villes.reduce((a, v) => (v.lon > a.lon ? v : a)));
-  const de = /^[aeiouyàâéèêîôûh]/i.test(ouest) && !/^h/i.test(ouest) ? 'd’' : 'de ';
-  return `${capitale(enLettres(n, true))} adresse${n > 1 ? 's' : ''}, ${de}${ouest} à ${est}.`;
-}
+// La carte de la Home : titre et paragraphe de l'en-tête carte de content/home.md (04/10 ; le titre calculé « Vingt adresses, de Haaltert à
+// Welkenraedt. » du 30/09 est retiré, Julien le voulait sans nombre). Le paragraphe est inséré tel quel, comme les autres textes.
 function autres() {
   return `<section class="section section--autres" id="realisations">
 <div class="container">
@@ -440,8 +438,8 @@ function autres() {
   <div class="carte">
     <div class="carte__fig">${carteSvg()}</div>
     <div class="carte__texte">
-      <h2 class="h2 h2--serif">${esc(titreCarte())}</h2>
-      <p>${agences}</p>
+      <h2 class="h2 h2--serif">${esc(carte.title)}</h2>
+      <p>${carte.text}</p>
       <a class="autres__lien trait" href="${PAGE_REALISATIONS}">Toutes les réalisations →</a>
     </div>
   </div>

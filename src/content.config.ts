@@ -24,6 +24,8 @@ const pages = defineCollection({
         items: z.array(z.object({ label: z.string(), percent: z.number() })),
       })
       .optional(),
+    // Home uniquement : le titre et le paragraphe de la carte des réalisations (lot 2b, 04/10/2026 ; lus aussi par design/maquette/src/build.mjs).
+    carte: z.object({ title: z.string(), text: z.string() }).optional(),
   }),
 });
 

@@ -12,7 +12,6 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
-import { enLettres, capitale } from './nombres.mjs';
 
 const { chromium } = createRequire(import.meta.url)('playwright');
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -128,12 +127,18 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   const h2 = await p.evaluate(() => [...document.querySelectorAll('.h2')].map(h => { const s = getComputedStyle(h); return { cls: h.className, texte: h.textContent, ff: s.fontFamily, fw: s.fontWeight, fs: s.fontSize }; }));
   const graphique = h2.find(h => h.cls === 'h2 h2--sans'), carteH2 = h2.find(h => h.cls === 'h2 h2--serif');
   ok(h2.length === 2 && graphique && /m² en cours de transformation/.test(graphique.texte) && graphique.ff.startsWith('"Instrument Sans"') && graphique.fw === '500' && graphique.fs === '28px', `titre du graphique : sans medium 28 px (.h2--sans) — « ${graphique && graphique.texte} »`);
-  // titre de la carte calculé (30/09) : nombre de biens avec une adresse en toutes lettres, villes extrêmes de belgique.json ; autant de points que de biens
+  // titre et paragraphe de la carte (04/10, lot 2b items 3 et 14) : ceux de l'en-tête carte de content/home.md — plus de nombre dans le titre (le titre
+  // calculé du 30/09 est retiré), et un paragraphe propre à la Home, distinct du programme agences de Réalisations ; autant de points que de biens
+  const homeFm = fs.readFileSync(path.resolve(MAQ, '../../content/home.md'), 'utf8').replace(/\r\n?/g, '\n').match(/^---\n([\s\S]*?)\n---/)[1];
+  const deq = v => (v || '').trim().replace(/^"(.*)"$/, '$1');
+  const carteAttendue = { titre: deq((homeFm.match(/\ncarte:\s*\n\s+title:\s*(.+)/) || [])[1]), texte: deq((homeFm.match(/\ncarte:\s*\n\s+title:.*\n\s+text:\s*(.+)/) || [])[1]) };
+  const carteP = await p.evaluate(() => document.querySelector('.carte__texte p').textContent);
+  const agencesMd = fs.readFileSync(path.resolve(MAQ, '../../content/realisations.md'), 'utf8').replace(/\r\n?/g, '\n').split('## Le programme agences')[1].replace(/<!--[\s\S]*?-->/g, '').trim().split(/\n\s*\n/)[0].trim();
   const nAdresses = JSON.parse(fs.readFileSync(path.resolve(MAQ, '../../data/projects.json'), 'utf8')).filter(x => x.address).length;
   const villesCarte = JSON.parse(fs.readFileSync(path.resolve(MAQ, '../../data/carte/belgique.json'), 'utf8')).villes;
-  ok(carteH2 && carteH2.texte.startsWith(capitale(enLettres(nAdresses, true)) + (nAdresses > 1 ? ' adresses, ' : ' adresse, ')) && carteH2.ff.startsWith('Newsreader') && carteH2.fw === '400' && carteH2.fs === '34px', `titre de la carte : serif 34 px (.h2--serif), nombre calculé — « ${carteH2 && carteH2.texte} »`);
+  ok(carteH2 && carteAttendue.titre && carteH2.texte === carteAttendue.titre && !/\d|adresses/.test(carteH2.texte) && carteH2.ff.startsWith('Newsreader') && carteH2.fw === '400' && carteH2.fs === '34px', `titre de la carte : serif 34 px (.h2--serif), celui de content/home.md, sans nombre — « ${carteH2 && carteH2.texte} »`);
+  ok(carteAttendue.texte && carteP === carteAttendue.texte && carteP !== agencesMd, `paragraphe de la carte : celui de content/home.md (carte.text), distinct du programme agences — « ${carteP.slice(0, 60)}… »`);
   ok(villesCarte.length === nAdresses, `carte : un point par bien avec une adresse (${villesCarte.length} dans belgique.json, ${nAdresses} dans projects.json)`);
-  ok([[1, 'un'], [17, 'dix-sept'], [20, 'vingt'], [71, 'soixante et onze'], [80, 'quatre-vingts'], [91, 'quatre-vingt-onze'], [200, 'deux cents'], [201, 'deux cent un']].every(([n, s]) => enLettres(n) === s) && enLettres(21, true) === 'vingt et une' && enLettres(1, true) === 'une', 'nombres.mjs : nombres en toutes lettres (vingt et une, soixante et onze, quatre-vingts…)');
   ok(await p.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--fs-chapitre').trim() === '26px' && getComputedStyle(document.documentElement).getPropertyValue('--font-titres') === ''), '--fs-chapitre conservée (à décider sur la fiche), --font-titres retirée');
   ok((await style(p, '.hero__title', 'fontWeight')) === '400' && (await style(p, '.stat__value', 'fontWeight')) === '400' && (await style(p, '.h2--serif', 'fontWeight')) === '400'
     && (await p.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--poids-serif') === '')) && !(await p.evaluate(() => [...document.styleSheets].some(ss => { try { return [...ss.cssRules].some(r => r.cssText.includes('Source Serif')); } catch (e) { return false; } }))),

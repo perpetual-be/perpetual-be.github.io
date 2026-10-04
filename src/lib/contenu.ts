@@ -15,7 +15,8 @@ async function corps(page: string): Promise<{ data: Record<string, any>; blocs: 
 }
 
 /** La Home (content/home.md) : l'accroche (le bloc « # »), les paragraphes (les blocs suivants sauf le dernier), la signature (le dernier) ;
- *  stats, portfolio, hero et description depuis l'en-tête (schéma pages de src/content.config.ts). */
+ *  stats, portfolio, hero, carte (le titre et le paragraphe de la carte des réalisations, lot 2b) et description depuis l'en-tête
+ *  (schéma pages de src/content.config.ts). */
 export async function lireHome() {
   const { data, blocs } = await corps('home');
   const h1 = blocs.find((b) => b.startsWith('# '));
@@ -27,6 +28,7 @@ export async function lireHome() {
     stats: (data.stats ?? []) as { value: string; label: string }[],
     portfolio: data.portfolio as { title: string; items: { label: string; percent: number }[] } | undefined,
     hero: data.hero as { photo: string; focal?: string } | undefined,
+    carte: data.carte as { title: string; text: string } | undefined,
     description: data.description as string | undefined,
   };
 }
@@ -37,7 +39,8 @@ export async function lireCollectif() {
   return { paragraphs: blocs.slice(0, -1), chute: blocs[blocs.length - 1] };
 }
 
-/** Le paragraphe du programme agences (content/realisations.md, celui qui suit « ## Le programme agences ») : le texte à droite de la carte. */
+/** Le paragraphe du programme agences (content/realisations.md, celui qui suit « ## Le programme agences ») : l'énoncé de la vue Réalisations (lot 5).
+ *  Jusqu'au 04/10/2026, c'était aussi le texte à droite de la carte de la Home ; celle-ci a le sien depuis (en-tête carte de content/home.md). */
 export async function lireAgences(): Promise<string> {
   const { blocs } = await corps('realisations');
   const agences = blocs[blocs.indexOf('## Le programme agences') + 1];

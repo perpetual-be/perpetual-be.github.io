@@ -1,8 +1,7 @@
 // La carte des réalisations de la Home (lot 4, 01/10/2026), depuis data/carte/ — de la donnée, partagée avec la maquette : belgique.svg (contour,
 // 17 points, 17 étiquettes placées à la main ; les quatre adresses bruxelloises, groupe « Bruxelles » de belgique.json, sont un seul point plus gros)
-// et belgique.json (villes, longitudes, groupes). Reprise de carteSvg() et titreCarte() de design/maquette/src/build.mjs.
-import { getCollection } from 'astro:content';
-import { enLettres, capitale } from './nombres';
+// et belgique.json (villes, longitudes, groupes). Reprise de carteSvg() de design/maquette/src/build.mjs. Le titre et le paragraphe de la carte ne
+// sont plus calculés depuis le 04/10/2026 (lot 2b, item 3 : plus de nombre) : ils sont écrits dans l'en-tête carte de content/home.md (src/lib/contenu.ts).
 import belgiqueJson from '../../data/carte/belgique.json';
 import svgBrut from '../../data/carte/belgique.svg?raw';
 
@@ -32,16 +31,4 @@ export function carteSvg(): string {
   const orphelins = points.filter((p) => !etiquettes.some((e) => e.nom === p.nom || membres(e.nom).includes(p.nom)));
   if (orphelins.length) throw new Error('carte : points sans étiquette : ' + orphelins.map((p) => p.nom).join(', '));
   return `${ouverture}\n${pays}\n${lieux.join('\n')}\n</svg>`;
-}
-
-/** Le titre de la carte, calculé : le nombre de biens de data/projects.json qui ont une adresse, en toutes lettres, puis les villes la plus à l'ouest
- *  et la plus à l'est (belgique.json, longitudes ; le nom du groupe pour une commune bruxelloise) ; « de » s'élide devant une voyelle.
- *  Le titre changera (Julien le veut sans nombre ; Axel décide de la formulation) : toute la logique est ici, à remplacer d'un bloc. */
-export async function titreCarte(): Promise<string> {
-  const n = (await getCollection('projects')).filter((p) => p.data.address).length;
-  const villes = belgique.villes;
-  const nom = (v: Belgique['villes'][number]) => v.groupe || v.ville;
-  const ouest = nom(villes.reduce((a, v) => (v.lon < a.lon ? v : a))), est = nom(villes.reduce((a, v) => (v.lon > a.lon ? v : a)));
-  const de = /^[aeiouyàâéèêîôûh]/i.test(ouest) && !/^h/i.test(ouest) ? 'd’' : 'de ';
-  return `${capitale(enLettres(n, true))} adresse${n > 1 ? 's' : ''}, ${de}${ouest} à ${est}.`;
 }

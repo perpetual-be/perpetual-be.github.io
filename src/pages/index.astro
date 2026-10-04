@@ -2,26 +2,27 @@
 // La Home (lot 4, message 2/2, 01/10/2026), identique à celle de la maquette (design/maquette/index.html, la référence) : en-tête → photo pleine largeur
 // portant l'accroche → bande des quatre chiffres avec les anneaux → deux colonnes de paragraphes et la signature → graphique en anneau qui se remplit →
 // carte sous « Réalisations » → Collectif et logos partenaires → pied de page. Les textes viennent de content/ (src/lib/contenu.ts, lus comme build.mjs),
-// la photo du premier écran de l'en-tête de content/home.md (hero), la carte de data/carte/. Un composant par section : src/components/home/.
+// la photo du premier écran et le texte de la carte de l'en-tête de content/home.md (hero, carte), la carte de data/carte/. Un composant par section :
+// src/components/home/.
 import Base from '../layouts/Base.astro';
 import PremierEcran from '../components/home/PremierEcran.astro';
 import Graphique from '../components/home/Graphique.astro';
 import Carte from '../components/home/Carte.astro';
 import Collectif from '../components/home/Collectif.astro';
 import site from '../../data/site.json';
-import { lireHome, lireCollectif, lireAgences } from '../lib/contenu';
+import { lireHome, lireCollectif } from '../lib/contenu';
 import '../styles/home.css';
 
 const home = await lireHome();
 const collectif = await lireCollectif();
-const agences = await lireAgences();
 if (!home.hero) throw new Error('content/home.md : hero (la photo du premier écran : photo, focal) manquant dans l’en-tête');
 if (!home.portfolio) throw new Error('content/home.md : portfolio (le titre et les parts du graphique) manquant dans l’en-tête');
+if (!home.carte) throw new Error('content/home.md : carte (le titre et le paragraphe de la carte des réalisations : title, text) manquante dans l’en-tête');
 ---
 
 <Base title={`${site.name} — ${site.tagline}`} fullTitle description={home.description}>
   <PremierEcran h1={home.h1} paragraphs={home.paragraphs} signature={home.signature} stats={home.stats} hero={home.hero} />
   <Graphique title={home.portfolio.title} items={home.portfolio.items} />
-  <Carte agences={agences} />
+  <Carte titre={home.carte.title} texte={home.carte.text} />
   <Collectif paragraphs={collectif.paragraphs} chute={collectif.chute} />
 </Base>
