@@ -11,6 +11,6 @@ description: Les réalisations de Perpetual en photos, des projets de toutes tai
 
 ## Le programme agences
 
-<!-- La page coupe ce paragraphe en deux cases de texte de la mosaïque des agences, sans titre : la première phrase en haut à gauche, la suite en bas à droite. Chaque case tient en quatre lignes au plus, à 1 521 px comme au téléphone. Les biens (kind: agency et gallery) sont les tuiles de la mosaïque, chacun avec sa ville, sa surface et son usage ; il n’y a plus de galerie à part (04/10/2026). -->
+<!-- La page coupe ce paragraphe en deux cases de texte de la mosaïque des agences, sans titre : la première phrase en haut à gauche, la suite en bas à droite. Chaque case tient en quatre lignes au plus, à 1 521 px comme au téléphone. Texte du 05/10/2026 (Axel, lot 3), à partir de l’énoncé de Julien (PDF v2 du 10/09) : « plus de trente depuis 2022 », le chiffre de la bande de la Home ; « le quartier retrouve » plutôt que « redonnent vie », pour ne pas laisser croire à des quartiers sans activité. Les biens (kind: agency et gallery) sont les tuiles de la mosaïque, chacun avec sa ville, sa surface et son usage ; il n’y a plus de galerie à part (04/10/2026). -->
 
-Une agence bancaire fermée, c’est plusieurs centaines de mètres carrés vides au cœur d’un quartier. Nous maintenons le service — l’accès au cash — sur la surface qui lui suffit, et nous rendons le reste à l’usage.
+Depuis 2022, nous avons repris plus de trente agences que les banques laissaient vides. Le distributeur garde sa place, et le quartier retrouve des commerces et des services utiles à ses habitants.
