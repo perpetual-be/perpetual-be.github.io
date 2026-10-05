@@ -7,6 +7,10 @@
 //
 // Ne pas lire les propriétés de l'image (width, src…) hors d'Astro : Astro garderait alors le fichier source dans le site publié, en plus des
 // versions qu'il produit. Ses dimensions se lisent sur sa copie (dimensions(), plus bas).
+//
+// Au build, Vite copie dans dist/_astro/ chaque fichier de ce glob, servi ou non : le <clé>.jpg d'une photo qui a aussi un <clé>-l.jpg, une photo
+// qu'aucune donnée ne cite. Une fois le site écrit, l'intégration images-orphelines (astro.config.mjs) en retire toute image qu'aucune page ne cite
+// (05/10/2026).
 import type { ImageMetadata } from 'astro';
 import { getImage } from 'astro:assets';
 
