@@ -1,0 +1,70 @@
+---
+// La mosaïque d'une fiche projet (lot 5, 05/10/2026) : mêmes balises et classes que fichePage() de design/maquette/src/build.mjs, la maquette étant la
+// référence (styles : src/styles/fiche.css). Sur la grille large, l'eyebrow « Photos », puis une figure.fiche__tuile par photo — les clés de selection
+// après la première, dans l'ordre —, au format de la photo (--r et data-r, lus comme la maquette sur son <clé>.jpg, à quatre décimales : formatPhoto,
+// src/lib/photos.ts), sans légende. Chaque tuile est un bouton (« Agrandir la photo n sur N ») qui ouvre la visionneuse sur sa photo (data-grande :
+// l'adresse de sa version en grand, WebP de 1 800 px au plus, chargée seulement à l'ouverture — photoGrande, src/lib/photos.ts ; le script est celui
+// de src/components/Visionneuse.astro). La photo, par ProjectPhoto : chargement paresseux, texte alternatif vide comme la maquette ; le sizes écrit ici
+// ne vaut que sans JavaScript, le script le remplace par la largeur de la tuile.
+// Le script en ligne, repris de design/maquette/maquette.js (« la mosaïque des photos ») sans changement de comportement : rangées justifiées au format
+// de chaque photo (data-r), construites chacune comme un bloc (.fiche__rang : plus de retour à la ligne possible), la largeur mesurée au sous-pixel moins
+// 0,5 px, les largeurs arrondies vers le bas. Hauteurs cibles alternées 440 / 280 px, multipliées par max(1, largeur de la mosaïque / 1 120) sur la
+// grille large : le même nombre de photos par rangée qu'à 1 200 px. Au téléphone, 210 / 150 px et deux photos au plus par rangée. Dernière rangée
+// incomplète : pas d'agrandissement au-delà de 1,25 × la cible sur ordinateur (elle garde alors la cible), jusqu'à 2 × au téléphone. Chaque photo reçoit
+// un sizes égal à la largeur de sa tuile — sur chaque <source> de son <picture> (AVIF, WebP) comme sur l'<img> : la seule différence avec la maquette,
+// dont l'<img> est seule. Recalcul quand la largeur de la mosaïque change (fenêtre, barre de défilement), jamais sur la hauteur seule. Sans JavaScript,
+// des rangées souples (flex-wrap).
+import ProjectPhoto from '../ProjectPhoto.astro';
+import { formatPhoto, photoGrande } from '../../lib/photos';
+
+interface Props {
+  /** Les clés des photos de la mosaïque, dans l'ordre. */
+  cles: string[];
+}
+
+const { cles } = Astro.props;
+const tuiles = await Promise.all(cles.map(async (cle) => ({ cle, r: (await formatPhoto(cle)).toFixed(4), grande: await photoGrande(cle) })));
+---
+
+{tuiles.length > 0 && (
+<div class="large fiche__autres"><p class="eyebrow">Photos</p><div class="fiche__mosaique">{tuiles.map((t, j) => <figure class="fiche__tuile" style={`--r:${t.r}`} data-r={t.r}><button type="button" class="fiche__agrandir" data-grande={t.grande} aria-label={`Agrandir la photo ${j + 1} sur ${tuiles.length}`}><ProjectPhoto cle={t.cle} sizes={`(max-width:640px) 100vw, ${Math.round(Number(t.r) * 440)}px`} loading="lazy" alt="" /></button></figure>)}</div>
+<script is:inline>
+  (function () {
+    var m = document.querySelector('.fiche__mosaique');
+    if (!m) return;
+    var tuiles = Array.prototype.slice.call(m.querySelectorAll('.fiche__tuile'));
+    function placer() {
+      m.classList.remove('est-placee');
+      tuiles.forEach(function (t) { m.appendChild(t); });
+      Array.prototype.forEach.call(m.querySelectorAll('.fiche__rang'), function (r) { r.remove(); });
+      var W = m.getBoundingClientRect().width - 0.5, g = parseFloat(getComputedStyle(m).columnGap) || 16, petit = innerWidth < 641, maxN = petit ? 2 : 99;
+      var f = petit ? 1 : Math.max(1, W / 1120), hauts = petit ? [210, 150] : [440 * f, 280 * f];
+      var i = 0, rang = 0;
+      while (i < tuiles.length) {
+        var cible = hauts[rang % 2], somme = 0, j = i;
+        while (j < tuiles.length && j - i < maxN) { somme += +tuiles[j].getAttribute('data-r'); j++; if (somme * cible + (j - i - 1) * g >= W) break; }
+        var n = j - i, h = (W - (n - 1) * g) / somme;
+        if (j >= tuiles.length && n < maxN) { if (petit) h = Math.min(h, cible * 2); else if (h > cible * 1.25) h = cible; }
+        var r = document.createElement('div');
+        r.className = 'fiche__rang';
+        for (var k = i; k < j; k++) {
+          var t = tuiles[k], w = Math.floor(+t.getAttribute('data-r') * h * 100) / 100, img = t.querySelector('img');
+          t.style.width = w + 'px'; t.style.height = h + 'px'; img.style.height = h + 'px';
+          Array.prototype.forEach.call(t.querySelectorAll('source, img'), function (s) { s.sizes = w + 'px'; });
+          r.appendChild(t);
+        }
+        m.appendChild(r); i = j; rang++;
+      }
+      m.classList.add('est-placee');
+    }
+    placer();
+    var largeur = m.getBoundingClientRect().width, attente;
+    new ResizeObserver(function () {
+      var l = m.getBoundingClientRect().width;
+      if (l === largeur) return;
+      largeur = l; clearTimeout(attente); attente = setTimeout(placer, 80);
+    }).observe(m);
+  })();
+</script>
+</div>
+)}

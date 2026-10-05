@@ -1,0 +1,49 @@
+---
+// Les fiches projet (lot 5, message 1/2, 05/10/2026) : une page par projet détaillé (kind « detailed » de data/projects.json), à l'adresse
+// /realisations/<id>, dans l'ordre du champ order ; chacune identique à sa fiche dans la maquette (design/maquette/projet-<id>.html, la référence).
+// En-tête — « Réalisations » actif : le trait, sans aria-current, ce n'est pas la page Réalisations elle-même — → le corps : la région, le titre, les
+// trois infos et les trois chapitres à gauche, la photo de tête qui suit à droite → « Photos », la mosaïque → le projet précédent et le suivant, en
+// boucle dans l'ordre du champ order → pied de page ; la visionneuse, masquée, dans <main> après l'article (comme la maquette). Brosse (kind project)
+// n'a pas de fiche. Les infos d'une fiche viennent de data/projects.json : region (l'eyebrow), quartier (la Localisation, à défaut location), surface,
+// use, tete (le cadre et le point focal de la photo de tête) ; ses chapitres, was, saw et became ; ses photos, selection — la première en tête, les
+// suivantes en mosaïque. Un champ manquant arrête le build. Pas de description pour l'instant (lot 7).
+// Composants : src/components/fiche/ (Corps, Mosaique, Voisins) et src/components/Visionneuse.astro ; styles : src/styles/fiche.css et visionneuse.css.
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Corps from '../../components/fiche/Corps.astro';
+import Mosaique from '../../components/fiche/Mosaique.astro';
+import Voisins from '../../components/fiche/Voisins.astro';
+import Visionneuse from '../../components/Visionneuse.astro';
+import '../../styles/fiche.css';
+import '../../styles/visionneuse.css';
+
+export async function getStaticPaths() {
+  const detailles = await getCollection('projects', (p) => p.data.kind === 'detailed');
+  const fiches = detailles.map(({ id, data: p }) => {
+    const ou = `data/projects.json : ${id}`;
+    const manque = Object.entries({ order: p.order, region: p.region, 'location (ou quartier)': p.quartier || p.location, surface: p.surface, use: p.use, tete: p.tete, was: p.was, saw: p.saw, became: p.became })
+      .filter(([, v]) => v === undefined || v === '').map(([k]) => k);
+    if (manque.length) throw new Error(`${ou}, ${manque.join(', ')} — les infos de sa fiche (region, quartier ou location, surface, use, tete ; chapitres was, saw, became ; order)`);
+    if (!p.selection || p.selection.length === 0) throw new Error(`${ou}, selection — la photo de tête de sa fiche, puis celles de sa mosaïque`);
+    const etrangere = p.selection.find((k) => !k.startsWith(id + '-'));
+    if (etrangere) throw new Error(`${ou}, selection — ${etrangere} n'est pas une photo de ce projet`);
+    return {
+      id, nom: p.name, order: p.order!, region: p.region!, lieu: (p.quartier || p.location)!, surface: p.surface!, usage: p.use!,
+      chapitres: [p.was!, p.saw!, p.became!] as [string, string, string], tete: p.tete!, photo: p.selection[0], mosaique: p.selection.slice(1),
+    };
+  }).sort((a, b) => a.order - b.order);
+  const n = fiches.length;
+  return fiches.map((fiche, i) => ({ params: { id: fiche.id }, props: { fiche, prec: fiches[(i + n - 1) % n], suiv: fiches[(i + 1) % n] } }));
+}
+
+const { fiche, prec, suiv } = Astro.props;
+---
+
+<Base title={fiche.nom} active="/realisations" page="fiche">
+  <article class="fiche">
+    <Corps nom={fiche.nom} region={fiche.region} lieu={fiche.lieu} surface={fiche.surface} usage={fiche.usage} chapitres={fiche.chapitres} photo={fiche.photo} cadre={fiche.tete.cadre} focal={fiche.tete.focal} />
+    <Mosaique cles={fiche.mosaique} />
+    <Voisins prec={{ id: prec.id, nom: prec.nom }} suiv={{ id: suiv.id, nom: suiv.nom }} />
+  </article>
+  <Visionneuse label="Photos du projet" />
+</Base>

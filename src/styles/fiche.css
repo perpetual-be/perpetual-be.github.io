@@ -1,0 +1,79 @@
+/* Fiches projet du site (lot 5, 05/10/2026) : les règles de design/maquette/maquette.css pour les quatre fiches, reprises telles quelles (section 4, « les
+   quatre fiches (P6…) » jusqu'à « projet précédent et suivant ») — le titre de page en serif (.page__titre de base : la règle en sans léger de la vue
+   Réalisations n'en fait pas partie), le corps, la colonne de gauche, les infos, les chapitres, la photo qui suit, la mosaïque et ses rangées, les voisins
+   —, et leurs règles téléphone et mouvement réduit (section 5). Importé par src/pages/realisations/[id].astro, après le socle (src/styles/base.css…).
+   Balisage : src/components/fiche/. */
+/* titre de page : serif 64 px, celui des fiches — la vue Réalisations et Engagements le passent en sans léger */
+.page__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-titre-page);line-height:1;letter-spacing:-.015em}
+/* les quatre fiches (P6, Cowork, 26/09 ; références validées : design/revue-fiche/propositions/p6*.html), un seul gabarit, sur la grille large comme la vue
+   Réalisations (le pied de page reste sur le container de 1 200 px) : trois colonnes, marge | texte | photo. La marge est celle de la grille large, en % de
+   la page — pas en vw, sinon la barre de défilement décale le texte de 8,5 px — : le texte part au même x que le logo (40 px à 1 521 px de fenêtre, 200 px
+   à 1 920). À gauche la région en eyebrow, le titre, les infos (valeur en sans or foncé, étiquette gris chaud dessous, filets verticaux entre elles), puis
+   les trois chapitres empilés ; à droite la photo de tête, au bord de la fenêtre dès le bas de l'en-tête — cadre paysage : 50 % de la page, 2100 / 1694 ;
+   carré : 40 %, 1:1 (object-position : son point focal, posé en style par ProjectPhoto, tete.focal de data/projects.json) */
+.fiche__corps{display:grid;grid-template-columns:max(var(--gutter),calc((100% - var(--max-large)) / 2 + var(--gutter))) minmax(0,1fr) var(--cadre-largeur);align-items:start}
+.fiche__corps--paysage{--cadre-largeur:50%;--cadre-format:2100/1694}
+.fiche__corps--carre{--cadre-largeur:40%;--cadre-format:1/1}
+.fiche__gauche{grid-column:2;padding:24px 64px 0 0}
+.fiche__titre .eyebrow{margin-bottom:8px}
+.fiche__faits{display:flex;flex-wrap:wrap;gap:12px 0;margin-top:22px}
+.fiche__fait{display:flex;flex-direction:column;gap:3px;padding:0 22px;border-left:1px solid var(--filet)}
+.fiche__fait:first-child{padding-left:0;border-left:0}
+.fiche__valeur{font-family:var(--sans);font-weight:500;font-size:17px;line-height:1.25;color:var(--or-fonce);white-space:nowrap}
+.fiche__etiquette{font-size:13px;line-height:1.3;color:var(--c-etiquette-chiffre)}
+/* chapitres : titres en sans medium, numéros or foncé (bascule 20 figée sur « sans », revue du 23/09), 34 px entre eux */
+.fiche__chapitres{display:flex;flex-direction:column;gap:34px;margin-top:44px}
+.chapitre{max-width:52ch}
+.chapitre__num{font-family:var(--sans);font-size:15px;color:var(--c-num-chapitre);letter-spacing:.06em;margin-bottom:8px}
+.chapitre__titre{font-family:var(--sans);font-weight:500;font-size:var(--fs-chapitre);line-height:1.15;letter-spacing:-.01em;margin-bottom:16px}
+/* la photo qui suit (26/09) : quand le texte est plus long que la photo, elle reste en place pendant qu'on lit la fin, puis tout repart ensemble ;
+   rien ne bouge quand elle est plus haute que le texte. Le cadre est un ::before au format du cadre, l'image le remplit. Sur le site, l'en-tête collant
+   passe au-dessus d'elle quand il revient (comme sur la Home) */
+.fiche__photo{grid-column:3;width:100%;position:sticky;top:0;overflow:hidden}
+.fiche__photo::before{content:"";display:block;aspect-ratio:var(--cadre-format)}
+.fiche__photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* les autres photos, sur la grille large : une mosaïque au format de chaque photo (--r, son ratio), sans légendes, en rangées justifiées alternées haute /
+   basse (le script de src/components/fiche/Mosaique.astro, qui fige chaque rangée en .fiche__rang) ; sans JavaScript, des rangées souples. Chaque tuile est
+   un bouton : zoom 1,035 au survol (photo cliquable) et au focus clavier ; clic → visionneuse */
+.fiche__autres{padding-top:88px;padding-bottom:72px}
+.fiche__autres .eyebrow{margin-bottom:18px}
+.fiche__mosaique{display:flex;flex-wrap:wrap;gap:16px}
+.fiche__mosaique::after{content:"";flex-grow:999}
+.fiche__tuile{flex-grow:var(--r);flex-basis:calc(var(--r) * 260px);overflow:hidden;background:var(--surface)}
+.fiche__agrandir{display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in}
+.fiche__agrandir:focus-visible{outline:2px solid var(--c-trait);outline-offset:-2px}
+.fiche__tuile img{width:100%;aspect-ratio:var(--r);height:auto;object-fit:cover;transition:transform var(--zoom-duree) ease}
+.fiche__tuile:hover img,.fiche__agrandir:focus-visible img{transform:scale(var(--zoom))}
+.fiche__mosaique.est-placee{flex-wrap:nowrap;flex-direction:column}
+.fiche__mosaique.est-placee::after{display:none}
+.fiche__rang{display:flex;gap:16px}
+.fiche__mosaique.est-placee .fiche__tuile{flex:none}
+/* projet précédent (← nom, à gauche) et suivant (nom →, à droite), en boucle dans l'ordre du champ order, sur la grille large, filet au-dessus */
+.fiche__voisins{display:flex;justify-content:space-between;gap:32px;border-top:1px solid var(--filet);padding:24px 0 72px}
+.fiche__voisin{display:block}
+.fiche__voisin .eyebrow{display:block;margin-bottom:6px}
+.fiche__voisin--suiv{text-align:right}
+.suivant__nom{display:inline-block;font-family:var(--serif);font-size:var(--fs-suivant);line-height:1.2;color:var(--c-lien);padding-bottom:2px}
+
+/* ---------- téléphone (section 5 de maquette.css) ---------- */
+@media (max-width:640px){
+  /* la région et le titre, les infos (Localisation et Surface sur une ligne, Usage dessous), la photo pleine largeur au même format — elle ne suit plus
+     (position: relative) —, les chapitres, la mosaïque (deux photos au plus par rangée), les voisins */
+  .fiche__corps{grid-template-columns:1fr}
+  .fiche__gauche{display:contents}
+  .fiche__titre{order:1;padding:28px var(--gutter) 0}
+  .fiche__faits{order:2;margin:18px var(--gutter) 24px;display:grid;grid-template-columns:auto 1fr;gap:14px 0}
+  .fiche__fait{padding:0 16px}
+  .fiche__fait:nth-child(3){grid-column:1/-1;padding-left:0;border-left:0}
+  .fiche__valeur{font-size:16px}
+  .fiche__photo{order:3;grid-column:1;position:relative}
+  .fiche__chapitres{order:4;margin:36px var(--gutter) 0;gap:32px}
+  .fiche__autres{padding-top:56px;padding-bottom:44px}
+  .fiche__mosaique,.fiche__rang{gap:10px}
+  .fiche__voisins{padding-bottom:44px;gap:16px}
+  .fiche__voisin .suivant__nom{font-size:20px}
+}
+/* ---------- mouvement réduit (section 5) ---------- */
+@media (prefers-reduced-motion:reduce){
+  .fiche__tuile img{transition:none}
+}

@@ -126,20 +126,25 @@ const bienDe = id => {
 const SANS_FICHE = { brosse: { blocFocal: '50% 40%', lieu: 'Forest', surface: '800 m²', projet: 'Rafraîchissement et division d’un ancien atelier de brosses' } };
 for (const p of projects.filter(x => x.kind === 'project')) if (!SANS_FICHE[p.id] || !(p.selection || []).length) throw new Error(`build.mjs : ${p.id} (kind project) absent de SANS_FICHE, ou sans selection`);
 // Les quatre fiches (P6, Cowork, 26/09 ; références validées : design/revue-fiche/propositions/p6.html, p6-ateliers-118.html, p6-data-box.html,
-// p6-community.html), un seul gabarit. Par projet (valeurs provisoires, lot 3) : la région (eyebrow), les trois infos — lieu, surface, usage —, le cadre
-// de la photo de tête et son point focal (object-position, posé en style sur l'<img>). Cadre paysage : 50 % de la page, format 2100 / 1694 ; carré :
-// 40 %, 1:1. The Bank : the-bank-01 est en portrait ; calée en haut dans le cadre paysage (1,24), elle en montre exactement les 60,5 % du haut, sans la
-// voiture — la découpe de la référence, sans ses fichiers recadrés (img/the-bank-01-facade*.jpg). Les chapitres sont was, saw et became de
-// data/projects.json ; la photo de tête est la première clé de selection, la mosaïque les suivantes.
+// p6-community.html), un seul gabarit. Les infos de chaque fiche sont des champs de data/projects.json (lot 5, 05/10 : jusque-là l'objet fiches de ce
+// fichier, valeurs provisoires du lot 3), lus par ficheDe : la région (region, l'eyebrow), les trois infos — la localisation (quartier, à défaut location ;
+// The Bank seule a un quartier, Centre-ville), la surface (surface), l'usage (use) —, le cadre de la photo de tête et son point focal (tete : cadre,
+// paysage ou carre ; focal, l'object-position posé en style sur l'<img>). Un champ manquant ou un cadre inconnu arrête la construction. Le cadre, sa
+// part de la page et son format, est de la mise en page et reste ici (CADRES) : paysage, 50 % de la page, format 2100 / 1694 ; carré, 40 %, 1:1. The Bank :
+// the-bank-01 est en portrait ; calée en haut dans le cadre paysage (1,24), elle en montre exactement les 60,5 % du haut, sans la voiture — la découpe de
+// la référence, sans ses fichiers recadrés (img/the-bank-01-facade*.jpg). Les chapitres sont was, saw et became de data/projects.json ; la photo de tête
+// est la première clé de selection, la mosaïque les suivantes.
 const CADRES = { paysage: { largeur: 50, ratio: 2100 / 1694 }, carre: { largeur: 40, ratio: 1 } };
-const fiches = {
-  'ateliers-118': { region: 'Bruxelles', lieu: 'Molenbeek-Saint-Jean', surface: '1 200 m²', usage: 'Ateliers', cadre: 'carre', focal: '50% 0%' },
-  'the-bank': { region: 'Liège', lieu: 'Centre-ville', surface: '1 100 m²', usage: 'Logements & commerce', cadre: 'paysage', focal: '50% 0%' },
-  'data-box': { region: 'Rochefort', lieu: 'Jemelle', surface: '4 200 m²', usage: 'Site technique', cadre: 'paysage', focal: '60% 50%' },
-  'community': { region: 'Bruxelles', lieu: 'Uccle', surface: '14 unités', usage: 'Co-living', cadre: 'paysage', focal: '50% 50%' },
-};
+function ficheDe(p) {
+  const f = { region: p.region, lieu: p.quartier || p.location, surface: p.surface, usage: p.use, cadre: p.tete && p.tete.cadre, focal: p.tete && p.tete.focal };
+  const champs = { region: 'region', lieu: 'location (ou quartier)', surface: 'surface', usage: 'use', cadre: 'tete.cadre', focal: 'tete.focal' };
+  const manque = Object.keys(f).filter(k => typeof f[k] !== 'string' || !f[k].trim());
+  if (manque.length) throw new Error(`data/projects.json : ${p.id}, ${manque.map(k => champs[k]).join(', ')} — les infos de sa fiche (region, quartier ou location, surface, use, tete)`);
+  if (!CADRES[f.cadre]) throw new Error(`data/projects.json : ${p.id}, tete.cadre — « ${f.cadre} » inconnu (${Object.keys(CADRES).join(' ou ')})`);
+  return f;
+}
 const CHAPITRES = [['was', 'Ce que c’était'], ['saw', 'Ce que nous y avons vu'], ['became', 'Ce que c’est devenu']];
-for (const p of DETAILLES) if (!fiches[p.id] || !CADRES[fiches[p.id].cadre]) throw new Error(`build.mjs : fiche de ${p.id} absente de fiches, ou cadre inconnu`);
+for (const p of DETAILLES) ficheDe(p);
 // Page Engagements (Cowork, 26/09) : le titre de content/engagements.md (pas de sous-titre, décision d'Axel du 26/09), puis une rangée par titre ## —
 // le verbe, et les paragraphes qui le suivent jusqu'au titre suivant ; l'id de la rangée est le verbe (#aider, #transmettre, #soutenir).
 const slug = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -499,7 +504,7 @@ const visio = label => `<div class="visio" hidden role="dialog" aria-modal="true
 // leur largeur réelle, --r et data-r = le ratio du plus grand fichier (en-tête JPEG) ; le sizes posé ici ne vaut que sans JavaScript (et avant le
 // placement), maquette.js le remplace par la largeur de chaque tuile. Chaque tuile est un bouton (clavier) qui ouvre la visionneuse sur son <clé>.jpg.
 function fichePage(p, i) {
-  const f = fiches[p.id], cadre = CADRES[f.cadre], n = DETAILLES.length, prec = DETAILLES[(i + n - 1) % n], suiv = DETAILLES[(i + 1) % n];
+  const f = ficheDe(p), cadre = CADRES[f.cadre], n = DETAILLES.length, prec = DETAILLES[(i + n - 1) % n], suiv = DETAILLES[(i + 1) % n];
   const [tete, ...autres] = p.selection;
   const s = photoSources(tete)[0], k = Math.max(1, (s.width / s.height) / cadre.ratio);
   const photo = photoImg(tete, sizesCadre([['(max-width:640px)', '100vw'], ['', `${cadre.largeur}vw`]], k), ` style="object-position:${f.focal}"`);

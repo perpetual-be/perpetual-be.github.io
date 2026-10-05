@@ -4,9 +4,11 @@
     "name": "Ateliers 118",
     "kind": "detailed",
     "order": 4,
+    "region": "Bruxelles",
     "location": "Molenbeek-Saint-Jean",
     "address": "Rue des Béguines 118, 1080 Bruxelles",
     "surface": "1 200 m²",
+    "use": "Ateliers",
     "was": "Une usine de colle construite dans les années 1950, devenue entrepôt à vin pendant trois décennies. Un bâtiment qui avait déjà survécu à deux vies.",
     "saw": "De la lumière, des volumes, et des infrastructures trop coûteuses pour un seul occupant — donc à partager. Tout était déjà là ; il suffisait de le mettre dans le bon ordre.",
     "became": "Acheté en 2016, rénové de fond en comble : isolation des façades, 300 m² de production solaire. Aujourd’hui treize ateliers de 30 à 300 m² où des artisans, des artistes, des indépendants et de petites entreprises développent leur activité — et parfois leur rêve.",
@@ -35,6 +37,10 @@
       "ateliers-118-03",
       "ateliers-118-04"
     ],
+    "tete": {
+      "cadre": "carre",
+      "focal": "50% 0%"
+    },
     "apercu": {
       "cadre": [0.1496, 0, 0.7407, 0.6944]
     }
@@ -44,9 +50,12 @@
     "name": "The Bank",
     "kind": "detailed",
     "order": 1,
+    "region": "Liège",
     "location": "Liège",
+    "quartier": "Centre-ville",
     "address": "Rue des Mineurs 53-55, 4000 Liège",
     "surface": "1 100 m²",
+    "use": "Logements & commerce",
     "was": "Une agence bancaire de 1 100 m², au cœur de Liège.",
     "saw": "Une surface unique qui pouvait en accueillir trois. Le service bancaire maintenu sur ce qu’il lui faut, une vitrine rendue au commerce, et les niveaux supérieurs libérés pour l’habitat.",
     "became": "Une bijouterie de 160 m², un point Bancontact de 60 m², et un projet de logements de standing. Vendu.",
@@ -61,6 +70,10 @@
       "the-bank-02",
       "the-bank-03"
     ],
+    "tete": {
+      "cadre": "paysage",
+      "focal": "50% 0%"
+    },
     "apercu": {
       "cadre": [0, 0, 1, 0.9375]
     }
@@ -70,9 +83,11 @@
     "name": "Data Box",
     "kind": "detailed",
     "order": 2,
+    "region": "Rochefort",
     "location": "Jemelle",
     "address": "Rue Delvigne 102, Jemelle",
-    "surface": "4 200 m² sur un hectare",
+    "surface": "4 200 m²",
+    "use": "Site technique",
     "was": "Un site technique construit pour un seul usage, occupé par un opérateur télécom.",
     "saw": "Du temps. Le bâtiment reste occupé par Proximus jusqu’en 2031. Nos manières de travailler changent vite : décider aujourd’hui de ce que ce lieu sera dans six ans serait la seule erreur.",
     "became": "Un site sécurisé jusqu’en 2031, dont la destination future reste ouverte.",
@@ -96,6 +111,10 @@
       "data-box-06",
       "data-box-07"
     ],
+    "tete": {
+      "cadre": "paysage",
+      "focal": "60% 50%"
+    },
     "apercu": {
       "cadre": [0.205, 0, 0.45, 1]
     }
@@ -105,9 +124,11 @@
     "name": "Community",
     "kind": "detailed",
     "order": 3,
+    "region": "Bruxelles",
     "location": "Uccle",
     "address": "Chaussée Saint-Job 8, 1180 Bruxelles",
     "surface": "14 unités",
+    "use": "Co-living",
     "was": "Une parcelle longue et étroite, difficile à découper. Trois logements y ont été tentés, le permis a été refusé.",
     "saw": "Que la contrainte disait quelque chose : ce terrain refusait la division. Un seul projet, alors — les espaces communs au pied de l’immeuble, les chambres et leurs salles de bain dans les étages.",
     "became": "Quatorze unités organisées autour d’espaces partagés. Ce qui coûte trop cher à chacun devient ce qu’on partage.",
@@ -151,6 +172,10 @@
       "community-15",
       "community-16"
     ],
+    "tete": {
+      "cadre": "paysage",
+      "focal": "50% 50%"
+    },
     "apercu": {
       "photo": "community-15",
       "cadre": [0.2681, 0, 0.4638, 0.8696]
