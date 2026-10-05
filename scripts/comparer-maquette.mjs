@@ -72,6 +72,9 @@ let ko = 0;
 const ok = (cond, msg) => { console.log((cond ? '  ok  ' : '  KO  ') + msg); if (!cond) ko++; };
 const fmt = ([w, h]) => `${w} × ${h}`;
 const slug = s => s.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
+// Un chemin relatif, en / sous Windows aussi (path.relative et readdirSync en récursif y séparent par \) : les contrôles de dist/ le comparent à
+// « realisations/… » et en tirent des adresses
+const posix = f => f.split(path.sep).join('/');
 
 // ---------- le site (astro preview sur dist/) et le navigateur ----------
 const serveur = await preview({ root: REPO, logLevel: 'silent', server: { host: '127.0.0.1', port: 4399 } });
@@ -426,7 +429,7 @@ try {
   }
   // « Engagements » actif (aria-current) sur sa page seulement : les pages construites, sous-dossiers compris (les fiches, dist/realisations/)
   {
-    const pages = fs.readdirSync(path.join(REPO, 'dist'), { recursive: true }).filter(f => f.endsWith('.html')).sort();
+    const pages = fs.readdirSync(path.join(REPO, 'dist'), { recursive: true }).filter(f => f.endsWith('.html')).map(posix).sort();
     const actifs = pages.map(f => { const h = fs.readFileSync(path.join(REPO, 'dist', f), 'utf8'); const m = h.match(/<a href="([^"]+)" class="trait is-active"[^>]*aria-current="page"[^>]*>([^<]+)<\/a>/g) || []; return `${f} : ${m.length ? m.map(x => x.replace(/^.*>([^<]+)<\/a>$/, '$1')).join(', ') : '—'}`; });
     ok(pages.includes('engagements.html') && actifs.every(a => a === 'engagements.html : Engagements' || a.endsWith(' : —')) && pages.every(f => (fs.readFileSync(path.join(REPO, 'dist', f), 'utf8').match(/aria-current/g) || []).length === (f === 'engagements.html' ? 1 : 0)),
       `aria-current="page" sur le lien « Engagements » de engagements.html seulement — ${actifs.join(' · ')}`);
@@ -718,7 +721,7 @@ try {
   console.log('\ndist/');
   {
     const DIST = path.join(REPO, 'dist');
-    const htmls = []; (function marcher(d) { for (const f of fs.readdirSync(d)) { const q = path.join(d, f); if (fs.statSync(q).isDirectory()) marcher(q); else if (f.endsWith('.html')) htmls.push(path.relative(DIST, q)); } })(DIST);
+    const htmls = []; (function marcher(d) { for (const f of fs.readdirSync(d)) { const q = path.join(d, f); if (fs.statSync(q).isDirectory()) marcher(q); else if (f.endsWith('.html')) htmls.push(posix(path.relative(DIST, q))); } })(DIST);
     const lire = f => fs.readFileSync(path.join(DIST, f), 'utf8');
     const siteJson = JSON.parse(fs.readFileSync(path.join(REPO, 'data/site.json'), 'utf8'));
     // aucune occurrence de « julien@ » ; chaque mailto égal à site.email
