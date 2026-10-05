@@ -137,7 +137,7 @@ node design/directions/src/reduire-photos.mjs --petit --grand "G:\Mon Drive\PERP
 
 puis committer les fichiers produits dans `design/directions/img/` et citer la clé dans `data/projects.json` (champ `selection`, dans l'ordre d'affichage).
 
-**Recadrer une photo** : ajouter sa clé dans `design/directions/src/recadrages.json` (gauche, haut, largeur, hauteur, en fractions de l'original redressé, et la raison), puis la réduire de nouveau : le script applique le recadrage avant la réduction, à chaque fois ; l'original du Drive reste entier (05/10/2026 : `bnp-braine-le-comte-02`, `ing-tervuren-01`).
+**Recadrer une photo** : ajouter sa clé dans `design/directions/src/recadrages.json` (gauche, haut, largeur, hauteur, en fractions de l'original redressé, et la raison), puis la réduire de nouveau : le script applique le recadrage avant la réduction, à chaque fois ; l'original du Drive reste entier (05/10/2026 : `bnp-braine-le-comte-02`, `gilly-02`, `ing-tervuren-01`).
 
 **Dans le site** : `src/lib/photos.ts` trouve la plus grande version d'une clé ; le composant `src/components/ProjectPhoto.astro` l'affiche (`<ProjectPhoto cle="community-05" sizes="100vw" focal="50% 20%" />`) : Astro en tire, au build, plusieurs largeurs (800, 1 200, 1 800, 2 800 px, jamais au-delà de la source) en AVIF et WebP, avec un JPEG de repli. Texte alternatif : `alt` (vide pour une photo décorative). Une clé citée sans version de 1 800 ou 2 800 px arrête le build avec un message qui dit quoi faire.
 

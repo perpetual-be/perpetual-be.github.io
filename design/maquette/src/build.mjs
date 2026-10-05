@@ -97,14 +97,13 @@ const rangees = [['a', [['community', 7], ['ateliers-118', 5]]], ['b', [['the-ba
 // mosaïque des seize biens (kind agency et gallery), en rangées de 4 et de 3 cases (4-3-4-3-4), chaque photo au format entier — la largeur de sa case suit le
 // format du fichier, les cases d'une rangée ont la même hauteur, rien n'est recadré ni agrandi. L'énoncé de Julien en deux cases de texte : la première phrase
 // en haut à gauche (sans titre depuis le 05/10), la seconde en bas à droite. Les photos les plus solides dans les rangées de 3 (cases plus grandes), les plus
-// faibles et les trois photos en hauteur (Pont-à-Celles, Perwez, Schaerbeek) dans les rangées de 4 ; les trois intérieurs Bancontact en photo n° 1 (Waremme,
-// Bois-de-Villers, Belgrade : l'ordre de leur champ selection ; Waremme depuis le 05/10, choix d'Axel) un rang sur deux, dans les rangées 1, 3 et 5 — Waremme
-// monte à la place de Jambes, qui descend dans la rangée 4. Une case : l'id d'un bien, ou cas:debut / cas:fin ; CAS_R, le format des cases de texte.
+// faibles et les trois photos en hauteur (Pont-à-Celles, Perwez, Schaerbeek) dans les rangées de 4 ; les deux couloirs Bancontact en photo n° 1 (Bois-de-Villers,
+// Belgrade : l'ordre de leur champ selection) ne se touchent pas. Une case : l'id d'un bien, ou cas:debut / cas:fin ; CAS_R, le format des cases de texte.
 const MOSAIQUE = [
-  ['cas:debut', 'bnp-braine-le-comte', 'bnp-pont-a-celles', 'waremme'],
+  ['cas:debut', 'bnp-braine-le-comte', 'bnp-pont-a-celles', 'bnp-jambes'],
   ['belfius-braine-l-alleud', 'ing-haaltert', 'belfius-mettet'],
   ['bnp-bois-de-villers', 'ing-tervuren', 'perwez', 'ing-welkenraedt'],
-  ['wayez-27', 'ing-landen', 'bnp-jambes'],
+  ['wayez-27', 'ing-landen', 'waremme'],
   ['gilly', 'consolation', 'ing-belgrade', 'cas:fin'],
 ];
 const CAS_R = 1.15;

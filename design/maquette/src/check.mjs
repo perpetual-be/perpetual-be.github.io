@@ -657,14 +657,14 @@ for (const page of ['index', FICHE, REAL, ENG]) {
 }
 
 console.log('\n9 · Vue Réalisations (P2 du 26/09, puis lot 2b du 04/10 : projets en 2-2-1 avec Brosse, mosaïque des agences)');
-// la mosaïque, rangée par rangée (MOSAIQUE de build.mjs, choix du 04/10 : 4-3-4-3-4 ; 05/10 : Waremme et Jambes échangées) ; la ville est le nom d'une agence, le lieu d'un bien de la galerie ;
-// les photos, son champ selection (Waremme, Bois-de-Villers et Belgrade commencent par l'intérieur ; choix d'Axel du 05/10 : Braine-l'Alleud 03, Braine-le-Comte 02
-// recadrée, Gilly 02, Tervuren 01 recadrée, Waremme 02)
+// la mosaïque, rangée par rangée (MOSAIQUE de build.mjs, choix du 04/10 : 4-3-4-3-4) ; la ville est le nom d'une agence, le lieu d'un bien de la galerie ;
+// les photos, son champ selection (Bois-de-Villers et Belgrade commencent par l'intérieur ; choix d'Axel du 05/10 : Braine-l'Alleud 03, Braine-le-Comte 02
+// recadrée, Gilly 02 recadrée, Tervuren 01 recadrée, Waremme 03, Anderlecht 02)
 const MOSAIQUE = [
-  ['cas:debut', 'bnp-braine-le-comte', 'bnp-pont-a-celles', 'waremme'],
+  ['cas:debut', 'bnp-braine-le-comte', 'bnp-pont-a-celles', 'bnp-jambes'],
   ['belfius-braine-l-alleud', 'ing-haaltert', 'belfius-mettet'],
   ['bnp-bois-de-villers', 'ing-tervuren', 'perwez', 'ing-welkenraedt'],
-  ['wayez-27', 'ing-landen', 'bnp-jambes'],
+  ['wayez-27', 'ing-landen', 'waremme'],
   ['gilly', 'consolation', 'ing-belgrade', 'cas:fin'],
 ];
 const bienAttendu = id => { const x = donnees.find(d => d.id === id); return { id, ville: x.kind === 'agency' ? x.name : x.location, surface: x.surface, usage: x.use, photos: x.selection && x.selection.length ? x.selection : [`${x.id}-01`] }; };
@@ -679,17 +679,17 @@ ok(donnees.filter(d => d.kind === 'agency' || d.kind === 'gallery').length === 1
   'données : les 16 biens (agency et gallery) dans la mosaïque attendue, une fois chacun');
 ok(BROSSE && BROSSE.kind === 'project' && BROSSE.selection.join(' ') === 'brosse-31 brosse-16 brosse-29 brosse-27 brosse-23 brosse-61 brosse-19 brosse-22 brosse-70',
   'données : Brosse, kind project (sans fiche), ses 9 photos dans l’ordre d’Axel (31, 16, 29, 27, 23, 61, 19, 22, 70)');
-const INTERIEURS = ['waremme', 'bnp-bois-de-villers', 'ing-belgrade'];
-const PREMIERES = { 'waremme': 'waremme-02', 'bnp-bois-de-villers': 'bnp-bois-de-villers-01', 'ing-belgrade': 'ing-belgrade-02', 'belfius-braine-l-alleud': 'belfius-braine-l-alleud-03', 'bnp-braine-le-comte': 'bnp-braine-le-comte-02', 'gilly': 'gilly-02', 'ing-tervuren': 'ing-tervuren-01' };
+const INTERIEURS = ['bnp-bois-de-villers', 'ing-belgrade'];
+const PREMIERES = { 'waremme': 'waremme-03', 'wayez-27': 'wayez-27-02', 'bnp-bois-de-villers': 'bnp-bois-de-villers-01', 'ing-belgrade': 'ing-belgrade-02', 'belfius-braine-l-alleud': 'belfius-braine-l-alleud-03', 'bnp-braine-le-comte': 'bnp-braine-le-comte-02', 'gilly': 'gilly-02', 'ing-tervuren': 'ing-tervuren-01' };
 ok(Object.entries(PREMIERES).every(([id, k]) => bienAttendu(id).photos[0] === k),
-  'données : photo n° 1 — Waremme, Bois-de-Villers et Belgrade commencent par l’intérieur ; Braine-l’Alleud 03, Braine-le-Comte 02, Gilly 02, Tervuren 01 (choix d’Axel du 05/10) : ' + Object.keys(PREMIERES).map(id => bienAttendu(id).photos[0]).join(', '));
+  'données : photo n° 1 — Bois-de-Villers et Belgrade commencent par l’intérieur ; Waremme 03, Anderlecht 02, Braine-l’Alleud 03, Braine-le-Comte 02, Gilly 02, Tervuren 01 (choix d’Axel du 05/10) : ' + Object.keys(PREMIERES).map(id => bienAttendu(id).photos[0]).join(', '));
 {
   // recadrages (design/directions/src/recadrages.json, appliqués par reduire-photos.mjs) : les versions réduites ont le format du recadrage
   const rec = JSON.parse(fs.readFileSync(path.resolve(MAQ, '../directions/src/recadrages.json'), 'utf8')), cles = Object.keys(rec).filter(k => k !== '_');
   const formats = cles.map(k => { const s = tailleJpeg(path.join(IMG_DIR, `${k}-s.jpg`)), g = tailleJpeg(path.join(IMG_DIR, `${k}.jpg`)); return { k, s: s.width / s.height, g: g.width / g.height, grand: Math.max(g.width, g.height) }; });
-  ok(cles.length === 2 && formats.every(f => Math.abs(f.s - f.g) < 0.01 && f.grand === 1800), `recadrages : ${formats.map(f => `${f.k} (${f.s.toFixed(2)})`).join(', ')} — 800 et 1800 px au même format`);
-  const blc = tailleJpeg(path.join(IMG_DIR, 'bnp-braine-le-comte-02-s.jpg')), terv = tailleJpeg(path.join(IMG_DIR, 'ing-tervuren-01-s.jpg'));
-  ok(Math.abs(blc.width / blc.height - 1.04) < 0.02 && Math.abs(terv.width / terv.height - 4 / 3) < 0.01, `Braine-le-Comte 02 recadrée presque carrée (${(blc.width / blc.height).toFixed(2)}), Tervuren 01 garde le 4:3 (${(terv.width / terv.height).toFixed(2)})`);
+  ok(cles.length === 3 && formats.every(f => Math.abs(f.s - f.g) < 0.01 && f.grand === 1800), `recadrages : ${formats.map(f => `${f.k} (${f.s.toFixed(2)})`).join(', ')} — 800 et 1800 px au même format`);
+  const blc = tailleJpeg(path.join(IMG_DIR, 'bnp-braine-le-comte-02-s.jpg')), terv = tailleJpeg(path.join(IMG_DIR, 'ing-tervuren-01-s.jpg')), gil = tailleJpeg(path.join(IMG_DIR, 'gilly-02-s.jpg'));
+  ok(Math.abs(blc.width / blc.height - 1.04) < 0.02 && [terv, gil].every(t => Math.abs(t.width / t.height - 4 / 3) < 0.01), `Braine-le-Comte 02 recadrée presque carrée (${(blc.width / blc.height).toFixed(2)}) ; Tervuren 01 et Gilly 02 gardent le 4:3 (${(terv.width / terv.height).toFixed(2)}, ${(gil.width / gil.height).toFixed(2)})`);
 }
 {
   // chaque fichier cité par la page existe : src et srcset, et les photos 1800 px de la visionneuse (window.BIENS), que la page ne charge qu'à l'ouverture
@@ -797,7 +797,7 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
     'usages des 4 agences sans « Point Bancontact » (data/projects.json et page) : ' + USAGES.join(' · '));
   const rangs = MOSAIQUE.map(r => r.filter(x => !x.startsWith('cas:')));
   const rangDe = id => rangs.findIndex(r => r.includes(id));
-  ok(INTERIEURS.every((a, i) => INTERIEURS.every((b, j) => i === j || Math.abs(rangDe(a) - rangDe(b)) >= 2)), `les trois intérieurs en photo n° 1 un rang sur deux, sans se toucher (${INTERIEURS.map(id => `${id} : rangée ${rangDe(id) + 1}`).join(' ; ')})`);
+  ok(INTERIEURS.every((a, i) => INTERIEURS.every((b, j) => i === j || Math.abs(rangDe(a) - rangDe(b)) >= 2)), `les deux intérieurs en photo n° 1 ne se touchent pas (${INTERIEURS.map(id => `${id} : rangée ${rangDe(id) + 1}`).join(' ; ')})`);
   const cs = await p.evaluate(() => [...document.querySelectorAll('.mos .cas')].map(c => { const i = c.querySelector('.cas__in'), r = c.getBoundingClientRect(), rang = c.parentElement, cases = [...rang.children];
     return { cls: c.className, eyebrow: (c.querySelector('.eyebrow') || {}).textContent || '', h2: c.querySelector('h2') ? c.querySelector('h2').textContent : '', p: c.querySelector('.cas__phrase') ? c.querySelector('.cas__phrase').textContent : '',
       fond: getComputedStyle(c).backgroundColor, rogne: i.scrollHeight > i.clientHeight + 1, place: `${[...document.querySelectorAll('.mos__rang')].indexOf(rang) + 1}.${cases.indexOf(c) + 1}`, ff: getComputedStyle(c.querySelector('h2, .cas__phrase')).fontFamily.split(',')[0].replace(/"/g, '') }; }));

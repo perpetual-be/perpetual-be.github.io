@@ -1,5 +1,6 @@
 {
   "_": "Recadrages appliqués par reduire-photos.mjs à l'original, après redressement EXIF, avant la réduction : fractions de la largeur (gauche, largeur) et de la hauteur (haut, hauteur) de l'original. La clé est le nom du fichier sans extension. Les originaux du Drive restent entiers.",
   "bnp-braine-le-comte-02": { "gauche": 0.2417, "haut": 0.0167, "largeur": 0.5458, "hauteur": 0.7, "pourquoi": "Recentré sur le bâtiment central, avec un peu des voisins : ni balises de chantier ni chaussée (Axel, 05/10/2026)." },
-  "ing-tervuren-01": { "gauche": 0.1583, "haut": 0.0333, "largeur": 0.8167, "hauteur": 0.8167, "pourquoi": "Sans le toit de la voiture au premier plan ; format 4:3 gardé (Axel, 05/10/2026)." }
+  "ing-tervuren-01": { "gauche": 0.1583, "haut": 0.0333, "largeur": 0.8167, "hauteur": 0.8167, "pourquoi": "Sans le toit de la voiture au premier plan ; format 4:3 gardé (Axel, 05/10/2026)." },
+  "gilly-02": { "gauche": 0.2, "haut": 0.1111, "largeur": 0.6, "hauteur": 0.6, "pourquoi": "Resserré sur le coin de rue et le bâtiment CASH : moins de chaussée au premier plan ; format 4:3 gardé (proposition de Cowork acceptée par Axel, 05/10/2026)." }
 }
