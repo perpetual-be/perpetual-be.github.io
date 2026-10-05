@@ -1,0 +1,35 @@
+---
+// Une tuile de la mosaïque des agences, vue Réalisations (lot 5, 05/10/2026) : mêmes balises et classes que la tuile de realisationsPage() dans
+// design/maquette/src/build.mjs, la maquette étant la référence (styles : src/styles/realisations.css). Un bien (kind agency ou gallery), dans le style des
+// blocs : un album (div.tuile#<id>, ./Album.astro) — ses photos, son champ selection dans l'ordre, se parcourent sur place et un clic ouvre la visionneuse sur
+// la photo affichée —, avec la ville en serif blanc (.tuile__nom), Surface et Usage au survol et au focus clavier (.tuile__faits), la surface pour le
+// téléphone (.tuile__mobile). Nom accessible : « ville, surface, usage — n photos ». La case a le format de sa photo n° 1 (--r, au millième, la valeur de la
+// maquette) : sa largeur dans la rangée lui est proportionnelle, rien n'est recadré.
+// Les photos, par ProjectPhoto, toutes paresseuses : chacune avec le sizes de la case (sizesTuile, ./tailles.ts).
+import Album from './Album.astro';
+import Fait from './Fait.astro';
+import { sizesTuile } from './tailles';
+
+interface Props {
+  id: string;
+  ville: string;
+  surface: string;
+  usage: string;
+  /** Les clés des photos, dans l'ordre ; la première est celle de la tuile et lui donne son format. */
+  photos: string[];
+  /** Le format de la photo n° 1 (largeur / hauteur), celui de la case. */
+  r: number;
+  /** La part de la case dans sa rangée (son format ÷ la somme des formats de la rangée), à quatre décimales. */
+  part: string;
+  /** Les écarts de sa rangée, en px (14 par écart). */
+  ecarts: number;
+  /** L'indice de l'album dans ceux de la visionneuse. */
+  indice: number;
+}
+
+const { id, ville, surface, usage, photos, r, part, ecarts, indice } = Astro.props;
+const vues = await Promise.all(photos.map(async (cle) => ({ cle, sizes: await sizesTuile(cle, r, part, ecarts), loading: 'lazy' as const })));
+const n = photos.length;
+---
+
+<Album classe="tuile" id={id} style={`--r:${r.toFixed(3)}`} indice={indice} label={`${ville}, ${surface}, ${usage} — ${n} photo${n > 1 ? 's' : ''}`} photos={vues}><span class="tuile__texte" aria-hidden="true"><span class="tuile__nom">{ville}</span><span class="tuile__faits"><Fait etiquette="Surface" valeur={surface} /><Fait etiquette="Usage" valeur={usage} /></span><span class="tuile__mobile">{surface}</span></span></Album>

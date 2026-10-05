@@ -1,18 +1,16 @@
 /* La visionneuse du site (lot 5, 05/10/2026) : les règles .visio… et body.visio-ouverte de design/maquette/maquette.css (section 4), reprises telles
-   quelles, et leurs règles téléphone (section 5) ; une règle en plus, qui garde le cadre en 4:3 avec une photo en hauteur (min-height du cadre, plus
-   bas). Importé par les pages qui ont une visionneuse (les fiches ; au message 2, la vue Réalisations), après le socle (src/styles/base.css…). Balisage et
-   script : src/components/Visionneuse.astro. */
+   quelles, et leurs règles téléphone (section 5) — min-height:0 du cadre compris, qui le garde en 4:3 avec une photo en hauteur : ajouté d'abord au site
+   (message 1), il est dans maquette.css depuis le 05/10 (commit « Update maquette.css »). Importé par les pages qui ont une visionneuse (les fiches, la vue
+   Réalisations), après le socle (src/styles/base.css…). Balisage et script : src/components/Visionneuse.astro. */
 /* visionneuse : fond blanc, photo entière (contain) dans un cadre 4:3, flèches de part et d'autre, la ville (ou le projet) puis « surface · usage » (ou
    le lieu et la surface) et « 1 / n » dessous — sur une fiche, le compteur seul ;
    « Fermer », Échap, flèches du clavier */
 .visio{position:fixed;inset:0;z-index:100;background:var(--blanc);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 88px 36px}
 .visio[hidden]{display:none}
-.visio__cadre{position:relative;width:min(100%,calc((100vh - 170px) * 4 / 3));aspect-ratio:4/3}
-/* écart voulu avec maquette.css (lot 5, 05/10/2026), la seule règle qui n'en vient pas : sans elle, le cadre — un bloc à aspect-ratio, élément d'une boîte
-   flex — garde pour hauteur minimale celle de son contenu, et une photo en hauteur l'allonge (Ateliers 118 à 1 521 × 705 : 713 × 952 px, la photo rognée
-   en haut et en bas, le compteur hors de la fenêtre). Avec elle, le cadre reste en 4:3 et la photo y est entière (contain) ; rien ne change pour une photo
-   en largeur. À reporter dans maquette.css. */
-.visio__cadre{min-height:0}
+.visio__cadre{position:relative;width:min(100%,calc((100vh - 170px) * 4 / 3));aspect-ratio:4/3;min-height:0}   /* min-height:0 (lot 5, 05/10, relevé par Claude Code sur le site) : sans lui, une photo en hauteur allongeait le cadre (Ateliers 118 : 713 × 952 dans 705 px de fenêtre), rognée, le compteur hors de l'écran */
+/* min-height:0 : le cadre — un bloc à aspect-ratio, élément d'une boîte flex — garderait sinon pour hauteur minimale celle de son contenu ; avec lui, il reste
+   en 4:3 et une photo en hauteur y est entière (contain) — Ateliers 118 sur les fiches, Pont-à-Celles, Perwez et Schaerbeek sur la vue Réalisations ; rien ne
+   change pour une photo en largeur. */
 .visio__piste{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
 .visio__piste::-webkit-scrollbar{display:none}
 .visio__piste img{flex:0 0 100%;width:100%;height:100%;object-fit:contain;scroll-snap-align:start;scroll-snap-stop:always}

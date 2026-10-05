@@ -45,6 +45,9 @@ const projects = defineCollection({
     address: z.string().optional(),
     surface: z.string().optional(),
     use: z.string().optional(),
+    // Projet sans fiche dont l'usage n'est pas encore connu (lot 5, 05/10/2026 ; Brosse) : le troisième fait de son bloc de la vue Réalisations, « Projet »,
+    // provisoire — l'intitulé du site 2020 —, montré tant que use manque (lu aussi par design/maquette/src/build.mjs).
+    projet: z.string().optional(),
     order: z.number().optional(),
     photos: z.array(z.string()).default([]),
     // Les photos montrées, en clés <id>-NN sans extension, dans l'ordre d'affichage : projet détaillé, la photo du projet puis
@@ -53,6 +56,9 @@ const projects = defineCollection({
     // Projet détaillé (lot 5) : la photo de tête de sa fiche (la première clé de selection), son cadre — paysage, 50 % de la page au format 2100 / 1694 ;
     // carre, 40 %, 1:1 — et son point focal (object-position, ex. « 50% 0% »).
     tete: z.object({ cadre: z.enum(['paysage', 'carre']), focal: z.string() }).optional(),
+    // Projet détaillé ou sans fiche (lot 5, 05/10/2026) : le bloc de la vue Réalisations — sa photo est la première clé de selection —, son point focal
+    // (object-position, ex. « 50% 30% » ; lu aussi par design/maquette/src/build.mjs).
+    bloc: z.object({ focal: z.string() }).optional(),
     // aperçu de la liste des 4 de la Home : photo (par défaut la première de selection) et cadrage dans le cadre 4:5, en fractions de l'image.
     // Projets détaillés ; cadre = [x, y, largeur, hauteur], x et largeur sur la largeur de l'image entière, y et hauteur sur sa hauteur.
     apercu: z

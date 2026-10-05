@@ -1,0 +1,38 @@
+---
+// Un album de la vue Réalisations (lot 5, 05/10/2026), commun au bloc de Brosse et aux tuiles de la mosaïque : mêmes balises et classes que albumPhotos()
+// de design/maquette/src/build.mjs, la maquette étant la référence (styles : src/styles/realisations.css). Les photos se parcourent sur place : un bouton sur
+// toute la surface (.photos__ouvrir, le nom accessible de l'album) porte la piste — span.photos, tabindex -1 (pas d'arrêt de tabulation sur elle), une vue
+// (.photos__vue) par photo, qui rogne le zoom du survol ; la première <img> a la classe photos__une — et le texte posé sur la photo (le contenu du
+// composant, masqué aux lecteurs d'écran : le nom accessible le dit déjà) ; à côté du bouton (un bouton ne contient pas d'autres boutons), s'il y a plus
+// d'une photo, « 1 / n » (.photos__compteur) et les deux flèches (.photos__fleche). data-album : l'indice de l'album dans ceux de la visionneuse
+// (src/components/Visionneuse.astro, dont le script fait tourner la piste en boucle, tient le compteur et ouvre la visionneuse sur la photo affichée) ;
+// data-n : le nombre de photos. Sans JavaScript, la piste se fait glisser, sans compteur ni flèches (CSS).
+// Les photos, par ProjectPhoto, texte alternatif vide comme la maquette : chacune avec son sizes, son point focal et son chargement (paresseux, sauf la
+// photo n° 1 de Brosse).
+import ProjectPhoto from '../ProjectPhoto.astro';
+
+export interface PhotoAlbum {
+  cle: string;
+  sizes: string;
+  focal?: string;
+  loading: 'eager' | 'lazy';
+}
+
+interface Props {
+  /** Les classes de l'album : « bloc bloc--album » (Brosse) ou « tuile ». */
+  classe: string;
+  id: string;
+  /** Le style de l'album (« --r:1.039 » pour une tuile : le format de sa photo n° 1). */
+  style?: string;
+  /** L'indice de l'album dans ceux de la visionneuse (data-album). */
+  indice: number;
+  /** Le nom accessible du bouton : « ville, surface, usage — n photos », « Brosse, Forest, 800 m² — 9 photos ». */
+  label: string;
+  photos: PhotoAlbum[];
+}
+
+const { classe, id, style, indice, label, photos } = Astro.props;
+const n = photos.length;
+---
+
+<div class={classe} id={id} style={style} data-album={indice} data-n={n}><button type="button" class="photos__ouvrir" aria-label={label}><span class="photos" tabindex="-1">{photos.map((ph, i) => <span class="photos__vue"><ProjectPhoto cle={ph.cle} class={i === 0 ? 'photos__une' : undefined} sizes={ph.sizes} focal={ph.focal} loading={ph.loading} alt="" /></span>)}</span><slot /></button>{n > 1 && <Fragment><span class="photos__compteur" aria-hidden="true">{`1 / ${n}`}</span><button type="button" class="photos__fleche photos__fleche--g" aria-label="Photo précédente"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M12 2 2 14l10 12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button><button type="button" class="photos__fleche photos__fleche--d" aria-label="Photo suivante"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M2 2l10 12L2 26" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></Fragment>}</div>

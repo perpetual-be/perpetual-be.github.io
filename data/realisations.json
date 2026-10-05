@@ -1,0 +1,14 @@
+{
+  "rangees": [
+    { "classe": "a", "projets": [{ "id": "community", "part": 7 }, { "id": "ateliers-118", "part": 5 }] },
+    { "classe": "b", "projets": [{ "id": "the-bank", "part": 5 }, { "id": "data-box", "part": 7 }] },
+    { "classe": "seul", "projets": [{ "id": "brosse", "part": 12 }] }
+  ],
+  "mosaique": [
+    ["cas:debut", "bnp-braine-le-comte", "bnp-pont-a-celles", "bnp-jambes"],
+    ["belfius-braine-l-alleud", "ing-haaltert", "belfius-mettet"],
+    ["bnp-bois-de-villers", "ing-tervuren", "perwez", "ing-welkenraedt"],
+    ["wayez-27", "ing-landen", "waremme"],
+    ["gilly", "consolation", "ing-belgrade", "cas:fin"]
+  ]
+}

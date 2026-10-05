@@ -31,13 +31,25 @@
 //     au bas des chapitres, puis juste après eux (sticky, plus au téléphone) ; mosaïque — mêmes rangées et mêmes boîtes au pixel pour chaque tuile, encore
 //     après un passage de 1521 à 1280 px de large, clés, ratios, sizes sur chaque <source>, chaque photo servie au moins aussi large que sa tuile à 1×,
 //     captures avec la même tolérance — ; visionneuse — rien d'elle chargé avant la première ouverture, ouverte sur la troisième tuile (« 3 / N »), la photo
-//     entière dans le cadre 4:3, cadre et compteur dans la fenêtre (une photo en hauteur allonge le cadre de la maquette : défaut de maquette.css que le site
-//     corrige, signalé en information), flèches et clavier en boucle avec les mêmes compteurs et les mêmes photos que la maquette, Tab gardé dedans, Échap qui
-//     rend le focus à la tuile, photos en WebP de 1 800 px au plus, jamais au-delà de la source — ; voisins en boucle dans l'ordre du champ order, liens qui
-//     répondent ; « Réalisations » actif sans aria-current ; titre de l'onglet, pas de description ; polices, requêtes, noindex, console ;
+//     entière dans le cadre 4:3, cadre et compteur dans la fenêtre, mêmes boîtes que la visionneuse de la maquette (photo en hauteur comprise), flèches et
+//     clavier en boucle avec les mêmes compteurs et les mêmes photos que la maquette, Tab gardé dedans, Échap qui rend le focus à la tuile, photos en WebP de
+//     1 800 px au plus, jamais au-delà de la source — ; voisins en boucle dans l'ordre du champ order, liens qui répondent ; « Réalisations » actif sans
+//     aria-current ; titre de l'onglet, pas de description ; polices, requêtes, noindex, console ;
+//   · la vue Réalisations (lot 5, message 2), /realisations, comparée à design/maquette/realisations.html?panneau=off : même hauteur de page ; mêmes boîtes au
+//     pixel (l'ouverture, les trois rangées de projets — 7/5, 5/7, Brosse sur toute la largeur, hauteur clamp(340 px, 100vh − 262 px, 540 px) —, les cinq
+//     rangées de la mosaïque et chacune de leurs cases, écarts de 14 px ; au téléphone, un bloc par ligne en 4:3, les tuiles en deux colonnes 4:5, les cases
+//     de texte sur toute la largeur), encore après un passage de 1521 à 1280 px de large ; mêmes textes (espaces insécables compris), mêmes albums (data-album,
+//     data-n, noms accessibles, --r, « 1 / n »), mêmes liens ; photos n° 1 des blocs et des tuiles — clé, chargement, même boîte et même cadrage
+//     (object-position : bloc.focal), jamais agrandies à 1×, assez grandes à 2× (ou la plus grande version : Brosse jusqu'à 2 362 px), captures comparées
+//     avec la tolérance des fiches — ; captures identiques au pixel près, les photos masquées, de l'ouverture, de chaque bloc, de chaque tuile et des deux
+//     cases de texte, puis du pied de page ; survol (faits, zoom 1,035, flèches) et focus clavier dans l'ordre de la maquette, mêmes états qu'elle ; photos
+//     parcourables (flèches en boucle, Entrée au clavier, la souris partie, au doigt au téléphone) ; visionneuse (ouverte sur la photo affichée, légendes,
+//     Tab gardé dedans, Échap qui rend le focus au bouton de la photo, les trois photos en hauteur entières dans le cadre 4:3, mêmes boîtes que la maquette,
+//     rien de chargé avant la première ouverture, ses photos en WebP de 1 800 px au plus) ; sans JavaScript ; « Réalisations » actif avec aria-current ;
+//     titre de l'onglet, description ; polices, requêtes, noindex, console ;
 //   · tout dist/ : aucune occurrence de « julien@ » et chaque mailto égal à site.email, aucun commentaire venu de content/, espaces insécables avant « : »
-//     dans les textes rendus, tous les liens internes répondent sauf /realisations (lot 5, message 2 : listé, pas compté), aucun lien vers les fiches de la
-//     maquette (projet-<id>.html), une adresse inconnue sert la 404.
+//     dans les textes rendus, aria-current sur le lien de la page elle-même seulement (Engagements, Réalisations), tous les liens internes répondent, aucun
+//     lien vers les fiches de la maquette (projet-<id>.html), une adresse inconnue sert la 404.
 // En cas d'écart sur une capture : le nombre de pixels différents et une image des écarts (en rouge) dans scripts/ecarts/ (dossier ignoré par Git), avec
 // les deux captures. Affiche « Tout est identique » quand tout passe (code de sortie 1 sinon).
 // Usage, depuis la racine du dépôt, après npm run build : NODE_PATH=$(npm root -g) npm run comparer
@@ -427,12 +439,15 @@ try {
     ok(te.largeur >= 2 * oe.w && te.largeur <= 870, `l'œuvre à 2× : ${te.nom} (${te.format} ${te.largeur} × ${te.hauteur}) servi pour ${Math.round(oe.w)} px × 2, assez grand sans dépasser la source (870 px)`);
     await retina.ctx.close();
   }
-  // « Engagements » actif (aria-current) sur sa page seulement : les pages construites, sous-dossiers compris (les fiches, dist/realisations/)
+  // aria-current="page" sur le lien de la page elle-même seulement — « Engagements » sur engagements.html, « Réalisations » sur realisations.html (lot 5,
+  // message 2 ; les fiches ont le trait sans aria-current) : les pages construites, sous-dossiers compris (les fiches, dist/realisations/)
   {
+    const PROPRES = { 'engagements.html': 'Engagements', 'realisations.html': 'Réalisations' };
     const pages = fs.readdirSync(path.join(REPO, 'dist'), { recursive: true }).filter(f => f.endsWith('.html')).map(posix).sort();
     const actifs = pages.map(f => { const h = fs.readFileSync(path.join(REPO, 'dist', f), 'utf8'); const m = h.match(/<a href="([^"]+)" class="trait is-active"[^>]*aria-current="page"[^>]*>([^<]+)<\/a>/g) || []; return `${f} : ${m.length ? m.map(x => x.replace(/^.*>([^<]+)<\/a>$/, '$1')).join(', ') : '—'}`; });
-    ok(pages.includes('engagements.html') && actifs.every(a => a === 'engagements.html : Engagements' || a.endsWith(' : —')) && pages.every(f => (fs.readFileSync(path.join(REPO, 'dist', f), 'utf8').match(/aria-current/g) || []).length === (f === 'engagements.html' ? 1 : 0)),
-      `aria-current="page" sur le lien « Engagements » de engagements.html seulement — ${actifs.join(' · ')}`);
+    ok(Object.keys(PROPRES).every(f => pages.includes(f)) && actifs.every(a => Object.entries(PROPRES).some(([f, l]) => a === `${f} : ${l}`) || a.endsWith(' : —'))
+      && pages.every(f => (fs.readFileSync(path.join(REPO, 'dist', f), 'utf8').match(/aria-current/g) || []).length === (PROPRES[f] ? 1 : 0)),
+      `aria-current="page" sur le lien de la page elle-même seulement, « Engagements » sur engagements.html et « Réalisations » sur realisations.html — ${actifs.join(' · ')}`);
   }
 
   // ---------- pages de texte sans maquette (lot 6) : mentions légales, confidentialité et 404, sur le gabarit d'Engagements ----------
@@ -651,17 +666,9 @@ try {
       const attenduCpts = [...(tel ? [] : [`${s % N + 1} / ${N}`, `${s} / ${N}`]), `${s % N + 1} / ${N}`, `${s} / ${N}`, `${N} / ${N}`, `1 / ${N}`];
       ok(JSON.stringify(cpts.slice(1)) === JSON.stringify(attenduCpts) && photos.slice(1).every((ph, k) => ph === +cpts[k + 1].split(' / ')[0]) && JSON.stringify(cpts) === JSON.stringify(cptsMaq) && JSON.stringify(photos) === JSON.stringify(photosMaq),
         `visionneuse : ${tel ? '' : 'flèches → puis ←, '}→ puis ← au clavier, jusqu'à la dernière puis la boucle vers la première — ${cpts.join(' → ')} ; mêmes compteurs et mêmes photos que la maquette`);
-      // les boîtes de la visionneuse ouverte, comme dans la maquette — sauf, si la photo est en hauteur, celles du cadre et de ce qui le suit : la maquette
-      // allonge alors son cadre au-delà du 4:3 (défaut de maquette.css), que le site garde (.visio__cadre{min-height:0}, src/styles/visionneuse.css)
-      const cadreMaq = vm.r[0].ratio;
-      if (Math.abs(cadreMaq - 4 / 3) < 0.01) memesBoites(vs.vb, vm.vb, 'visionneuse ouverte', 'le haut de la visionneuse');
-      else {
-        const sauf = o => Object.fromEntries(Object.entries(o).filter(([k]) => !/^\.visio__(cadre|bas|compteur)/.test(k)));
-        memesBoites(sauf(vs.vb), sauf(vm.vb), 'visionneuse ouverte (« Fermer », flèches)', 'le haut de la visionneuse');
-        ok(vs.vb['.visio__cadre'][0] === vm.vb['.visio__cadre'][0] && vs.vb['.visio__cadre'][2] === vm.vb['.visio__cadre'][2],
-          `visionneuse : cadre au même x et de la même largeur que dans la maquette (${vs.vb['.visio__cadre'][2]} px), en 4:3 (${vs.vb['.visio__cadre'][2]} × ${vs.vb['.visio__cadre'][3]})`);
-        console.log(`  info  maquette : sur cette photo en hauteur, son cadre s'allonge à ${vm.vb['.visio__cadre'][2]} × ${vm.vb['.visio__cadre'][3]} px (${cadreMaq.toFixed(3)} au lieu de 4:3)${vm.r[0].dansFenetre ? '' : ', hors de la fenêtre'}${vm.r[0].compteurVisible ? '' : ', compteur hors de la fenêtre'} — défaut de maquette.css que le site corrige (.visio__cadre{min-height:0}), à reporter dans la maquette`);
-      }
+      // les boîtes de la visionneuse ouverte, comme dans la maquette — une photo en hauteur comprise : le cadre reste en 4:3 des deux côtés
+      // (.visio__cadre{min-height:0}, dans maquette.css depuis le 05/10)
+      memesBoites(vs.vb, vm.vb, 'visionneuse ouverte', 'le haut de la visionneuse');
       ok(vs.tab.every(x => x === 'visio') && !vs.fin.ouvert && !vs.fin.corps && vs.fin.focus === `Agrandir la photo ${s} sur ${N}` && vm.fin.focus === vs.fin.focus,
         `visionneuse : Tab et Maj+Tab restent dedans (${vs.tab.length} arrêts) ; Échap la ferme et rend le focus à la tuile (« ${vs.fin.focus} »)`);
       const apres = site.requetes.filter(u => grandes.includes(u));
@@ -717,6 +724,334 @@ try {
     await r.ctx.close();
   }
 
+  // ---------- la vue Réalisations (lot 5, message 2) : /realisations, comparée à design/maquette/realisations.html?panneau=off, aux trois formats ----------
+  {
+    const MAQUETTE_REALISATIONS = pathToFileURL(path.join(REPO, 'design/maquette/realisations.html')).href + '?panneau=off';
+    const PROJETS = JSON.parse(fs.readFileSync(path.join(REPO, 'data/projects.json'), 'utf8')), COMPO = JSON.parse(fs.readFileSync(path.join(REPO, 'data/realisations.json'), 'utf8'));
+    const projet = id => PROJETS.find(p => p.id === id);
+    // les projets dans l'ordre des rangées ; les biens dans l'ordre de la mosaïque (la ville : le nom d'une agence, le lieu d'un bien de la galerie)
+    const BLOCS = COMPO.rangees.flatMap(r => r.projets.map(x => x.id));
+    const BIENS = COMPO.mosaique.flat().filter(x => !x.startsWith('cas:')).map(id => { const p = projet(id); return { id, ville: p.kind === 'agency' ? p.name : p.location, surface: p.surface, usage: p.use, photos: p.selection && p.selection.length ? p.selection : [`${id}-01`] }; });
+    const CASES = [...BLOCS, ...BIENS.map(b => b.id)];
+    const REAL = ['.p2-ouv', '.page__titre', '#projets', '.alt__rang', '.bloc', '.bloc__texte', '.bloc__nom', '.bloc__faits', '.bloc__mobile', '#agences', '.mos', '.mos__rang', '.tuile', '.tuile__texte', '.tuile__nom', '.tuile__faits',
+      '.tuile__mobile', '.cas', '.cas__in', '.cas__enonce', '.cas__phrase', '.photos__compteur', '.photos__fleche', '.site-footer'];
+    // les cases du parcours, dans l'ordre de la page (blocs, puis tuiles et cases de texte de la mosaïque) : leurs boîtes, au pixel
+    const CASES_PAGE = ['.alt__rang', '.alt__rang > *', '.mos__rang', '.mos__rang > *'];
+    const masquerPhotosReal = (p, oui) => masquer(p, 'masque-photos-real', '.bloc img,.photos__vue img{visibility:hidden}', oui);
+    // la photo affichée d'un bloc ou d'une tuile : l'<img> du bloc-lien (dans son <picture> sur le site), ou la première vue de son album, hors clones de la
+    // boucle ; amenée au milieu de la fenêtre et chargée (les tuiles sont paresseuses), avec sa boîte, son cadrage, la version servie et son srcset
+    const infosCase = (p, id) => p.evaluate(async id => {
+      const c = document.getElementById(id), i = c.querySelector(':scope > img, :scope > picture > img, .photos__vue:not([data-clone]) .photos__une');
+      c.scrollIntoView({ block: 'center', behavior: 'instant' });
+      if (!(i.complete && i.naturalWidth)) await Promise.race([new Promise(r => { i.addEventListener('load', r, { once: true }); i.addEventListener('error', r, { once: true }); }), new Promise(r => setTimeout(r, 8000))]);
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const b = c.getBoundingClientRect(), bi = i.getBoundingClientRect(), s = getComputedStyle(i), source = i.parentElement.tagName === 'PICTURE' ? i.parentElement.querySelector('source') : null;
+      const largeurs = (source ? source.srcset : i.getAttribute('srcset') || '').split(',').map(x => parseInt(x.trim().split(' ')[1])).filter(Boolean);
+      return { zone: { left: b.left, top: b.top, width: b.width, height: b.height }, boite: [Math.round(b.left), Math.round(b.top + scrollY), Math.round(b.width), Math.round(b.height)],
+        img: [Math.round(bi.left), Math.round(bi.top + scrollY), Math.round(bi.width), Math.round(bi.height)], position: s.objectPosition, fit: s.objectFit, src: i.currentSrc, w: bi.width, h: bi.height,
+        cle: i.dataset.cle || i.getAttribute('src').replace(/^.*\//, '').replace(/(-s|-l)?\.jpg$/, ''), loading: i.getAttribute('loading'), alt: i.getAttribute('alt'), sizes: i.getAttribute('sizes'),
+        sizesPartout: [...i.parentElement.querySelectorAll('source')].every(x => x.getAttribute('sizes') === i.getAttribute('sizes')), maxSrcset: Math.max(...largeurs), charge: i.complete && i.naturalWidth > 0 };
+    }, id);
+    // une case (bloc, tuile, case de texte), amenée en haut de la fenêtre et capturée dans la fenêtre — ses photos masquées : rien à attendre
+    const captureCase = async (p, sel) => {
+      await p.evaluate(s => document.querySelector(s).scrollIntoView({ block: 'start', behavior: 'instant' }), sel);
+      await p.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+      await p.waitForTimeout(60);
+      const b = await p.evaluate(s => { const r = document.querySelector(s).getBoundingClientRect(); return { x: r.left, y: r.top, width: r.width, height: r.height }; }, sel);
+      return p.screenshot({ type: 'png', animations: 'disabled', clip: b });
+    };
+    // les textes, les noms accessibles et les attributs des cases, pour les comparer à la maquette ; les photos de chaque album (clés, hors clones)
+    const contenus = p => p.evaluate(() => ({
+      // les nœuds de texte, sans les blancs entre balises (la maquette en a, le site non) : les espaces insécables restent
+      textes: ['.p2-ouv', '#projets', '#agences'].map(s => { const w = document.createTreeWalker(document.querySelector(s), NodeFilter.SHOW_TEXT), r = []; let t; while ((t = w.nextNode())) if (/[^ \t\n\r]/.test(t.nodeValue)) r.push(t.nodeValue); return r.join('|'); }).join(' ¶ '),
+      insecables: [...document.querySelectorAll('.cas__enonce, .cas__phrase')].map(e => (e.textContent.match(/\S\u00A0\S+/g) || []).join(', ')).filter(Boolean).join(' ; '),
+      albums: [...document.querySelectorAll('[data-album]')].map(a => `${a.id} ${a.dataset.album} ${a.dataset.n} « ${a.querySelector('.photos__ouvrir').getAttribute('aria-label')} » ${a.querySelector('.photos').getAttribute('tabindex')} ${a.style.getPropertyValue('--r') || '-'} ${(a.querySelector('.photos__compteur') || {}).textContent || '-'} ${[...a.querySelectorAll('.photos__fleche')].map(f => f.getAttribute('aria-label')).join('/')}`),
+      liens: [...document.querySelectorAll('a.bloc')].map(a => `${a.id} → ${a.getAttribute('href').replace(/^projet-(.+)\.html$/, '/realisations/$1')}`).join(' | '),
+      cas: [...document.querySelectorAll('.cas')].map(c => `${c.className} ${c.style.getPropertyValue('--r')} ${c.querySelector('h2, p').tagName}.${c.querySelector('h2, p').className}`).join(' | '),
+      provisoire: [...document.querySelectorAll('.provisoire')].map(e => `${e.closest('[id]').id} « ${e.title} »`).join(' | '),
+      vues: [...document.querySelectorAll('[data-album]')].map(a => [...a.querySelectorAll('.photos__vue:not([data-clone]) img')].map(i => i.dataset.cle || i.getAttribute('src').replace(/^.*\//, '').replace(/-s\.jpg$/, '')).join(' ')) }));
+    // la visionneuse : ouverte ou non, le compteur, la légende, la photo montrée (son rang dans l'album, data-album : #visio-albums sur le site,
+    // window.BIENS dans la maquette), chargée, entière dans le cadre 4:3, cadre et compteur dans la fenêtre, et l'élément qui a le focus
+    const etatVisioReal = (p, k) => p.evaluate(k => {
+      const v = document.querySelector('.visio'), vp = v.querySelector('.visio__piste'), img = vp.children[Math.round(vp.scrollLeft / vp.clientWidth)], c = v.querySelector('.visio__cadre').getBoundingClientRect(), a = document.activeElement;
+      const albums = window.BIENS || JSON.parse(document.getElementById('visio-albums').textContent), bi = img && img.getBoundingClientRect(), src = img && img.getAttribute('src');
+      return { ouvert: !v.hidden && getComputedStyle(v).display !== 'none', corps: document.body.classList.contains('visio-ouverte'), cpt: v.querySelector('.visio__compteur').textContent, legende: v.querySelector('.visio__legende').innerHTML,
+        photo: src ? albums[k].l.indexOf(src) + 1 : 0, charge: !!img && img.complete && img.naturalWidth > 0, fit: img ? getComputedStyle(img).objectFit : null, ratio: +(c.width / c.height).toFixed(3),
+        entiere: !!bi && Math.abs(bi.left - c.left) < 0.5 && Math.abs(bi.top - c.top) < 0.5 && Math.abs(bi.width - c.width) < 0.5 && Math.abs(bi.height - c.height) < 0.5,
+        dansFenetre: c.top >= -0.5 && c.left >= -0.5 && c.bottom <= window.innerHeight + 0.5 && c.right <= window.innerWidth + 0.5,
+        compteurVisible: (() => { const b = v.querySelector('.visio__compteur').getBoundingClientRect(); return b.height > 0 && b.top >= 0 && b.bottom <= window.innerHeight; })(),
+        focus: a ? (a.closest('.visio') ? 'visio' : `${(a.closest('[data-album]') || a).id} ${a.className}`) : null };
+    }, k);
+    // une piste d'album à l'arrêt (le défilement fluide, puis le recentrage de la boucle) : ni mouvement depuis 300 ms ni position entre deux vues
+    const arret = (p, id) => p.evaluate(id => new Promise(fin => {
+      const pi = document.getElementById(id).querySelector('.photos'), c = pi.children, pas = c[1].getBoundingClientRect().left - c[0].getBoundingClientRect().left, t0 = performance.now(); let x = pi.scrollLeft, depuis = t0;
+      (function tour() { const t = performance.now(); if (pi.scrollLeft !== x) { x = pi.scrollLeft; depuis = t; }
+        if ((t - depuis > 300 && Math.abs(pi.scrollLeft / pas - Math.round(pi.scrollLeft / pas)) < 0.01) || t - t0 > 4000) fin(); else requestAnimationFrame(tour); })();
+    }), id);
+    // le compteur d'un album et la photo de la vue montrée (« (clone) » si c'est une copie de la boucle)
+    const etatAlbum = (p, id) => p.evaluate(id => { const t = document.getElementById(id), pi = t.querySelector('.photos'), c = pi.children, pas = c[1] ? c[1].getBoundingClientRect().left - c[0].getBoundingClientRect().left : pi.clientWidth, vue = c[Math.round(pi.scrollLeft / pas)], i = vue.querySelector('img');
+      return `${(t.querySelector('.photos__compteur') || {}).textContent || '-'} ${i.dataset.cle || i.getAttribute('src').replace(/^.*\//, '').replace(/-s\.jpg$/, '')}${vue.hasAttribute('data-clone') ? ' (clone)' : ''}`; }, id);
+    const etatRepos = p => p.evaluate(() => { const t = document.getElementById('bnp-jambes'), a = document.activeElement; return `${a.className} ${getComputedStyle(t.querySelector('.photos__fleche')).opacity} ${getComputedStyle(t.querySelector('.tuile__faits')).opacity}`; });
+    const ALBUMS_HAUTS = ['bnp-pont-a-celles', 'perwez', 'consolation'];   // les trois agences dont la photo n° 1 est en hauteur
+
+    for (const format of FORMATS) {
+      console.log(`\nRéalisations (/realisations), ${fmt(format)}`);
+      const nom = `realisations-${format[0]}x${format[1]}`, tel = format[0] <= 640;
+      const site = await ouvrir(SITE + '/realisations', format, { reducedMotion: 'reduce' }), maq = await ouvrir(MAQUETTE_REALISATIONS, format, { reducedMotion: 'reduce' });
+      ok(!maq.erreurs.length, `maquette ouverte sans erreur (design/maquette/realisations.html)` + (maq.erreurs.length ? ' — ' + maq.erreurs.join(' | ') : ''));
+      const hs = await hauteurDe(site.p), hm = await hauteurDe(maq.p);
+      ok(hs.defilement === hm.defilement && Math.abs(hs.corps - hm.corps) < 0.01, `Réalisations : même hauteur de page (site ${hs.defilement} px, maquette ${hm.defilement} px ; corps ${hs.corps} / ${hm.corps})`);
+      await masquerEntete(site.p, true);
+      // positions dans le document, défilement à 0 : l'ouverture, les rangées, chaque bloc, tuile et case de texte, leurs textes, compteurs et flèches
+      memesBoites(await boites(site.p, REAL, null), await boites(maq.p, REAL, null), 'Réalisations', 'le haut du document');
+      const cs = await contenus(site.p), cm = await contenus(maq.p);
+      ok(cs.textes === cm.textes && JSON.stringify(cs.albums) === JSON.stringify(cm.albums) && cs.liens === cm.liens && cs.cas === cm.cas && cs.provisoire === cm.provisoire && cs.insecables === cm.insecables && /s\u00A0services/.test(cs.insecables) && /à\u00A0ses/.test(cs.insecables),
+        `mêmes textes que la maquette (espaces insécables compris : ${cs.insecables.replace(/\u00A0/g, '⍽')}), mêmes albums (data-album, data-n, nom accessible, --r, « 1 / n », flèches), mêmes liens et cases de texte — ${cs.liens} ; ${cs.albums.length} albums ; ${cs.provisoire}`
+        + (cs.textes === cm.textes ? '' : ` — textes : site « ${cs.textes.slice(0, 120)}… » / maquette « ${cm.textes.slice(0, 120)}… »`) + (JSON.stringify(cs.albums) === JSON.stringify(cm.albums) ? '' : ' — albums : ' + cs.albums.filter((a, k) => a !== cm.albums[k]).slice(0, 3).map((a, k) => `site ${a} / maquette ${cm.albums[cs.albums.indexOf(a)]}`).join(' ; ')));
+      ok(JSON.stringify(cs.vues) === JSON.stringify(cm.vues) && cs.vues[0] === projet('brosse').selection.join(' ') && cs.vues.slice(1).every((v, k) => v === BIENS[k].photos.join(' ')),
+        `albums : les photos de chaque selection, dans l'ordre (Brosse ${cs.vues[0].split(' ').length}, puis les ${BIENS.length} biens : ${cs.vues.slice(1).reduce((n, v) => n + v.split(' ').length, 0)} vues), comme la maquette`);
+      // les rangées des projets et la mosaïque, d'après la maquette (check.mjs, section 9) ; au téléphone, une colonne de blocs 4:3, deux colonnes de tuiles 4:5
+      const g = await site.p.evaluate(() => { const r = e => e.getBoundingClientRect(), large = r(document.querySelector('.mos')).width;
+        return { large, rangs: [...document.querySelectorAll('.alt__rang')].map(x => ({ cls: x.className.replace('alt__rang alt__rang--', ''), h: r(x).height, l: [...x.children].map(c => r(c).width), ratios: [...x.children].map(c => r(c).width / r(c).height), gap: x.children[1] ? r(x.children[1]).left - r(x.children[0]).right : null, haut: r(x).top, bas: r(x).bottom })),
+          mos: [...document.querySelectorAll('.mos__rang')].map(x => ({ n: x.children.length, cases: [...x.children].map(c => ({ w: r(c).width, h: r(c).height, x: r(c).left, right: r(c).right, top: r(c).top, rr: parseFloat(c.style.getPropertyValue('--r')), cas: c.classList.contains('cas') })) })) }; });
+      if (!tel) {
+        const attendu = Math.min(540, Math.max(340, format[1] - 262)), [a, b, c] = g.rangs;
+        ok(g.rangs.length === 3 && a.cls === 'a' && b.cls === 'b' && c.cls === 'seul' && g.rangs.every(x => Math.abs(x.h - attendu) < 0.5 && (x.gap === null || Math.abs(x.gap - 14) < 0.5)) && Math.abs(b.haut - a.bas - 14) < 0.5 && Math.abs(c.haut - b.bas - 14) < 0.5
+          && Math.abs(a.l[0] / a.l[1] - 7 / 5) < 0.01 && Math.abs(b.l[1] / b.l[0] - 7 / 5) < 0.01 && c.l.length === 1 && Math.abs(c.l[0] - g.large) < 0.5,
+          `projets en 2-2-1 : 7/5, 5/7, puis Brosse sur toute la largeur (${g.rangs.map(x => x.l.map(Math.round).join(' / ')).join(', ')} px), ${Math.round(a.h)} px de haut (clamp(340 px, 100vh − 262 px, 540 px) → ${attendu}), écarts de 14 px`);
+        const memes = g.mos.every(x => x.cases.every(k => Math.abs(k.h - x.cases[0].h) < 0.5)), pleines = g.mos.every(x => Math.abs(x.cases[x.cases.length - 1].right - x.cases[0].x - g.large) < 0.5);
+        const entieres = g.mos.every(x => x.cases.every(k => Math.abs(k.w / k.h - k.rr) / k.rr < 0.002)), ecarts = g.mos.every(x => x.cases.slice(1).every((k, i) => Math.abs(k.x - x.cases[i].right - 14) < 0.5));
+        ok(g.mos.map(x => x.n).join('-') === '4-3-4-3-4' && memes && pleines && entieres && ecarts && Math.min(...g.mos.filter(x => x.n === 3).map(x => x.cases[0].h)) > Math.max(...g.mos.filter(x => x.n === 4).map(x => x.cases[0].h)),
+          `mosaïque ${g.mos.map(x => x.n).join('-')}, sur toute la largeur (${Math.round(g.large)} px), cases d'une rangée à la même hauteur (${g.mos.map(x => Math.round(x.cases[0].h)).join(' / ')} px ; les rangées de 3 plus hautes), chaque case au format de sa photo (--r), écarts de 14 px`);
+      } else {
+        const blocs = g.rangs.flatMap(x => x.ratios), tuiles = g.mos.flatMap(x => x.cases.filter(k => !k.cas)), cases = g.mos.flatMap(x => x.cases.filter(k => k.cas)), colonnes = [...new Set(tuiles.map(k => Math.round(k.x)))];
+        ok(g.rangs.every(x => x.l.length === 1 || x.gap === null || x.gap < 0) && blocs.length === 5 && blocs.every(q => Math.abs(q - 4 / 3) < 0.01) && g.rangs.flatMap(x => x.l).every(w => Math.abs(w - g.large) < 0.5),
+          `téléphone : un projet par ligne, sur toute la largeur (${Math.round(g.large)} px), en 4:3 (${blocs.map(q => q.toFixed(3)).join(', ')})`);
+        ok(colonnes.length === 2 && tuiles.length === 16 && tuiles.every(k => Math.abs(k.w / k.h - 0.8) < 0.01) && cases.length === 2 && cases.every(k => Math.abs(k.w - g.large) < 0.5),
+          `téléphone : les tuiles en deux colonnes (x = ${colonnes.join(' et ')}) en 4:5, les deux cases de texte sur toute la largeur`);
+      }
+
+      // les photos n° 1 des blocs et des tuiles : la clé (la première de selection), le chargement (blocs tout de suite, tuiles paresseuses), le texte alternatif,
+      // le sizes sur chaque <source> ; même boîte et même cadrage que la maquette (object-position : bloc.focal pour un bloc) ; la version servie jamais agrandie à
+      // 1× ; captures comparées avec la tolérance des fiches, les deux floutées
+      const photos = [], servies = [], ecarts = [];
+      for (const id of CASES) {
+        const s = await infosCase(site.p, id), m = await infosCase(maq.p, id), p = projet(id), bloc = BLOCS.includes(id);
+        const sv = await tailleServie(s.src), echelle = +Math.max(s.w / sv.largeur, s.h / sv.hauteur).toFixed(3);
+        photos.push({ id, s, m, ok: JSON.stringify(s.boite) === JSON.stringify(m.boite) && JSON.stringify(s.img) === JSON.stringify(m.img) && s.position === m.position && s.fit === 'cover' && m.fit === 'cover' && s.cle === m.cle
+          && s.cle === (bloc ? p.selection[0] : BIENS.find(b => b.id === id).photos[0]) && (!bloc || s.position === p.bloc.focal) && s.alt === '' && s.loading === (bloc ? 'eager' : 'lazy') && s.sizesPartout && s.charge });
+        servies.push({ id, cle: s.cle, w: s.w, h: s.h, servie: `${sv.largeur} × ${sv.hauteur}`, format: sv.format, echelle });
+        ecarts.push({ id, ...(await ecartMoyen(`${nom}-photo-${id}`, await captureZone(site.p, s.zone), await captureZone(maq.p, m.zone), FLOU_FICHE)) });
+      }
+      const fausses = photos.filter(x => !x.ok);
+      ok(!fausses.length, `photos n° 1 des ${BLOCS.length} blocs et des ${BIENS.length} tuiles : la première clé de selection, mêmes boîtes et même cadrage que la maquette (object-position, bloc.focal pour les blocs — ${photos.filter(x => BLOCS.includes(x.id)).map(x => `${x.s.cle} ${x.s.position}`).join(', ')} ; object-fit cover), blocs chargés tout de suite et tuiles paresseuses, texte alternatif vide, sizes sur chaque <source>`
+        + (fausses.length ? ' — ' + fausses.slice(0, 3).map(x => `${x.id} : site ${JSON.stringify({ boite: x.s.boite, img: x.s.img, position: x.s.position, cle: x.s.cle, loading: x.s.loading, charge: x.s.charge })} / maquette ${JSON.stringify({ boite: x.m.boite, img: x.m.img, position: x.m.position, cle: x.m.cle })}`).join(' ; ') : ''));
+      ok(servies.every(x => x.echelle <= 1), `photos n° 1 à 1× : jamais agrandies — ${servies.map(x => `${x.cle} ${x.servie} (${x.format}) pour ${Math.round(x.w)} × ${Math.round(x.h)}`).join(', ')}`);
+      ok(ecarts.every(e => e.ok), `photos n° 1 : captures des ${ecarts.length} blocs et tuiles comparées avec tolérance, floutées (sigma ${FLOU_FICHE}) — écart moyen le plus fort ${Math.max(...ecarts.flatMap(e => e.moyennes || [99]))} sur 255 (tolérance ${TOLERANCE_PHOTO})`
+        + (ecarts.every(e => e.ok) ? '' : ' — ' + ecarts.filter(e => !e.ok).map(e => `${e.id} : ${e.detail}`).join(' ; ')));
+      // rien de la visionneuse n'est chargé avant sa première ouverture : la page parcourue, toutes les photos n° 1 chargées, aucune de ses photos en grand
+      const grandes = await site.p.evaluate(() => JSON.parse(document.getElementById('visio-albums').textContent).flatMap(b => b.l).map(u => new URL(u, location.href).href));
+      const avant = site.requetes.filter(u => grandes.includes(u)), imgsAvant = await site.p.evaluate(() => document.querySelectorAll('.visio img').length);
+      ok(!avant.length && !imgsAvant && grandes.length === projet('brosse').selection.length + BIENS.reduce((n, b) => n + b.photos.length, 0),
+        `visionneuse : aucune de ses ${grandes.length} photos en grand chargée avant la première ouverture (${site.requetes.length} requêtes, la page parcourue ; aucune <img> dans la visionneuse)` + (avant.length ? ' — chargées : ' + avant.join(', ') : ''));
+
+      // les photos masquées : captures identiques au pixel près de l'ouverture, de chaque bloc et de chaque tuile (le dégradé, le nom, les faits au repos,
+      // « 1 / n » sur son voile), des deux cases de texte ; puis le pied de page
+      await masquerPhotosReal(site.p, true); await masquerPhotosReal(maq.p, true);
+      const captures = [];
+      for (const sel of ['.p2-ouv', ...CASES.map(id => '#' + id), '.cas--enonce', '.cas--phrase']) {
+        const c = await comparer(`${nom}-${slug(sel)}`, await captureCase(site.p, sel), await captureCase(maq.p, sel));
+        captures.push({ sel, ...c });
+      }
+      const differentes = captures.filter(c => c.differents !== 0);
+      ok(!differentes.length, `captures identiques au pixel près, les photos masquées : l'ouverture, les ${BLOCS.length} blocs, les ${BIENS.length} tuiles et les deux cases de texte (${captures.length} captures : ${captures.slice(0, 3).map(c => `${c.sel} ${c.taille}`).join(', ')}…)`
+        + (differentes.length ? ' — ' + differentes.map(c => `${c.sel} : ${c.detail}`).join(' ; ') : ''));
+      await masquerPhotosReal(site.p, false); await masquerPhotosReal(maq.p, false);
+      await haut(site.p); await haut(maq.p);
+      const pbs = await boites(site.p, PIED, '.site-footer'), pbm = await boites(maq.p, PIED, '.site-footer');
+      ok((await preparerPied(site.p)) && (await preparerPied(maq.p)), 'pied de page : entier dans la fenêtre, haut calé sur un pixel entier des deux côtés (pour la capture)');
+      const f = await comparer(`${nom}-pied`, await capture(site.p, '.site-footer'), await capture(maq.p, '.site-footer'));
+      ok(f.differents === 0, `pied de page : capture de .site-footer identique au pixel près (${f.taille})` + (f.differents ? ' — ' + f.detail : ''));
+      memesBoites(pbs, pbm, 'pied de page', 'le haut de la section');
+
+      // l'en-tête, le titre de l'onglet, la description ; polices, requêtes, noindex, console
+      await masquerEntete(site.p, false);
+      const nav = await site.p.evaluate(() => [...document.querySelectorAll('.site-nav a')].map(a => `${a.textContent}${a.classList.contains('is-active') ? ' actif' : ''}${a.hasAttribute('aria-current') ? ' aria-current=' + a.getAttribute('aria-current') : ''} → ${a.getAttribute('href')}`).join(' | '));
+      ok(nav === 'Réalisations actif aria-current=page → /realisations | Engagements → /engagements | Contact → #contact' && (await site.p.evaluate(() => document.querySelectorAll('[aria-current]').length)) === 1, 'navigation : ' + nav);
+      const description = (fs.readFileSync(path.join(REPO, 'content/realisations.md'), 'utf8').match(/^description:\s*(.+)$/m) || [])[1];
+      const entete = await site.p.evaluate(() => [document.documentElement.dataset.page, document.title, document.querySelector('.page__titre').textContent, document.querySelector('meta[name="description"]')?.content].join(' · '));
+      ok(entete === `realisations · Réalisations — Perpetual · Réalisations · ${description}`, `html data-page="realisations", titre de l'onglet « Réalisations — Perpetual », h1 « Réalisations » seul, description de l'en-tête de content/realisations.md`);
+      await controlesPage(site, '/realisations', format[0], ['400 17px "Instrument Sans"', '400 38px Newsreader', 'italic 400 22px Newsreader']);
+
+      // à 1521 px, la fenêtre passe à 1280 px de large : les rangées, les blocs, la mosaïque et ses cases toujours aux mêmes boîtes que dans la maquette
+      if (format[0] === 1521) {
+        await haut(site.p); await haut(maq.p);
+        const avant1280 = await boites(site.p, CASES_PAGE, null);
+        await site.p.setViewportSize({ width: 1280, height: format[1] }); await maq.p.setViewportSize({ width: 1280, height: format[1] });
+        await site.p.waitForTimeout(400);
+        const rs = await boites(site.p, CASES_PAGE, null), rm = await boites(maq.p, CASES_PAGE, null);
+        ok(JSON.stringify(rs) !== JSON.stringify(avant1280), `de 1521 à 1280 px de large : les rangées et les cases changent de taille (${Object.keys(rs).length} boîtes)`);
+        memesBoites(rs, rm, 'Réalisations à 1280 px de large (après un passage de 1521 à 1280)', 'le haut du document');
+      }
+      await site.ctx.close(); await maq.ctx.close();
+
+      // survol et focus clavier (sur ordinateur), mouvement réduit : les mêmes états que la maquette, bloc par bloc et tuile par tuile
+      if (!tel) {
+        const s2 = await ouvrir(SITE + '/realisations', format, { reducedMotion: 'reduce' }), m2 = await ouvrir(MAQUETTE_REALISATIONS, format, { reducedMotion: 'reduce' });
+        const survol = async p => { const r = [];
+          for (const id of CASES) { await p.hover('#' + id); await p.waitForTimeout(50); r.push(await p.evaluate(id => { const c = document.getElementById(id), f = c.querySelector('.bloc__faits, .tuile__faits'), i = c.querySelector(':scope > img, :scope > picture > img, .photos__vue:not([data-clone]) img'), fl = c.querySelector('.photos__fleche');
+            return `${id} ${getComputedStyle(f).opacity} ${f.getBoundingClientRect().height > 20 && f.scrollHeight <= f.clientHeight + 1} ${getComputedStyle(i).transform} ${fl ? getComputedStyle(fl).opacity : '-'}`; }, id)); }
+          await p.mouse.move(1, 1); return r; };
+        await masquerEntete(s2.p, true);
+        const ss = await survol(s2.p), sm = await survol(m2.p);
+        await masquerEntete(s2.p, false);
+        ok(JSON.stringify(ss) === JSON.stringify(sm) && ss.every(x => / 1 true matrix\(1\.035, 0, 0, 1\.035, 0, 0\) (1|-)$/.test(x)) && ss.filter(x => x.endsWith(' 1')).length === 1 + BIENS.length,
+          `survol : sur les ${BLOCS.length} blocs et les ${BIENS.length} tuiles, les faits s'affichent en entier, la photo zoome (1,035) et les flèches paraissent (Brosse et les tuiles), comme la maquette` + (JSON.stringify(ss) === JSON.stringify(sm) ? '' : ' — ' + ss.filter((x, k) => x !== sm[k]).slice(0, 3).map(x => `site ${x} / maquette ${sm[ss.indexOf(x)]}`).join(' ; ')));
+        const clavier = async p => { const r = [];
+          await p.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+          await p.focus('.site-nav a:last-child');
+          for (let k = 0; k < 80; k++) {
+            await p.keyboard.press('Tab');
+            const x = await p.evaluate(() => { const a = document.activeElement, c = a.closest('.bloc, .tuile'), f = c && c.querySelector('.bloc__faits, .tuile__faits'), fl = c && c.querySelector('.photos__fleche');
+              if (!a.closest('#projets, #agences')) return null;
+              const quoi = a.classList.contains('photos__ouvrir') ? 'photo' : a.classList.contains('photos__fleche--g') ? '←' : a.classList.contains('photos__fleche--d') ? '→' : a.tagName.toLowerCase();
+              return `${c ? c.id : a.id} ${quoi} ${a.matches(':focus-visible')} ${f ? getComputedStyle(f).opacity : '-'} ${fl ? getComputedStyle(fl).opacity : '-'}`; });
+            if (x === null) { if (r.length) break; else continue; }
+            r.push(x);
+          }
+          return r; };
+        const fs2 = await clavier(s2.p), fm2 = await clavier(m2.p);
+        const attenduFocus = [...BLOCS.slice(0, 4).map(id => `${id} a true 1 -`), ...['brosse', ...BIENS.map(b => b.id)].flatMap(id => [`${id} photo true 1 1`, `${id} ← true 1 1`, `${id} → true 1 1`])];
+        ok(JSON.stringify(fs2) === JSON.stringify(fm2) && JSON.stringify(fs2) === JSON.stringify(attenduFocus),
+          `focus clavier, dans l'ordre de la maquette : les quatre liens, puis la photo et les deux flèches de Brosse, puis de chaque tuile (${fs2.length} arrêts), faits et flèches affichés, :focus-visible`
+          + (JSON.stringify(fs2) === JSON.stringify(fm2) ? '' : ` — site ${fs2.slice(0, 8).join(', ')}… / maquette ${fm2.slice(0, 8).join(', ')}…`));
+        await s2.ctx.close(); await m2.ctx.close();
+
+        // les photos parcourables sur place, en mouvement normal (défilement fluide) : Braine-le-Comte aux flèches, en boucle ; un clic sur la photo affichée
+        // ouvre la visionneuse sur elle ; Brosse : ← depuis la première mène à la dernière, puis → à la souris et Entrée au clavier ; la souris partie, une
+        // flèche cliquée garde le focus mais flèches et faits se retirent. Les mêmes étapes dans la maquette.
+        const s3 = await ouvrir(SITE + '/realisations', format), m3 = await ouvrir(MAQUETTE_REALISATIONS, format);
+        await masquerEntete(s3.p, true);
+        const parcours = async p => {
+          const fleche = async (id, sens) => { await p.click(`#${id} .photos__fleche--${sens}`); await arret(p, id); return etatAlbum(p, id); };
+          await p.locator('#bnp-braine-le-comte').scrollIntoViewIfNeeded(); await p.hover('#bnp-braine-le-comte');
+          const bl = [await etatAlbum(p, 'bnp-braine-le-comte'), await fleche('bnp-braine-le-comte', 'd'), await fleche('bnp-braine-le-comte', 'd'), await fleche('bnp-braine-le-comte', 'g')];
+          await p.click('#bnp-braine-le-comte .photos__ouvrir', { position: { x: 60, y: 60 } }); await p.waitForTimeout(150);
+          const v = await etatVisioReal(p, 1);
+          await p.keyboard.press('Escape'); await p.waitForTimeout(100);
+          const retour = (await etatVisioReal(p, 1)).focus;
+          await p.locator('#brosse').scrollIntoViewIfNeeded(); await p.hover('#brosse');
+          const br = [await etatAlbum(p, 'brosse'), await fleche('brosse', 'g'), await fleche('brosse', 'd'), await fleche('brosse', 'd')];
+          await p.focus('#brosse .photos__fleche--d'); await p.keyboard.press('Enter'); await arret(p, 'brosse'); br.push(await etatAlbum(p, 'brosse'));
+          await p.locator('#bnp-jambes').scrollIntoViewIfNeeded(); await p.click('#bnp-jambes .photos__fleche--d'); await p.mouse.move(1, 1); await p.waitForTimeout(450);
+          return { bl, v, retour, br, repos: await etatRepos(p) };
+        };
+        const ps = await parcours(s3.p), pm = await parcours(m3.p);
+        ok(ps.bl.join(' → ') === '1 / 2 bnp-braine-le-comte-02 → 2 / 2 bnp-braine-le-comte-03 → 1 / 2 bnp-braine-le-comte-02 → 2 / 2 bnp-braine-le-comte-03' && JSON.stringify(ps.bl) === JSON.stringify(pm.bl),
+          `Braine-le-Comte, aux flèches, en boucle, comme la maquette : ${ps.bl.join(' → ')}`);
+        ok(ps.v.ouvert && ps.v.cpt === '2 / 2' && ps.v.photo === 2 && ps.v.legende === '<b>Braine-le-Comte</b>600 m² · Service finance de la commune' && ps.v.focus === 'visio' && ps.retour === 'bnp-braine-le-comte photos__ouvrir'
+          && JSON.stringify([pm.v.cpt, pm.v.photo, pm.v.legende, pm.retour]) === JSON.stringify([ps.v.cpt, ps.v.photo, ps.v.legende, ps.retour]),
+          `un clic sur la photo affichée (2 / 2) ouvre la visionneuse sur elle (« ${ps.v.cpt} », photo ${ps.v.photo} de l'album, légende « ${ps.v.legende.replace(/<\/?b>/g, '|')} ») ; Échap rend le focus au bouton de la photo (${ps.retour})`);
+        ok(ps.br.join(' → ') === '1 / 9 brosse-31 → 9 / 9 brosse-70 → 1 / 9 brosse-31 → 2 / 9 brosse-16 → 3 / 9 brosse-29' && JSON.stringify(ps.br) === JSON.stringify(pm.br),
+          `Brosse : ← depuis la première mène à la dernière, puis → à la souris et Entrée sur la flèche au clavier, comme la maquette : ${ps.br.join(' → ')}`);
+        ok(ps.repos === 'photos__fleche photos__fleche--d 0 0' && ps.repos === pm.repos, `la souris partie, une flèche cliquée garde le focus mais flèches et faits se retirent (${ps.repos})`);
+        await s3.ctx.close(); await m3.ctx.close();
+      } else {
+        // au téléphone : la piste se fait glisser d'une largeur, le compteur suit, en boucle (Jambes), comme la maquette
+        const s3 = await ouvrir(SITE + '/realisations', format), m3 = await ouvrir(MAQUETTE_REALISATIONS, format);
+        const glisser = p => p.evaluate(async () => { const t = document.getElementById('bnp-jambes'), pi = t.querySelector('.photos'), r = [];
+          t.scrollIntoView({ block: 'center', behavior: 'instant' }); for (let k = 0; k < 2; k++) { pi.scrollBy({ left: pi.clientWidth }); await new Promise(f => setTimeout(f, 600)); r.push(t.querySelector('.photos__compteur').textContent); } return r.join(' → '); });
+        const gs = await glisser(s3.p), gm = await glisser(m3.p);
+        ok(gs === '2 / 2 → 1 / 2' && gs === gm, `téléphone : la piste de Jambes glissée d'une largeur, le compteur suit, en boucle (${gs}), comme la maquette`);
+        await s3.ctx.close(); await m3.ctx.close();
+      }
+
+      // la visionneuse, mouvement réduit : Brosse (« Brosse » puis « Forest · 800 m² », « 1 / 9 »), → au clavier, Tab gardé dedans, Échap qui rend le focus
+      // au bouton de la photo ; Braine-le-Comte (la ville, puis « surface · usage »), sa flèche ou → en boucle, « Fermer » ; les trois photos en hauteur
+      // (Pont-à-Celles, Perwez, Schaerbeek) entières dans le cadre 4:3, cadre et compteur dans la fenêtre ; les boîtes de la visionneuse ouverte comme dans
+      // la maquette ; la photo montrée chargée à l'ouverture
+      const s4 = await ouvrir(SITE + '/realisations', format, { reducedMotion: 'reduce' }), m4 = await ouvrir(MAQUETTE_REALISATIONS, format, { reducedMotion: 'reduce' });
+      await masquerEntete(s4.p, true);
+      const visionneuse = async p => {
+        const r = {}, charger = () => p.waitForFunction(() => { const vp = document.querySelector('.visio__piste'), i = vp.children[Math.round(vp.scrollLeft / vp.clientWidth)]; return i && i.complete && i.naturalWidth > 0; }, null, { timeout: 8000 }).catch(() => {});
+        await p.locator('#brosse').scrollIntoViewIfNeeded(); await p.click('#brosse .photos__ouvrir'); await charger();
+        r.brosse = await etatVisioReal(p, 0); r.boites = await boites(p, VISIO, '.visio');
+        await p.keyboard.press('ArrowRight'); await p.waitForTimeout(100); r.suivante = await etatVisioReal(p, 0);
+        r.tab = []; for (let k = 0; k < 6; k++) { await p.keyboard.press(k < 4 ? 'Tab' : 'Shift+Tab'); r.tab.push((await etatVisioReal(p, 0)).focus); }
+        await p.keyboard.press('Escape'); await p.waitForTimeout(100); r.ferme = await etatVisioReal(p, 0);
+        await p.locator('#bnp-braine-le-comte').scrollIntoViewIfNeeded(); await p.click('#bnp-braine-le-comte .photos__ouvrir'); await charger();
+        r.braine = await etatVisioReal(p, 1);
+        if (tel) await p.keyboard.press('ArrowRight'); else await p.click('.visio [data-v-suiv]');
+        await p.waitForTimeout(100); r.braine2 = await etatVisioReal(p, 1);
+        await p.click('.visio [data-fermer]'); await p.waitForTimeout(100); r.braineFerme = await etatVisioReal(p, 1);
+        r.hautes = [];
+        for (const id of ALBUMS_HAUTS) {
+          const k = 1 + BIENS.findIndex(b => b.id === id);
+          await p.locator('#' + id).scrollIntoViewIfNeeded(); await p.click(`#${id} .photos__ouvrir`); await charger();
+          r.hautes.push({ id, ...(await etatVisioReal(p, k)), boites: await boites(p, VISIO, '.visio') });
+          await p.keyboard.press('Escape'); await p.waitForTimeout(100);
+        }
+        return r;
+      };
+      const vs = await visionneuse(s4.p), vm = await visionneuse(m4.p);
+      ok(vs.brosse.ouvert && vs.brosse.corps && vs.brosse.cpt === '1 / 9' && vs.brosse.photo === 1 && vs.brosse.legende === '<b>Brosse</b>Forest · 800 m²' && vs.brosse.charge && vs.brosse.fit === 'contain' && vs.brosse.ratio === 1.333 && vs.brosse.entiere && vs.brosse.dansFenetre && vs.brosse.compteurVisible && vs.brosse.focus === 'visio'
+        && JSON.stringify([vm.brosse.cpt, vm.brosse.photo, vm.brosse.legende]) === JSON.stringify([vs.brosse.cpt, vs.brosse.photo, vs.brosse.legende]),
+        `visionneuse : Brosse s'ouvre sur « ${vs.brosse.cpt} », sa photo 1, légende « ${vs.brosse.legende.replace(/<\/?b>/g, '|')} », entière dans le cadre 4:3, cadre et compteur dans la fenêtre, focus sur « Fermer »`);
+      memesBoites(vs.boites, vm.boites, 'visionneuse ouverte (Brosse)', 'le haut de la visionneuse');
+      ok(vs.suivante.cpt === '2 / 9' && vs.suivante.photo === 2 && vs.tab.every(x => x === 'visio') && !vs.ferme.ouvert && !vs.ferme.corps && vs.ferme.focus === 'brosse photos__ouvrir' && vm.ferme.focus === vs.ferme.focus && vm.suivante.cpt === vs.suivante.cpt,
+        `visionneuse : → au clavier « ${vs.suivante.cpt} » ; Tab et Maj+Tab restent dedans (${vs.tab.length} arrêts) ; Échap la ferme et rend le focus au bouton de la photo (${vs.ferme.focus}), pas à la piste`);
+      ok(vs.braine.cpt === '1 / 2' && vs.braine.photo === 1 && vs.braine.legende === '<b>Braine-le-Comte</b>600 m² · Service finance de la commune' && vs.braine2.cpt === '2 / 2' && vs.braine2.photo === 2 && !vs.braineFerme.ouvert && vs.braineFerme.focus === 'bnp-braine-le-comte photos__ouvrir'
+        && JSON.stringify([vm.braine.cpt, vm.braine.legende, vm.braine2.cpt, vm.braine2.photo, vm.braineFerme.focus]) === JSON.stringify([vs.braine.cpt, vs.braine.legende, vs.braine2.cpt, vs.braine2.photo, vs.braineFerme.focus]),
+        `visionneuse : Braine-le-Comte, légende « ${vs.braine.legende.replace(/<\/?b>/g, '|')} » (la ville, puis surface · usage), ${vs.braine.cpt} → ${vs.braine2.cpt} ${tel ? 'au clavier' : 'à la flèche'}, « Fermer » rend le focus au bouton de la photo`);
+      const hautes = vs.hautes.map((h, k) => ({ ...h, memes: JSON.stringify(h.boites) === JSON.stringify(vm.hautes[k].boites) && h.cpt === vm.hautes[k].cpt && h.legende === vm.hautes[k].legende }));
+      ok(hautes.every(h => h.ouvert && h.photo === 1 && h.charge && h.fit === 'contain' && h.ratio === 1.333 && h.entiere && h.dansFenetre && h.compteurVisible && h.memes),
+        `visionneuse : les photos en hauteur (${hautes.map(h => `${h.id} ${h.cpt}`).join(', ')}) entières dans le cadre 4:3 (min-height:0), cadre et compteur dans la fenêtre, mêmes boîtes et même légende que la maquette`
+        + (hautes.every(h => h.memes) ? '' : ' — ' + hautes.filter(h => !h.memes).map(h => `${h.id} : site ${JSON.stringify(h.boites)} / maquette ${JSON.stringify(vm.hautes[vs.hautes.indexOf(vs.hautes.find(x => x.id === h.id))].boites)}`).join(' ; ')));
+      const vues = await s4.p.evaluate(() => JSON.parse(document.getElementById('visio-albums').textContent).map(b => b.l.map(u => new URL(u, location.href).href)));
+      const montrees = [vues[0][0], vues[0][1], vues[1][0], vues[1][1], ...ALBUMS_HAUTS.map(id => vues[1 + BIENS.findIndex(b => b.id === id)][0])];
+      ok(montrees.every(u => s4.requetes.includes(u)), `visionneuse : chaque photo montrée chargée à l'ouverture (${montrees.length} : ${montrees.map(u => u.replace(/^.*\//, '').replace(/\..*$/, '')).join(', ')})`);
+      ok(!s4.erreurs.length, 'aucune erreur dans la console pendant le parcours de la visionneuse' + (s4.erreurs.length ? ' — ' + s4.erreurs.join(' | ') : ''));
+      await s4.ctx.close(); await m4.ctx.close();
+
+      // sans JavaScript : la page complète, aux mêmes boîtes que la maquette ; la piste de chaque album se fait glisser, sans boucle, ni compteur ni flèches
+      const s5 = await ouvrir(SITE + '/realisations', format, { javaScriptEnabled: false }), m5 = await ouvrir(MAQUETTE_REALISATIONS, format, { javaScriptEnabled: false });
+      const sansJs = p => p.evaluate(() => ({ blocs: document.querySelectorAll('.bloc').length, tuiles: document.querySelectorAll('.mos .tuile').length, visio: getComputedStyle(document.querySelector('.visio')).display,
+        nav: !document.querySelector('[data-clone], .photos--nav') && [...document.querySelectorAll('.photos__compteur, .photos__fleche')].every(e => getComputedStyle(e).display === 'none'),
+        glisse: [...document.querySelectorAll('[data-album]:not([data-n="1"]) .photos')].every(pi => pi.scrollWidth > pi.clientWidth + 10 && getComputedStyle(pi).overflowX === 'auto'), albums: document.querySelectorAll('[data-album]').length,
+        hauteur: document.documentElement.scrollHeight }));
+      const js = await sansJs(s5.p), jm = await sansJs(m5.p);
+      ok(js.blocs === 5 && js.tuiles === 16 && js.visio === 'none' && js.nav && js.glisse && js.albums === 17 && js.hauteur === jm.hauteur && JSON.stringify(js) === JSON.stringify(jm),
+        `sans JavaScript : les ${js.blocs} projets et les ${js.tuiles} tuiles (visionneuse masquée), même hauteur que la maquette (${js.hauteur} px) ; la piste de chacun des ${js.albums} albums se fait glisser, ni compteur ni flèches`);
+      memesBoites(await boites(s5.p, CASES_PAGE, null), await boites(m5.p, CASES_PAGE, null), 'sans JavaScript', 'le haut du document');
+      await s5.ctx.close(); await m5.ctx.close();
+    }
+
+    // à 2× : les photos n° 1 des blocs et des tuiles servies assez grandes (la boîte × 2), ou la plus grande version disponible — Brosse, sur toute la largeur,
+    // jusqu'à sa version de 2 362 px
+    console.log('\nRéalisations à 2×');
+    for (const format of FORMATS.filter(f => f[0] > 640)) {
+      const r = await ouvrir(SITE + '/realisations', format, { deviceScaleFactor: 2, reducedMotion: 'reduce' });
+      const liste = [];
+      for (const id of CASES) { const i = await infosCase(r.p, id), sv = await tailleServie(i.src); liste.push({ id, cle: i.cle, w: i.w, h: i.h, sv, max: i.maxSrcset, echelle: +Math.max(2 * i.w / sv.largeur, 2 * i.h / sv.hauteur).toFixed(3) }); }
+      const brosse = liste.find(x => x.id === 'brosse');
+      ok(liste.every(x => x.echelle <= 1 || x.sv.largeur === x.max) && brosse.max === 2362,
+        `${fmt(format)} à 2× : chaque photo n° 1 assez grande (la boîte × 2) ou la plus grande version disponible — ${liste.map(x => `${x.cle} ${x.sv.largeur} (${x.echelle <= 1 ? 'échelle ' + x.echelle : 'la plus grande'})`).join(', ')} ; Brosse jusqu'à ${brosse.max} px`);
+      await r.ctx.close();
+    }
+    // les photos de la visionneuse : les albums dans l'ordre (Brosse, puis les tuiles dans l'ordre de la mosaïque), leurs légendes comme window.BIENS de la
+    // maquette ; WebP, 1 800 px au plus sur le grand côté, jamais au-delà de la source
+    {
+      const html = fs.readFileSync(path.join(REPO, 'dist/realisations.html'), 'utf8'), maquette = fs.readFileSync(path.join(REPO, 'design/maquette/realisations.html'), 'utf8');
+      const albums = JSON.parse(html.match(/<script type="application\/json" id="visio-albums">(.*?)<\/script>/)[1]), biens = JSON.parse(maquette.match(/window\.BIENS=(\[.*?\]);<\/script>/)[1]);
+      const legendes = a => a.map(b => `${b.legende || ''}|${b.ville || ''}|${b.surface || ''}|${b.usage || ''}|${b.l.length}`).join(' ¶ ');
+      ok(albums.length === 1 + BIENS.length && legendes(albums) === legendes(biens), `visionneuse : ${albums.length} albums, Brosse puis les tuiles dans l'ordre de la mosaïque, mêmes légendes et même nombre de photos que window.BIENS de la maquette`);
+      const cles = [projet('brosse').selection, ...BIENS.map(b => b.photos)];
+      const tailles = await Promise.all(albums.flatMap((b, k) => b.l.map(async (u, j) => ({ ...(await tailleServie(SITE + u)), source: await tailleSource(cles[k][j]) }))));
+      ok(tailles.every(t => t.format === 'webp' && Math.max(t.largeur, t.hauteur) <= 1800 && t.largeur <= t.source.largeur && t.hauteur <= t.source.hauteur),
+        `visionneuse : ${tailles.length} photos en WebP, 1 800 px au plus sur le grand côté, jamais au-delà de la source (${[...new Set(tailles.map(t => `${t.largeur} × ${t.hauteur}`))].join(', ')})`);
+    }
+  }
+
   // ---------- tout dist/ ----------
   console.log('\ndist/');
   {
@@ -738,14 +1073,14 @@ try {
     const textes = htmls.map(f => ({ f, t: (lire(f).match(/<main>([\s\S]*?)<\/main>/) || ['', ''])[1].replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, '') }));
     const simples = textes.filter(x => LOT.includes(x.f) && / :/.test(x.t)), insecables = textes.filter(x => LOT.includes(x.f)).reduce((n, x) => n + (x.t.match(/\u00A0:/g) || []).length, 0), autres = textes.filter(x => !LOT.includes(x.f) && / :/.test(x.t)).map(x => x.f);
     ok(LOT.every(f => htmls.includes(f)) && !simples.length && insecables > 0, `espaces insécables avant « : » dans les textes rendus des quatre pages (${insecables} « : », aucune espace simple devant)` + (simples.length ? ' — espace simple dans ' + simples.map(x => x.f).join(', ') : '') + (autres.length ? ` ; textes insérés tels quels, non vérifiés : ${autres.join(', ')}` : ''));
-    // tous les liens internes répondent, sauf /realisations (lot 5 : listé, pas compté comme échec)
+    // tous les liens internes répondent (ancres comprises), /realisations compris depuis le lot 5, message 2
     const liens = new Map();
     for (const f of htmls) for (const m of lire(f).matchAll(/<a [^>]*href="([^"]+)"/g)) { const h = m[1]; if (/^(https?:|mailto:|tel:)/.test(h)) continue; const cible = h.startsWith('#') ? '/' + f.replace(/index\.html$/, '').replace(/\.html$/, '') + h : h; liens.set(cible, (liens.get(cible) || new Set()).add(f)); }
     const reponses = [];
     for (const [cible] of liens) { const chemin = cible.replace(/#.*$/, ''), r = await fetch(SITE + chemin), html = r.ok ? await r.text() : ''; const ancre = cible.includes('#') ? cible.slice(cible.indexOf('#') + 1) : null;
       reponses.push({ cible, chemin, statut: r.status, ancre: ancre ? new RegExp(`id="${ancre}"`).test(html) : true }); }
-    const attendus = reponses.filter(r => r.chemin !== '/realisations'), echecs = attendus.filter(r => r.statut !== 200 || !r.ancre), real = reponses.find(r => r.chemin === '/realisations');
-    ok(!echecs.length && attendus.length >= 5, `${reponses.length} liens internes : ${attendus.length} répondent (ancres comprises)${real ? ` ; /realisations → ${real.statut} (lot 5, message 2 : listé, pas compté)` : ''}` + (echecs.length ? ' — en échec : ' + echecs.map(r => `${r.cible} (${r.statut}${r.ancre ? '' : ', ancre absente'})`).join(', ') : ''));
+    const echecs = reponses.filter(r => r.statut !== 200 || !r.ancre), real = reponses.filter(r => r.chemin.startsWith('/realisations')).map(r => r.cible);
+    ok(!echecs.length && reponses.length >= 5 && real.includes('/realisations'), `${reponses.length} liens internes : tous répondent (ancres comprises), dont ${real.length} vers la vue Réalisations et les fiches (${real.join(', ')})` + (echecs.length ? ' — en échec : ' + echecs.map(r => `${r.cible} (${r.statut}${r.ancre ? '' : ', ancre absente'})`).join(', ') : ''));
     // aucun lien de la maquette vers ses fiches (projet-<id>.html) dans le site : les fiches sont à /realisations/<id>
     const versMaquette = htmls.filter(f => /href="[^"]*projet-[a-z0-9-]+\.html/.test(lire(f)));
     ok(!versMaquette.length && htmls.filter(f => f.startsWith('realisations/')).length === 4, `aucun lien vers projet-<id>.html (les fiches de la maquette) dans les ${htmls.length} pages ; les quatre fiches dans dist/realisations/` + (versMaquette.length ? ' — dans ' + versMaquette.join(', ') : ''));
