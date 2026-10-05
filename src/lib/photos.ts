@@ -6,8 +6,9 @@
 // de data/projects.json).
 //
 // Ne pas lire les propriétés de l'image (width, src…) hors d'Astro : Astro garderait alors le fichier source dans le site publié, en plus des
-// versions qu'il produit.
+// versions qu'il produit. Ses dimensions se lisent sur sa copie (dimensions(), plus bas).
 import type { ImageMetadata } from 'astro';
+import { getImage } from 'astro:assets';
 
 const DOSSIER = '/design/directions/img/';
 const fichiers = import.meta.glob<{ default: ImageMetadata }>(['/design/directions/img/*.jpg', '!/design/directions/img/*-s.jpg']);
@@ -33,4 +34,30 @@ export async function photoSource(cle: string): Promise<ImageMetadata> {
     );
   }
   return (await fichiers[f]()).default;
+}
+
+/** Largeur et hauteur d'une image importée, lues sur sa copie (`clone`, la propriété cachée dont se sert getImage() d'Astro) : l'image elle-même est un
+ *  Proxy qui, à la première propriété lue, garde le fichier original dans le site publié (500 Ko pour l'œuvre d'Engagements) ; sa copie ne le fait pas. */
+export function dimensions(image: ImageMetadata): { width: number; height: number } {
+  const copie = (image as ImageMetadata & { clone?: ImageMetadata }).clone ?? image;
+  return { width: copie.width, height: copie.height };
+}
+
+/** Le format d'une photo (largeur / hauteur), lu comme la maquette sur son <clé>.jpg (1 800 px) — build.mjs en tire le --r des tuiles de la mosaïque des
+ *  fiches et le sizes de leur photo de tête —, à défaut sur sa source. La version de 2 800 px a parfois un format arrondi autrement (data-box-02 :
+ *  1,7787 en 1 800 px, 1,7778 en 2 800) : lu sur elle, il décalerait les tuiles d'une rangée. */
+export async function formatPhoto(cle: string): Promise<number> {
+  const f = `${DOSSIER}${cle}.jpg`;
+  const { width, height } = dimensions(f in fichiers ? (await fichiers[f]()).default : await photoSource(cle));
+  return width / height;
+}
+
+/** La photo en grand de la visionneuse (lot 5) : l'adresse d'une version WebP produite au build depuis la source, 1 800 px au plus sur son grand côté — la
+ *  taille du <clé>.jpg que montre la visionneuse de la maquette —, jamais au-delà de la source. Une seule adresse, sans <picture> ni repli : WebP, lu par
+ *  tous les navigateurs actuels. La page ne la charge qu'à l'ouverture de la visionneuse (src/components/Visionneuse.astro). */
+export async function photoGrande(cle: string): Promise<string> {
+  const source = await photoSource(cle);
+  const { width, height } = dimensions(source);
+  const echelle = Math.min(1, 1800 / Math.max(width, height));
+  return (await getImage({ src: source, width: Math.round(width * echelle), format: 'webp' })).src;
 }

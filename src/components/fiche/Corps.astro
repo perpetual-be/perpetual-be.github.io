@@ -1,0 +1,44 @@
+---
+// Le corps d'une fiche projet (lot 5, 05/10/2026) : mêmes balises et classes que fichePage() de design/maquette/src/build.mjs, la maquette
+// (design/maquette/projet-<id>.html) étant la référence (styles : src/styles/fiche.css). Une grille de trois colonnes, marge | texte | photo
+// (.fiche__corps--paysage ou --carre, le cadre de la photo de tête). À gauche (.fiche__gauche) : la région en eyebrow et le titre (h1.page__titre, en
+// serif), les trois infos (ol.fiche__faits : la valeur, puis son étiquette Localisation, Surface, Usage), les trois chapitres — was, saw et became,
+// numérotés 01 à 03, leurs textes insérés tels quels, comme build.mjs. À droite (figure.fiche__photo), la photo de tête, au bord de la fenêtre dès le bas
+// de l'en-tête, qui suit le texte quand il est plus long qu'elle (CSS).
+// La photo de tête, par ProjectPhoto : la première clé de selection, chargée tout de suite, son point focal (tete.focal de data/projects.json) en
+// object-position, texte alternatif vide comme la maquette. sizes comme sizesCadre() de build.mjs : la largeur du cadre (100vw au téléphone), multipliée
+// par k = max(1, format de la photo ÷ format du cadre) — en object-fit: cover, une photo plus large que son cadre est calée sur sa hauteur.
+import ProjectPhoto from '../ProjectPhoto.astro';
+import { formatPhoto } from '../../lib/photos';
+
+interface Props {
+  nom: string;
+  /** L'eyebrow au-dessus du titre. */
+  region: string;
+  /** Les trois infos : Localisation, Surface, Usage. */
+  lieu: string;
+  surface: string;
+  usage: string;
+  /** Les textes des trois chapitres : was, saw, became. */
+  chapitres: [string, string, string];
+  /** La photo de tête : sa clé, son cadre et son point focal. */
+  photo: string;
+  cadre: 'paysage' | 'carre';
+  focal: string;
+}
+
+const { nom, region, lieu, surface, usage, chapitres, photo, cadre, focal } = Astro.props;
+// Le cadre de la photo de tête, de la mise en page (CADRES de build.mjs ; --cadre-largeur et --cadre-format de fiche.css) : sa part de la page, en vw,
+// et son format.
+const CADRES = { paysage: { largeur: 50, format: 2100 / 1694 }, carre: { largeur: 40, format: 1 } };
+const TITRES = ['Ce que c’était', 'Ce que nous y avons vu', 'Ce que c’est devenu'];
+const k = Math.max(1, (await formatPhoto(photo)) / CADRES[cadre].format);
+const terme = (largeur: string) => (k === 1 ? `calc(${largeur})` : `calc((${largeur}) * ${k.toFixed(3)})`);
+const sizes = `(max-width:640px) ${terme('100vw')}, ${terme(`${CADRES[cadre].largeur}vw`)}`;
+const faits = [[lieu, 'Localisation'], [surface, 'Surface'], [usage, 'Usage']];
+---
+
+<div class={`fiche__corps fiche__corps--${cadre}`}>
+  <div class="fiche__gauche"><div class="fiche__titre"><p class="eyebrow">{region}</p><h1 class="page__titre">{nom}</h1></div><ol class="fiche__faits" aria-label="En bref">{faits.map(([valeur, etiquette]) => <li class="fiche__fait"><span class="fiche__valeur">{valeur}</span><span class="fiche__etiquette">{etiquette}</span></li>)}</ol><div class="fiche__chapitres">{chapitres.map((texte, j) => <section class="chapitre"><p class="chapitre__num">{`0${j + 1}`}</p><h2 class="chapitre__titre">{TITRES[j]}</h2><p class="chapitre__texte" set:html={texte} /></section>)}</div></div>
+  <figure class="fiche__photo"><ProjectPhoto cle={photo} focal={focal} sizes={sizes} loading="eager" alt="" /></figure>
+</div>

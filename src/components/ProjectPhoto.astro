@@ -9,8 +9,7 @@
 // d'Engagements) — sans lui, la hauteur de la boîte suit la version servie, dont la hauteur est arrondie au pixel (340 × 442 pour 870 × 1132 :
 // 442 px au lieu de 442,39), et tout ce qui suit se décale d'une fraction de pixel selon la version choisie par le navigateur.
 import { Picture } from 'astro:assets';
-import type { ImageMetadata } from 'astro';
-import { photoSource } from '../lib/photos';
+import { dimensions, photoSource } from '../lib/photos';
 
 interface Props {
   cle: string;
@@ -29,8 +28,8 @@ interface Props {
 const { cle, alt = '', sizes = '100vw', largeurs = [800, 1200, 1800, 2800], focal, loading = 'lazy', fetchpriority, class: className, ratioSource = false } = Astro.props;
 const source = await photoSource(cle);
 // Les dimensions de la source sans la lire directement : l'image importée est un Proxy d'Astro qui, à la première propriété lue, garde le fichier original
-// dans le site publié (500 Ko pour l'œuvre) ; sa copie (`clone`), que getImage() d'Astro utilise lui-même, ne le fait pas.
-const dims = ratioSource ? ((source as ImageMetadata & { clone?: ImageMetadata }).clone ?? source) : undefined;
+// dans le site publié (500 Ko pour l'œuvre) ; sa copie (`clone`), que getImage() d'Astro utilise lui-même, ne le fait pas (dimensions(), src/lib/photos.ts).
+const dims = ratioSource ? dimensions(source) : undefined;
 const style = [focal ? `object-position:${focal}` : '', dims ? `aspect-ratio:${dims.width}/${dims.height}` : ''].filter(Boolean).join(';') || undefined;
 ---
 

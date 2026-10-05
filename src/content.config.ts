@@ -36,7 +36,11 @@ const projects = defineCollection({
   schema: z.object({
     name: z.string(),
     kind: z.enum(['detailed', 'project', 'agency', 'gallery']),
+    // Projet détaillé (lot 5, 05/10/2026 ; lu aussi par design/maquette/src/build.mjs) : la région, l'eyebrow au-dessus du titre de sa fiche.
+    region: z.string().optional(),
     location: z.string().optional(),
+    // Projet détaillé, facultatif : la « Localisation » de sa fiche quand elle n'est pas location (The Bank : Centre-ville).
+    quartier: z.string().optional(),
     // Adresse complète fournie par Julien (tableau du 13/09) ; pas forcément affichée.
     address: z.string().optional(),
     surface: z.string().optional(),
@@ -46,6 +50,9 @@ const projects = defineCollection({
     // Les photos montrées, en clés <id>-NN sans extension, dans l'ordre d'affichage : projet détaillé, la photo du projet puis
     // la mosaïque de sa fiche ; programme agences et galerie, la vignette et la visionneuse. Sélection provisoire, revue sans toucher au code.
     selection: z.array(z.string()).optional(),
+    // Projet détaillé (lot 5) : la photo de tête de sa fiche (la première clé de selection), son cadre — paysage, 50 % de la page au format 2100 / 1694 ;
+    // carre, 40 %, 1:1 — et son point focal (object-position, ex. « 50% 0% »).
+    tete: z.object({ cadre: z.enum(['paysage', 'carre']), focal: z.string() }).optional(),
     // aperçu de la liste des 4 de la Home : photo (par défaut la première de selection) et cadrage dans le cadre 4:5, en fractions de l'image.
     // Projets détaillés ; cadre = [x, y, largeur, hauteur], x et largeur sur la largeur de l'image entière, y et hauteur sur sa hauteur.
     apercu: z

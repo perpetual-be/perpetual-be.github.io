@@ -1,0 +1,79 @@
+---
+// La visionneuse (lot 5, 05/10/2026) : mêmes balises et classes que visio() de design/maquette/src/build.mjs, la maquette étant la référence (styles :
+// src/styles/visionneuse.css). Fond blanc, la photo entière dans un cadre 4:3, flèches de part et d'autre, « Fermer », sous la photo la légende et le
+// compteur ; modale (aria-modal), masquée tant qu'elle est fermée. `label` : son nom accessible (« Photos du projet » sur une fiche, « Photos » sur la vue
+// Réalisations). Écrite pour les fiches et, au message 2, la vue Réalisations.
+// Le script, repris de la fin de design/maquette/maquette.js sans changement de comportement : ouvrir(album, départ, de) — un album, ses photos (l) et,
+// pour un bien de la vue Réalisations, la ville, la surface et l'usage, ou une légende toute faite (legende) ; sans l'une ni l'autre, le compteur seul —
+// remplit la piste (src/scripts/boucle.js : la piste en boucle), montre la photo de départ et met le focus sur « Fermer » ; fermer() rend le focus à
+// l'élément qui l'avait (ou à `de`). Flèches, ← et → au clavier, Échap, clic sur le fond ; Tab et Maj+Tab restent dans ses commandes visibles. Sur une
+// fiche, chaque tuile de la mosaïque (.fiche__agrandir) l'ouvre sur sa photo, le compteur seul (« 3 / 10 ») : l'album est fait des adresses de leur
+// data-grande (src/components/fiche/Mosaique.astro), des versions qui ne sont chargées qu'à l'ouverture. Rien de la vue Réalisations ici (message 2).
+// Un script traité par Astro (pas is:inline, comme le graphique de la Home) : il importe Boucle, un module partagé.
+interface Props {
+  /** Le nom accessible de la visionneuse. */
+  label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<div class="visio" hidden role="dialog" aria-modal="true" aria-label={label}>
+  <button type="button" class="visio__fermer trait" data-fermer>Fermer</button>
+  <button type="button" class="visio__fleche visio__fleche--g" data-v-prec aria-label="Photo précédente"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M12 2 2 14l10 12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+  <div class="visio__cadre"><div class="visio__piste" tabindex="0"></div></div>
+  <button type="button" class="visio__fleche visio__fleche--d" data-v-suiv aria-label="Photo suivante"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M2 2l10 12L2 26" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+  <p class="visio__bas"><span class="visio__legende"></span><span class="visio__compteur"></span></p>
+</div>
+<script>
+  import { Boucle } from '../scripts/boucle.js';
+
+  type Album = { l: string[]; legende?: string; ville?: string; surface?: string; usage?: string };
+
+  const v = document.querySelector<HTMLElement>('.visio');
+  if (v) {
+    const vl = v.querySelector('.visio__legende')!, vc = v.querySelector('.visio__compteur')!,
+      vg = v.querySelector<HTMLElement>('[data-v-prec]')!, vd = v.querySelector<HTMLElement>('[data-v-suiv]')!, fermeture = v.querySelector<HTMLElement>('[data-fermer]')!;
+    let vb: { aller(delta: number): void; montrer(i: number): void } | null = null, retour: HTMLElement | null = null;
+    // la visionneuse, sur un album : ses photos (l) et, pour un bien, la ville, la surface et l'usage (la légende), ou sa légende toute faite (legende) ;
+    // sans l'une ni l'autre, le compteur seul
+    const ouvrir = (b: Album, depart?: number, de?: HTMLElement) => {
+      const n = b.l.length, ancienne = v.querySelector('.visio__piste')!, vp = ancienne.cloneNode(false) as HTMLElement;
+      ancienne.replaceWith(vp); retour = de || (document.activeElement as HTMLElement | null);   // de : l'élément qui reprend le focus à la fermeture
+      vp.innerHTML = b.l.map((s) => '<img src="' + s + '" alt="" decoding="async">').join('');
+      vl.innerHTML = b.legende || (b.ville ? '<b>' + b.ville + '</b>' + b.surface + ' · ' + b.usage : '');
+      vg.hidden = vd.hidden = n < 2;
+      v.hidden = false; document.body.classList.add('visio-ouverte');
+      vb = new (Boucle as any)(vp, (i: number) => { vc.textContent = n > 1 ? (i + 1) + ' / ' + n : ''; });
+      vb!.montrer(depart || 0);
+      fermeture.focus();
+    };
+    const fermer = () => { v.hidden = true; document.body.classList.remove('visio-ouverte'); if (retour) retour.focus(); };
+    // les fiches : chaque tuile de la mosaïque ouvre la visionneuse sur sa photo (data-grande), le compteur seul (« 3 / 10 »)
+    const tuiles = document.querySelectorAll<HTMLElement>('.fiche__agrandir');
+    if (tuiles.length) {
+      const album = { l: Array.prototype.map.call(tuiles, (t: HTMLElement) => t.getAttribute('data-grande')) as string[] };
+      tuiles.forEach((t, i) => { t.addEventListener('click', () => ouvrir(album, i)); });
+    }
+    vg.addEventListener('click', () => vb!.aller(-1));
+    vd.addEventListener('click', () => vb!.aller(1));
+    fermeture.addEventListener('click', fermer);
+    v.addEventListener('click', (e) => { if (e.target === v) fermer(); });
+    document.addEventListener('keydown', (e) => {
+      if (v.hidden) return;
+      if (e.key === 'Escape') fermer();
+      if (e.key === 'ArrowRight') vb!.aller(1);
+      if (e.key === 'ArrowLeft') vb!.aller(-1);
+    });
+    // La visionneuse est modale : tant qu'elle est ouverte, Tab et Maj+Tab restent dans ses commandes visibles — la page, sous le fond blanc, n'est plus
+    // atteignable au clavier.
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab' || v.hidden) return;
+      const f = Array.prototype.filter.call(v.querySelectorAll('button, [tabindex="0"]'), (el: HTMLElement) => !el.hidden && el.getClientRects().length) as HTMLElement[];
+      if (!f.length) return;
+      const i = f.indexOf(document.activeElement as HTMLElement);
+      e.preventDefault();
+      f[e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : (i === -1 || i === f.length - 1 ? 0 : i + 1)].focus();
+    });
+  }
+</script>
