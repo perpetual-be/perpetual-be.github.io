@@ -313,7 +313,7 @@ a.bloc:hover img{transform:scale(var(--zoom))}
    « Fermer », Échap, flèches du clavier */
 .visio{position:fixed;inset:0;z-index:100;background:var(--blanc);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 88px 36px}
 .visio[hidden]{display:none}
-.visio__cadre{position:relative;width:min(100%,calc((100vh - 170px) * 4 / 3));aspect-ratio:4/3}
+.visio__cadre{position:relative;width:min(100%,calc((100vh - 170px) * 4 / 3));aspect-ratio:4/3;min-height:0}   /* min-height:0 (lot 5, 05/10, relevé par Claude Code sur le site) : sans lui, une photo en hauteur allongeait le cadre (Ateliers 118 : 713 × 952 dans 705 px de fenêtre), rognée, le compteur hors de l'écran */
 .visio__piste{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
 .visio__piste::-webkit-scrollbar{display:none}
 .visio__piste img{flex:0 0 100%;width:100%;height:100%;object-fit:contain;scroll-snap-align:start;scroll-snap-stop:always}
