@@ -426,8 +426,10 @@ try {
     // navigation : Engagements actif, avec aria-current, sur cette page
     const nav = await site.p.evaluate(() => [...document.querySelectorAll('.site-nav a')].map(a => `${a.textContent}${a.classList.contains('is-active') ? ' actif' : ''}${a.hasAttribute('aria-current') ? ' aria-current=' + a.getAttribute('aria-current') : ''} → ${a.getAttribute('href')}`).join(' | '));
     ok(nav === 'Réalisations → /realisations | Engagements actif aria-current=page → /engagements | Contact → #contact', 'navigation : ' + nav);
-    ok((await site.p.evaluate(() => [document.documentElement.dataset.page, document.title, document.querySelector('.page__titre').textContent, document.querySelector('meta[name="description"]')?.content].join(' · '))) === 'engagements · Engagements — Perpetual · Engagements · Aider bénévolement, transmettre à La Cambre-Horta, soutenir le Créahmbxl — les trois engagements de Perpetual.',
-      `html data-page="engagements", titre « Engagements — Perpetual », h1 « Engagements » seul, description de l'en-tête`);
+    // la description est lue dans l'en-tête de content/engagements.md, comme pour Réalisations (05/10 : verbes dans l'ordre de la page)
+    const descriptionEng = (fs.readFileSync(path.join(REPO, 'content/engagements.md'), 'utf8').match(/^description:\s*(.+)$/m) || [])[1];
+    ok((await site.p.evaluate(() => [document.documentElement.dataset.page, document.title, document.querySelector('.page__titre').textContent, document.querySelector('meta[name="description"]')?.content].join(' · '))) === `engagements · Engagements — Perpetual · Engagements · ${descriptionEng}`,
+      `html data-page="engagements", titre « Engagements — Perpetual », h1 « Engagements » seul, description de l'en-tête de content/engagements.md`);
     await controlesPage(site, '/engagements', format[0], ['400 17px "Instrument Sans"', '400 42px Newsreader', 'italic 400 22px Newsreader']);
     await site.ctx.close(); await maq.ctx.close();
   }
