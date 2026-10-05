@@ -302,12 +302,12 @@ a.bloc:hover img{transform:scale(var(--zoom))}
 [data-album]:not(.photos--nav) .photos__compteur,[data-album]:not(.photos--nav) .photos__fleche{display:none}
 @media (hover:none){.photos__fleche{display:none}}
 /* cases de texte : l'énoncé de Julien sur papier, comme la bande des chiffres de la Home — la première phrase en haut à gauche, la
-   seconde en bas à droite ; en sans depuis le 05/10 (Axel), sans titre. Le contenu est posé dans la case (position absolue) : sa marge intérieure ne compte pas dans le partage des largeurs. */
+   seconde en bas à droite, alignée à droite ; en sans depuis le 05/10 (Axel), sans titre. Le contenu est posé dans la case (position absolue) : sa marge intérieure ne compte pas dans le partage des largeurs. */
 .cas{position:relative;background:var(--surface);container-type:inline-size;overflow:hidden}
 .cas__in{position:absolute;inset:0;padding:24px 26px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
 .cas--phrase .cas__in{justify-content:flex-end}
 .cas__enonce{font-family:var(--sans);font-weight:400;font-size:clamp(17px,5.9cqi,25px);line-height:1.25;letter-spacing:-.012em;text-wrap:pretty}
-.cas__phrase{font-family:var(--sans);font-size:clamp(16px,5.5cqi,22px);line-height:1.3;letter-spacing:-.01em;text-wrap:pretty}
+.cas__phrase{font-family:var(--sans);font-size:clamp(16px,5.5cqi,22px);line-height:1.3;letter-spacing:-.01em;text-wrap:pretty;text-align:right}   /* calée dans le coin bas-droit (05/10, Axel) */
 /* visionneuse : fond blanc, photo entière (contain) dans un cadre 4:3, flèches de part et d'autre, la ville (ou le projet) puis « surface · usage » (ou
    le lieu et la surface) et « 1 / n » dessous ;
    « Fermer », Échap, flèches du clavier */
@@ -426,6 +426,7 @@ html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:4
   .mos .tuile{aspect-ratio:4/5;flex:none}
   .mos .cas{grid-column:1/-1;aspect-ratio:auto;flex:none}
   .cas__in{position:static;padding:22px 20px}
+  .cas__phrase{text-align:left}   /* au téléphone, une bande sur toute la largeur comme la première case : à gauche */
   .tuile__nom{font-size:19px}
   .tuile__faits{display:none}
   .tuile__mobile{display:block;font-size:13px;margin-top:4px}
