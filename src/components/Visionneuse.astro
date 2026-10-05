@@ -2,20 +2,40 @@
 // La visionneuse (lot 5, 05/10/2026) : mêmes balises et classes que visio() de design/maquette/src/build.mjs, la maquette étant la référence (styles :
 // src/styles/visionneuse.css). Fond blanc, la photo entière dans un cadre 4:3, flèches de part et d'autre, « Fermer », sous la photo la légende et le
 // compteur ; modale (aria-modal), masquée tant qu'elle est fermée. `label` : son nom accessible (« Photos du projet » sur une fiche, « Photos » sur la vue
-// Réalisations). Écrite pour les fiches et, au message 2, la vue Réalisations.
+// Réalisations). `albums` (vue Réalisations) : les albums des photos parcourables, dans l'ordre de leur data-album — Brosse, puis les tuiles dans l'ordre de
+// la mosaïque, comme window.BIENS dans la maquette —, écrits dans la page en JSON (#visio-albums, après la visionneuse) : pour chacun, les adresses de ses
+// photos en grand (l : photoGrande, src/lib/photos.ts — WebP de 1 800 px au plus, chargées seulement à l'ouverture) et sa légende — la ville, la surface et
+// l'usage d'un bien, ou une légende toute faite (legende, Brosse) —, déjà échappées pour innerHTML, comme la maquette.
 // Le script, repris de la fin de design/maquette/maquette.js sans changement de comportement : ouvrir(album, départ, de) — un album, ses photos (l) et,
 // pour un bien de la vue Réalisations, la ville, la surface et l'usage, ou une légende toute faite (legende) ; sans l'une ni l'autre, le compteur seul —
 // remplit la piste (src/scripts/boucle.js : la piste en boucle), montre la photo de départ et met le focus sur « Fermer » ; fermer() rend le focus à
-// l'élément qui l'avait (ou à `de`). Flèches, ← et → au clavier, Échap, clic sur le fond ; Tab et Maj+Tab restent dans ses commandes visibles. Sur une
-// fiche, chaque tuile de la mosaïque (.fiche__agrandir) l'ouvre sur sa photo, le compteur seul (« 3 / 10 ») : l'album est fait des adresses de leur
-// data-grande (src/components/fiche/Mosaique.astro), des versions qui ne sont chargées qu'à l'ouverture. Rien de la vue Réalisations ici (message 2).
-// Un script traité par Astro (pas is:inline, comme le graphique de la Home) : il importe Boucle, un module partagé.
+// l'élément qui l'avait (ou à `de`). Flèches, ← et → au clavier, Échap, clic sur le fond ; Tab et Maj+Tab restent dans ses commandes visibles. Sur la vue
+// Réalisations, chaque album ([data-album] : le bloc de Brosse et les tuiles, src/components/realisations/Album.astro) tourne en boucle sur place quand il a
+// plus d'une photo — le compteur suit, les flèches font ±1, au doigt la piste glisse — et un clic sur sa photo ouvre la visionneuse sur la photo affichée,
+// le focus rendu au bouton de la photo à la fermeture. Sur une fiche, chaque tuile de la mosaïque (.fiche__agrandir) l'ouvre sur sa photo, le compteur seul
+// (« 3 / 10 ») : l'album est fait des adresses de leur data-grande (src/components/fiche/Mosaique.astro), des versions qui ne sont chargées qu'à
+// l'ouverture. Un script traité par Astro (pas is:inline, comme le graphique de la Home) : il importe Boucle, un module partagé.
+export interface AlbumVisionneuse {
+  /** Les adresses des photos en grand, dans l'ordre. */
+  l: string[];
+  /** Une légende toute faite (HTML échappé) : « <b>Brosse</b>Forest · 800 m² ». */
+  legende?: string;
+  /** Un bien : la ville, la surface et l'usage (HTML échappé). */
+  ville?: string;
+  surface?: string;
+  usage?: string;
+}
+
 interface Props {
   /** Le nom accessible de la visionneuse. */
   label: string;
+  /** Vue Réalisations : les albums, dans l'ordre de leur data-album. */
+  albums?: AlbumVisionneuse[];
 }
 
-const { label } = Astro.props;
+const { label, albums } = Astro.props;
+// en JSON dans la page, « < » échappé : rien ne peut y fermer la balise <script>
+const json = albums ? JSON.stringify(albums).replace(/</g, '\\u003c') : '';
 ---
 
 <div class="visio" hidden role="dialog" aria-modal="true" aria-label={label}>
@@ -25,6 +45,7 @@ const { label } = Astro.props;
   <button type="button" class="visio__fleche visio__fleche--d" data-v-suiv aria-label="Photo suivante"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M2 2l10 12L2 26" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
   <p class="visio__bas"><span class="visio__legende"></span><span class="visio__compteur"></span></p>
 </div>
+{albums && <script is:inline type="application/json" id="visio-albums" set:html={json} />}
 <script>
   import { Boucle } from '../scripts/boucle.js';
 
@@ -49,6 +70,21 @@ const { label } = Astro.props;
       fermeture.focus();
     };
     const fermer = () => { v.hidden = true; document.body.classList.remove('visio-ouverte'); if (retour) retour.focus(); };
+    // vue Réalisations : les tuiles de la mosaïque et le bloc de Brosse (data-album = leur album dans #visio-albums, data-n = son nombre de photos). Leurs
+    // photos se parcourent sur place — flèches, « 1 / n », au doigt —, en boucle ; un clic sur la photo ouvre la visionneuse sur la photo affichée.
+    const donnees = document.getElementById('visio-albums');
+    const albums: Album[] = donnees ? JSON.parse(donnees.textContent || '[]') : [];
+    document.querySelectorAll<HTMLElement>('[data-album]').forEach((el) => {
+      const piste = el.querySelector('.photos')!, n = +el.getAttribute('data-n')!, cpt = el.querySelector('.photos__compteur'), album = albums[+el.getAttribute('data-album')!];
+      const pb: { aller(delta: number): void; courant: number } | null = n > 1 ? new (Boucle as any)(piste, (i: number) => { cpt!.textContent = (i + 1) + ' / ' + n; }) : null;
+      if (pb) {
+        el.classList.add('photos--nav');
+        el.querySelector('.photos__fleche--g')!.addEventListener('click', () => pb.aller(-1));
+        el.querySelector('.photos__fleche--d')!.addEventListener('click', () => pb.aller(1));
+      }
+      // un clic donne le focus à la piste (tabindex -1) : il revient au bouton
+      el.querySelector('.photos__ouvrir')!.addEventListener('click', function (this: HTMLElement) { ouvrir(album, pb ? pb.courant : 0, this); });
+    });
     // les fiches : chaque tuile de la mosaïque ouvre la visionneuse sur sa photo (data-grande), le compteur seul (« 3 / 10 »)
     const tuiles = document.querySelectorAll<HTMLElement>('.fiche__agrandir');
     if (tuiles.length) {

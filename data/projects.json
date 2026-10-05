@@ -41,6 +41,9 @@
       "cadre": "carre",
       "focal": "50% 0%"
     },
+    "bloc": {
+      "focal": "50% 30%"
+    },
     "apercu": {
       "cadre": [0.1496, 0, 0.7407, 0.6944]
     }
@@ -73,6 +76,9 @@
     "tete": {
       "cadre": "paysage",
       "focal": "50% 0%"
+    },
+    "bloc": {
+      "focal": "50% 40%"
     },
     "apercu": {
       "cadre": [0, 0, 1, 0.9375]
@@ -114,6 +120,9 @@
     "tete": {
       "cadre": "paysage",
       "focal": "60% 50%"
+    },
+    "bloc": {
+      "focal": "50% 50%"
     },
     "apercu": {
       "cadre": [0.205, 0, 0.45, 1]
@@ -174,6 +183,9 @@
     ],
     "tete": {
       "cadre": "paysage",
+      "focal": "50% 50%"
+    },
+    "bloc": {
       "focal": "50% 50%"
     },
     "apercu": {
@@ -496,6 +508,7 @@
     "kind": "project",
     "location": "Forest",
     "surface": "800 m²",
+    "projet": "Rafraîchissement et division d’un ancien atelier de brosses",
     "selection": [
       "brosse-31",
       "brosse-16",
@@ -506,6 +519,9 @@
       "brosse-19",
       "brosse-22",
       "brosse-70"
-    ]
+    ],
+    "bloc": {
+      "focal": "50% 40%"
+    }
   }
 ]

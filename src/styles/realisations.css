@@ -1,0 +1,112 @@
+/* La vue Réalisations du site (lot 5, 05/10/2026) : les règles de design/maquette/maquette.css pour cette page, reprises telles quelles — le titre de page
+   (.page__titre de base, serif, puis la règle en sans léger de la vue Réalisations), l'ouverture (.p2-ouv), les projets (.alt, .alt__rang…, .bloc…, les
+   faits), la mosaïque (.mos-section, .mos…, .tuile…), les photos parcourables (.photos__ouvrir, .photos, .photos__vue, .photos--nav, .photos__compteur,
+   .photos__fleche) et les cases de texte (.cas…), de « vue Réalisations (revue du 26/09… » jusqu'aux « cases de texte » comprises (section 4) —, et leurs
+   règles téléphone et mouvement réduit (section 5). .eyebrow--sans-marge, qu'aucune page n'utilise plus, n'est pas reprise. La visionneuse a les siennes
+   (src/styles/visionneuse.css). Importé par src/pages/realisations.astro, après le socle (src/styles/base.css…). Balisage : src/components/realisations/. */
+/* titre de page : serif 64 px, celui des fiches — la vue Réalisations et Engagements le passent en sans léger */
+.page__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-titre-page);line-height:1;letter-spacing:-.015em}
+/* vue Réalisations (revue du 26/09, proposition P2 retenue), sur la grille large : le titre en sans léger — la fiche garde la serif, qui prolonge le nom
+   des projets posé sur les photos —, seul (la phrase d'ouverture est retirée le 05/10 ; le pied de page, lui, reste sur le container de 1 200 px, comme sur toutes les pages).
+   .provisoire : texte ou intitulé provisoire (lot 3), signalé par un title au survol */
+html[data-page="realisations"] .page__titre{font-family:var(--sans);font-weight:400;letter-spacing:-.028em;line-height:1.02}
+.p2-ouv{padding-top:32px;padding-bottom:30px}
+/* les projets : rangées de blocs photo, 7/5 puis 5/7, puis Brosse seule sur toute la largeur (lot 2b, 04/10 : 2-2-1), hauteur calée sur la fenêtre ; le nom
+   en serif blanc sur un dégradé, en bas à gauche ; au survol et au focus, les trois faits (Lieu / Surface / Usage). Depuis la P6 (26/09), les quatre blocs des
+   projets à fiche sont des liens vers leur fiche (ils gardent leur id) ; Brosse, sans fiche, est un album (photos parcourables sur place, plus bas). Leur photo zoome
+   (1,035 : photos cliquables) */
+.alt{display:grid;gap:14px}
+.alt__rang{display:grid;gap:14px;height:clamp(340px,calc(100vh - 262px),540px)}
+.alt__rang--a{grid-template-columns:7fr 5fr}
+.alt__rang--b{grid-template-columns:5fr 7fr}
+.alt__rang--seul{grid-template-columns:1fr}
+.bloc{position:relative;display:block;overflow:hidden;color:var(--photo-texte);background:var(--surface)}
+.bloc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}   /* object-position : blocFocal, posé en style par build.mjs */
+a.bloc:hover img{transform:scale(var(--zoom))}
+.bloc::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,.58) 0%,rgba(0,0,0,.26) 32%,transparent 58%);transition:background .3s}
+.bloc:hover::after,.bloc:focus-visible::after,.bloc:has(:focus-visible)::after{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.4) 40%,transparent 72%)}
+.bloc__texte{position:absolute;left:28px;right:28px;bottom:24px;z-index:1}
+.bloc__nom{display:block;font-family:var(--serif);font-size:38px;line-height:1.05;letter-spacing:-.012em}
+.bloc__faits{display:flex;gap:0 40px;flex-wrap:wrap;max-height:0;opacity:0;overflow:hidden;transition:max-height .35s ease,opacity .3s,margin .35s}
+.bloc:hover .bloc__faits,.bloc:focus-visible .bloc__faits,.bloc:has(:focus-visible) .bloc__faits{max-height:90px;opacity:1;margin-top:18px}
+@media (max-width:1240px){.bloc:hover .bloc__faits,.bloc:focus-visible .bloc__faits,.bloc:has(:focus-visible) .bloc__faits{max-height:180px}}   /* sous ~1 230 px, les trois faits passent sur deux ou trois lignes : rien n'est rogné */
+.fait__et{display:block;font-size:12px;opacity:.82}
+.fait__val{display:block;font-family:var(--serif);font-size:21px;line-height:1.2;margin-top:2px}
+.bloc__mobile{display:none}
+/* programme agences (lot 2b, 04/10 ; page de travail design/revue-mosaique/) : la mosaïque des seize biens en rangées de 4 et de 3 cases, sur blanc.
+   Chaque case a le format de sa photo (--r = largeur / hauteur, écrit par build.mjs) et une part de la rangée proportionnelle à ce format : toutes les cases
+   d'une rangée ont la même hauteur, la photo est entière — ni recadrée ni agrandie. Les rangées de 3 sortent plus hautes que celles de 4. */
+.mos-section{margin-top:56px;padding-bottom:88px}
+.mos{display:flex;flex-direction:column;gap:14px}
+.mos__rang{display:flex;gap:14px;align-items:flex-start}
+.mos .tuile,.mos .cas{flex:var(--r) 1 0;aspect-ratio:var(--r);min-width:0}
+/* nom et faits : une taille par sorte de rangée, pas par tuile */
+.mos__rang--4{--nom:clamp(19px,1.6vw,25px);--val:clamp(15px,1.15vw,18px)}
+.mos__rang--3{--nom:clamp(21px,1.9vw,29px);--val:clamp(15px,1.25vw,19px)}
+/* tuile = un bien, dans le style des blocs des projets : photo, dégradé, nom en serif blanc, Surface / Usage au survol et au focus, zoom 1,035 ; ses photos
+   se parcourent sur place et un clic ouvre la visionneuse (.photos, plus bas) */
+.tuile{position:relative;overflow:hidden;color:var(--photo-texte);background:var(--surface);container-type:inline-size}
+.tuile::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,.58) 0%,rgba(0,0,0,.24) 34%,transparent 60%);transition:background .3s}
+.tuile:hover::after,.tuile:has(:focus-visible)::after{background:linear-gradient(to top,rgba(0,0,0,.72) 0%,rgba(0,0,0,.42) 46%,transparent 78%)}
+.tuile__texte{position:absolute;left:clamp(16px,7cqi,26px);right:clamp(16px,7cqi,26px);bottom:clamp(14px,6cqi,22px);z-index:1}
+.tuile__nom{display:block;font-family:var(--serif);font-size:var(--nom);line-height:1.05;letter-spacing:-.012em}
+.tuile__faits{display:flex;flex-wrap:wrap;gap:6px 28px;max-height:0;opacity:0;overflow:hidden;transition:max-height .35s ease,opacity .3s,margin .35s}
+.tuile:hover .tuile__faits,.tuile:has(:focus-visible) .tuile__faits{max-height:150px;opacity:1;margin-top:12px}
+.tuile .fait__val{font-size:var(--val)}
+.tuile__mobile{display:none}
+/* photos parcourables sur place (tuiles et bloc de Brosse ; rétabli le 05/10, comme les vignettes du carrousel) : un bouton sur toute la surface porte la piste
+   — une vue par photo, qui rogne le zoom du survol ; à accroche, en boucle (maquette.js) ; un clic ouvre la visionneuse sur la photo affichée — ; s'il y a
+   plusieurs photos (avec JavaScript), « 1 / n » en haut à droite sur un léger voile dans le coin, et deux flèches fines au survol ; au doigt, la piste se fait glisser */
+.photos__ouvrir{position:absolute;inset:0;display:block;width:100%;height:100%;margin:0;padding:0;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.photos__ouvrir:focus-visible{outline:2px solid var(--c-trait);outline-offset:-2px}
+.photos{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.photos::-webkit-scrollbar{display:none}
+.photos__vue{position:relative;flex:0 0 100%;height:100%;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always}
+.photos__vue img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
+.tuile:hover .photos__vue img,.tuile:has(:focus-visible) .photos__vue img,.bloc--album:hover .photos__vue img,.bloc--album:has(:focus-visible) .photos__vue img{transform:scale(var(--zoom))}
+.photos--nav::before{content:"";position:absolute;top:0;right:0;z-index:2;width:120px;height:64px;pointer-events:none;background:radial-gradient(ellipse at 100% 0,rgba(0,0,0,.38) 0%,rgba(0,0,0,.16) 45%,transparent 75%)}
+.photos__compteur{position:absolute;z-index:3;top:10px;right:12px;font-size:12px;line-height:1;letter-spacing:.02em;color:var(--photo-texte);font-variant-numeric:tabular-nums;text-shadow:0 0 6px rgba(0,0,0,.5);pointer-events:none}
+.photos__fleche{position:absolute;z-index:3;top:50%;transform:translateY(-50%);width:52px;height:96px;display:flex;align-items:center;justify-content:center;background:none;border:0;padding:0;color:var(--photo-texte);cursor:pointer;opacity:0;transition:opacity .25s}
+.photos__fleche--g{left:0}.photos__fleche--d{right:0}
+.photos__fleche svg{width:13px;height:26px;filter:drop-shadow(0 0 3px rgba(0,0,0,.65))}
+.photos__fleche:focus-visible{outline:2px solid var(--photo-texte);outline-offset:-8px}
+[data-album]:hover .photos__fleche,[data-album]:has(:focus-visible) .photos__fleche{opacity:1}
+/* compteur, voile et flèches posés par maquette.js (classe photos--nav, album de plus d'une photo) : sans JavaScript, la piste se fait glisser, sans eux */
+[data-album]:not(.photos--nav) .photos__compteur,[data-album]:not(.photos--nav) .photos__fleche{display:none}
+@media (hover:none){.photos__fleche{display:none}}
+/* cases de texte : l'énoncé de Julien sur papier, comme la bande des chiffres de la Home — la première phrase en haut à gauche, la
+   seconde en bas à droite, alignée à droite ; en sans depuis le 05/10 (Axel), sans titre. Le contenu est posé dans la case (position absolue) : sa marge intérieure ne compte pas dans le partage des largeurs. */
+.cas{position:relative;background:var(--surface);container-type:inline-size;overflow:hidden}
+.cas__in{position:absolute;inset:0;padding:24px 26px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.cas--phrase .cas__in{justify-content:flex-end}
+.cas__enonce{font-family:var(--sans);font-weight:400;font-size:clamp(17px,5.9cqi,25px);line-height:1.25;letter-spacing:-.012em;text-wrap:pretty}
+.cas__phrase{font-family:var(--sans);font-size:clamp(16px,5.5cqi,22px);line-height:1.3;letter-spacing:-.01em;text-wrap:pretty;text-align:right}   /* calée dans le coin bas-droit (05/10, Axel) */
+
+/* ---------- téléphone (section 5) ---------- */
+@media (max-width:640px){
+  /* vue Réalisations : un bloc par ligne en 4:3, nom 28 px, « Lieu · surface » dessous, faits masqués ; la mosaïque en deux colonnes de tuiles 4:5 (l'ordre
+     des rangées, sans trou avant une case de texte), nom 19 px et surface dessous, les cases de texte sur toute la largeur */
+  .p2-ouv{padding-top:24px;padding-bottom:22px}
+  .alt__rang{height:auto;grid-template-columns:1fr}
+  .alt__rang .bloc{aspect-ratio:4/3}
+  .bloc__nom{font-size:28px}
+  .bloc__faits{display:none}
+  .bloc__mobile{display:block;font-size:14px;margin-top:6px}
+  .alt .bloc::after{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.36) 38%,transparent 64%)}
+  .bloc__texte{left:18px;right:18px;bottom:16px}
+  .mos-section{margin-top:40px;padding-bottom:56px}
+  .mos{display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:row dense;gap:10px}
+  .mos__rang{display:contents}
+  .mos .tuile{aspect-ratio:4/5;flex:none}
+  .mos .cas{grid-column:1/-1;aspect-ratio:auto;flex:none}
+  .cas__in{position:static;padding:22px 20px}
+  .cas__phrase{text-align:left}   /* au téléphone, une bande sur toute la largeur comme la première case : à gauche */
+  .tuile__nom{font-size:19px}
+  .tuile__faits{display:none}
+  .tuile__mobile{display:block;font-size:13px;margin-top:4px}
+  .tuile__texte{left:12px;right:12px;bottom:10px}
+}
+/* ---------- mouvement réduit (section 5) ---------- */
+@media (prefers-reduced-motion:reduce){
+  .bloc img,.bloc::after,.bloc__faits,.photos__vue img,.photos__fleche,.tuile::after,.tuile__faits{transition:none}
+}

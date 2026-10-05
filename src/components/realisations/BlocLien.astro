@@ -1,0 +1,29 @@
+---
+// Le bloc d'un projet à fiche, vue Réalisations (lot 5, 05/10/2026) : mêmes balises et classes que blocLien() de design/maquette/src/build.mjs, la maquette
+// étant la référence (styles : src/styles/realisations.css). Un lien vers sa fiche (a.bloc#<id> → /realisations/<id>) : la photo du projet, puis le texte
+// posé dessus — le nom en serif blanc, les trois faits (Lieu, Surface, Usage ; « Projet », provisoire, tant que l'usage manque), affichés au survol et au
+// focus clavier, et « lieu · surface » pour le téléphone. La photo, par ProjectPhoto : la première clé de selection, chargée tout de suite, son point focal
+// (bloc.focal de data/projects.json) en object-position, texte alternatif vide comme la maquette, le sizes du bloc (sizesBloc, ./tailles.ts).
+import ProjectPhoto from '../ProjectPhoto.astro';
+import Fait from './Fait.astro';
+import { sizesBloc } from './tailles';
+
+interface Props {
+  id: string;
+  nom: string;
+  /** La part du bloc dans sa rangée, en douzièmes. */
+  part: number;
+  photo: string;
+  focal: string;
+  lieu: string;
+  surface: string;
+  usage?: string;
+  /** Le troisième fait, provisoire, tant que usage manque. */
+  projet?: string;
+}
+
+const { id, nom, part, photo, focal, lieu, surface, usage, projet } = Astro.props;
+const sizes = await sizesBloc(photo, part);
+---
+
+<a class="bloc" id={id} href={`/realisations/${id}`}><ProjectPhoto cle={photo} sizes={sizes} focal={focal} loading="eager" alt="" /><span class="bloc__texte"><span class="bloc__nom">{nom}</span><span class="bloc__faits"><Fait etiquette="Lieu" valeur={lieu} /><Fait etiquette="Surface" valeur={surface} />{usage ? <Fait etiquette="Usage" valeur={usage} /> : <Fait etiquette="Projet" valeur={projet!} provisoire />}</span><span class="bloc__mobile">{`${lieu} · ${surface}`}</span></span></a>

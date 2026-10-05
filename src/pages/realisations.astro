@@ -1,0 +1,114 @@
+---
+// La vue Réalisations (lot 5, message 2/2, 05/10/2026), à l'adresse /realisations, identique à celle de la maquette (design/maquette/realisations.html, la
+// référence) : en-tête — « Réalisations » actif, le trait et aria-current : c'est la page elle-même — → le titre seul, en sans léger (.p2-ouv ; plus de
+// phrase d'ouverture) → les projets en 2-2-1 : Community et Ateliers 118, The Bank et Data Box, des liens vers leur fiche (/realisations/<id>), puis Brosse
+// seule sur toute la largeur, un album sans fiche → la mosaïque des agences, 4-3-4-3-4, au format entier, avec ses deux cases de texte → pied de page ; la
+// visionneuse, masquée, dans <main> après la mosaïque (comme la maquette). Les photos du bloc de Brosse et des tuiles se parcourent sur place ; un clic sur
+// la photo ouvre la visionneuse sur la photo affichée.
+// Les données, lues comme les lit design/maquette/src/build.mjs, avec les mêmes contrôles (un manque arrête le build) : la composition dans
+// data/realisations.json — rangees, les rangées des projets (classe a, b ou seul ; pour chaque projet son id et sa part en douzièmes), mosaique, les rangées
+// de la mosaïque (ids des biens, cas:debut et cas:fin) — ; les projets et les biens dans data/projects.json — le bloc d'un projet : sa photo (la première clé
+// de selection) et son point focal (bloc.focal), Lieu (location), Surface (surface), Usage (use ; à défaut « Projet », provisoire : projet) ; un bien : la
+// ville (le nom d'une agence, le lieu d'un bien de la galerie), surface, use, ses photos (selection, <id>-01 à défaut) — ; le titre et la description de
+// l'en-tête de content/realisations.md, et le paragraphe du programme agences (src/lib/contenu.ts), coupé à la première phrase pour les deux cases de texte.
+// Composants : src/components/realisations/ et src/components/Visionneuse.astro ; styles : src/styles/realisations.css et visionneuse.css.
+import { getCollection, getEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Projets from '../components/realisations/Projets.astro';
+import type { BlocProjet } from '../components/realisations/Projets.astro';
+import Mosaique from '../components/realisations/Mosaique.astro';
+import type { CaseMosaique } from '../components/realisations/Mosaique.astro';
+import Visionneuse from '../components/Visionneuse.astro';
+import type { AlbumVisionneuse } from '../components/Visionneuse.astro';
+import composition from '../../data/realisations.json';
+import { lireAgences } from '../lib/contenu';
+import { photoGrande } from '../lib/photos';
+import '../styles/realisations.css';
+import '../styles/visionneuse.css';
+
+const page = await getEntry('pages', 'realisations');
+if (!page) throw new Error('content/realisations.md introuvable');
+// l'énoncé du programme agences, coupé à la première phrase (enonce, enonceSuite de build.mjs) : la première case de texte, puis la seconde
+const agences = await lireAgences();
+const [, enonce, enonceSuite] = agences.match(/^(.+?[.!?])\s+(.+)$/s) || [];
+if (!enonceSuite) throw new Error('content/realisations.md : le paragraphe du programme agences doit compter au moins deux phrases');
+
+const projets = new Map((await getCollection('projects')).map((p) => [p.id, p.data]));
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+// les albums de la visionneuse, dans l'ordre de leur data-album : Brosse (les rangées des projets d'abord), puis les tuiles dans l'ordre de la mosaïque
+const albums: AlbumVisionneuse[] = [];
+const grandes = (cles: string[]) => Promise.all(cles.map((cle) => photoGrande(cle)));
+
+// les projets en 2-2-1 : les parts de chaque classe de rangée sont de la mise en page (PARTS de build.mjs, la grille de .alt__rang--<classe>)
+const PARTS: Record<string, number[]> = { a: [7, 5], b: [5, 7], seul: [12] };
+const rangeesBrutes = composition.rangees.map((r, i) => {
+  const ou = `data/realisations.json : rangees, rangée ${i + 1}`;
+  if (!PARTS[r.classe]) throw new Error(`${ou} — classe « ${r.classe} » inconnue (${Object.keys(PARTS).join(', ')})`);
+  if (r.projets.map((x) => x.part).join(' ') !== PARTS[r.classe].join(' ')) throw new Error(`${ou} — classe ${r.classe} : ${PARTS[r.classe].length} projet(s), de parts ${PARTS[r.classe].join(' et ')} (en douzièmes)`);
+  return r;
+});
+{
+  const ids = [...projets].filter(([, p]) => p.kind === 'detailed' || p.kind === 'project').map(([id]) => id), dans = rangeesBrutes.flatMap((r) => r.projets.map((x) => x.id));
+  const manque = ids.filter((id) => !dans.includes(id)), inconnus = dans.filter((id) => !ids.includes(id)), doubles = dans.filter((id, i) => dans.indexOf(id) !== i);
+  if (manque.length || inconnus.length || doubles.length) throw new Error(`data/realisations.json, rangees : chaque projet (kind detailed ou project) une fois — manquent ${manque.join(', ') || '—'}, inconnus ${inconnus.join(', ') || '—'}, en double ${doubles.join(', ') || '—'}`);
+}
+const rangees: { classe: string; blocs: BlocProjet[] }[] = [];
+for (const r of rangeesBrutes) {
+  const blocs: BlocProjet[] = [];
+  for (const { id, part } of r.projets) {
+    const p = projets.get(id)!;
+    // le bloc d'un projet (blocDe de build.mjs)
+    const b = { photo: (p.selection || [])[0], focal: p.bloc?.focal, lieu: p.location, surface: p.surface };
+    const manque = Object.entries({ selection: b.photo, 'bloc.focal': b.focal, location: b.lieu, surface: b.surface }).filter(([, v]) => !v || !v.trim()).map(([k]) => k);
+    if (!p.use && !p.projet) manque.push('use (à défaut projet)');
+    if (manque.length) throw new Error(`data/projects.json : ${id}, ${manque.join(', ')} — les infos de son bloc de la vue Réalisations (selection, bloc.focal, location, surface, use ou projet)`);
+    const etrangere = p.selection!.find((k) => !k.startsWith(id + '-'));
+    if (etrangere) throw new Error(`data/projects.json : ${id}, selection — ${etrangere} n'est pas une photo de ce projet`);
+    // sans fiche (kind project) : un album, sa légende toute faite (le nom, puis « lieu · surface »)
+    let album: number | undefined;
+    if (p.kind === 'project') {
+      album = albums.length;
+      albums.push({ legende: `<b>${esc(p.name)}</b>${esc(b.lieu!)} · ${esc(b.surface!)}`, l: await grandes(p.selection!) });
+    }
+    blocs.push({ id, nom: p.name, part, photos: p.selection!, focal: b.focal!, lieu: b.lieu!, surface: b.surface!, usage: p.use, projet: p.use ? undefined : p.projet, album });
+  }
+  rangees.push({ classe: r.classe, blocs });
+}
+
+// la mosaïque : chaque bien (kind agency ou gallery) une fois, les deux cases de texte une fois chacune, 3 ou 4 cases par rangée (.mos__rang--3, --4)
+{
+  const ids = [...projets].filter(([, p]) => p.kind === 'agency' || p.kind === 'gallery').map(([id]) => id), cases = composition.mosaique.flat(), dans = cases.filter((x) => !x.startsWith('cas:'));
+  const manque = ids.filter((id) => !dans.includes(id)), inconnus = dans.filter((id) => !ids.includes(id)), doubles = dans.filter((id, i) => dans.indexOf(id) !== i);
+  if (manque.length || inconnus.length || doubles.length) throw new Error(`data/realisations.json, mosaique : chaque bien une fois — manquent ${manque.join(', ') || '—'}, inconnus ${inconnus.join(', ') || '—'}, en double ${doubles.join(', ') || '—'}`);
+  const textes = cases.filter((x) => x.startsWith('cas:'));
+  if (textes.slice().sort().join(' ') !== 'cas:debut cas:fin') throw new Error(`data/realisations.json, mosaique : les deux cases de texte, cas:debut et cas:fin, une fois chacune — trouvées : ${textes.join(', ') || '—'}`);
+  const tailles = composition.mosaique.map((r) => r.length);
+  if (tailles.some((n) => n !== 3 && n !== 4)) throw new Error(`data/realisations.json, mosaique : 3 ou 4 cases par rangée — ${tailles.join('-')}`);
+}
+const mosaique: CaseMosaique[][] = [];
+for (const rang of composition.mosaique) {
+  const cases: CaseMosaique[] = [];
+  for (const x of rang) {
+    if (x === 'cas:debut' || x === 'cas:fin') { cases.push({ cas: x === 'cas:debut' ? 'debut' : 'fin' }); continue; }
+    // un bien (bienDe de build.mjs)
+    const p = projets.get(x)!, photos = p.selection && p.selection.length ? p.selection : [`${x}-01`];
+    const etrangere = photos.find((k) => !k.startsWith(x + '-'));
+    if (etrangere) throw new Error(`data/projects.json : ${x}, selection — ${etrangere} n'est pas une photo de ce bien`);
+    const ville = p.kind === 'agency' ? p.name : p.location;
+    const manque = Object.entries({ [p.kind === 'agency' ? 'name' : 'location']: ville, surface: p.surface, use: p.use }).filter(([, v]) => !v).map(([k]) => k);
+    if (manque.length) throw new Error(`data/projects.json : ${x}, ${manque.join(', ')} — les infos de sa tuile de la vue Réalisations (ville, surface, usage)`);
+    cases.push({ bien: { id: x, ville: ville!, surface: p.surface!, usage: p.use!, photos }, indice: albums.length });
+    albums.push({ ville: esc(ville!), surface: esc(p.surface!), usage: esc(p.use!), l: await grandes(photos) });
+  }
+  mosaique.push(cases);
+}
+---
+
+<Base title={page.data.title} description={page.data.description} active="/realisations" page="realisations">
+  <div class="large p2-ouv">
+    <h1 class="page__titre">{page.data.title}</h1>
+  </div>
+  <Projets rangees={rangees} />
+  <Mosaique rangees={mosaique} enonce={enonce} suite={enonceSuite} />
+  <Visionneuse label="Photos" albums={albums} />
+</Base>

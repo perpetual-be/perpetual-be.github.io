@@ -1,0 +1,49 @@
+---
+// La mosaïque des agences, vue Réalisations (lot 5, 05/10/2026) : mêmes balises et classes que realisationsPage() de design/maquette/src/build.mjs, la
+// maquette étant la référence (styles : src/styles/realisations.css). Sur la grille large, les seize biens (kind agency et gallery) en rangées de 4 et de 3
+// cases (4-3-4-3-4 : mosaique de data/realisations.json), au format entier : chaque case a le format de sa photo n° 1 et une part de la rangée proportionnelle
+// à ce format — les cases d'une rangée ont la même hauteur, rien n'est recadré ni agrandi. Une case : un bien (./Tuile.astro), ou l'une des deux cases de
+// texte — l'énoncé du programme agences coupé à la première phrase : la première (h2.cas__enonce) en haut à gauche, la suite (p.cas__phrase) en bas à droite,
+// insérées telles quelles (espaces insécables compris), au format CAS_R. Nom accessible de la section : « Programme agences ».
+import Tuile from './Tuile.astro';
+import { formatPhoto } from '../../lib/photos';
+
+export interface Bien {
+  id: string;
+  ville: string;
+  surface: string;
+  usage: string;
+  /** Les clés de ses photos (selection), dans l'ordre. */
+  photos: string[];
+}
+export type CaseMosaique = { cas: 'debut' | 'fin' } | { bien: Bien; indice: number };
+
+interface Props {
+  /** Les rangées, chacune ses cases dans l'ordre. */
+  rangees: CaseMosaique[][];
+  /** La première phrase de l'énoncé, puis la suite. */
+  enonce: string;
+  suite: string;
+}
+
+const { rangees, enonce, suite } = Astro.props;
+// le format des cases de texte : de la mise en page (CAS_R de build.mjs)
+const CAS_R = 1.15;
+// par rangée, le format de chaque case (CAS_R, ou celui de la photo n° 1 du bien) et sa part de la rangée (son format ÷ la somme des formats) : le sizes
+// de ses photos ; ecarts, 14 px par écart
+const rangs = await Promise.all(rangees.map(async (rang) => {
+  const cases = await Promise.all(rang.map(async (c) => ({ c, r: 'cas' in c ? CAS_R : await formatPhoto(c.bien.photos[0]) })));
+  const somme = cases.reduce((t, x) => t + x.r, 0);
+  return { cases: cases.map((x) => ({ ...x, part: (x.r / somme).toFixed(4) })), ecarts: (cases.length - 1) * 14 };
+}));
+---
+
+<section class="large mos-section" id="agences" aria-label="Programme agences">
+  <div class="mos">
+    {rangs.map((rang) => <div class={`mos__rang mos__rang--${rang.cases.length}`}>{rang.cases.map(({ c, r, part }) => 'cas' in c
+      ? (c.cas === 'debut'
+        ? <div class="cas cas--enonce" style={`--r:${CAS_R}`}><div class="cas__in"><h2 class="cas__enonce" set:html={enonce} /></div></div>
+        : <div class="cas cas--phrase" style={`--r:${CAS_R}`}><div class="cas__in"><p class="cas__phrase" set:html={suite} /></div></div>)
+      : <Tuile id={c.bien.id} ville={c.bien.ville} surface={c.bien.surface} usage={c.bien.usage} photos={c.bien.photos} r={r} part={part} ecarts={rang.ecarts} indice={c.indice} />)}</div>)}
+  </div>
+</section>

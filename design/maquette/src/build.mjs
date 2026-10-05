@@ -77,40 +77,66 @@ if (!agences || agences.startsWith('#')) throw new Error('content/realisations.m
 const [enonce, enonceSuite] = (agences.match(/^(.+?[.!?])\s+(.+)$/s) || []).slice(1);
 if (!enonceSuite) throw new Error('content/realisations.md : le paragraphe du programme agences doit compter au moins deux phrases');
 
-// Les quatre projets : leurs infos propres, lues par id — l'ordre de ce tableau ne compte pas, la liste de la Home suit le champ order (DETAILLES). Une ligne
-// chacun (mêmes lignes que la planche A) ; sur la vue Réalisations (revue du 26/09), la photo du bloc (bloc, point focal blocFocal posé en style sur l'<img>,
-// comme photoCandidates) et les trois faits du survol, lieu, surface et usage (provisoires, lot 3 ; pour The Bank la ville seule, l'adresse exacte n'est pas
-// publiée). bloc est la photo du projet, la première clé de son champ selection (P6, 26/09) : <clé>-s.jpg (800 px) et <clé>.jpg (1800 px) en srcset
-// (photoImgPetit). Ateliers 118 : ateliers-118-01, toute la façade avec la porte de garage dans le bloc (50% 30%) ; Data Box : data-box-03, la vue drone.
-// Les quatre pointent vers leur fiche (la liste de la Home, les quatre blocs-liens de la vue Réalisations, qui gardent leur id). La photo et le cadrage de
-// l'aperçu de la Home (30/09) ne sont pas ici : ils sont dans le champ apercu de data/projects.json (apercus, plus bas).
+// Les quatre projets : leur ligne (mêmes lignes que la planche A), lue par id — la liste des 4 de la Home (fourList), qui n'est plus affichée ; l'ordre de ce
+// tableau ne compte pas, la liste suit le champ order (DETAILLES) et pointe vers les fiches. Le bloc de chaque projet sur la vue Réalisations lit tout dans
+// data/projects.json (blocDe, plus bas) ; la photo et le cadrage de l'aperçu de la Home (30/09), le champ apercu (apercus, plus bas).
 const four = [
-  { id: 'ateliers-118', line: 'Molenbeek-Saint-Jean · 1 200 m² · Treize ateliers dans une ancienne usine de colle', blocFocal: '50% 30%', lieu: 'Molenbeek-Saint-Jean', surface: '1 200 m²', usage: 'Ateliers' },
-  { id: 'the-bank', line: 'Liège · 1 100 m² · Une agence bancaire transformée pour trois nouveaux usages', blocFocal: '50% 40%', lieu: 'Liège', surface: '1 100 m²', usage: 'Logements & commerce' },
-  { id: 'data-box', line: 'Jemelle · 4 200 m² · Un hectare de potentiel, loué jusqu’en 2031', blocFocal: '50% 50%', lieu: 'Jemelle', surface: '4 200 m²', usage: 'Site technique' },
-  { id: 'community', line: 'Uccle · 600 m² · Quatorze chez-soi autour d’espaces partagés', blocFocal: '50% 50%', lieu: 'Uccle', surface: '14 unités', usage: 'Co-living' },
-].map(f => ({ ...f, bloc: photoProjet(f.id), href: pageFiche(f.id) }));
-for (const p of DETAILLES) if (!four.some(f => f.id === p.id)) throw new Error(`build.mjs : ${p.id} absent de four (ligne, blocFocal, lieu, surface, usage)`);
-// Vue Réalisations : les projets en 2-2-1 (choix d'Axel, 04/10) — 7fr / 5fr, puis 5fr / 7fr, puis Brosse seule (.alt__rang--a, --b, --seul).
-const rangees = [['a', [['community', 7], ['ateliers-118', 5]]], ['b', [['the-bank', 5], ['data-box', 7]]], ['seul', [['brosse', 12]]]];
+  { id: 'ateliers-118', line: 'Molenbeek-Saint-Jean · 1 200 m² · Treize ateliers dans une ancienne usine de colle' },
+  { id: 'the-bank', line: 'Liège · 1 100 m² · Une agence bancaire transformée pour trois nouveaux usages' },
+  { id: 'data-box', line: 'Jemelle · 4 200 m² · Un hectare de potentiel, loué jusqu’en 2031' },
+  { id: 'community', line: 'Uccle · 600 m² · Quatorze chez-soi autour d’espaces partagés' },
+];
+for (const p of DETAILLES) if (!four.some(f => f.id === p.id)) throw new Error(`build.mjs : ${p.id} absent de four (ligne)`);
+// Vue Réalisations : sa composition est dans data/realisations.json (lot 5, 05/10 : jusque-là rangees et MOSAIQUE de ce fichier), lue aussi par le site.
+// rangees, les projets en 2-2-1 (choix d'Axel, 04/10) : par rangée, sa classe — a (7fr / 5fr), b (5fr / 7fr), seul (toute la largeur) : .alt__rang--<classe>
+// — et ses projets, chacun avec son id et sa part de la rangée en douzièmes (le sizes de sa photo, sizesBloc) ; les parts de chaque classe sont de la mise en
+// page (PARTS, la grille de maquette.css). Chaque projet (kind detailed ou project) y figure une fois : les quatre à fiche sont des blocs-liens, un projet
+// sans fiche (kind project, Brosse) un album.
+const realisations = JSON.parse(read('data/realisations.json'));
+const PARTS = { a: [7, 5], b: [5, 7], seul: [12] };
+const rangees = (realisations.rangees || []).map((r, i) => {
+  const projetsRang = r.projets || [], ou = `data/realisations.json : rangees, rangée ${i + 1}`;
+  if (!PARTS[r.classe]) throw new Error(`${ou} — classe « ${r.classe} » inconnue (${Object.keys(PARTS).join(', ')})`);
+  if (projetsRang.map(x => x.part).join(' ') !== PARTS[r.classe].join(' ')) throw new Error(`${ou} — classe ${r.classe} : ${PARTS[r.classe].length} projet(s), de parts ${PARTS[r.classe].join(' et ')} (en douzièmes)`);
+  return [r.classe, projetsRang.map(x => [x.id, x.part])];
+});
+{
+  const ids = projects.filter(p => p.kind === 'detailed' || p.kind === 'project').map(p => p.id), dans = rangees.flatMap(([, b]) => b.map(([id]) => id));
+  const manque = ids.filter(id => !dans.includes(id)), inconnus = dans.filter(id => !ids.includes(id)), doubles = dans.filter((id, i) => dans.indexOf(id) !== i);
+  if (manque.length || inconnus.length || doubles.length) throw new Error(`data/realisations.json, rangees : chaque projet (kind detailed ou project) une fois — manquent ${manque.join(', ') || '—'}, inconnus ${inconnus.join(', ') || '—'}, en double ${doubles.join(', ') || '—'}`);
+}
+// Le bloc d'un projet (revue du 26/09), lu dans data/projects.json (lot 5, 05/10 : jusque-là four et SANS_FICHE de ce fichier) : sa photo, la première clé de
+// son champ selection (P6, 26/09 ; <clé>-s.jpg et <clé>.jpg en srcset, photoImgPetit), et son point focal, bloc.focal (posé en style sur l'<img>, comme
+// photoCandidates ; Ateliers 118 : toute la façade avec la porte de garage, 50% 30%) ; les trois faits du survol — Lieu (location ; pour The Bank la ville
+// seule, l'adresse exacte n'est pas publiée), Surface (surface), Usage (use). Un projet dont l'usage n'est pas encore connu (Brosse, à demander à Julien) montre
+// à la place « Projet », provisoire (projet : l'intitulé du site 2020), tant que use manque. Un champ manquant arrête la construction.
+function blocDe(p) {
+  const b = { photo: (p.selection || [])[0], focal: p.bloc && p.bloc.focal, lieu: p.location, surface: p.surface, usage: p.use, projet: p.use ? undefined : p.projet };
+  const manque = [['photo', 'selection'], ['focal', 'bloc.focal'], ['lieu', 'location'], ['surface', 'surface']].filter(([k]) => typeof b[k] !== 'string' || !b[k].trim()).map(([, champ]) => champ);
+  if (!b.usage && !b.projet) manque.push('use (à défaut projet)');
+  if (manque.length) throw new Error(`data/projects.json : ${p.id}, ${manque.join(', ')} — les infos de son bloc de la vue Réalisations (selection, bloc.focal, location, surface, use ou projet)`);
+  const etrangere = p.selection.find(k => !k.startsWith(p.id + '-'));
+  if (etrangere) throw new Error(`data/projects.json : ${p.id}, selection — ${etrangere} n'est pas une photo de ce projet`);
+  return b;
+}
+for (const [, b] of rangees) for (const [id] of b) blocDe(byId[id]);
 // Le programme agences, vue Réalisations (lot 2b, 04/10/2026 — retours de Julien du 30/09, choix d'Axel ; page de travail : design/revue-mosaique/) : la
 // mosaïque des seize biens (kind agency et gallery), en rangées de 4 et de 3 cases (4-3-4-3-4), chaque photo au format entier — la largeur de sa case suit le
 // format du fichier, les cases d'une rangée ont la même hauteur, rien n'est recadré ni agrandi. L'énoncé de Julien en deux cases de texte : la première phrase
 // en haut à gauche (sans titre depuis le 05/10), la seconde en bas à droite. Les photos les plus solides dans les rangées de 3 (cases plus grandes), les plus
 // faibles et les trois photos en hauteur (Pont-à-Celles, Perwez, Schaerbeek) dans les rangées de 4 ; les deux couloirs Bancontact en photo n° 1 (Bois-de-Villers,
-// Belgrade : l'ordre de leur champ selection) ne se touchent pas. Une case : l'id d'un bien, ou cas:debut / cas:fin ; CAS_R, le format des cases de texte.
-const MOSAIQUE = [
-  ['cas:debut', 'bnp-braine-le-comte', 'bnp-pont-a-celles', 'bnp-jambes'],
-  ['belfius-braine-l-alleud', 'ing-haaltert', 'belfius-mettet'],
-  ['bnp-bois-de-villers', 'ing-tervuren', 'perwez', 'ing-welkenraedt'],
-  ['wayez-27', 'ing-landen', 'waremme'],
-  ['gilly', 'consolation', 'ing-belgrade', 'cas:fin'],
-];
+// Belgrade : l'ordre de leur champ selection) ne se touchent pas. MOSAIQUE, mosaique de data/realisations.json : rangée par rangée, ses cases — l'id d'un bien,
+// ou cas:debut / cas:fin (les deux cases de texte, une fois chacune) ; 3 ou 4 cases par rangée (.mos__rang--3, --4). CAS_R, le format des cases de texte.
+const MOSAIQUE = realisations.mosaique || [];
 const CAS_R = 1.15;
 {
-  const ids = projects.filter(p => p.kind === 'agency' || p.kind === 'gallery').map(p => p.id), dans = MOSAIQUE.flat().filter(x => !x.startsWith('cas:'));
+  const ids = projects.filter(p => p.kind === 'agency' || p.kind === 'gallery').map(p => p.id), cases = MOSAIQUE.flat(), dans = cases.filter(x => !x.startsWith('cas:'));
   const manque = ids.filter(id => !dans.includes(id)), inconnus = dans.filter(id => !ids.includes(id)), doubles = dans.filter((id, i) => dans.indexOf(id) !== i);
-  if (manque.length || inconnus.length || doubles.length) throw new Error(`build.mjs, MOSAIQUE : chaque bien une fois — manquent ${manque.join(', ') || '—'}, inconnus ${inconnus.join(', ') || '—'}, en double ${doubles.join(', ') || '—'}`);
+  if (manque.length || inconnus.length || doubles.length) throw new Error(`data/realisations.json, mosaique : chaque bien une fois — manquent ${manque.join(', ') || '—'}, inconnus ${inconnus.join(', ') || '—'}, en double ${doubles.join(', ') || '—'}`);
+  const textes = cases.filter(x => x.startsWith('cas:'));
+  if (textes.slice().sort().join(' ') !== 'cas:debut cas:fin') throw new Error(`data/realisations.json, mosaique : les deux cases de texte, cas:debut et cas:fin, une fois chacune — trouvées : ${textes.join(', ') || '—'}`);
+  const tailles = MOSAIQUE.map(r => r.length);
+  if (tailles.some(n => n !== 3 && n !== 4)) throw new Error(`data/realisations.json, mosaique : 3 ou 4 cases par rangée — ${tailles.join('-')}`);
 }
 // Un bien : la ville (le nom d'une agence, le lieu d'un bien de la galerie), la surface, l'usage et ses photos — son champ selection (clés <id>-NN, dans
 // l'ordre ; la première sur la tuile), <id>-01 à défaut.
@@ -120,11 +146,6 @@ const bienDe = id => {
   if (etrangere) throw new Error(`data/projects.json : ${p.id}, selection — ${etrangere} n'est pas une photo de ce bien`);
   return { id, ville: p.kind === 'agency' ? p.name : p.location, surface: p.surface, usage: p.use, photos };
 };
-// Projets sans fiche (kind project) : Brosse (ancien site, repris le 30/09). Choix d'Axel du 04/10 : la rangée seule, en bas des projets (2-2-1), sur toute
-// la largeur ; ses photos, son champ selection dans son ordre ; la n° 1, la 31, cadrée à 40 % de sa hauteur. Son bloc ouvre la visionneuse. Faits provisoires
-// (lot 3) : son usage aujourd'hui est à demander à Julien ; en attendant, « Projet » et l'intitulé du site 2020.
-const SANS_FICHE = { brosse: { blocFocal: '50% 40%', lieu: 'Forest', surface: '800 m²', projet: 'Rafraîchissement et division d’un ancien atelier de brosses' } };
-for (const p of projects.filter(x => x.kind === 'project')) if (!SANS_FICHE[p.id] || !(p.selection || []).length) throw new Error(`build.mjs : ${p.id} (kind project) absent de SANS_FICHE, ou sans selection`);
 // Les quatre fiches (P6, Cowork, 26/09 ; références validées : design/revue-fiche/propositions/p6.html, p6-ateliers-118.html, p6-data-box.html,
 // p6-community.html), un seul gabarit. Les infos de chaque fiche sont des champs de data/projects.json (lot 5, 05/10 : jusque-là l'objet fiches de ce
 // fichier, valeurs provisoires du lot 3), lus par ficheDe : la région (region, l'eyebrow), les trois infos — la localisation (quartier, à défaut location ;
@@ -184,7 +205,7 @@ function jpegSize(file) {
 }
 // La photo déclare son point focal (object-position, posé en style sur l'<img>, vaut aussi sur téléphone). Figée le 23/09 sur Community 05,
 // accroche à gauche (bascules 9b et 9d retirées ; data-box-03, l'autre candidate, est depuis la P6 la photo de Data Box). Plus de bascule 9c : cadrage figé le 26/09 sur
-// « haut », 50% 20%, pour le premier écran de la Home seulement (le blocFocal de community-05 dans four, vue Réalisations, reste 50% 50%).
+// « haut », 50% 20%, pour le premier écran de la Home seulement (le point focal de community-05 dans son bloc de la vue Réalisations, bloc.focal de data/projects.json, reste 50% 50%).
 // Sur téléphone, pas d'exception : Community 05 (4:3) est calée sur la hauteur du cadre de 390 × 420, le point focal vertical n'y change rien.
 // Sources d'une photo : <clé>.jpg (1800 px) et <clé>-l.jpg (2800 px) quand ils existent, sinon repli sur <clé>-s.jpg (800 px).
 function photoSources(key) {
@@ -396,7 +417,7 @@ const ligneQuatre = s => s.split(' · ').map(esc).join('\u00A0<span class="four_
 // Community, Ateliers 118 ; plus d'ordre écrit ici) : l'aperçu photo suit la ligne survolée (maquette.js), 800 / 1800 px en srcset (photoImgPetit, cadre 4:5),
 // la photo et le cadrage de chacun étant son champ apercu (apercuImg).
 function fourList() {
-  const rows = DETAILLES.map((p, i) => { const f = four.find(x => x.id === p.id); return `<li class="four__row${i === 0 ? ' is-active' : ''}" data-index="${i}"><a href="${f.href}"><span class="four__name">${esc(p.name)}</span><span class="four__line">${ligneQuatre(f.line)}</span></a></li>`; }).join('\n      ');
+  const rows = DETAILLES.map((p, i) => { const f = four.find(x => x.id === p.id); return `<li class="four__row${i === 0 ? ' is-active' : ''}" data-index="${i}"><a href="${pageFiche(p.id)}"><span class="four__name">${esc(p.name)}</span><span class="four__line">${ligneQuatre(f.line)}</span></a></li>`; }).join('\n      ');
   const previews = DETAILLES.map(apercuImg).join('');
   return `<div class="four">
     <ol class="four__list">
@@ -530,7 +551,7 @@ ${visio('Photos du projet')}`;
 // P2 (revue du 26/09), puis lot 2b (04/10/2026 : retours de Julien du 30/09, choix d'Axel ; page de travail design/revue-mosaique/), sur la grille large :
 // l'ouverture — le titre en sans léger, seul (la phrase d'ouverture, le subtitle de content/realisations.md, est retirée le 05/10) — → les projets en 2-2-1 : les
 // quatre projets à fiche (blocs-liens, qui gardent leur id), puis Brosse seule sur toute la largeur (sans fiche : un album, ses photos et la visionneuse) ; nom
-// en serif blanc sur la photo, faits au survol et au focus, zoom 1,035 → le programme agences : la mosaïque 4-3-4-3-4 (MOSAIQUE), photos au format entier,
+// en serif blanc sur la photo, faits au survol et au focus, zoom 1,035 → le programme agences : la mosaïque 4-3-4-3-4 (MOSAIQUE, data/realisations.json), photos au format entier,
 // l'énoncé dans deux cases de texte (sans l'intitulé « Programme agences », que Julien n'aimait pas : retiré le 05/10) ; chaque tuile, avec le même survol que
 // les blocs (nom sur la photo, faits, zoom) → pied de page. Tuiles et bloc de Brosse : leurs photos se parcourent sur place (rétabli le 05/10, demande
 // d'Axel) — flèches au survol, « 1 / n » en haut à droite, au doigt sur la piste — et un clic sur la photo ouvre la visionneuse sur la photo affichée
@@ -541,12 +562,14 @@ function realisationsPage() {
   const fait = (etiquette, valeur) => `<span><span class="fait__et">${etiquette}</span><span class="fait__val">${esc(valeur)}</span></span>`;
   const grande = c => fs.existsSync(path.join(REPO, 'design/directions/img', `${c}.jpg`)) ? `${c}.jpg` : `${c}-s.jpg`;
   const albums = [];
+  // le troisième fait d'un bloc : l'usage, ou, tant qu'il manque, « Projet » (provisoire, signalé par un title au survol ; blocDe)
+  const troisieme = b => b.usage ? fait('Usage', b.usage) : `<span class="provisoire" title="intitulé du site 2020, provisoire (lot 3)"><span class="fait__et">Projet</span><span class="fait__val">${esc(b.projet)}</span></span>`;
   // un lien vers sa fiche : ses faits s'affichent au survol comme au focus clavier, et sa photo zoome (photo cliquable)
   const blocLien = (id, fr) => {
-    const f = four.find(x => x.id === id);
-    const contenu = photoImgPetit(f.bloc, null, sizesBloc(f.bloc, fr), ` style="object-position:${f.blocFocal}"`)
-      + `<span class="bloc__texte"><span class="bloc__nom">${esc(byId[id].name)}</span><span class="bloc__faits">${fait('Lieu', f.lieu)}${fait('Surface', f.surface)}${fait('Usage', f.usage)}</span><span class="bloc__mobile">${esc(f.lieu)} · ${esc(f.surface)}</span></span>`;
-    return `<a class="bloc" id="${id}" href="${f.href}">${contenu}</a>`;
+    const b = blocDe(byId[id]);
+    const contenu = photoImgPetit(b.photo, null, sizesBloc(b.photo, fr), ` style="object-position:${b.focal}"`)
+      + `<span class="bloc__texte"><span class="bloc__nom">${esc(byId[id].name)}</span><span class="bloc__faits">${fait('Lieu', b.lieu)}${fait('Surface', b.surface)}${troisieme(b)}</span><span class="bloc__mobile">${esc(b.lieu)} · ${esc(b.surface)}</span></span>`;
+    return `<a class="bloc" id="${id}" href="${pageFiche(id)}">${contenu}</a>`;
   };
   // Les photos d'une tuile ou d'un bloc, parcourables sur place : un bouton (toute la surface) porte la piste des photos — chacune dans sa vue, qui rogne le
   // zoom du survol — et le texte ; la vue n° 1 a la classe photos__une ; s'il y a plusieurs photos, « 1 / n » et deux flèches, à côté du bouton (un bouton
@@ -560,18 +583,18 @@ function realisationsPage() {
   // sans fiche : le même bloc, ses photos parcourables, un clic ouvre la visionneuse ; sur toute la largeur, la version 2 362 px (<clé>-l.jpg, la taille de
   // l'original) s'ajoute au srcset de la photo n° 1
   const blocSansFiche = (id, fr) => {
-    const p = byId[id], f = SANS_FICHE[id], k = albums.length, n = p.selection.length;
+    const p = byId[id], f = blocDe(p), k = albums.length, n = p.selection.length;
     albums.push({ legende: `<b>${esc(p.name)}</b>${esc(f.lieu)} · ${esc(f.surface)}`, l: p.selection.map(c => `${IMG}/${grande(c)}`) });
     const imgs = p.selection.map((cle, i) => {
-      let img = photoImgPetit(cle, null, sizesBloc(cle, fr), i === 0 ? ` style="object-position:${f.blocFocal}"` : ' loading="lazy"');
+      let img = photoImgPetit(cle, null, sizesBloc(cle, fr), i === 0 ? ` style="object-position:${f.focal}"` : ' loading="lazy"');
       const l = path.join(REPO, 'design/directions/img', `${cle}-l.jpg`);
       if (fs.existsSync(l)) img = img.replace(/ srcset="([^"]*)"/, (m, v) => ` srcset="${v}, ${IMG}/${cle}-l.jpg ${jpegSize(l).width}w"`);
       return img;
     });
-    const texte = `<span class="bloc__texte" aria-hidden="true"><span class="bloc__nom">${esc(p.name)}</span><span class="bloc__faits">${fait('Lieu', f.lieu)}${fait('Surface', f.surface)}<span class="provisoire" title="intitulé du site 2020, provisoire (lot 3)"><span class="fait__et">Projet</span><span class="fait__val">${esc(f.projet)}</span></span></span><span class="bloc__mobile">${esc(f.lieu)} · ${esc(f.surface)}</span></span>`;
+    const texte = `<span class="bloc__texte" aria-hidden="true"><span class="bloc__nom">${esc(p.name)}</span><span class="bloc__faits">${fait('Lieu', f.lieu)}${fait('Surface', f.surface)}${troisieme(f)}</span><span class="bloc__mobile">${esc(f.lieu)} · ${esc(f.surface)}</span></span>`;
     return albumPhotos({ cls: 'bloc bloc--album', id, k, label: `${esc(p.name)}, ${esc(f.lieu)}, ${esc(f.surface)} — ${n} photos`, imgs, texte });
   };
-  const rangeesHtml = rangees.map(([cls, blocs]) => `<div class="alt__rang alt__rang--${cls}">${blocs.map(([id, fr]) => SANS_FICHE[id] ? blocSansFiche(id, fr) : blocLien(id, fr)).join('')}</div>`).join('\n  ');
+  const rangeesHtml = rangees.map(([cls, blocs]) => `<div class="alt__rang alt__rang--${cls}">${blocs.map(([id, fr]) => byId[id].kind === 'project' ? blocSansFiche(id, fr) : blocLien(id, fr)).join('')}</div>`).join('\n  ');
   // la mosaïque : par rangée, la part de chaque case (son format ÷ la somme des formats de la rangée) donne sa largeur, et le sizes de sa photo (sur
   // téléphone, deux colonnes de tuiles 4:5, la photo recadrée : sa largeur × max(1, format ÷ 0,8))
   const mosaique = MOSAIQUE.map(rang => {
