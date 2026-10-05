@@ -31,7 +31,7 @@ const { nom, region, lieu, surface, usage, chapitres, photo, cadre, focal } = As
 // Le cadre de la photo de tête, de la mise en page (CADRES de build.mjs ; --cadre-largeur et --cadre-format de fiche.css) : sa part de la page, en vw,
 // et son format.
 const CADRES = { paysage: { largeur: 50, format: 2100 / 1694 }, carre: { largeur: 40, format: 1 } };
-const TITRES = ['Ce que c’était', 'Ce que nous y avons vu', 'Ce que c’est devenu'];
+const TITRES = ['Le lieu', 'Notre idée', 'Aujourd’hui']; // 06/10, choix d'Axel (lot 3) ; les mêmes que CHAPITRES de build.mjs
 const k = Math.max(1, (await formatPhoto(photo)) / CADRES[cadre].format);
 const terme = (largeur: string) => (k === 1 ? `calc(${largeur})` : `calc((${largeur}) * ${k.toFixed(3)})`);
 const sizes = `(max-width:640px) ${terme('100vw')}, ${terme(`${CADRES[cadre].largeur}vw`)}`;

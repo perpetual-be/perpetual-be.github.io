@@ -49,7 +49,10 @@
 //     titre de l'onglet, description ; polices, requêtes, noindex, console ;
 //   · tout dist/ : aucune occurrence de « julien@ » et chaque mailto égal à site.email, aucun commentaire venu de content/, espaces insécables avant « : »
 //     dans les textes rendus, aria-current sur le lien de la page elle-même seulement (Engagements, Réalisations), tous les liens internes répondent, aucun
-//     lien vers les fiches de la maquette (projet-<id>.html), une adresse inconnue sert la 404.
+//     lien vers les fiches de la maquette (projet-<id>.html), une adresse inconnue sert la 404 ;
+//   · le lot 7 : sitemap.xml (les pages publiques à l'adresse de `site`, ni 404, ni /dev/, ni redirection, toutes qui répondent), robots.txt selon
+//     data/site.json (indexation), noindex en dur sur la 404 et /dev/photos ; la photo du premier écran au téléphone à 3× (sizes à sa largeur affichée,
+//     version servie assez grande).
 // En cas d'écart sur une capture : le nombre de pixels différents et une image des écarts (en rouge) dans scripts/ecarts/ (dossier ignoré par Git), avec
 // les deux captures. Affiche « Tout est identique » quand tout passe (code de sortie 1 sinon).
 // Usage, depuis la racine du dépôt, après npm run build : NODE_PATH=$(npm root -g) npm run comparer
@@ -379,6 +382,19 @@ try {
   const sources = await Promise.all(fs.readdirSync(path.join(REPO, 'design/directions/img')).filter(f => new RegExp(`^${cle.replace(/-l$/, '')}(-l)?\\.jpg$`).test(f)).map(async f => (await sharp(path.join(REPO, 'design/directions/img', f)).metadata()).width));
   ok(tr.largeur === Math.max(...sources), `photo du premier écran à 2× : ${tr.nom} (${tr.format} ${tr.largeur} × ${tr.hauteur}) servi, la plus grande version disponible (${Math.max(...sources)} px) pour ${pr.w} px × 2`);
   await retina.ctx.close();
+  // au téléphone à 3× (390 × 844 ; lot 7, Cockpit t171001a) : la photo, 420 px de haut recadrée en cover, s'affiche plus large que la fenêtre (560 px pour
+  // une photo 4:3) ; le sizes le dit, et la version servie couvre cette largeur × 3 (ou est la plus grande disponible)
+  {
+    const tel = await ouvrir(SITE + '/', [390, 844], { deviceScaleFactor: 3, reducedMotion: 'reduce', isMobile: true, hasTouch: true });
+    await amener(tel.p, '.hero__photo');
+    const pt = await infosPhoto(tel.p), tt = await tailleServie(pt.src);
+    const sizes = await tel.p.evaluate(() => document.querySelector('.hero__photo img').getAttribute('sizes'));
+    // la largeur de l'image affichée : la boîte de l'<img> (390 × 420) remplie en cover — sa hauteur × le format de la photo, si c'est plus que la boîte
+    const affichee = Math.round(Math.max(pt.w, pt.h * tt.largeur / tt.hauteur)), besoin = Math.min(affichee * 3, Math.max(...sources));
+    ok(affichee > 390 && sizes === `(max-width: ${affichee}px) ${affichee}px, 100vw` && tt.largeur >= besoin,
+      `photo du premier écran au téléphone à 3× : boîte de ${Math.round(pt.w)} × ${Math.round(pt.h)} px, image affichée sur ${affichee} px de large (cover), sizes « ${sizes} », ${tt.nom} (${tt.format} ${tt.largeur} px) servi pour ${affichee} px × 3`);
+    await tel.ctx.close();
+  }
 
   // ---------- Engagements (lot 6) : comparée à design/maquette/engagements.html?panneau=off, aux trois formats, l'œuvre masquée pour les captures ----------
   const ENGAGEMENTS = ['.page-head', '.page__titre', '.registre', '.rang', '.rang__g', '.rang__d', '.rang__verbe', '.eng-texte', '.eng-texte p', '.lien-texte', '.cimaise', '.oeuvre', '.oeuvre img', '.cartel', '.cartel b', '.cartel span', '.site-footer'];
@@ -1086,6 +1102,24 @@ try {
     // aucun lien de la maquette vers ses fiches (projet-<id>.html) dans le site : les fiches sont à /realisations/<id>
     const versMaquette = htmls.filter(f => /href="[^"]*projet-[a-z0-9-]+\.html/.test(lire(f)));
     ok(!versMaquette.length && htmls.filter(f => f.startsWith('realisations/')).length === 4, `aucun lien vers projet-<id>.html (les fiches de la maquette) dans les ${htmls.length} pages ; les quatre fiches dans dist/realisations/` + (versMaquette.length ? ' — dans ' + versMaquette.join(', ') : ''));
+    // le plan du site (lot 7) : dist/sitemap.xml — les pages publiques (la Home, Réalisations, les fiches dans l'ordre du champ order, Engagements, les
+    // pages légales), chacune une fois, à l'adresse de `site` (astro.config.mjs) sans « .html » ; ni la 404, ni /dev/, ni une redirection ; chacune répond
+    const publique = (fs.readFileSync(path.join(REPO, 'astro.config.mjs'), 'utf8').match(/^\s*site:\s*'([^']+)'/m) || [])[1].replace(/\/$/, '');
+    const fiches = JSON.parse(fs.readFileSync(path.join(REPO, 'data/projects.json'), 'utf8')).filter(p => p.kind === 'detailed').map(p => `/realisations/${p.id}`);
+    const attendues = ['/', '/confidentialite', '/engagements', '/mentions-legales', '/realisations', ...fiches].sort();
+    const plan = lire('sitemap.xml'), locs = [...plan.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x => x[1]);
+    const chemins = locs.map(u => u.startsWith(publique + '/') ? u.slice(publique.length) : '✗ ' + u);
+    const repondent = await Promise.all(chemins.map(async c => (await fetch(SITE + c)).status));
+    ok(/^<\?xml version="1\.0" encoding="UTF-8"\?>\n<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">\n(  <url><loc>[^<]+<\/loc><\/url>\n)+<\/urlset>\n$/.test(plan)
+      && JSON.stringify([...chemins].sort()) === JSON.stringify(attendues) && new Set(chemins).size === chemins.length && repondent.every(s => s === 200),
+      `sitemap.xml : ${locs.length} adresses sous ${publique} (${chemins.join(', ')}), ni 404, ni /dev/, ni redirection ; toutes répondent` + (repondent.some(s => s !== 200) ? ` — statuts ${repondent.join(', ')}` : ''));
+    // robots.txt (lot 7) : écrit selon data/site.json (indexation) — fermé tant qu'il est faux ; ouvert, avec le plan du site, au lot 9 ; plus de public/robots.txt
+    const robots = await (await fetch(SITE + '/robots.txt')).text();
+    const robotsAttendu = siteJson.indexation ? `User-agent: *\nAllow: /\nSitemap: ${publique}/sitemap.xml\n` : "# Prévisualisation : pas d'indexation avant la mise en ligne sur perpetual.be (lot 9).\nUser-agent: *\nDisallow: /\n";
+    ok(robots === robotsAttendu && !fs.existsSync(path.join(REPO, 'public/robots.txt')), `robots.txt : ${siteJson.indexation ? 'ouvert, avec le plan du site' : 'Disallow: / (indexation fausse dans data/site.json)'}, écrit par src/pages/robots.txt.ts (plus de public/robots.txt)` + (robots === robotsAttendu ? '' : ' — reçu : ' + JSON.stringify(robots)));
+    // la 404 et /dev/photos gardent noindex même une fois l'indexation ouverte (prop noindex de Base.astro) : lu dans leur source
+    ok(/<Base [^>]*\bnoindex\b/.test(fs.readFileSync(path.join(REPO, 'src/pages/404.astro'), 'utf8')) && /<Base [^>]*\bnoindex\b/.test(fs.readFileSync(path.join(REPO, 'src/pages/dev/photos.astro'), 'utf8')),
+      'la 404 et /dev/photos : noindex en dur (prop noindex de Base.astro), même une fois l\'indexation ouverte');
     // une adresse inconnue sert la 404 (astro preview, comme GitHub Pages), en chemins absolus
     const r404 = await fetch(SITE + '/une/adresse/inconnue'), h404 = await r404.text();
     const relatifs = [...h404.matchAll(/(?:href|src)="([^"]+)"/g)].map(x => x[1]).filter(u => !/^(\/|https?:|mailto:|#)/.test(u));

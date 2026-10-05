@@ -164,7 +164,9 @@ function ficheDe(p) {
   if (!CADRES[f.cadre]) throw new Error(`data/projects.json : ${p.id}, tete.cadre — « ${f.cadre} » inconnu (${Object.keys(CADRES).join(' ou ')})`);
   return f;
 }
-const CHAPITRES = [['was', 'Ce que c’était'], ['saw', 'Ce que nous y avons vu'], ['became', 'Ce que c’est devenu']];
+// Titres des chapitres (06/10, choix d'Axel, lot 3 : à la place de « Ce que c’était / Ce que nous y avons vu / Ce que c’est devenu », ceux du PDF de Julien) ;
+// les mêmes dans src/components/fiche/Corps.astro (TITRES).
+const CHAPITRES = [['was', 'Le lieu'], ['saw', 'Notre idée'], ['became', 'Aujourd’hui']];
 for (const p of DETAILLES) ficheDe(p);
 // Page Engagements (Cowork, 26/09) : le titre de content/engagements.md (pas de sous-titre, décision d'Axel du 26/09), puis une rangée par titre ## —
 // le verbe, et les paragraphes qui le suivent jusqu'au titre suivant ; l'id de la rangée est le verbe (#aider, #transmettre, #soutenir).

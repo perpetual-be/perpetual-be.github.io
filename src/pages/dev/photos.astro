@@ -2,7 +2,7 @@
 // Page de contrôle des photos (lot 4, 01/10/2026) : chaque photo citée par les données (champ selection de data/projects.json), dans l'ordre des
 // projets, par le même composant que le site (ProjectPhoto) — AVIF, WebP, JPEG de repli. Construite sur GitHub à chaque déploiement : si elle se
 // construit, toutes les photos citées sont dans le dépôt. Une clé citée mais absente est signalée ici en rouge (elle arrêterait le build d'une vraie
-// page). Non indexée (comme tout le site tant que data/site.json ne l'autorise pas), aucun lien vers elle : /dev/photos.
+// page). Non indexée, même une fois l'indexation ouverte (lot 9 ; noindex de Base.astro), absente de sitemap.xml, aucun lien vers elle : /dev/photos.
 import Base from '../../layouts/Base.astro';
 import ProjectPhoto from '../../components/ProjectPhoto.astro';
 import { getCollection } from 'astro:content';
@@ -17,7 +17,7 @@ const manquantes = [...citees].filter((c) => !fichierSource(c));
 const nonCitees = clesPhotos.filter((c) => !citees.has(c));
 ---
 
-<Base title="Contrôle des photos">
+<Base title="Contrôle des photos" noindex>
   <section class="container">
     <p class="resume">
       {projets.length} projets · {citees.size} photos citées · {clesPhotos.length} dans le dépôt

@@ -3,7 +3,8 @@
 // d'Engagements : le titre seul (.page-head, en sans léger), puis une rangée dont la colonne de gauche porte le texte de content/404.md (provisoire,
 // lot 3), rendu par enLigne (les liens seuls) — retouche du 01/10 (choix d'Axel) : au-dessus de 640 px, tout dans la colonne de gauche, sous un filet de
 // sa largeur seulement (src/styles/introuvable.css, html[data-page="introuvable"]) ; au téléphone, une colonne comme les autres pages de texte — et
-// 72 px (44 au téléphone) avant le pied de page. Aucune entrée active dans l'en-tête.
+// 72 px (44 au téléphone) avant le pied de page. Aucune entrée active dans l'en-tête. Non indexée, même une fois l'indexation ouverte (lot 7 : noindex de
+// Base.astro), absente de sitemap.xml.
 import Base from '../layouts/Base.astro';
 import PageHead from '../components/engagements/PageHead.astro';
 import Registre from '../components/engagements/Registre.astro';
@@ -15,7 +16,7 @@ import '../styles/introuvable.css';
 const page = await lire404();
 ---
 
-<Base title={page.titre} description={page.description} page="introuvable">
+<Base title={page.titre} description={page.description} page="introuvable" noindex>
   <PageHead titre={page.titre} />
   <Registre><section class="rang"><div class="rang__g"><div class="page-texte">{page.paragraphes.map((p) => <p set:html={enLigne(p)} />)}</div></div></section></Registre>
 </Base>

@@ -5,6 +5,7 @@
 // photo (le CSS la remonte, .hero__grid est en display: contents), puis les paragraphes en deux colonnes — le premier à gauche, les suivants à
 // droite avec la signature dessous. Les textes sont insérés tels quels, comme build.mjs (texte brut, pas de rendu Markdown).
 import ProjectPhoto from '../ProjectPhoto.astro';
+import { formatPhoto } from '../../lib/photos';
 
 interface Props {
   h1: string;
@@ -15,10 +16,16 @@ interface Props {
 }
 
 const { h1, paragraphs, signature, stats, hero } = Astro.props;
+// sizes de la photo (lot 7, 06/10/2026, Cockpit t171001a) : au-dessus de 640 px, elle couvre la largeur de la fenêtre (100vw) ; au téléphone, elle fait
+// 420 px de haut (src/styles/home.css) et, recadrée en cover, s'affiche sur 420 px × son format de large — 560 px pour une photo 4:3 —, plus large que la
+// fenêtre jusqu'à cette largeur. Avec 100vw partout, un téléphone 3× de 390 px chargeait la version de 1 200 px pour 560 × 3 px affichés.
+const HAUTEUR_TELEPHONE = 420;
+const largeurTelephone = Math.round(HAUTEUR_TELEPHONE * (await formatPhoto(hero.photo)));
+const sizesPhoto = `(max-width: ${Math.min(largeurTelephone, 640)}px) ${largeurTelephone}px, 100vw`;
 ---
 
 <section class="hero">
-<div class="hero__photo" aria-hidden="true"><ProjectPhoto cle={hero.photo} focal={hero.focal} sizes="100vw" loading="eager" fetchpriority="high" alt="" /></div>
+<div class="hero__photo" aria-hidden="true"><ProjectPhoto cle={hero.photo} focal={hero.focal} sizes={sizesPhoto} loading="eager" fetchpriority="high" alt="" /></div>
 <div class="container hero__grid">
   <h1 class="hero__title"><span set:html={h1} /></h1>
   <div class="hero__text"><p set:html={paragraphs[0]} /><div class="hero__col">{paragraphs.slice(1).map((p) => <p set:html={p} />)}<p class="signature" set:html={signature} /></div></div>

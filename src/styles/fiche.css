@@ -26,6 +26,12 @@
 .chapitre{max-width:52ch}
 .chapitre__num{font-family:var(--sans);font-size:15px;color:var(--c-num-chapitre);letter-spacing:.06em;margin-bottom:8px}
 .chapitre__titre{font-family:var(--sans);font-weight:500;font-size:var(--fs-chapitre);line-height:1.15;letter-spacing:-.01em;margin-bottom:16px}
+/* numéro à côté du titre, texte en retrait sous le titre (06/10, choix d'Axel, lot 3 : option C) : une grille de deux colonnes, le numéro dans
+   la première (2,2 em), le titre et le texte dans la seconde, numéro et titre sur la même ligne de base. Fiches seulement : les pages légales gardent
+   le numéro au-dessus du titre (src/styles/texte.css) */
+.fiche__chapitres .chapitre{display:grid;grid-template-columns:2.2em minmax(0,1fr);align-items:baseline}
+.fiche__chapitres .chapitre__num{margin-bottom:0}
+.fiche__chapitres .chapitre__texte{grid-column:2}
 /* la photo qui suit (26/09) : quand le texte est plus long que la photo, elle reste en place pendant qu'on lit la fin, puis tout repart ensemble ;
    rien ne bouge quand elle est plus haute que le texte. Le cadre est un ::before au format du cadre, l'image le remplit. Sur le site, l'en-tête collant
    passe au-dessus d'elle quand il revient (comme sur la Home) */

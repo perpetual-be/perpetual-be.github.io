@@ -480,17 +480,19 @@ for (const [w, h] of [[1521, 705], [1920, 1080], [1200, 800], [390, 844]]) {
   }
 }
 {
-  // la photo qui suit, à 1521 × 705 sur Ateliers 118 (texte plus long que la photo) : pendant qu'on lit la fin du chapitre 03, la photo reste en place, collée
-  // en haut de la fenêtre ; au-delà, tout repart ensemble — le bas de la photo reste celui du texte (± 2 px)
+  // la photo qui suit, à 1521 × 705 sur Ateliers 118 (texte plus long que la photo) : quand son haut atteint le haut de la fenêtre, la photo y reste collée
+  // pendant que la fin du texte monte, tant que le texte dépasse ; au-delà, tout repart ensemble — le bas de la photo reste celui du texte (± 2 px).
+  // Depuis le numéro à côté du titre (06/10), le texte ne dépasse plus la photo que de 93 px (162 avant) : on la regarde au milieu de ce trajet
+  // (avant, à la fin du chapitre 03 amenée au bas de la fenêtre, où la photo n'est plus collée maintenant que le texte dépasse moins)
   const { p, ctx } = await ouvrir('panneau=off', [1521, 705], {}, 'projet-ateliers-118');
   const etat = () => p.evaluate(() => { const photo = document.querySelector('.fiche__photo').getBoundingClientRect();
     return { haut: photo.top, bas: photo.bottom, texte: document.querySelector('.fiche__chapitres > .chapitre:last-child').getBoundingClientRect().bottom, titre: document.querySelector('.page__titre').getBoundingClientRect().top }; });
-  const e0 = await etat();
-  await p.evaluate(() => document.querySelector('.fiche__chapitres > .chapitre:last-child').scrollIntoView({ block: 'end' }));
+  const e0 = await etat(), ecart = e0.texte - e0.bas;
+  await p.evaluate(y => window.scrollTo(0, y), Math.round(e0.haut + ecart / 2));
   const e1 = await etat(), suite = [];
   for (let k = 0; k < 3; k++) { await p.evaluate(() => window.scrollBy(0, 150)); suite.push(await etat()); }
-  ok(e0.texte - e0.bas > 100 && Math.abs(e1.haut) < 0.5 && Math.abs(e1.texte - 705) < 1 && e1.titre < 0 && suite.every(e => Math.abs(e.bas - e.texte) <= 2 && e.haut < 0),
-    `photo qui suit (Ateliers 118, 1521 × 705, texte plus long que la photo de ${Math.round(e0.texte - e0.bas)} px) : jusqu'à la fin du chapitre 03, la photo reste en place (haut à ${Math.round(e1.haut)} px) ; au-delà, bas de la photo = bas du texte (${suite.map(e => (e.bas - e.texte).toFixed(1)).join(', ')} px)`);
+  ok(ecart > 50 && Math.abs(e1.haut) < 0.5 && Math.abs(e1.texte - e1.bas - ecart / 2) < 1.5 && e1.titre < e0.titre && suite.every(e => Math.abs(e.bas - e.texte) <= 2 && e.haut < 0),
+    `photo qui suit (Ateliers 118, 1521 × 705, texte plus long que la photo de ${Math.round(ecart)} px) : à mi-chemin, la photo reste collée en haut de la fenêtre (haut à ${Math.round(e1.haut)} px) et le texte continue de monter (${Math.round(e1.texte - e1.bas)} px encore sous la photo) ; au-delà, bas de la photo = bas du texte (${suite.map(e => (e.bas - e.texte).toFixed(1)).join(', ')} px)`);
   await ctx.close();
 }
 {
@@ -530,8 +532,8 @@ for (const [w, h] of [[1521, 705], [1920, 1080], [1200, 800], [390, 844]]) {
     boucle[d.id] = c.boucle;
     ok(c.page === 'fiche' && c.title === `${d.name} — Perpetual` && c.actif === 'Réalisations → realisations.html', `${nom} : html data-page="${c.page}", titre « ${c.title} », « Réalisations » actif dans l'en-tête`);
     ok(c.region === F.region && c.h1 === d.name && c.faits === F.faits && c.etiquettes === 'Localisation · Surface · Usage', `${nom} : « ${c.region} » en eyebrow, « ${c.h1} », infos ${c.faits} (${c.etiquettes})`);
-    ok(JSON.stringify(c.chapitres) === JSON.stringify([['01', 'Ce que c’était', d.was], ['02', 'Ce que nous y avons vu', d.saw], ['03', 'Ce que c’est devenu', d.became]]),
-      `${nom} : trois chapitres 01 02 03, « Ce que c’était / Ce que nous y avons vu / Ce que c’est devenu », textes was, saw et became de data/projects.json`);
+    ok(JSON.stringify(c.chapitres) === JSON.stringify([['01', 'Le lieu', d.was], ['02', 'Notre idée', d.saw], ['03', 'Aujourd’hui', d.became]]),
+      `${nom} : trois chapitres 01 02 03, « Le lieu / Notre idée / Aujourd’hui » (06/10), textes was, saw et became de data/projects.json`);
     const [tete, ...autres] = d.selection, t1 = tailleJpeg(path.join(IMG_DIR, `${tete}.jpg`)), t2 = tailleJpeg(path.join(IMG_DIR, `${tete}-l.jpg`));
     const k = Math.max(1, (t1.width / t1.height) / F.format), part = `${F.part * 100}vw`;
     const sizes = k === 1 ? `(max-width:640px) calc(100vw), calc(${part})` : `(max-width:640px) calc((100vw) * ${k.toFixed(3)}), calc((${part}) * ${k.toFixed(3)})`;

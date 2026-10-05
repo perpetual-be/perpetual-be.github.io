@@ -1,8 +1,8 @@
 ---
 // Mise en page commune à toutes les pages (lot 4, 01/10/2026) : le système de la maquette (design/maquette/maquette.css) — polices, jetons, base,
 // en-tête, pied de page, dans cet ordre —, l'en-tête collant et le pied de page, puis <main> pour la page. Le <title> est « <titre> — Perpetual »,
-// ou le titre complet passé par la page (fullTitle). noindex sur toutes les pages tant que le réglage `indexation` de data/site.json est faux
-// (public/robots.txt ne change pas) : au lot 9, passer ce seul réglage à vrai suffira, avec robots.txt.
+// ou le titre complet passé par la page (fullTitle). noindex sur toutes les pages tant que le réglage `indexation` de data/site.json est faux ; au lot 9,
+// passer ce seul réglage à vrai suffit : le noindex part (sauf sur la 404 et /dev/photos, prop noindex) et robots.txt s'ouvre (src/pages/robots.txt.ts).
 // `page` est posé en data-page sur <html>, comme dans la maquette (lot 6, 01/10/2026) : les règles de maquette.css qui en dépendent s'appliquent telles
 // quelles (html[data-page="engagements"] .page__titre…) ; « texte » pour les pages de texte sans maquette (mentions légales, confidentialité, 404).
 import '../styles/polices.css';
@@ -23,9 +23,11 @@ interface Props {
   active?: string;
   /** La page, pour data-page sur <html> (ex. « engagements », « texte ») ; sans valeur, pas d'attribut. */
   page?: string;
+  /** Vrai : noindex même une fois l'indexation ouverte au lot 9 (la 404, /dev/photos) ; ces pages ne sont pas non plus dans sitemap.xml. */
+  noindex?: boolean;
 }
 
-const { title, fullTitle = false, description = '', active = '', page } = Astro.props;
+const { title, fullTitle = false, description = '', active = '', page, noindex = false } = Astro.props;
 const pageTitle = fullTitle ? title : `${title} — ${site.name}`;
 ---
 
@@ -36,7 +38,7 @@ const pageTitle = fullTitle ? title : `${title} — ${site.name}`;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     {description && <meta name="description" content={description} />}
-    {!site.indexation && <meta name="robots" content="noindex" />}
+    {(!site.indexation || noindex) && <meta name="robots" content="noindex" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href="/fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/newsreader-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin />

@@ -64,8 +64,46 @@ function imagesOrphelines() {
   };
 }
 
+// Le plan du site pour les moteurs de recherche, dist/sitemap.xml (lot 7, 06/10/2026), écrit une fois le site construit, sans service ni paquet : chaque
+// page de dist/ (un fichier .html), à son adresse publique — `site` puis le chemin, sans « .html » ni barre finale, comme les liens du site (trailingSlash
+// 'never', build.format 'file' : GitHub Pages sert realisations.html à /realisations). Sauf la 404, les pages de /dev/ (contrôle) et les redirections (une
+// page qui porte <meta http-equiv="refresh">). Rien à tenir à jour : une nouvelle page y entre d'elle-même, et les adresses suivent `site` (lot 9 :
+// https://perpetual.be). robots.txt (src/pages/robots.txt.ts) n'y renvoie qu'une fois l'indexation ouverte (data/site.json, indexation).
+function planDuSite() {
+  let config;
+  return {
+    name: 'plan-du-site',
+    hooks: {
+      'astro:config:done': (options) => {
+        config = options.config;
+      },
+      'astro:build:done': ({ logger }) => {
+        const racine = fileURLToPath(config.outDir);
+        const site = config.site.replace(/\/$/, '');
+        const pages = fs
+          .readdirSync(racine, { recursive: true, withFileTypes: true })
+          .filter((f) => f.isFile() && f.name.endsWith('.html'))
+          .map((f) => path.relative(racine, path.join(f.parentPath, f.name)).split(path.sep).join('/'))
+          .filter((f) => f !== '404.html' && !f.startsWith('dev/') && !/<meta http-equiv="refresh"/i.test(fs.readFileSync(path.join(racine, f), 'utf8')))
+          .map((f) => '/' + f.replace(/(^|\/)index\.html$/, '$1').replace(/\.html$/, ''))
+          .sort((a, b) => (a === '/' ? -1 : b === '/' ? 1 : a < b ? -1 : 1));
+        const xml = [
+          '<?xml version="1.0" encoding="UTF-8"?>',
+          '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+          ...pages.map((p) => `  <url><loc>${site}${p}</loc></url>`),
+          '</urlset>',
+          '',
+        ].join('\n');
+        fs.writeFileSync(path.join(racine, 'sitemap.xml'), xml);
+        logger.info(`sitemap.xml : ${pages.length} pages — ${pages.join(', ')}`);
+      },
+    },
+  };
+}
+
 // Adresse de prévisualisation (GitHub Pages). Au lot 9, `site` devient https://perpetual.be
-// et le fichier public/CNAME est ajouté ; rien d'autre ne change.
+// et le fichier public/CNAME est ajouté ; avec `indexation` à vrai dans data/site.json (noindex retiré, robots.txt ouvert), rien d'autre ne change :
+// sitemap.xml, robots.txt et les adresses absolues des pages suivent `site`.
 export default defineConfig({
   site: 'https://perpetual-be.github.io',
   trailingSlash: 'never',
@@ -77,5 +115,5 @@ export default defineConfig({
     // Service par défaut d'Astro (Sharp), explicite : le composant ProjectPhoto.astro en dépend (photos : src/lib/photos.ts).
     service: { entrypoint: 'astro/assets/services/sharp' },
   },
-  integrations: [pagesTexte, imagesOrphelines()],
+  integrations: [pagesTexte, imagesOrphelines(), planDuSite()],
 });
