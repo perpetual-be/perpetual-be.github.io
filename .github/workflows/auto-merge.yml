@@ -36,16 +36,15 @@ jobs:
       # Les photos déjà produites par Astro (.astro-cache, cf. astro.config.mjs) d'un build à l'autre : seules les nouvelles versions sont produites.
       # Une clé par run : actions/cache n'enregistre rien quand la clé exacte existe déjà, et l'empreinte (photos, ProjectPhoto.astro, package-lock.json)
       # ne change pas quand une nouvelle page demande d'autres versions des mêmes photos ; avec une clé fixe, ces versions seraient refaites à chaque
-      # build, jamais gardées. Chaque run repart du cache le plus récent de même empreinte, sinon du plus récent tout court, et enregistre le sien
-      # (GitHub évince lui-même les plus anciens au-delà de 10 Go par dépôt).
+      # build, jamais gardées. Chaque run repart du cache le plus récent, quelle que soit son empreinte (elle n'est plus qu'une étiquette) : Astro y
+      # ajoute sans rien retirer et nomme chaque version d'après le contenu de sa photo, rien de périmé ne peut en sortir. Le run enregistre ensuite
+      # le sien (GitHub évince lui-même les plus anciens au-delà de 10 Go par dépôt).
       - name: Cache des photos
         uses: actions/cache@v4
         with:
           path: .astro-cache
           key: astro-${{ hashFiles('design/directions/img/**', 'src/components/ProjectPhoto.astro', 'package-lock.json') }}-${{ github.run_id }}
-          restore-keys: |
-            astro-${{ hashFiles('design/directions/img/**', 'src/components/ProjectPhoto.astro', 'package-lock.json') }}-
-            astro-
+          restore-keys: astro-
       # Le cache garde aussi .astro-cache/data-store.json, le Markdown des pages de texte rendu par Astro : il ne se renouvelle que si le fichier Markdown
       # change, pas quand le plugin qui le met en forme change (src/lib/rehype-registre.mjs). Retiré avant chaque construction : les pages sont rendues à neuf.
       - name: Rendu du Markdown à neuf
