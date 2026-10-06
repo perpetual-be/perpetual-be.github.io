@@ -482,7 +482,8 @@ for (const [w, h] of [[1521, 705], [1920, 1080], [1200, 800], [390, 844]]) {
 {
   // la photo qui suit, à 1521 × 705 sur Ateliers 118 (texte plus long que la photo) : quand son haut atteint le haut de la fenêtre, la photo y reste collée
   // pendant que la fin du texte monte, tant que le texte dépasse ; au-delà, tout repart ensemble — le bas de la photo reste celui du texte (± 2 px).
-  // Depuis le numéro à côté du titre (06/10), le texte ne dépasse plus la photo que de 93 px (162 avant) : on la regarde au milieu de ce trajet
+  // Depuis le numéro à côté du titre (06/10), le texte ne dépasse plus la photo que de 93 px (162 avant), et de 39 px depuis les textes du 06/10 au soir
+  // (seuil de 20 px) : on la regarde au milieu de ce trajet
   // (avant, à la fin du chapitre 03 amenée au bas de la fenêtre, où la photo n'est plus collée maintenant que le texte dépasse moins)
   const { p, ctx } = await ouvrir('panneau=off', [1521, 705], {}, 'projet-ateliers-118');
   const etat = () => p.evaluate(() => { const photo = document.querySelector('.fiche__photo').getBoundingClientRect();
@@ -491,7 +492,7 @@ for (const [w, h] of [[1521, 705], [1920, 1080], [1200, 800], [390, 844]]) {
   await p.evaluate(y => window.scrollTo(0, y), Math.round(e0.haut + ecart / 2));
   const e1 = await etat(), suite = [];
   for (let k = 0; k < 3; k++) { await p.evaluate(() => window.scrollBy(0, 150)); suite.push(await etat()); }
-  ok(ecart > 50 && Math.abs(e1.haut) < 0.5 && Math.abs(e1.texte - e1.bas - ecart / 2) < 1.5 && e1.titre < e0.titre && suite.every(e => Math.abs(e.bas - e.texte) <= 2 && e.haut < 0),
+  ok(ecart > 20 && Math.abs(e1.haut) < 0.5 && Math.abs(e1.texte - e1.bas - ecart / 2) < 1.5 && e1.titre < e0.titre && suite.every(e => Math.abs(e.bas - e.texte) <= 2 && e.haut < 0),
     `photo qui suit (Ateliers 118, 1521 × 705, texte plus long que la photo de ${Math.round(ecart)} px) : à mi-chemin, la photo reste collée en haut de la fenêtre (haut à ${Math.round(e1.haut)} px) et le texte continue de monter (${Math.round(e1.texte - e1.bas)} px encore sous la photo) ; au-delà, bas de la photo = bas du texte (${suite.map(e => (e.bas - e.texte).toFixed(1)).join(', ')} px)`);
   await ctx.close();
 }
