@@ -6,9 +6,11 @@
 // demander à Julien) —, « lieu · surface » pour le téléphone. Nom accessible : « nom, lieu, surface — n photos ».
 // Les photos, par ProjectPhoto, le sizes du bloc (sizesBloc, ./tailles.ts) : la n° 1 chargée tout de suite, avec son point focal (bloc.focal) ; les
 // suivantes paresseuses. Sur toute la largeur, la n° 1 de Brosse est servie jusqu'à sa version de 2 362 px (brosse-31-l.jpg, la taille de l'original).
+// Texte alternatif (lot 7, src/lib/alt.ts) : la légende de la photo, sinon « nom, lieu » (« Brosse, Forest »).
 import Album from './Album.astro';
 import Fait from './Fait.astro';
 import { sizesBloc } from './tailles';
+import { texteAlternatif, nomEtLieu } from '../../lib/alt';
 
 interface Props {
   id: string;
@@ -28,7 +30,7 @@ interface Props {
 }
 
 const { id, nom, part, photos, focal, lieu, surface, usage, projet, indice } = Astro.props;
-const vues = await Promise.all(photos.map(async (cle, i) => ({ cle, sizes: await sizesBloc(cle, part), focal: i === 0 ? focal : undefined, loading: i === 0 ? 'eager' as const : 'lazy' as const })));
+const vues = await Promise.all(photos.map(async (cle, i) => ({ cle, sizes: await sizesBloc(cle, part), focal: i === 0 ? focal : undefined, loading: i === 0 ? 'eager' as const : 'lazy' as const, alt: texteAlternatif(cle, nomEtLieu(nom, lieu)) })));
 const n = photos.length;
 ---
 

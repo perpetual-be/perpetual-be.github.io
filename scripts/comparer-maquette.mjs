@@ -52,7 +52,10 @@
 //     lien vers les fiches de la maquette (projet-<id>.html), une adresse inconnue sert la 404 ;
 //   · le lot 7 : sitemap.xml (les pages publiques à l'adresse de `site`, ni 404, ni /dev/, ni redirection, toutes qui répondent), robots.txt selon
 //     data/site.json (indexation), noindex en dur sur la 404 et /dev/photos ; la photo du premier écran au téléphone à 3× (sizes à sa largeur affichée,
-//     version servie assez grande).
+//     version servie assez grande) ; la description des fiches, calculée ; sur chaque page le lien canonique et les balises Open Graph, /partage.jpg
+//     (1 200 × 630, sous 300 Ko) ; les icônes (/favicon-32.png, /apple-touch-icon.png, déclarées partout) ; les anciennes adresses /projets et /contact
+//     (renvoi, canonique, noindex, un lien) ; les textes alternatifs des photos (tête et mosaïque des fiches, photos n° 1 de la vue Réalisations,
+//     visionneuses) selon la règle de src/lib/alt.ts.
 // En cas d'écart sur une capture : le nombre de pixels différents et une image des écarts (en rouge) dans scripts/ecarts/ (dossier ignoré par Git), avec
 // les deux captures. Affiche « Tout est identique » quand tout passe (code de sortie 1 sinon).
 // Usage, depuis la racine du dépôt, après npm run build : NODE_PATH=$(npm root -g) npm run comparer
@@ -90,6 +93,11 @@ const slug = s => s.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
 // Un chemin relatif, en / sous Windows aussi (path.relative et readdirSync en récursif y séparent par \) : les contrôles de dist/ le comparent à
 // « realisations/… » et en tirent des adresses
 const posix = f => f.split(path.sep).join('/');
+// Le texte alternatif attendu d'une photo (lot 7, règle validée par Axel, D5 ; src/lib/alt.ts) : sa légende (captions de data/projects.json, par fichier
+// <clé>.jpg ou .png), sinon le texte que la page donne — « nom, lieu » d'un projet, la ville d'un bien ; échappé pour le HTML de la visionneuse.
+const TOUS_PROJETS = JSON.parse(fs.readFileSync(path.join(REPO, 'data/projects.json'), 'utf8'));
+const altAttendu = (cle, aDefaut) => { for (const p of TOUS_PROJETS) { const t = p.captions?.[`${cle}.jpg`] ?? p.captions?.[`${cle}.png`]; if (t) return t; } return aDefaut; };
+const echapper = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 // ---------- le site (astro preview sur dist/) et le navigateur ----------
 const serveur = await preview({ root: REPO, logLevel: 'silent', server: { host: '127.0.0.1', port: 4399 } });
@@ -589,8 +597,8 @@ try {
       // premier écran de la Home
       const ps = await infosTete(site.p), pm = await infosTete(maq.p);
       ok(JSON.stringify(ps.cadre) === JSON.stringify(pm.cadre) && JSON.stringify(ps.img) === JSON.stringify(pm.img) && ps.position === d.tete.focal && pm.position === d.tete.focal && ps.fit === 'cover' && pm.fit === 'cover'
-        && ps.cle === tete && ps.loading === 'eager' && ps.alt === '',
-        `photo de tête ${tete} : même boîte (${ps.cadre[2]} × ${ps.cadre[3]} à x = ${ps.cadre[0]}, y = ${ps.cadre[1]}), même cadrage (object-position ${ps.position} / ${pm.position}, tete.focal ${d.tete.focal} ; object-fit ${ps.fit} / ${pm.fit}), chargée tout de suite (loading="${ps.loading}"), texte alternatif vide`);
+        && ps.cle === tete && ps.loading === 'eager' && ps.alt === altAttendu(tete, `${d.name}, ${d.location || d.quartier}`),
+        `photo de tête ${tete} : même boîte (${ps.cadre[2]} × ${ps.cadre[3]} à x = ${ps.cadre[0]}, y = ${ps.cadre[1]}), même cadrage (object-position ${ps.position} / ${pm.position}, tete.focal ${d.tete.focal} ; object-fit ${ps.fit} / ${pm.fit}), chargée tout de suite (loading="${ps.loading}"), texte alternatif « ${ps.alt} »`);
       const tss = await tailleServie(ps.src), tsm = await tailleServie(pm.src), echelle = +Math.max(ps.w / tss.largeur, ps.h / tss.hauteur).toFixed(3);
       ok(echelle <= 1, `photo de tête : ${tss.nom} (${tss.format} ${tss.largeur} × ${tss.hauteur}) servi par le site, jamais agrandi à 1× (échelle ${echelle} pour ${Math.round(ps.w)} × ${Math.round(ps.h)}) ; maquette : ${tsm.nom} (${tsm.largeur} × ${tsm.hauteur}) — sizes « ${ps.sizes} »`);
       const ph = await ecartMoyen(`${nom}-tete`, await captureZone(site.p, ps.boite), await captureZone(maq.p, pm.boite), FLOU_FICHE);
@@ -620,8 +628,8 @@ try {
         + (memesTuiles(mts, mtm) ? '' : ` — site ${JSON.stringify(mts.boites)} / maquette ${JSON.stringify(mtm.boites)}`));
       const attrs = await site.p.evaluate(() => [...document.querySelectorAll('.fiche__tuile')].map((t, i) => { const im = t.querySelector('img'), w = t.style.width;
         return { cle: im.dataset.cle, lazy: im.getAttribute('loading'), alt: im.getAttribute('alt'), sizes: [...t.querySelectorAll('source, img')].every(s => s.getAttribute('sizes') === w), sources: t.querySelectorAll('source').length, label: t.querySelector('.fiche__agrandir').getAttribute('aria-label'), n: i + 1 }; }));
-      ok(attrs.length === N && attrs.every((a, j) => a.cle === autres[j] && a.lazy === 'lazy' && a.alt === '' && a.sizes && a.sources === 2 && a.label === `Agrandir la photo ${j + 1} sur ${N}`),
-        `mosaïque : les clés ${autres.join(' ')} dans l'ordre, chargement paresseux, texte alternatif vide, sizes = largeur de la tuile sur les deux <source> et l'<img>, boutons « Agrandir la photo n sur ${N} »`);
+      ok(attrs.length === N && attrs.every((a, j) => a.cle === autres[j] && a.lazy === 'lazy' && a.alt === altAttendu(autres[j], `${d.name}, ${d.location || d.quartier}`) && a.sizes && a.sources === 2 && a.label === `Agrandir la photo ${j + 1} sur ${N}`),
+        `mosaïque : les clés ${autres.join(' ')} dans l'ordre, chargement paresseux, textes alternatifs (${[...new Set(attrs.map(a => a.alt))].join(' | ')}), sizes = largeur de la tuile sur les deux <source> et l'<img>, boutons « Agrandir la photo n sur ${N} »`);
       for (const p of [site.p, maq.p]) await p.evaluate(() => document.querySelectorAll('.fiche__tuile').forEach((t, i) => t.setAttribute('data-n', String(i + 1))));
       const servies = [], ecarts = [];
       for (let j = 1; j <= N; j++) {
@@ -677,6 +685,9 @@ try {
         return { r, vb, tab, fin };
       };
       const vs = await suite(site.p), vm = await suite(maq.p);
+      // les textes alternatifs des photos de la visionneuse (lot 7) : ceux des tuiles (data-alt), dans l'ordre, sans les clones de la boucle
+      const altsVisio = await site.p.evaluate(() => [...document.querySelectorAll('.visio__piste img:not([data-clone])')].map(i => i.getAttribute('alt')));
+      ok(JSON.stringify(altsVisio) === JSON.stringify(autres.map(k => altAttendu(k, `${d.name}, ${d.location || d.quartier}`))), `visionneuse : les textes alternatifs de ses ${altsVisio.length} photos, ceux de la mosaïque (${[...new Set(altsVisio)].join(' | ')})`);
       const v1 = vs.r[0], cpts = vs.r.map(x => x.cpt), photos = vs.r.map(x => x.photo);
       const cptsMaq = vm.r.map(x => x.cpt), photosMaq = vm.r.map(x => x.photo);
       ok(v1.ouvert && v1.corps && v1.cpt === `${s} / ${N}` && v1.photo === s && v1.charge && v1.legende === '' && v1.fit === 'contain' && Math.abs(v1.ratio - 4 / 3) < 0.01 && v1.entiere && v1.dansFenetre && v1.compteurVisible && v1.focus === 'visio',
@@ -696,8 +707,12 @@ try {
       const nav = await site.p.evaluate(() => [...document.querySelectorAll('.site-nav a')].map(a => `${a.textContent}${a.classList.contains('is-active') ? ' actif' : ''} → ${a.getAttribute('href')}`).join(' | '));
       const courant = await site.p.evaluate(() => document.querySelectorAll('[aria-current]').length);
       ok(nav === 'Réalisations actif → /realisations | Engagements → /engagements | Contact → #contact' && !courant, `navigation : ${nav} — « Réalisations » actif (le trait), sans aria-current (aucun dans la page)`);
-      const page = await site.p.evaluate(() => ({ page: document.documentElement.dataset.page, title: document.title, description: !!document.querySelector('meta[name="description"]') }));
-      ok(page.page === 'fiche' && page.title === `${d.name} — Perpetual` && !page.description, `html data-page="${page.page}", titre de l'onglet « ${page.title} », pas de description (lot 7)`);
+      // la description (lot 7, 06/10, choix d'Axel D1 A) : calculée depuis data/projects.json et data/site.json — « <name>, <location> · <surface> · <use>. »
+      // puis « Perpetual — le trait d’union entre les idées et le capital. » (la phrase de la Home, depuis name et tagline)
+      const page = await site.p.evaluate(() => ({ page: document.documentElement.dataset.page, title: document.title, description: document.querySelector('meta[name="description"]')?.content ?? null }));
+      const sj = JSON.parse(fs.readFileSync(path.join(REPO, 'data/site.json'), 'utf8'));
+      const descriptionFiche = `${d.name}, ${d.location || d.quartier} · ${d.surface} · ${d.use}. ${sj.name} — ${sj.tagline.charAt(0).toLocaleLowerCase('fr')}${sj.tagline.slice(1)}`;
+      ok(page.page === 'fiche' && page.title === `${d.name} — Perpetual` && page.description === descriptionFiche, `html data-page="${page.page}", titre de l'onglet « ${page.title} », description calculée « ${page.description} »`);
       const voisins = await site.p.evaluate(() => [...document.querySelectorAll('.fiche__voisin')].map(a => `${a.getAttribute('href')} : ${a.querySelector('.eyebrow').textContent} « ${a.querySelector('.suivant__nom').textContent} »`).join(' | '));
       const reponses = await Promise.all([prec, suiv].map(async x => (await fetch(`${SITE}/realisations/${x.id}`)).status));
       ok(voisins === `/realisations/${prec.id} : Projet précédent « ← ${prec.name} » | /realisations/${suiv.id} : Projet suivant « ${suiv.name} → »` && reponses.every(r => r === 200),
@@ -857,12 +872,12 @@ try {
         const s = await infosCase(site.p, id), m = await infosCase(maq.p, id), p = projet(id), bloc = BLOCS.includes(id);
         const sv = await tailleServie(s.src), echelle = +Math.max(s.w / sv.largeur, s.h / sv.hauteur).toFixed(3);
         photos.push({ id, s, m, ok: JSON.stringify(s.boite) === JSON.stringify(m.boite) && JSON.stringify(s.img) === JSON.stringify(m.img) && s.position === m.position && s.fit === 'cover' && m.fit === 'cover' && s.cle === m.cle
-          && s.cle === (bloc ? p.selection[0] : BIENS.find(b => b.id === id).photos[0]) && (!bloc || s.position === p.bloc.focal) && s.alt === '' && s.loading === (bloc ? 'eager' : 'lazy') && s.sizesPartout && s.charge });
+          && s.cle === (bloc ? p.selection[0] : BIENS.find(b => b.id === id).photos[0]) && (!bloc || s.position === p.bloc.focal) && s.alt === (bloc ? (p.kind === 'detailed' ? '' : altAttendu(s.cle, `${p.name}, ${p.location}`)) : altAttendu(s.cle, BIENS.find(b => b.id === id).ville)) && s.loading === (bloc ? 'eager' : 'lazy') && s.sizesPartout && s.charge });
         servies.push({ id, cle: s.cle, w: s.w, h: s.h, servie: `${sv.largeur} × ${sv.hauteur}`, format: sv.format, echelle });
         ecarts.push({ id, ...(await ecartMoyen(`${nom}-photo-${id}`, await captureZone(site.p, s.zone), await captureZone(maq.p, m.zone), FLOU_FICHE)) });
       }
       const fausses = photos.filter(x => !x.ok);
-      ok(!fausses.length, `photos n° 1 des ${BLOCS.length} blocs et des ${BIENS.length} tuiles : la première clé de selection, mêmes boîtes et même cadrage que la maquette (object-position, bloc.focal pour les blocs — ${photos.filter(x => BLOCS.includes(x.id)).map(x => `${x.s.cle} ${x.s.position}`).join(', ')} ; object-fit cover), blocs chargés tout de suite et tuiles paresseuses, texte alternatif vide, sizes sur chaque <source>`
+      ok(!fausses.length, `photos n° 1 des ${BLOCS.length} blocs et des ${BIENS.length} tuiles : la première clé de selection, mêmes boîtes et même cadrage que la maquette (object-position, bloc.focal pour les blocs — ${photos.filter(x => BLOCS.includes(x.id)).map(x => `${x.s.cle} ${x.s.position}`).join(', ')} ; object-fit cover), blocs chargés tout de suite et tuiles paresseuses, textes alternatifs (vides sur les blocs-liens vers les fiches ; « nom, lieu » pour Brosse, la ville pour un bien, sauf légende), sizes sur chaque <source>`
         + (fausses.length ? ' — ' + fausses.slice(0, 3).map(x => `${x.id} : site ${JSON.stringify({ boite: x.s.boite, img: x.s.img, position: x.s.position, cle: x.s.cle, loading: x.s.loading, charge: x.s.charge })} / maquette ${JSON.stringify({ boite: x.m.boite, img: x.m.img, position: x.m.position, cle: x.m.cle })}`).join(' ; ') : ''));
       ok(servies.every(x => x.echelle <= 1), `photos n° 1 à 1× : jamais agrandies — ${servies.map(x => `${x.cle} ${x.servie} (${x.format}) pour ${Math.round(x.w)} × ${Math.round(x.h)}`).join(', ')}`);
       ok(ecarts.every(e => e.ok), `photos n° 1 : captures des ${ecarts.length} blocs et tuiles comparées avec tolérance, floutées (sigma ${FLOU_FICHE}) — écart moyen le plus fort ${Math.max(...ecarts.flatMap(e => e.moyennes || [99]))} sur 255 (tolérance ${TOLERANCE_PHOTO})`
@@ -1063,6 +1078,9 @@ try {
       const albums = JSON.parse(html.match(/<script type="application\/json" id="visio-albums">(.*?)<\/script>/)[1]), biens = JSON.parse(maquette.match(/window\.BIENS=(\[.*?\]);<\/script>/)[1]);
       const legendes = a => a.map(b => `${b.legende || ''}|${b.ville || ''}|${b.surface || ''}|${b.usage || ''}|${b.l.length}`).join(' ¶ ');
       ok(albums.length === 1 + BIENS.length && legendes(albums) === legendes(biens), `visionneuse : ${albums.length} albums, Brosse puis les tuiles dans l'ordre de la mosaïque, mêmes légendes et même nombre de photos que window.BIENS de la maquette`);
+      // les textes alternatifs des albums (lot 7) : Brosse « nom, lieu », un bien sa ville, sauf légende ; échappés pour le HTML de la visionneuse
+      const brosse = projet('brosse'), altsAlbums = [brosse.selection.map(k => echapper(altAttendu(k, `${brosse.name}, ${brosse.location}`))), ...BIENS.map(b => b.photos.map(k => echapper(altAttendu(k, b.ville))))];
+      ok(albums.every((b, k) => JSON.stringify(b.a) === JSON.stringify(altsAlbums[k])), `visionneuse : les textes alternatifs des ${albums.length} albums (Brosse : « ${altsAlbums[0][0]} » ; un bien : sa ville, ex. « ${altsAlbums[1][0]} »)`);
       const cles = [projet('brosse').selection, ...BIENS.map(b => b.photos)];
       const tailles = await Promise.all(albums.flatMap((b, k) => b.l.map(async (u, j) => ({ ...(await tailleServie(SITE + u)), source: await tailleSource(cles[k][j]) }))));
       ok(tailles.every(t => t.format === 'webp' && Math.max(t.largeur, t.hauteur) <= 1800 && t.largeur <= t.source.largeur && t.hauteur <= t.source.hauteur),
@@ -1117,6 +1135,73 @@ try {
     const robots = await (await fetch(SITE + '/robots.txt')).text();
     const robotsAttendu = siteJson.indexation ? `User-agent: *\nAllow: /\nSitemap: ${publique}/sitemap.xml\n` : "# Prévisualisation : pas d'indexation avant la mise en ligne sur perpetual.be (lot 9).\nUser-agent: *\nDisallow: /\n";
     ok(robots === robotsAttendu && !fs.existsSync(path.join(REPO, 'public/robots.txt')), `robots.txt : ${siteJson.indexation ? 'ouvert, avec le plan du site' : 'Disallow: / (indexation fausse dans data/site.json)'}, écrit par src/pages/robots.txt.ts (plus de public/robots.txt)` + (robots === robotsAttendu ? '' : ' — reçu : ' + JSON.stringify(robots)));
+    // adresse et partage (lot 7) : sur chaque page du site (hors redirections), les balises Open Graph — titre = celui de l'onglet, description = la meta
+    // description quand la page en a une, image de partage à l'adresse de `site` (1 200 × 630, son texte alternatif par la règle des photos : la légende,
+    // sinon « nom, lieu »), carte large ; le lien canonique et og:url = l'adresse de la page dans sitemap.xml, absents des pages en noindex permanent
+    const decoder = v => v.replace(/&quot;/g, '"').replace(/&#39;|&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const balise = (h, re) => { const m = h.match(re); return m ? decoder(m[1]) : null; };
+    const og = (h, prop) => balise(h, new RegExp(`<meta property="${prop}" content="([^"]*)"`));
+    const clePartage = (fs.readFileSync(path.join(REPO, 'src/lib/partage.ts'), 'utf8').match(/photo:\s*'([^']+)'/) || [])[1];
+    const projetPartage = JSON.parse(fs.readFileSync(path.join(REPO, 'data/projects.json'), 'utf8')).find(p => p.id === clePartage.replace(/-\d+$/, ''));
+    const altPartage = projetPartage.captions?.[`${clePartage}.jpg`] ?? projetPartage.captions?.[`${clePartage}.png`] ?? `${projetPartage.name}, ${projetPartage.location}`;
+    const sansPartage = [], ecartsPartage = [];
+    for (const f of htmls) {
+      const h = lire(f);
+      if (/<meta http-equiv="refresh"/i.test(h)) continue;
+      const chemin = '/' + f.replace(/(^|\/)index\.html$/, '$1').replace(/\.html$/, '');
+      const permanent = f === '404.html' || f.startsWith('dev/');
+      const titre = balise(h, /<title>([^<]*)<\/title>/), desc = balise(h, /<meta name="description" content="([^"]*)"/), canon = balise(h, /<link rel="canonical" href="([^"]*)"/);
+      const attendu = {
+        canon: permanent ? null : publique + chemin, url: permanent ? null : publique + chemin, titre, desc, image: `${publique}/partage.jpg`, alt: altPartage,
+        type: 'website', site: 'Perpetual', locale: 'fr_BE', w: '1200', hh: '630', carte: 'summary_large_image',
+      };
+      const lu = {
+        canon, url: og(h, 'og:url'), titre: og(h, 'og:title'), desc: og(h, 'og:description'), image: og(h, 'og:image'), alt: og(h, 'og:image:alt'),
+        type: og(h, 'og:type'), site: og(h, 'og:site_name'), locale: og(h, 'og:locale'), w: og(h, 'og:image:width'), hh: og(h, 'og:image:height'),
+        carte: balise(h, /<meta name="twitter:card" content="([^"]*)"/),
+      };
+      const faux = Object.keys(attendu).filter(k => attendu[k] !== lu[k]);
+      if (faux.length) ecartsPartage.push(`${f} : ${faux.map(k => `${k} ${JSON.stringify(lu[k])} au lieu de ${JSON.stringify(attendu[k])}`).join(', ')}`);
+      if (!desc && !permanent) sansPartage.push(f);
+    }
+    ok(!ecartsPartage.length && !sansPartage.length, `adresse et partage : sur les ${htmls.length} pages (hors redirections), og:title = le titre de l'onglet, og:description = la description, image ${publique}/partage.jpg 1 200 × 630 (« ${altPartage} »), carte large ; lien canonique et og:url = l'adresse publique, sauf sur la 404 et /dev/photos ; toutes les pages publiques ont une description`
+      + (ecartsPartage.length ? ' — ' + ecartsPartage.join(' ; ') : '') + (sansPartage.length ? ' — sans description : ' + sansPartage.join(', ') : ''));
+    // l'image de partage : servie à /partage.jpg, JPEG de 1 200 × 630, sous 300 Ko (le plafond de WhatsApp pour un aperçu)
+    const rp = await fetch(SITE + '/partage.jpg'), bp = Buffer.from(await rp.arrayBuffer()), mp = await sharp(bp).metadata();
+    ok(rp.status === 200 && mp.format === 'jpeg' && mp.width === 1200 && mp.height === 630 && bp.length < 300000, `/partage.jpg : ${mp.format} ${mp.width} × ${mp.height}, ${Math.round(bp.length / 1024)} Ko (sous 300 Ko), tiré de ${clePartage}`);
+    // les icônes (lot 7, choix d'Axel D3 A) : /favicon-32.png, 32 × 32 sur fond transparent, ses pixels pleins en #684E1E ; /apple-touch-icon.png,
+    // 180 × 180, opaque, fond blanc, le Φ en #684E1E sur 70 % de la hauteur, centré ; déclarées sur chaque page (hors redirections), le PNG avant le SVG
+    {
+      const png = async u => { const r = await fetch(SITE + u), b = Buffer.from(await r.arrayBuffer()), { data, info } = await sharp(b).ensureAlpha().raw().toBuffer({ resolveWithObject: true }); return { statut: r.status, data, info }; };
+      const hex = (d, i) => '#' + [d[i], d[i + 1], d[i + 2]].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+      const f32 = await png('/favicon-32.png'), pleins = [], transparents = [];
+      for (let i = 0; i < f32.data.length; i += 4) (f32.data[i + 3] === 255 ? pleins : f32.data[i + 3] === 0 ? transparents : []).push(hex(f32.data, i));
+      ok(f32.statut === 200 && f32.info.width === 32 && f32.info.height === 32 && pleins.length > 100 && pleins.every(c => c === '#684E1E') && transparents.length > 200,
+        `/favicon-32.png : 32 × 32, ${pleins.length} pixels pleins tous en #684E1E, ${transparents.length} transparents`);
+      const at = await png('/apple-touch-icon.png'), W = at.info.width, lignes = [];
+      let opaque = true; for (let i = 3; i < at.data.length; i += 4) if (at.data[i] !== 255) opaque = false;
+      for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) if (hex(at.data, (y * W + x) * 4) === '#684E1E') lignes.push(y);
+      const haut = Math.min(...lignes), bas = Math.max(...lignes), coins = [0, W - 1, W * (W - 1), W * W - 1].map(k => hex(at.data, k * 4));
+      ok(at.statut === 200 && W === 180 && at.info.height === 180 && opaque && coins.every(c => c === '#FFFFFF') && Math.abs((bas - haut + 1) - 126) <= 2 && Math.abs(haut - (179 - bas)) <= 1,
+        `/apple-touch-icon.png : 180 × 180, opaque, coins blancs, le Φ en #684E1E de y = ${haut} à ${bas} (${bas - haut + 1} px, 70 % de 180 = 126), centré`);
+      const sansIcones = htmls.filter(f => !/<meta http-equiv="refresh"/i.test(lire(f)) && !/<link rel="icon" href="\/favicon-32\.png" sizes="32x32" type="image\/png">\s*<link rel="icon" href="\/favicon\.svg" type="image\/svg\+xml">\s*<link rel="apple-touch-icon" href="\/apple-touch-icon\.png">/.test(lire(f)));
+      ok(!sansIcones.length, `icônes déclarées sur chaque page : le PNG de 32 px (sizes), puis le SVG, puis l'apple-touch-icon` + (sansIcones.length ? ' — manquent sur ' + sansIcones.join(', ') : ''));
+    }
+    // les anciennes adresses du site de 2020 (lot 7, D4) : /projets et /contact, des pages sans mise en page — noindex, lien canonique vers la nouvelle
+    // adresse (la Home pour /#contact), meta refresh à 0 s, un seul lien au libellé de la navigation — ; le navigateur arrive sur /realisations et /#contact
+    {
+      const ANCIENNES = [['/projets', '/realisations', 'Réalisations', '/realisations'], ['/contact', '/#contact', 'Contact', '/']];
+      for (const [ancienne, vers, libelle, canon] of ANCIENNES) {
+        const r = await fetch(SITE + ancienne), h = await r.text();
+        const liens = [...h.matchAll(/<a [^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(x => `${x[2]} → ${x[1]}`);
+        const n = await ouvrir(SITE + ancienne, FORMATS[0]);
+        await n.p.waitForURL(u => new URL(u).pathname === vers.replace(/#.*$/, ''), { timeout: 5000 }).catch(() => {});
+        const arrivee = new URL(n.p.url()); await n.ctx.close();
+        ok(r.status === 200 && h.includes(`<meta http-equiv="refresh" content="0; url=${vers}">`) && h.includes('<meta name="robots" content="noindex">') && h.includes(`<link rel="canonical" href="${publique}${canon}">`)
+          && liens.length === 1 && liens[0] === `${libelle} → ${vers}` && !/<link rel="stylesheet"|<script/.test(h) && arrivee.pathname + arrivee.hash === vers,
+          `${ancienne} : renvoi immédiat vers ${vers} (meta refresh), noindex, canonique ${publique}${canon}, un seul lien « ${libelle} », ni style ni script ; le navigateur arrive sur ${arrivee.pathname + arrivee.hash}`);
+      }
+    }
     // la 404 et /dev/photos gardent noindex même une fois l'indexation ouverte (prop noindex de Base.astro) : lu dans leur source
     ok(/<Base [^>]*\bnoindex\b/.test(fs.readFileSync(path.join(REPO, 'src/pages/404.astro'), 'utf8')) && /<Base [^>]*\bnoindex\b/.test(fs.readFileSync(path.join(REPO, 'src/pages/dev/photos.astro'), 'utf8')),
       'la 404 et /dev/photos : noindex en dur (prop noindex de Base.astro), même une fois l\'indexation ouverte');

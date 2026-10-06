@@ -1,0 +1,39 @@
+---
+// Les anciennes adresses du site de 2020 (lot 7, 06/10/2026 ; page validée par Axel, D4) : /projets mène à /realisations, /contact au bloc contact du pied
+// de page (/#contact). GitHub Pages ne fait pas de redirection côté serveur : chaque ancienne adresse est une page sans mise en page, qui renvoie tout de
+// suite à la nouvelle (meta refresh à 0 s), donne la nouvelle adresse comme lien canonique (pour les moteurs de recherche ; la page d'accueil pour
+// /#contact) et n'est jamais indexée ; si le navigateur bloque le renvoi, elle montre un seul lien, au libellé de la navigation (data/site.json, nav).
+// Exclues de sitemap.xml (astro.config.mjs : une page qui porte meta refresh). L'ancienne adresse perpetual-patrimoine.webflow.io se règle chez Webflow
+// au lot 9. Une autre ancienne adresse : une ligne de plus dans ANCIENNES.
+import site from '../../data/site.json';
+
+export function getStaticPaths() {
+  const ANCIENNES = [
+    { ancienne: 'projets', vers: '/realisations' },
+    { ancienne: 'contact', vers: '/#contact' },
+  ];
+  return ANCIENNES.map(({ ancienne, vers }) => {
+    const entree = site.nav.find((n) => n.href === vers || `/${n.href}` === vers);
+    if (!entree) throw new Error(`src/pages/[ancienne].astro : /${ancienne} mène à ${vers}, qui n'est pas dans la navigation (data/site.json, nav)`);
+    return { params: { ancienne }, props: { vers, libelle: entree.label } };
+  });
+}
+
+const { vers, libelle } = Astro.props;
+const canonique = new URL(vers.replace(/#.*$/, '') || '/', Astro.site).href;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{`${libelle} — ${site.name}`}</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={canonique} />
+    <meta http-equiv="refresh" content={`0; url=${vers}`} />
+  </head>
+  <body>
+    <a href={vers}>{libelle}</a>
+  </body>
+</html>

@@ -6,7 +6,11 @@
 // boucle dans l'ordre du champ order → pied de page ; la visionneuse, masquée, dans <main> après l'article (comme la maquette). Brosse (kind project)
 // n'a pas de fiche. Les infos d'une fiche viennent de data/projects.json : region (l'eyebrow), quartier (la Localisation, à défaut location), surface,
 // use, tete (le cadre et le point focal de la photo de tête) ; ses chapitres, was, saw et became ; ses photos, selection — la première en tête, les
-// suivantes en mosaïque. Un champ manquant arrête le build. Pas de description pour l'instant (lot 7).
+// suivantes en mosaïque. Un champ manquant arrête le build.
+// La description de la page (lot 7, 06/10/2026, choix d'Axel D1 A), calculée depuis les données, sans texte nouveau : « <name>, <location> · <surface> ·
+// <use>. » puis la phrase de la Home, « Perpetual — le trait d’union entre les idées et le capital. » (name et tagline de data/site.json) — ex. « The Bank,
+// Liège · 1 100 m² · Logements & commerce. Perpetual — le trait d’union entre les idées et le capital. » Elle suit data/projects.json.
+// Textes alternatifs des photos (lot 7, D5 ; src/lib/alt.ts) : la légende de la photo, sinon « nom, location » (« The Bank, Liège »).
 // Composants : src/components/fiche/ (Corps, Mosaique, Voisins) et src/components/Visionneuse.astro ; styles : src/styles/fiche.css et visionneuse.css.
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
@@ -14,6 +18,8 @@ import Corps from '../../components/fiche/Corps.astro';
 import Mosaique from '../../components/fiche/Mosaique.astro';
 import Voisins from '../../components/fiche/Voisins.astro';
 import Visionneuse from '../../components/Visionneuse.astro';
+import site from '../../../data/site.json';
+import { texteAlternatif, nomEtLieu } from '../../lib/alt';
 import '../../styles/fiche.css';
 import '../../styles/visionneuse.css';
 
@@ -27,8 +33,11 @@ export async function getStaticPaths() {
     if (!p.selection || p.selection.length === 0) throw new Error(`${ou}, selection — la photo de tête de sa fiche, puis celles de sa mosaïque`);
     const etrangere = p.selection.find((k) => !k.startsWith(id + '-'));
     if (etrangere) throw new Error(`${ou}, selection — ${etrangere} n'est pas une photo de ce projet`);
+    const signature = `${site.name} — ${site.tagline.charAt(0).toLocaleLowerCase('fr')}${site.tagline.slice(1)}`;
     return {
       id, nom: p.name, order: p.order!, region: p.region!, lieu: (p.quartier || p.location)!, surface: p.surface!, usage: p.use!,
+      description: `${p.name}, ${p.location || p.quartier} · ${p.surface} · ${p.use}. ${signature}`,
+      nomLieu: nomEtLieu(p.name, p.location || p.quartier),
       chapitres: [p.was!, p.saw!, p.became!] as [string, string, string], tete: p.tete!, photo: p.selection[0], mosaique: p.selection.slice(1),
     };
   }).sort((a, b) => a.order - b.order);
@@ -39,10 +48,10 @@ export async function getStaticPaths() {
 const { fiche, prec, suiv } = Astro.props;
 ---
 
-<Base title={fiche.nom} active="/realisations" page="fiche">
+<Base title={fiche.nom} description={fiche.description} active="/realisations" page="fiche">
   <article class="fiche">
-    <Corps nom={fiche.nom} region={fiche.region} lieu={fiche.lieu} surface={fiche.surface} usage={fiche.usage} chapitres={fiche.chapitres} photo={fiche.photo} cadre={fiche.tete.cadre} focal={fiche.tete.focal} />
-    <Mosaique cles={fiche.mosaique} />
+    <Corps nom={fiche.nom} region={fiche.region} lieu={fiche.lieu} surface={fiche.surface} usage={fiche.usage} chapitres={fiche.chapitres} photo={fiche.photo} cadre={fiche.tete.cadre} focal={fiche.tete.focal} alt={texteAlternatif(fiche.photo, fiche.nomLieu)} />
+    <Mosaique cles={fiche.mosaique} nomLieu={fiche.nomLieu} />
     <Voisins prec={{ id: prec.id, nom: prec.nom }} suiv={{ id: suiv.id, nom: suiv.nom }} />
   </article>
   <Visionneuse label="Photos du projet" />

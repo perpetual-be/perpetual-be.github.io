@@ -424,7 +424,7 @@ const PAYSAGE = 2100 / 1694;
 const FICHES = {
   'the-bank': { region: 'Liège', faits: 'Centre-ville · 1 100 m² · Logements & commerce', part: 0.5, format: PAYSAGE, focal: '50% 0%', rangees: '2' },
   'data-box': { region: 'Rochefort', faits: 'Jemelle · 4 200 m² · Site technique', part: 0.5, format: PAYSAGE, focal: '60% 50%', rangees: '2 3' },
-  'community': { region: 'Bruxelles', faits: 'Uccle · 14 unités · Co-living', part: 0.5, format: PAYSAGE, focal: '50% 50%', rangees: '2 3 2 3' },
+  'community': { region: 'Bruxelles', faits: 'Uccle · 600 m² · Co-living', part: 0.5, format: PAYSAGE, focal: '50% 50%', rangees: '2 3 2 3' },
   'ateliers-118': { region: 'Bruxelles', faits: 'Molenbeek-Saint-Jean · 1 200 m² · Ateliers', part: 0.4, format: 1, focal: '50% 0%', rangees: '4' },
 };
 const pageDe = d => `projet-${d.id}`;
@@ -757,7 +757,7 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
     `5 projets : ${b.map(x => x.nom).join(' · ')}, nom en serif blanc 38 px, en bas à gauche (28 / 24 px)`);
   ok(b.map(x => `${x.tag}#${x.id}${x.href ? ' → ' + x.href : ''}${x.ouvrir !== null ? ' ouvre ' + x.ouvrir : ''}`).join(' | ') === 'a#community → projet-community.html | a#ateliers-118 → projet-ateliers-118.html | a#the-bank → projet-the-bank.html | a#data-box → projet-data-box.html | div#brosse ouvre 0',
     'les quatre projets à fiche sont des liens vers leur fiche (ids gardés) ; Brosse, sans fiche, un album (album 0 de la visionneuse) : ' + b.map(x => `${x.tag}#${x.id}`).join(' · '));
-  ok(b.map(x => x.faits).join(' | ') === 'Lieu Uccle · Surface 14 unités · Usage Co-living | Lieu Molenbeek-Saint-Jean · Surface 1 200 m² · Usage Ateliers | Lieu Liège · Surface 1 100 m² · Usage Logements & commerce | Lieu Jemelle · Surface 4 200 m² · Usage Site technique | Lieu Forest · Surface 800 m² · Projet Rafraîchissement et division d’un ancien atelier de brosses'
+  ok(b.map(x => x.faits).join(' | ') === 'Lieu Uccle · Surface 600 m² · Usage Co-living | Lieu Molenbeek-Saint-Jean · Surface 1 200 m² · Usage Ateliers | Lieu Liège · Surface 1 100 m² · Usage Logements & commerce | Lieu Jemelle · Surface 4 200 m² · Usage Site technique | Lieu Forest · Surface 800 m² · Projet Rafraîchissement et division d’un ancien atelier de brosses'
     && b.every(x => x.repos === '0 0' && x.mobile === 'none'), 'trois faits par projet, masqués au repos ; Brosse : Lieu, Surface, et « Projet » (intitulé du site 2020, provisoire)');
   // au survol, les faits et le zoom (photos cliquables : les cinq) ; au focus clavier, les faits — de « Contact » aux cinq blocs, puis la première tuile
   const survols = [];
@@ -910,7 +910,7 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
     cas: [...document.querySelectorAll('.mos .cas')].map(c => Math.round(c.getBoundingClientRect().width)), casTa: [...document.querySelectorAll('.cas__enonce, .cas__phrase')].map(e => getComputedStyle(e).textAlign).join(' '), large: Math.round(document.querySelector('.mos').getBoundingClientRect().width),
     titre: getComputedStyle(document.querySelector('.page__titre')).fontSize, fleches: getComputedStyle(document.querySelector('.visio__fleche')).display }));
   ok(m.cols.every(c => c === 1) && m.blocs.length === 5 && m.blocs.every(b => b.w === 350 && Math.abs(b.ratio - 4 / 3) < 0.01 && b.nom === '28px' && b.faits === 'none')
-    && m.blocs.map(b => b.mobile).join(' | ') === 'block Uccle · 14 unités | block Molenbeek-Saint-Jean · 1 200 m² | block Liège · 1 100 m² | block Jemelle · 4 200 m² | block Forest · 800 m²', 'mobile : un projet par ligne en 4:3 (Brosse compris), nom 28 px, « Lieu · surface » dessous, faits masqués');
+    && m.blocs.map(b => b.mobile).join(' | ') === 'block Uccle · 600 m² | block Molenbeek-Saint-Jean · 1 200 m² | block Liège · 1 100 m² | block Jemelle · 4 200 m² | block Forest · 800 m²', 'mobile : un projet par ligne en 4:3 (Brosse compris), nom 28 px, « Lieu · surface » dessous, faits masqués');
   const gauche = m.tuiles.filter(t => t.x === 20).length, droite = m.tuiles.length - gauche;
   ok(m.mosCols === 2 && gauche === 8 && droite === 8 && m.tuiles.every(t => Math.abs(t.ratio - 0.8) < 0.01 && t.faits === 'none' && t.nom === '19px' && /^block \d/.test(t.mob)) && m.cas.every(w => w === m.large) && m.casTa === 'start left',
     `mobile : la mosaïque en deux colonnes de tuiles 4:5 (${gauche} + ${droite}, sans trou), nom 19 px et surface dessous ; les cases de texte sur toute la largeur, alignées à gauche (${m.casTa})`);

@@ -5,6 +5,11 @@
 // passer ce seul réglage à vrai suffit : le noindex part (sauf sur la 404 et /dev/photos, prop noindex) et robots.txt s'ouvre (src/pages/robots.txt.ts).
 // `page` est posé en data-page sur <html>, comme dans la maquette (lot 6, 01/10/2026) : les règles de maquette.css qui en dépendent s'appliquent telles
 // quelles (html[data-page="engagements"] .page__titre…) ; « texte » pour les pages de texte sans maquette (mentions légales, confidentialité, 404).
+// Adresse et partage (lot 7, 06/10/2026) : le lien canonique — l'adresse publique de la page, `site` (astro.config.mjs) puis son chemin sans « .html », comme
+// sitemap.xml ; pas sur les pages en noindex permanent —, les balises Open Graph (titre de l'onglet, description, adresse, image de partage 1 200 × 630 et
+// son texte alternatif : src/lib/partage.ts) et la carte de partage large (twitter:card). Toutes les adresses suivent `site` : au lot 9, perpetual.be.
+// Icônes (lot 7) : le SVG pour les navigateurs qui le lisent, un PNG de 32 px pour les autres (déclaré avant, avec sizes : Chrome garde alors le SVG) et
+// l'icône d'écran d'accueil d'iOS (180 px), les deux tirées de public/favicon.svg au build (src/lib/icones.ts).
 import '../styles/polices.css';
 import '../styles/jetons.css';
 import '../styles/base.css';
@@ -13,6 +18,7 @@ import '../styles/pied.css';
 import site from '../../data/site.json';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import { PARTAGE, altPartage } from '../lib/partage';
 
 interface Props {
   title: string;
@@ -29,6 +35,11 @@ interface Props {
 
 const { title, fullTitle = false, description = '', active = '', page, noindex = false } = Astro.props;
 const pageTitle = fullTitle ? title : `${title} — ${site.name}`;
+// l'adresse publique de la page : / pour la Home, /realisations/the-bank pour une fiche (le chemin construit, sans « .html » ni « index »)
+const chemin = Astro.url.pathname.replace(/\.html$/, '').replace(/(^|\/)index$/, '$1') || '/';
+const canonique = new URL(chemin, Astro.site).href;
+const image = new URL(PARTAGE.chemin, Astro.site).href;
+const imageAlt = await altPartage();
 ---
 
 <!doctype html>
@@ -39,7 +50,22 @@ const pageTitle = fullTitle ? title : `${title} — ${site.name}`;
     <title>{pageTitle}</title>
     {description && <meta name="description" content={description} />}
     {(!site.indexation || noindex) && <meta name="robots" content="noindex" />}
+    {!noindex && <link rel="canonical" href={canonique} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content="fr_BE" />
+    <meta property="og:title" content={pageTitle} />
+    {description && <meta property="og:description" content={description} />}
+    {!noindex && <meta property="og:url" content={canonique} />}
+    <meta property="og:image" content={image} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content={String(PARTAGE.largeur)} />
+    <meta property="og:image:height" content={String(PARTAGE.hauteur)} />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preload" href="/fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/newsreader-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/jost-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />

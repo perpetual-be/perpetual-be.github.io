@@ -5,7 +5,8 @@
 // Réalisations). `albums` (vue Réalisations) : les albums des photos parcourables, dans l'ordre de leur data-album — Brosse, puis les tuiles dans l'ordre de
 // la mosaïque, comme window.BIENS dans la maquette —, écrits dans la page en JSON (#visio-albums, après la visionneuse) : pour chacun, les adresses de ses
 // photos en grand (l : photoGrande, src/lib/photos.ts — WebP de 1 800 px au plus, chargées seulement à l'ouverture) et sa légende — la ville, la surface et
-// l'usage d'un bien, ou une légende toute faite (legende, Brosse) —, déjà échappées pour innerHTML, comme la maquette.
+// l'usage d'un bien, ou une légende toute faite (legende, Brosse) —, déjà échappées pour innerHTML, comme la maquette ; et les textes alternatifs des photos
+// (a, lot 7 : src/lib/alt.ts), échappés de même. Sur une fiche, le texte alternatif de chaque photo vient du data-alt de sa tuile.
 // Le script, repris de la fin de design/maquette/maquette.js sans changement de comportement : ouvrir(album, départ, de) — un album, ses photos (l) et,
 // pour un bien de la vue Réalisations, la ville, la surface et l'usage, ou une légende toute faite (legende) ; sans l'une ni l'autre, le compteur seul —
 // remplit la piste (src/scripts/boucle.js : la piste en boucle), montre la photo de départ et met le focus sur « Fermer » ; fermer() rend le focus à
@@ -18,6 +19,8 @@
 export interface AlbumVisionneuse {
   /** Les adresses des photos en grand, dans l'ordre. */
   l: string[];
+  /** Les textes alternatifs des photos, dans le même ordre (HTML échappé ; lot 7, src/lib/alt.ts). */
+  a?: string[];
   /** Une légende toute faite (HTML échappé) : « <b>Brosse</b>Forest · 800 m² ». */
   legende?: string;
   /** Un bien : la ville, la surface et l'usage (HTML échappé). */
@@ -49,7 +52,8 @@ const json = albums ? JSON.stringify(albums).replace(/</g, '\\u003c') : '';
 <script>
   import { Boucle } from '../scripts/boucle.js';
 
-  type Album = { l: string[]; legende?: string; ville?: string; surface?: string; usage?: string };
+  type Album = { l: string[]; a?: string[]; legende?: string; ville?: string; surface?: string; usage?: string };
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
   const v = document.querySelector<HTMLElement>('.visio');
   if (v) {
@@ -61,7 +65,7 @@ const json = albums ? JSON.stringify(albums).replace(/</g, '\\u003c') : '';
     const ouvrir = (b: Album, depart?: number, de?: HTMLElement) => {
       const n = b.l.length, ancienne = v.querySelector('.visio__piste')!, vp = ancienne.cloneNode(false) as HTMLElement;
       ancienne.replaceWith(vp); retour = de || (document.activeElement as HTMLElement | null);   // de : l'élément qui reprend le focus à la fermeture
-      vp.innerHTML = b.l.map((s) => '<img src="' + s + '" alt="" decoding="async">').join('');
+      vp.innerHTML = b.l.map((s, i) => '<img src="' + s + '" alt="' + ((b.a && b.a[i]) || '') + '" decoding="async">').join('');
       vl.innerHTML = b.legende || (b.ville ? '<b>' + b.ville + '</b>' + b.surface + ' · ' + b.usage : '');
       vg.hidden = vd.hidden = n < 2;
       v.hidden = false; document.body.classList.add('visio-ouverte');
@@ -88,7 +92,10 @@ const json = albums ? JSON.stringify(albums).replace(/</g, '\\u003c') : '';
     // les fiches : chaque tuile de la mosaïque ouvre la visionneuse sur sa photo (data-grande), le compteur seul (« 3 / 10 »)
     const tuiles = document.querySelectorAll<HTMLElement>('.fiche__agrandir');
     if (tuiles.length) {
-      const album = { l: Array.prototype.map.call(tuiles, (t: HTMLElement) => t.getAttribute('data-grande')) as string[] };
+      const album = {
+        l: Array.prototype.map.call(tuiles, (t: HTMLElement) => t.getAttribute('data-grande')) as string[],
+        a: Array.prototype.map.call(tuiles, (t: HTMLElement) => esc(t.getAttribute('data-alt') || '')) as string[],
+      };
       tuiles.forEach((t, i) => { t.addEventListener('click', () => ouvrir(album, i)); });
     }
     vg.addEventListener('click', () => vb!.aller(-1));

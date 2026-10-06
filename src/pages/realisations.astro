@@ -23,6 +23,7 @@ import type { AlbumVisionneuse } from '../components/Visionneuse.astro';
 import composition from '../../data/realisations.json';
 import { lireAgences } from '../lib/contenu';
 import { photoGrande } from '../lib/photos';
+import { texteAlternatif, nomEtLieu } from '../lib/alt';
 import '../styles/realisations.css';
 import '../styles/visionneuse.css';
 
@@ -68,7 +69,7 @@ for (const r of rangeesBrutes) {
     let album: number | undefined;
     if (p.kind === 'project') {
       album = albums.length;
-      albums.push({ legende: `<b>${esc(p.name)}</b>${esc(b.lieu!)} · ${esc(b.surface!)}`, l: await grandes(p.selection!) });
+      albums.push({ legende: `<b>${esc(p.name)}</b>${esc(b.lieu!)} · ${esc(b.surface!)}`, l: await grandes(p.selection!), a: p.selection!.map((k) => esc(texteAlternatif(k, nomEtLieu(p.name, b.lieu)))) });
     }
     blocs.push({ id, nom: p.name, part, photos: p.selection!, focal: b.focal!, lieu: b.lieu!, surface: b.surface!, usage: p.use, projet: p.use ? undefined : p.projet, album });
   }
@@ -98,7 +99,7 @@ for (const rang of composition.mosaique) {
     const manque = Object.entries({ [p.kind === 'agency' ? 'name' : 'location']: ville, surface: p.surface, use: p.use }).filter(([, v]) => !v).map(([k]) => k);
     if (manque.length) throw new Error(`data/projects.json : ${x}, ${manque.join(', ')} — les infos de sa tuile de la vue Réalisations (ville, surface, usage)`);
     cases.push({ bien: { id: x, ville: ville!, surface: p.surface!, usage: p.use!, photos }, indice: albums.length });
-    albums.push({ ville: esc(ville!), surface: esc(p.surface!), usage: esc(p.use!), l: await grandes(photos) });
+    albums.push({ ville: esc(ville!), surface: esc(p.surface!), usage: esc(p.use!), l: await grandes(photos), a: photos.map((k) => esc(texteAlternatif(k, ville!))) });
   }
   mosaique.push(cases);
 }

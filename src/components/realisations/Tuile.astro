@@ -5,10 +5,12 @@
 // la photo affichée —, avec la ville en serif blanc (.tuile__nom), Surface et Usage au survol et au focus clavier (.tuile__faits), la surface pour le
 // téléphone (.tuile__mobile). Nom accessible : « ville, surface, usage — n photos ». La case a le format de sa photo n° 1 (--r, au millième, la valeur de la
 // maquette) : sa largeur dans la rangée lui est proportionnelle, rien n'est recadré.
-// Les photos, par ProjectPhoto, toutes paresseuses : chacune avec le sizes de la case (sizesTuile, ./tailles.ts).
+// Les photos, par ProjectPhoto, toutes paresseuses : chacune avec le sizes de la case (sizesTuile, ./tailles.ts) et son texte alternatif (lot 7,
+// src/lib/alt.ts : la légende de la photo, sinon la ville, comme sur la tuile).
 import Album from './Album.astro';
 import Fait from './Fait.astro';
 import { sizesTuile } from './tailles';
+import { texteAlternatif } from '../../lib/alt';
 
 interface Props {
   id: string;
@@ -28,7 +30,7 @@ interface Props {
 }
 
 const { id, ville, surface, usage, photos, r, part, ecarts, indice } = Astro.props;
-const vues = await Promise.all(photos.map(async (cle) => ({ cle, sizes: await sizesTuile(cle, r, part, ecarts), loading: 'lazy' as const })));
+const vues = await Promise.all(photos.map(async (cle) => ({ cle, sizes: await sizesTuile(cle, r, part, ecarts), loading: 'lazy' as const, alt: texteAlternatif(cle, ville) })));
 const n = photos.length;
 ---
 

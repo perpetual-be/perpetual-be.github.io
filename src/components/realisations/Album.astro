@@ -7,8 +7,9 @@
 // d'une photo, « 1 / n » (.photos__compteur) et les deux flèches (.photos__fleche). data-album : l'indice de l'album dans ceux de la visionneuse
 // (src/components/Visionneuse.astro, dont le script fait tourner la piste en boucle, tient le compteur et ouvre la visionneuse sur la photo affichée) ;
 // data-n : le nombre de photos. Sans JavaScript, la piste se fait glisser, sans compteur ni flèches (CSS).
-// Les photos, par ProjectPhoto, texte alternatif vide comme la maquette : chacune avec son sizes, son point focal et son chargement (paresseux, sauf la
-// photo n° 1 de Brosse).
+// Les photos, par ProjectPhoto : chacune avec son texte alternatif (lot 7, règle de src/lib/alt.ts : la légende, sinon « nom, lieu » pour Brosse, la ville
+// pour un bien ; le nom accessible du bouton l'emporte pour un lecteur d'écran), son sizes, son point focal et son chargement (paresseux, sauf la photo n° 1
+// de Brosse).
 import ProjectPhoto from '../ProjectPhoto.astro';
 
 export interface PhotoAlbum {
@@ -16,6 +17,8 @@ export interface PhotoAlbum {
   sizes: string;
   focal?: string;
   loading: 'eager' | 'lazy';
+  /** Le texte alternatif de la photo (src/lib/alt.ts). */
+  alt: string;
 }
 
 interface Props {
@@ -35,4 +38,4 @@ const { classe, id, style, indice, label, photos } = Astro.props;
 const n = photos.length;
 ---
 
-<div class={classe} id={id} style={style} data-album={indice} data-n={n}><button type="button" class="photos__ouvrir" aria-label={label}><span class="photos" tabindex="-1">{photos.map((ph, i) => <span class="photos__vue"><ProjectPhoto cle={ph.cle} class={i === 0 ? 'photos__une' : undefined} sizes={ph.sizes} focal={ph.focal} loading={ph.loading} alt="" /></span>)}</span><slot /></button>{n > 1 && <Fragment><span class="photos__compteur" aria-hidden="true">{`1 / ${n}`}</span><button type="button" class="photos__fleche photos__fleche--g" aria-label="Photo précédente"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M12 2 2 14l10 12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button><button type="button" class="photos__fleche photos__fleche--d" aria-label="Photo suivante"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M2 2l10 12L2 26" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></Fragment>}</div>
+<div class={classe} id={id} style={style} data-album={indice} data-n={n}><button type="button" class="photos__ouvrir" aria-label={label}><span class="photos" tabindex="-1">{photos.map((ph, i) => <span class="photos__vue"><ProjectPhoto cle={ph.cle} class={i === 0 ? 'photos__une' : undefined} sizes={ph.sizes} focal={ph.focal} loading={ph.loading} alt={ph.alt} /></span>)}</span><slot /></button>{n > 1 && <Fragment><span class="photos__compteur" aria-hidden="true">{`1 / ${n}`}</span><button type="button" class="photos__fleche photos__fleche--g" aria-label="Photo précédente"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M12 2 2 14l10 12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button><button type="button" class="photos__fleche photos__fleche--d" aria-label="Photo suivante"><svg viewBox="0 0 14 28" aria-hidden="true"><path d="M2 2l10 12L2 26" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></Fragment>}</div>
