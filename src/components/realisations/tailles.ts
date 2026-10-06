@@ -17,8 +17,10 @@ export async function sizesBloc(cle: string, part: number): Promise<string> {
 /** Une photo d'une tuile de la mosaïque : la largeur de la case — sa part de la rangée (part, son format ÷ la somme des formats de la rangée, à quatre
  *  décimales), la grille large moins ses gouttières (80 px) et les écarts de la rangée (ecarts, 14 px par écart) ; au téléphone, une colonne sur deux —,
  *  multipliée par le recadrage de la photo dans la case : max(1, son format ÷ celui de la case, rCase), aucun pour la photo n° 1, qui donne son format à
- *  la case ; au téléphone, case 4:5. */
+ *  la case ; au téléphone, case 4:5. De 641 à 880 px (lot 7, 06/10/2026, t171006a), la mosaïque du téléphone dans les gouttières de 40 px : une colonne
+ *  sur deux, (100vw − 90 px) / 2, case 4:5. */
 export async function sizesTuile(cle: string, rCase: number, part: string, ecarts: number): Promise<string> {
   const pr = await formatPhoto(cle), kTel = Math.max(1, pr / 0.8), kCase = Math.max(1, pr / rCase);
-  return `(max-width:640px) calc((100vw - 50px) / 2 * ${kTel.toFixed(3)}), calc((min(100vw, 1600px) - ${80 + ecarts}px) * ${part} * ${kCase.toFixed(3)})`;
+  return `(max-width:640px) calc((100vw - 50px) / 2 * ${kTel.toFixed(3)}), (max-width:880px) calc((100vw - 90px) / 2 * ${kTel.toFixed(3)}), `
+    + `calc((min(100vw, 1600px) - ${80 + ecarts}px) * ${part} * ${kCase.toFixed(3)})`;
 }

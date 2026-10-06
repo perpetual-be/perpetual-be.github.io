@@ -55,7 +55,8 @@
 //     version servie assez grande) ; la description des fiches, calculée ; sur chaque page le lien canonique et les balises Open Graph, /partage.jpg
 //     (1 200 × 630, sous 300 Ko) ; les icônes (/favicon-32.png, /apple-touch-icon.png, déclarées partout) ; les anciennes adresses /projets et /contact
 //     (renvoi, canonique, noindex, un lien) ; les textes alternatifs des photos (tête et mosaïque des fiches, photos n° 1 de la vue Réalisations,
-//     visionneuses) selon la règle de src/lib/alt.ts.
+//     visionneuses) selon la règle de src/lib/alt.ts ; la vue Réalisations en tablette (de 641 à 880 px, la mosaïque du téléphone ; mêmes boîtes que la
+//     maquette à 768 et 880 px ; aucun texte rogné dans les cases de 641 à 1 600 px ; photos des tuiles assez grandes à 768 px et 2×).
 // En cas d'écart sur une capture : le nombre de pixels différents et une image des écarts (en rouge) dans scripts/ecarts/ (dossier ignoré par Git), avec
 // les deux captures. Affiche « Tout est identique » quand tout passe (code de sortie 1 sinon).
 // Usage, depuis la racine du dépôt, après npm run build : NODE_PATH=$(npm root -g) npm run comparer
@@ -1085,6 +1086,38 @@ try {
       const tailles = await Promise.all(albums.flatMap((b, k) => b.l.map(async (u, j) => ({ ...(await tailleServie(SITE + u)), source: await tailleSource(cles[k][j]) }))));
       ok(tailles.every(t => t.format === 'webp' && Math.max(t.largeur, t.hauteur) <= 1800 && t.largeur <= t.source.largeur && t.hauteur <= t.source.hauteur),
         `visionneuse : ${tailles.length} photos en WebP, 1 800 px au plus sur le grand côté, jamais au-delà de la source (${[...new Set(tailles.map(t => `${t.largeur} × ${t.hauteur}`))].join(', ')})`);
+    }
+
+    // tablette en portrait (lot 7, 06/10, t171006a) : de 641 à 880 px, la mosaïque des agences comme au téléphone — deux colonnes de tuiles 4:5, les cases de
+    // texte sur toute la largeur — ; à 768 et 880 px, mêmes boîtes que la maquette ; de 641 à 1 600 px, aucun texte rogné dans les cases ; à 768 px et 2×, les
+    // photos n° 1 des tuiles servies assez grandes (la largeur affichée × 2) ou la plus grande version disponible
+    console.log('\nRéalisations en tablette');
+    {
+      const boitesMos = p => p.evaluate(() => [...document.querySelectorAll('.mos .tuile, .mos .cas')].map(e => { const r = e.getBoundingClientRect(); return `${e.id || e.className.split(' ').pop()}:${Math.round(r.left)},${Math.round(r.top - document.querySelector('.mos').getBoundingClientRect().top)},${Math.round(r.width)}×${Math.round(r.height)}`; }));
+      for (const w of [768, 880]) {
+        const s3 = await ouvrir(SITE + '/realisations', [w, 1024], { reducedMotion: 'reduce' }), m3 = await ouvrir(MAQUETTE_REALISATIONS, [w, 1024], { reducedMotion: 'reduce' });
+        const bs = await boitesMos(s3.p), bm = await boitesMos(m3.p);
+        const deuxColonnes = await s3.p.evaluate(() => { const t = [...document.querySelectorAll('.mos .tuile')].map(e => e.getBoundingClientRect()), c = [...document.querySelectorAll('.mos .cas')].map(e => e.getBoundingClientRect()), m = document.querySelector('.mos').getBoundingClientRect();
+          return new Set(t.map(r => Math.round(r.left))).size === 2 && t.every(r => Math.abs(r.height / r.width - 1.25) < 0.01) && c.every(r => Math.abs(r.width - m.width) < 1); });
+        ok(JSON.stringify(bs) === JSON.stringify(bm) && deuxColonnes, `${w} px : la mosaïque en deux colonnes de tuiles 4:5, les cases de texte sur toute la largeur ; mêmes boîtes que la maquette (${bs.length} cases)` + (JSON.stringify(bs) === JSON.stringify(bm) ? '' : ` — site ${bs.slice(0, 3).join(' ')} / maquette ${bm.slice(0, 3).join(' ')}`));
+        await s3.ctx.close(); await m3.ctx.close();
+      }
+      const s4 = await ouvrir(SITE + '/realisations', [1200, 900], { reducedMotion: 'reduce' }), roges = [];
+      for (let w = 641; w <= 1600; w += 10) {
+        await s4.p.setViewportSize({ width: w, height: 900 }); await s4.p.waitForTimeout(30);
+        const d = await s4.p.evaluate(() => [...document.querySelectorAll('.cas')].map(c => { const cb = c.getBoundingClientRect(), rg = document.createRange(); rg.selectNodeContents(c); const tb = rg.getBoundingClientRect(); return Math.round(Math.max(cb.top - tb.top, tb.bottom - cb.bottom, 0)); }));
+        if (d.some(x => x > 1)) roges.push(`${w} px : ${d.join(' / ')} px`);
+      }
+      await s4.ctx.close();
+      ok(!roges.length, 'de 641 à 1 600 px (pas de 10 px) : aucun texte rogné dans les deux cases de texte' + (roges.length ? ' — ' + roges.slice(0, 6).join(' ; ') : ''));
+      const s5 = await ouvrir(SITE + '/realisations', [768, 1024], { deviceScaleFactor: 2, reducedMotion: 'reduce' });
+      for (const id of BIENS.map(b => b.id)) await s5.p.evaluate(id => document.getElementById(id).scrollIntoView({ block: 'center' }), id);
+      await s5.p.waitForFunction(() => [...document.querySelectorAll('.mos .tuile img.photos__une')].filter(i => !i.closest('[data-clone]')).every(i => i.complete && i.naturalWidth > 0 && i.currentSrc), null, { timeout: 15000 }).catch(() => {});
+      const tuiles = await s5.p.evaluate(() => [...document.querySelectorAll('.mos .tuile img.photos__une')].filter(i => !i.closest('[data-clone]')).map(i => { const r = i.getBoundingClientRect(); return { cle: i.dataset.cle, src: i.currentSrc, w: r.width, h: r.height }; }));
+      const petites = [];
+      for (const t of tuiles) { const sv = await tailleServie(t.src), src = await tailleSource(t.cle), besoin = Math.max(t.w, t.h * src.largeur / src.hauteur) * 2; if (sv.largeur < Math.min(besoin, src.largeur) - 2) petites.push(`${t.cle} ${sv.largeur} px pour ${Math.round(besoin)}`); }
+      await s5.ctx.close();
+      ok(tuiles.length === BIENS.length && !petites.length, `768 px à 2× : les ${tuiles.length} photos n° 1 des tuiles servies assez grandes (sizes de la tablette)` + (petites.length ? ' — ' + petites.join(', ') : ''));
     }
   }
 

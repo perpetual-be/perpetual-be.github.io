@@ -4,7 +4,7 @@
    d'abord, puis ici. */
 :root{
   /* palette */
-  --blanc:#FFFFFF;--anthracite:#26231F;--gris:#6B655C;--gris-clair:#9A948A;--gris-chaud:#7A7466;--filet:#E6E1D6;
+  --blanc:#FFFFFF;--anthracite:#26231F;--gris:#6B655C;--gris-clair:#9A948A;--gris-chaud:#736D60;--filet:#E6E1D6;
   --or:#9A7A3B;--or-fonce:#8A6B2F;--or-clair:#B8975A;--bronze:#684E1E;
   --sable:#F6F1E6;--papier:#F9F9F6;
   --or-deco:#C9B58A;--or-deco-2:#D9C9A3;
@@ -12,7 +12,7 @@
   /* rôles — le dosage figé le 22/09 ; les composants ne lisent que ceux-ci */
   --c-texte:var(--anthracite);--c-meta:var(--gris);
   --c-chiffre:var(--or);                                  /* chiffres clés */
-  --c-etiquette-chiffre:var(--gris-chaud);                /* étiquettes des chiffres, figé */
+  --c-etiquette-chiffre:var(--gris-chaud);                /* étiquettes des chiffres, figé ; gris chaud #736D60 depuis le 06/10 (lot 7, t171006c : 4,87:1 sur papier, #7A7466 faisait 4,41:1) */
   --c-signature:var(--or-fonce);                          /* signature : or foncé, figé le 23/09 */
   --c-lien:var(--or-fonce);                               /* « Toutes les réalisations → » */
   --c-mail:var(--anthracite);                             /* mail du pied de page, souligné en or clair */

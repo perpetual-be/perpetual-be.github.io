@@ -64,7 +64,9 @@ a.bloc:hover img{transform:scale(var(--zoom))}
 .photos__vue{position:relative;flex:0 0 100%;height:100%;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always}
 .photos__vue img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
 .tuile:hover .photos__vue img,.tuile:has(:focus-visible) .photos__vue img,.bloc--album:hover .photos__vue img,.bloc--album:has(:focus-visible) .photos__vue img{transform:scale(var(--zoom))}
-.photos--nav::before{content:"";position:absolute;top:0;right:0;z-index:2;width:120px;height:64px;pointer-events:none;background:radial-gradient(ellipse at 100% 0,rgba(0,0,0,.38) 0%,rgba(0,0,0,.16) 45%,transparent 75%)}
+/* le voile sous le compteur (renforcé le 06/10, lot 7, Cockpit t171006b, choix d'Axel) : plus sombre et plus doux — le dégradé s'éteint au bord de sa boîte
+   (farthest-side), le compteur blanc de 12 px reste à 4,5:1 au moins sur un ciel ou un mur blanc */
+.photos--nav::before{content:"";position:absolute;top:0;right:0;z-index:2;width:200px;height:110px;pointer-events:none;background:radial-gradient(farthest-side at 100% 0,rgba(0,0,0,.7) 0%,rgba(0,0,0,.56) 30%,rgba(0,0,0,.24) 64%,transparent 100%)}
 .photos__compteur{position:absolute;z-index:3;top:10px;right:12px;font-size:12px;line-height:1;letter-spacing:.02em;color:var(--photo-texte);font-variant-numeric:tabular-nums;text-shadow:0 0 6px rgba(0,0,0,.5);pointer-events:none}
 .photos__fleche{position:absolute;z-index:3;top:50%;transform:translateY(-50%);width:52px;height:96px;display:flex;align-items:center;justify-content:center;background:none;border:0;padding:0;color:var(--photo-texte);cursor:pointer;opacity:0;transition:opacity .25s}
 .photos__fleche--g{left:0}.photos__fleche--d{right:0}
@@ -101,6 +103,21 @@ a.bloc:hover img{transform:scale(var(--zoom))}
   .mos .cas{grid-column:1/-1;aspect-ratio:auto;flex:none}
   .cas__in{position:static;padding:22px 20px}
   .cas__phrase{text-align:left}   /* au téléphone, une bande sur toute la largeur comme la première case : à gauche */
+  .tuile__nom{font-size:19px}
+  .tuile__faits{display:none}
+  .tuile__mobile{display:block;font-size:13px;margin-top:4px}
+  .tuile__texte{left:12px;right:12px;bottom:10px}
+}
+/* ---------- tablette en portrait, de 641 à 880 px (lot 7, 06/10/2026, Cockpit t171006a, choix d'Axel) ---------- */
+/* la mosaïque des agences comme au téléphone : deux colonnes de tuiles 4:5, nom 19 px et surface dessous, les cases de texte sur toute la largeur — sur
+   les rangées de la grille large, les deux cases de texte étaient rognées entre 650 et 870 px (relevé du 06/10) ; les projets gardent leurs rangées */
+@media (min-width:641px) and (max-width:880px){
+  .mos{display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:row dense;gap:10px}
+  .mos__rang{display:contents}
+  .mos .tuile{aspect-ratio:4/5;flex:none}
+  .mos .cas{grid-column:1/-1;aspect-ratio:auto;flex:none}
+  .cas__in{position:static;padding:22px 20px}
+  .cas__phrase{text-align:left}
   .tuile__nom{font-size:19px}
   .tuile__faits{display:none}
   .tuile__mobile{display:block;font-size:13px;margin-top:4px}
