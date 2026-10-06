@@ -439,6 +439,7 @@ html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:4
   .tuile__faits{display:none}
   .tuile__mobile{display:block;font-size:13px;margin-top:4px}
   .tuile__texte{left:12px;right:12px;bottom:10px}
+  .tuile::after{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.36) 38%,transparent 64%)}   /* le voile des blocs au téléphone, aussi sous les noms des tuiles (06/10, lot 7, t171006b, choix d'Axel : nom 19 px à 4,6:1 au pire, 2,95:1 avant) */
   .visio{padding:56px 0 24px}
   .visio__cadre,.visio__bas{width:100%}
   .visio__bas{padding:0 var(--gutter);flex-wrap:wrap;gap:4px 12px;font-size:13px}
@@ -469,6 +470,7 @@ html[data-page="engagements"] .page__titre{font-family:var(--sans);font-weight:4
   .tuile__faits{display:none}
   .tuile__mobile{display:block;font-size:13px;margin-top:4px}
   .tuile__texte{left:12px;right:12px;bottom:10px}
+  .tuile::after{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.36) 38%,transparent 64%)}   /* le voile des blocs au téléphone, aussi sous les noms des tuiles (06/10, lot 7, t171006b, choix d'Axel : nom 19 px à 4,6:1 au pire, 2,95:1 avant) */
 }
 @media (max-height:720px) and (min-width:641px){
   :root{--bande-haut:36px;--bande-bas:32px}

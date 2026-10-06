@@ -107,6 +107,7 @@ a.bloc:hover img{transform:scale(var(--zoom))}
   .tuile__faits{display:none}
   .tuile__mobile{display:block;font-size:13px;margin-top:4px}
   .tuile__texte{left:12px;right:12px;bottom:10px}
+  .tuile::after{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.36) 38%,transparent 64%)}   /* le voile des blocs au téléphone, aussi sous les noms des tuiles (06/10, lot 7, t171006b, choix d'Axel : nom 19 px à 4,6:1 au pire, 2,95:1 avant) */
 }
 /* ---------- tablette en portrait, de 641 à 880 px (lot 7, 06/10/2026, Cockpit t171006a, choix d'Axel) ---------- */
 /* la mosaïque des agences comme au téléphone : deux colonnes de tuiles 4:5, nom 19 px et surface dessous, les cases de texte sur toute la largeur — sur
@@ -122,6 +123,7 @@ a.bloc:hover img{transform:scale(var(--zoom))}
   .tuile__faits{display:none}
   .tuile__mobile{display:block;font-size:13px;margin-top:4px}
   .tuile__texte{left:12px;right:12px;bottom:10px}
+  .tuile::after{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.36) 38%,transparent 64%)}   /* le voile des blocs au téléphone, aussi sous les noms des tuiles (06/10, lot 7, t171006b, choix d'Axel : nom 19 px à 4,6:1 au pire, 2,95:1 avant) */
 }
 /* ---------- mouvement réduit (section 5) ---------- */
 @media (prefers-reduced-motion:reduce){
