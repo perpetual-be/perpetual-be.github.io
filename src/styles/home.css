@@ -59,7 +59,7 @@
 .carte__pays{fill:var(--surface-carte);stroke:none}
 .carte__pt{fill:var(--c-point);stroke:var(--blanc);stroke-width:1.5}
 .carte__lab{fill:var(--c-meta);pointer-events:none;transition:fill .2s,opacity .2s}
-.carte__lab--groupe{fill:var(--c-texte)}
+/* .carte__lab--groupe (Bruxelles) : plus de couleur propre depuis le 07/10 (Axel) — en gris chaud comme les autres villes ; la classe reste, check.mjs s'en sert */
 .carte__lieu:hover .carte__lab{fill:var(--c-texte);opacity:1}
 .carte__texte .h2{margin-bottom:20px}
 .carte__texte p{max-width:46ch;margin-bottom:24px}

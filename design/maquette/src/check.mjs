@@ -238,7 +238,7 @@ console.log('\n5 · Réalisations : la carte');
   ok(c.bxl.length === 1 && c.bxl[0] === '4.5' && c.autres.length === 15 && c.autres.every(r => r === '4.5'), 'carte : Bruxelles = un seul point, Namur (Jambes + Belgrade, 30/09) un seul point, et les seize points de la même taille, r 4,5 (07/10, retour de Julien : plus de point plus gros)');
   ok(c.rang1.length === 3, 'carte : étiquettes de rang 1 — ' + c.rang1.join(' · '));
   ok(c.fig <= 600, `carte : SVG ${c.fig} px de large (600 max)`);
-  ok((await style(p, '.carte__pays', 'fill')) === SABLE && (await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pt', 'stroke')) === BLANC && (await style(p, '.carte__lab', 'fill')) === GRIS && (await style(p, '.carte__lab--groupe', 'fill')) === ANTHRACITE, 'carte : fond du pays sable (figé le 26/09), points anthracite à liseré blanc, étiquettes gris chaud, Bruxelles anthracite');
+  ok((await style(p, '.carte__pays', 'fill')) === SABLE && (await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pt', 'stroke')) === BLANC && (await style(p, '.carte__lab', 'fill')) === GRIS && (await style(p, '.carte__lab--groupe', 'fill')) === GRIS, 'carte : fond du pays sable (figé le 26/09), points anthracite à liseré blanc, étiquettes gris chaud, Bruxelles comprise (07/10, Axel : alignée sur les autres villes)');
   const centre = await p.evaluate(() => {
     const fig = document.querySelector('.carte__fig').getBoundingClientRect(), texte = document.querySelector('.carte__texte').getBoundingClientRect();
     return Math.abs((fig.top + fig.bottom) / 2 - (texte.top + texte.bottom) / 2);
