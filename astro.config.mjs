@@ -66,7 +66,7 @@ function imagesOrphelines() {
 
 // Le plan du site pour les moteurs de recherche, dist/sitemap.xml, écrit une fois le site construit, sans service ni paquet : chaque
 // page de dist/ (un fichier .html), à son adresse publique — `site` puis le chemin, sans « .html » ni barre finale, comme les liens du site (trailingSlash
-// 'never', build.format 'file' : GitHub Pages sert realisations.html à /realisations). Sauf la 404, les pages de /dev/ (contrôle) et les redirections (une
+// 'never', build.format 'file' : GitHub Pages sert realisations.html à /realisations). Sauf la 404 et les redirections (une
 // page qui porte <meta http-equiv="refresh">). Rien à tenir à jour : une nouvelle page y entre d'elle-même, et les adresses suivent
 // `site`. robots.txt (src/pages/robots.txt.ts) n'y renvoie qu'une fois l'indexation ouverte (data/site.json, indexation).
 function planDuSite() {
@@ -84,7 +84,7 @@ function planDuSite() {
           .readdirSync(racine, { recursive: true, withFileTypes: true })
           .filter((f) => f.isFile() && f.name.endsWith('.html'))
           .map((f) => path.relative(racine, path.join(f.parentPath, f.name)).split(path.sep).join('/'))
-          .filter((f) => f !== '404.html' && !f.startsWith('dev/') && !/<meta http-equiv="refresh"/i.test(fs.readFileSync(path.join(racine, f), 'utf8')))
+          .filter((f) => f !== '404.html' && !/<meta http-equiv="refresh"/i.test(fs.readFileSync(path.join(racine, f), 'utf8')))
           .map((f) => '/' + f.replace(/(^|\/)index\.html$/, '$1').replace(/\.html$/, ''))
           .sort((a, b) => (a === '/' ? -1 : b === '/' ? 1 : a < b ? -1 : 1));
         const xml = [

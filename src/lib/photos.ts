@@ -15,11 +15,6 @@ import { getImage } from 'astro:assets';
 const DOSSIER = '/design/directions/img/';
 const fichiers = import.meta.glob<{ default: ImageMetadata }>(['/design/directions/img/*.jpg', '!/design/directions/img/*-s.jpg']);
 
-/** Toutes les clés utilisables par le site (une version de 1 800 ou 2 800 px), dans l'ordre alphabétique. */
-export const clesPhotos: string[] = [
-  ...new Set(Object.keys(fichiers).map((f) => f.slice(DOSSIER.length).replace(/(-l)?\.jpg$/, ''))),
-].sort();
-
 /** Le fichier de la plus grande version d'une clé (2 800, sinon 1 800 px), ou undefined si la clé n'a pas de version utilisable par le site. */
 export function fichierSource(cle: string): string | undefined {
   return [`${cle}-l.jpg`, `${cle}.jpg`].map((f) => DOSSIER + f).find((f) => f in fichiers);

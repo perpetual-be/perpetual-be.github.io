@@ -13,17 +13,30 @@ npm install
 npm run dev        # http://localhost:4321, rechargé à chaque modification
 npm run build      # génère le site dans dist/
 npm run preview    # sert dist/ pour vérification
+npm run verifier   # après npm run build : liens, images, plan du site (voir plus bas)
 ```
 
 Le premier `npm run build` produit toutes les versions des photos et prend plusieurs minutes ; les suivants repartent du cache `.astro-cache/` et ne prennent que quelques secondes.
 
 Le build s'arrête avec un message qui dit quoi corriger quand une donnée manque ou ne colle pas (une photo citée mais absente, un projet oublié dans la vue Réalisations, un champ obligatoire vide…).
 
+### Vérifier le site construit
+
+`npm run verifier` (`scripts/verifier.mjs`, sans dépendance) lit `dist/` après `npm run build` et vérifie que :
+
+- chaque lien (`href`) et chaque `src` / `srcset` internes mènent à un fichier de `dist/`, et chaque ancre (`#id`) à un id de la page visée ;
+- chaque `<img>` a un attribut `alt` (vide permis pour une photo décorative) ;
+- chaque page de `sitemap.xml` a un `<title>`, une meta description et un lien canonique ;
+- chaque page, sauf la 404 et les redirections, figure dans `sitemap.xml`, et inversement ;
+- `dist/` ne contient ni l'ancienne adresse (« Vanderkindere ») ni un numéro de téléphone belge.
+
+Il répond « Tout est vérifié », sinon il liste les problèmes et échoue. Les deux workflows le lancent après le build : une PR qui casse un lien n'est pas fusionnée, et `main` n'est pas déployé.
+
 ## Déployer
 
 Chaque push sur la branche `main` construit le site et le publie sur GitHub Pages (`.github/workflows/deploy.yml`). Aucune étape manuelle.
 
-Les pull requests ouvertes depuis une branche de ce dépôt sont fusionnées automatiquement dans `main` dès que le site se construit sans erreur (`.github/workflows/auto-merge.yml`), puis le site est déployé. Une PR dont le build échoue reste ouverte. Pour garder une PR ouverte (relecture, travail en cours), lui ajouter l'étiquette `no-auto-merge` ; la retirer relance la fusion.
+Les pull requests ouvertes depuis une branche de ce dépôt sont fusionnées automatiquement dans `main` dès que le site se construit sans erreur et que `npm run verifier` passe (`.github/workflows/auto-merge.yml`), puis le site est déployé. Une PR dont le build ou la vérification échoue reste ouverte. Pour garder une PR ouverte (relecture, travail en cours), lui ajouter l'étiquette `no-auto-merge` ; la retirer relance la fusion.
 
 Les deux workflows gardent les photos déjà produites d'un build à l'autre (cache `.astro-cache`) : un build ne produit que les versions nouvelles. Le cache d'une PR ne sert qu'à cette PR : le déploiement qui suit la fusion refait donc les versions nouvelles qu'elle a introduites. Les workflows retirent `.astro-cache/data-store.json` avant chaque build, pour que les pages légales soient toujours rendues à neuf ; en local, après une modification de `src/lib/rehype-registre.mjs`, faire de même :
 
@@ -55,7 +68,7 @@ rm .astro-cache/data-store.json
 | La mise en page d'une page | `src/pages/` (une page par fichier), `src/components/` et `src/styles/` (une feuille par page) — voir [Structure](#structure) |
 | L'indexation par les moteurs de recherche | `data/site.json`, `indexation` — voir [Mise en ligne sur perpetual.be](#mise-en-ligne-sur-perpetualbe) |
 
-Rien à tenir à jour pour `sitemap.xml` (écrit après chaque build avec toutes les pages, sauf la 404, `/dev/` et les redirections : `astro.config.mjs`) ni pour `robots.txt` (écrit d'après `indexation` : `src/pages/robots.txt.ts`).
+Rien à tenir à jour pour `sitemap.xml` (écrit après chaque build avec toutes les pages, sauf la 404 et les redirections : `astro.config.mjs`) ni pour `robots.txt` (écrit d'après `indexation` : `src/pages/robots.txt.ts`).
 
 ### Les textes des pages
 
@@ -88,7 +101,7 @@ Les textes en blocs sont insérés tels quels : les espaces insécables du fichi
    - `agency` ou `gallery` : un bien du programme agences, une tuile de la mosaïque.
 3. **Sa place sur la vue Réalisations** : `data/realisations.json` — un `detailed` ou un `project` dans `rangees`, un `agency` ou un `gallery` dans `mosaique` (voir [La vue Réalisations](#la-vue-réalisations)). Le build s'arrête si un projet y manque ou y figure deux fois.
 4. **La carte de la Home**, pour une ville nouvelle : son point et son étiquette dans `data/carte/belgique.svg`, sa longitude dans `data/carte/belgique.json`. Le titre de la carte (`carte.title`, `content/home.md`) est à retoucher si le projet est plus à l'ouest ou plus à l'est que ceux qu'il nomme.
-5. `npm run build`, puis vérifier la page (`npm run preview`) et `/dev/photos`.
+5. `npm run build`, `npm run verifier`, puis vérifier la page (`npm run preview`).
 
 ### Projets (`data/projects.json`)
 
@@ -110,7 +123,7 @@ Une entrée par projet.
 | `selection` | les photos montrées, en clés sans extension (`<id>-03`), dans l'ordre. Projet détaillé : la première est la tête de sa fiche et la photo de son bloc, les suivantes la mosaïque de sa fiche. Projet sans fiche, bien de la mosaïque : la première est sur le bloc ou la tuile (elle donne son format à la tuile, montrée entière), toutes se parcourent sur place et dans la visionneuse. Se change ici, sans toucher au code |
 | `captions` | légende par fichier photo (`"<clé>.jpg": "…"`), qui sert de texte alternatif |
 | `photos` | les fichiers du reportage, pour mémoire |
-| `address`, `hero`, `heroCandidates`, `apercu` | données de référence, pas utilisées par le site aujourd'hui |
+| `address`, `hero`, `apercu` | données de référence, pas utilisées par le site aujourd'hui |
 
 Un champ obligatoire manquant (pour une fiche : `order`, `region`, `location` ou `quartier`, `surface`, `use`, `tete`, `was`, `saw`, `became`, `selection` ; pour un bloc : `selection`, `bloc.focal`, `location`, `surface`, `use` ou `projet` ; pour une tuile : la ville, `surface`, `use`) arrête le build, comme une clé de `selection` qui n'est pas une photo du projet.
 
@@ -142,8 +155,6 @@ Chaque photo a une **clé**, `<id>-NN` (ex. `community-05`). Le site a besoin de
 
 **Changer le cadrage sans recadrer** : le point focal (`focal` de `tete`, `bloc` ou `hero`), une position CSS (`"50% 20%"` : centré en largeur, 20 % depuis le haut).
 
-**Page de contrôle** : `/dev/photos` (non indexée, aucun lien vers elle) montre chaque photo citée par `data/projects.json`, projet par projet, et signale en rouge une clé citée mais absente du dépôt.
-
 **Ce que fait le build** : `src/lib/photos.ts` trouve la plus grande version d'une clé ; `src/components/ProjectPhoto.astro` l'affiche en plusieurs largeurs (800, 1 200, 1 800, 2 800 px, jamais au-delà de la source), en AVIF et WebP avec un JPEG de repli. La visionneuse charge une version WebP de 1 800 px au plus, seulement à son ouverture. Le site publié ne contient que les versions servies : l'intégration `images-orphelines` (`astro.config.mjs`) retire de `dist/` toute image qu'aucune page ne cite, et le build en écrit la liste.
 
 ## Partenaires
@@ -152,24 +163,22 @@ Les logos de la page Collectif, dans l'ordre de `data/partners.json`. Une entré
 
 | Champ | Rôle |
 |---|---|
-| `id` | clé du partenaire ; c'est aussi le nom de ses fichiers (`<id>.svg`) dans `public/partners/couleur/`, `mono/` et `encre/` |
+| `id` | clé du partenaire ; c'est aussi le nom de ses fichiers (`<id>.svg`) dans `public/partners/couleur/` et `encre/` |
 | `name` | nom affiché au survol, et texte alternatif |
 | `logo` | le logo en couleurs, celui que montre le site (`/partners/couleur/<id>.svg`) |
-| `logoMono` | la déclinaison noire (`/partners/mono/<id>.svg`) |
 | `logoInk` | la déclinaison à encre variable (`/partners/encre/<id>.svg`) ; obligatoire : son `viewBox` donne la hauteur du logo |
 | `url` | site du partenaire, facultatif |
 
-Ajouter un logo : ses trois fichiers SVG dans `public/partners/couleur/`, `mono/` et `encre/`, puis une entrée dans `data/partners.json`.
+Ajouter un logo : ses deux fichiers SVG dans `public/partners/couleur/` et `encre/`, puis une entrée dans `data/partners.json`.
 
-Les trois jeux de SVG sont **normalisés optiquement** : chaque fichier a un canevas de 100 unités de haut (`viewBox="0 0 <largeur> 100"`), le logo centré dedans à une taille qui égalise son poids visuel. La page calcule la hauteur de chaque logo depuis la largeur de ce canevas (`src/components/collectif/Partenaires.astro`) : il ne faut **pas** régler la taille logo par logo.
+Les deux jeux de SVG sont **normalisés optiquement** : chaque fichier a un canevas de 100 unités de haut (`viewBox="0 0 <largeur> 100"`), le logo centré dedans à une taille qui égalise son poids visuel. La page calcule la hauteur de chaque logo depuis la largeur de ce canevas (`src/components/collectif/Partenaires.astro`) : il ne faut **pas** régler la taille logo par logo.
 
 | Jeu | Ce que c'est | Comment l'insérer |
 |---|---|---|
 | `couleur/` | couleurs d'origine de chaque partenaire | `<img src="…">` |
-| `mono/` | noir pur `#000000`, figé dans le fichier | `<img src="…">` |
 | `encre/` | même tracé, peint en `currentColor` | **SVG inline obligatoire** |
 
-**Piège à connaître sur `encre/`** : `currentColor` ne traverse pas la frontière d'un `<img>`. Inséré avec `<img src="/partners/encre/asap.svg">`, le logo s'affiche en noir, exactement comme `mono/`. Pour que la couleur suive le CSS, le SVG doit être inséré dans le HTML (lu au build), et sa couleur se règle alors par la propriété `color` du conteneur.
+**Piège à connaître sur `encre/`** : `currentColor` ne traverse pas la frontière d'un `<img>`. Inséré avec `<img src="/partners/encre/asap.svg">`, le logo s'affiche en noir. Pour que la couleur suive le CSS, le SVG doit être inséré dans le HTML (lu au build), et sa couleur se règle alors par la propriété `color` du conteneur.
 
 ## Structure
 
@@ -185,13 +194,14 @@ design/directions/src/   reduire-photos.mjs et recadrages.json
 public/                  fichiers servis tels quels : favicon.svg, fonts/ (les quatre polices du site), partners/
 src/layouts/Base.astro   mise en page commune : <head> (titre, description, noindex, lien canonique, partage, icônes, polices), en-tête, <main>, pied de page
 src/pages/               une page par fichier : index (Home), collectif, engagements, realisations, realisations/[id] (les fiches),
-                         mentions-legales, confidentialite, 404, dev/photos, [ancienne] (redirections), robots.txt, partage.jpg, icônes PNG
+                         mentions-legales, confidentialite, 404, [ancienne] (redirections), robots.txt, partage.jpg, icônes PNG
 src/components/          en-tête, pied de page, ProjectPhoto, Visionneuse ; puis un dossier par page : home/, collectif/, engagements/
                          (aussi le gabarit des pages de texte), fiche/, realisations/
 src/lib/                 la lecture des données : contenu.ts (textes), photos.ts, alt.ts (textes alternatifs), carte.ts, partage.ts,
                          icones.ts, rehype-registre.mjs (la mise en forme des pages légales)
 src/scripts/boucle.js    la piste en boucle de la visionneuse et des photos parcourables
 src/styles/              polices, jetons, base, entete, pied (communes, importées par Base.astro) ; puis une feuille par page
+scripts/verifier.mjs     la vérification du site construit (npm run verifier)
 astro.config.mjs         adresse du site, cache, et les intégrations : pages de texte, images orphelines, sitemap.xml
 ```
 
@@ -201,4 +211,4 @@ Le site est servi sur `perpetual.be` via GitHub Pages (fichier `public/CNAME` + 
 
 ### Mise en ligne sur perpetual.be
 
-Côté dépôt : `site: 'https://perpetual.be'` dans `astro.config.mjs`, le fichier `public/CNAME` (`perpetual.be`) et `"indexation": true` dans `data/site.json`. Rien d'autre : le `noindex` des pages part (sauf la 404 et `/dev/photos`), `robots.txt` s'ouvre et renvoie au plan du site, et `sitemap.xml` passe aux adresses de `perpetual.be`. Pour changer d'hébergeur, il suffit de lancer `npm run build` et de servir le contenu de `dist/` : aucune dépendance à GitHub dans le site lui-même.
+Côté dépôt : `site: 'https://perpetual.be'` dans `astro.config.mjs`, le fichier `public/CNAME` (`perpetual.be`) et `"indexation": true` dans `data/site.json`. Rien d'autre : le `noindex` des pages part (sauf sur la 404), `robots.txt` s'ouvre et renvoie au plan du site, et `sitemap.xml` passe aux adresses de `perpetual.be`. Pour changer d'hébergeur, il suffit de lancer `npm run build` et de servir le contenu de `dist/` : aucune dépendance à GitHub dans le site lui-même.

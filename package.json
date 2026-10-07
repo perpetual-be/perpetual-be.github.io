@@ -8,7 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "comparer": "node scripts/comparer-maquette.mjs"
+    "comparer": "node scripts/comparer-maquette.mjs",
+    "verifier": "node scripts/verifier.mjs"
   },
   "dependencies": {
     "astro": "^7.3.2"
