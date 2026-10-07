@@ -1,5 +1,4 @@
-// La piste en boucle (lot 5, 05/10/2026) : la fonction Boucle de design/maquette/maquette.js, reprise sans changement — la visionneuse
-// (src/components/Visionneuse.astro) en fait défiler les photos ; au message 2, les photos parcourables de la vue Réalisations s'en serviront aussi.
+// La piste en boucle : la visionneuse (src/components/Visionneuse.astro) et les photos parcourables de la vue Réalisations en font défiler les photos.
 // Un jeu de clones avant et après les éléments ; on défile toujours dans le même sens, et en fin de défilement la piste est recentrée sans animation sur le
 // jeu du milieu (invisible à l'œil). Les clics rapprochés se cumulent ; sous « réduire les animations », la piste saute d'une photo à l'autre sans défiler.
 // new Boucle(piste, onmaj) : piste, l'élément qui défile (ses enfants, les photos) ; onmaj(i), appelée avec l'indice réel de la photo montrée.

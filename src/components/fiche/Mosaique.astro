@@ -1,19 +1,17 @@
 ---
-// La mosaïque d'une fiche projet (lot 5, 05/10/2026) : mêmes balises et classes que fichePage() de design/maquette/src/build.mjs, la maquette étant la
-// référence (styles : src/styles/fiche.css). Sur la grille large, l'eyebrow « Photos », puis une figure.fiche__tuile par photo — les clés de selection
-// après la première, dans l'ordre —, au format de la photo (--r et data-r, lus comme la maquette sur son <clé>.jpg, à quatre décimales : formatPhoto,
-// src/lib/photos.ts), sans légende. Chaque tuile est un bouton (« Agrandir la photo n sur N ») qui ouvre la visionneuse sur sa photo (data-grande :
+// La mosaïque d'une fiche projet (styles : src/styles/fiche.css). Sur la grille large, l'eyebrow « Photos », puis une figure.fiche__tuile par photo —
+// les clés de selection après la première, dans l'ordre —, au format de la photo (--r et data-r, lus sur son <clé>.jpg, à quatre décimales :
+// formatPhoto, src/lib/photos.ts), sans légende. Chaque tuile est un bouton (« Agrandir la photo n sur N ») qui ouvre la visionneuse sur sa photo (data-grande :
 // l'adresse de sa version en grand, WebP de 1 800 px au plus, chargée seulement à l'ouverture — photoGrande, src/lib/photos.ts ; le script est celui
-// de src/components/Visionneuse.astro). La photo, par ProjectPhoto : chargement paresseux, texte alternatif (lot 7, src/lib/alt.ts : sa légende, sinon
-// « nom, lieu », aussi en data-alt pour la visionneuse ; le nom du bouton l'emporte pour un lecteur d'écran) ; le sizes écrit ici
-// ne vaut que sans JavaScript, le script le remplace par la largeur de la tuile.
-// Le script en ligne, repris de design/maquette/maquette.js (« la mosaïque des photos ») sans changement de comportement : rangées justifiées au format
+// de src/components/Visionneuse.astro). La photo, par ProjectPhoto : chargement paresseux, texte alternatif (src/lib/alt.ts : sa légende, sinon
+// « nom, lieu », aussi en data-alt pour la visionneuse ; le nom du bouton l'emporte pour un lecteur d'écran) ; le sizes écrit ici ne vaut que sans
+// JavaScript, le script le remplace par la largeur de la tuile.
+// Le script en ligne : rangées justifiées au format
 // de chaque photo (data-r), construites chacune comme un bloc (.fiche__rang : plus de retour à la ligne possible), la largeur mesurée au sous-pixel moins
 // 0,5 px, les largeurs arrondies vers le bas. Hauteurs cibles alternées 440 / 280 px, multipliées par max(1, largeur de la mosaïque / 1 120) sur la
 // grille large : le même nombre de photos par rangée qu'à 1 200 px. Au téléphone, 210 / 150 px et deux photos au plus par rangée. Dernière rangée
 // incomplète : pas d'agrandissement au-delà de 1,25 × la cible sur ordinateur (elle garde alors la cible), jusqu'à 2 × au téléphone. Chaque photo reçoit
-// un sizes égal à la largeur de sa tuile — sur chaque <source> de son <picture> (AVIF, WebP) comme sur l'<img> : la seule différence avec la maquette,
-// dont l'<img> est seule. Recalcul quand la largeur de la mosaïque change (fenêtre, barre de défilement), jamais sur la hauteur seule. Sans JavaScript,
+// un sizes égal à la largeur de sa tuile — sur chaque <source> de son <picture> (AVIF, WebP) comme sur l'<img>. Recalcul quand la largeur de la mosaïque change (fenêtre, barre de défilement), jamais sur la hauteur seule. Sans JavaScript,
 // des rangées souples (flex-wrap).
 import ProjectPhoto from '../ProjectPhoto.astro';
 import { formatPhoto, photoGrande } from '../../lib/photos';

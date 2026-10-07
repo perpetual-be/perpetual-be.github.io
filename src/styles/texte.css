@@ -1,13 +1,12 @@
-/* Pages de texte sans maquette (lot 6, 01/10/2026) — mentions légales, politique de confidentialité, 404 —, sur le gabarit d'Engagements (choix d'Axel du
-   01/10 ; c'est la première fois qu'il porte du texte long). Repris de design/maquette/maquette.css : le numéro et le titre de chapitre des fiches
-   (.chapitre__num, .chapitre__titre, section 4, tels quels) ; le texte sur les valeurs de .eng-texte (17 px, 62ch, 16 px entre paragraphes).
+/* Pages de texte — mentions légales, politique de confidentialité, 404 —, sur le gabarit d'Engagements : le numéro et le titre de chapitre des
+   fiches (.chapitre__num, .chapitre__titre) ; le texte sur les valeurs de .eng-texte (17 px, 62ch, 16 px entre paragraphes).
    Importé par les pages après src/styles/page.css. Balisage : src/lib/rehype-registre.mjs (pages légales), src/pages/404.astro. */
-/* chapitres : titres en sans medium, numéros or foncé (bascule 20 figée sur « sans », revue du 23/09) */
+/* chapitres : titres en sans medium, numéros or foncé */
 .chapitre__num{font-family:var(--sans);font-size:15px;color:var(--c-num-chapitre);letter-spacing:.06em;margin-bottom:8px}
 .chapitre__titre{font-family:var(--sans);font-weight:500;font-size:var(--fs-chapitre);line-height:1.15;letter-spacing:-.01em;margin-bottom:16px}
 /* le texte, à droite, sur les valeurs de .eng-texte ; chaque élément de liste est un paragraphe, sans puce (ol, ul sans style dans base.css) ; gras en 500.
    La première ligne à hauteur de l'œil de la première ligne de gauche — 2 px sous le haut de la colonne face au titre, 1 px au-dessus face au numéro —,
-   comme .eng-texte sur le verbe (mesuré dans la maquette : l'œil du texte de 17 px est à 14,5 px sous le haut de sa ligne, celui du titre de 26 px à
+   comme .eng-texte sur le verbe (l'œil du texte de 17 px est à 14,5 px sous le haut de sa ligne, celui du titre de 26 px à
    16 px, celui du numéro de 15 px à 13 px) */
 .page-texte{padding-top:2px}
 .rang--numerote .page-texte{padding-top:0;margin-top:-1px}
@@ -17,7 +16,7 @@
 /* la date de dernière mise à jour, sous le titre (politique de confidentialité, dès que l'en-tête la donne) : une étiquette, comme l'eyebrow */
 .page__maj{margin-top:14px;font-size:var(--fs-etiquette);color:var(--c-meta);letter-spacing:.01em}
 
-/* ---------- téléphone (section 5 de maquette.css) ---------- */
+/* ---------- téléphone ---------- */
 @media (max-width:640px){
   /* une colonne par rangée, dans l'ordre du balisage : le numéro, le titre, puis le texte (16 px dessous, la marge du titre) */
   .page-texte,.rang--numerote .page-texte{padding-top:0;margin-top:0}

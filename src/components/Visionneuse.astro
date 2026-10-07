@@ -1,13 +1,12 @@
 ---
-// La visionneuse (lot 5, 05/10/2026) : mêmes balises et classes que visio() de design/maquette/src/build.mjs, la maquette étant la référence (styles :
-// src/styles/visionneuse.css). Fond blanc, la photo entière dans un cadre 4:3, flèches de part et d'autre, « Fermer », sous la photo la légende et le
-// compteur ; modale (aria-modal), masquée tant qu'elle est fermée. `label` : son nom accessible (« Photos du projet » sur une fiche, « Photos » sur la vue
-// Réalisations). `albums` (vue Réalisations) : les albums des photos parcourables, dans l'ordre de leur data-album — Brosse, puis les tuiles dans l'ordre de
-// la mosaïque, comme window.BIENS dans la maquette —, écrits dans la page en JSON (#visio-albums, après la visionneuse) : pour chacun, les adresses de ses
-// photos en grand (l : photoGrande, src/lib/photos.ts — WebP de 1 800 px au plus, chargées seulement à l'ouverture) et sa légende — la ville, la surface et
-// l'usage d'un bien, ou une légende toute faite (legende, Brosse) —, déjà échappées pour innerHTML, comme la maquette ; et les textes alternatifs des photos
-// (a, lot 7 : src/lib/alt.ts), échappés de même. Sur une fiche, le texte alternatif de chaque photo vient du data-alt de sa tuile.
-// Le script, repris de la fin de design/maquette/maquette.js sans changement de comportement : ouvrir(album, départ, de) — un album, ses photos (l) et,
+// La visionneuse (styles : src/styles/visionneuse.css). Fond blanc, la photo entière dans un cadre 4:3, flèches de part et d'autre, « Fermer », sous
+// la photo la légende et le compteur ; modale (aria-modal), masquée tant qu'elle est fermée. `label` : son nom accessible (« Photos du projet » sur une
+// fiche, « Photos » sur la vue Réalisations). `albums` (vue Réalisations) : les albums des photos parcourables, dans l'ordre de leur data-album —
+// Brosse, puis les tuiles dans l'ordre de la mosaïque —, écrits dans la page en JSON (#visio-albums, après la visionneuse) : pour chacun, les adresses
+// de ses photos en grand (l : photoGrande, src/lib/photos.ts — WebP de 1 800 px au plus, chargées seulement à l'ouverture) et sa légende — la ville,
+// la surface et l'usage d'un bien, ou une légende toute faite (legende, Brosse) —, déjà échappées pour innerHTML ; et les textes alternatifs des
+// photos (a : src/lib/alt.ts), échappés de même. Sur une fiche, le texte alternatif de chaque photo vient du data-alt de sa tuile.
+// Le script : ouvrir(album, départ, de) — un album, ses photos (l) et,
 // pour un bien de la vue Réalisations, la ville, la surface et l'usage, ou une légende toute faite (legende) ; sans l'une ni l'autre, le compteur seul —
 // remplit la piste (src/scripts/boucle.js : la piste en boucle), montre la photo de départ et met le focus sur « Fermer » ; fermer() rend le focus à
 // l'élément qui l'avait (ou à `de`). Flèches, ← et → au clavier, Échap, clic sur le fond ; Tab et Maj+Tab restent dans ses commandes visibles. Sur la vue
@@ -19,7 +18,7 @@
 export interface AlbumVisionneuse {
   /** Les adresses des photos en grand, dans l'ordre. */
   l: string[];
-  /** Les textes alternatifs des photos, dans le même ordre (HTML échappé ; lot 7, src/lib/alt.ts). */
+  /** Les textes alternatifs des photos, dans le même ordre (HTML échappé ; src/lib/alt.ts). */
   a?: string[];
   /** Une légende toute faite (HTML échappé) : « <b>Brosse</b>Forest · 800 m² ». */
   legende?: string;

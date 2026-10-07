@@ -1,11 +1,10 @@
-/* Fiches projet du site (lot 5, 05/10/2026) : les règles de design/maquette/maquette.css pour les quatre fiches, reprises telles quelles (section 4, « les
-   quatre fiches (P6…) » jusqu'à « projet précédent et suivant ») — le titre de page en serif (.page__titre de base : la règle en sans léger de la vue
-   Réalisations n'en fait pas partie), le corps, la colonne de gauche, les infos, les chapitres, la photo qui suit, la mosaïque et ses rangées, les voisins
-   —, et leurs règles téléphone et mouvement réduit (section 5). Importé par src/pages/realisations/[id].astro, après le socle (src/styles/base.css…).
+/* Fiches projet : le titre de page en serif (.page__titre de base : la règle en sans léger de la vue Réalisations n'en fait pas partie), le corps,
+   la colonne de gauche, les infos, les chapitres, la photo qui suit, la mosaïque et ses rangées, les voisins, et leurs règles téléphone et mouvement
+   réduit. Importé par src/pages/realisations/[id].astro, après le socle (src/styles/base.css…).
    Balisage : src/components/fiche/. */
 /* titre de page : serif 64 px, celui des fiches — la vue Réalisations et Engagements le passent en sans léger */
 .page__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-titre-page);line-height:1;letter-spacing:-.015em}
-/* les quatre fiches (P6, Cowork, 26/09 ; références validées : design/revue-fiche/propositions/p6*.html), un seul gabarit, sur la grille large comme la vue
+/* les fiches, un seul gabarit, sur la grille large comme la vue
    Réalisations (le pied de page reste sur le container de 1 200 px) : trois colonnes, marge | texte | photo. La marge est celle de la grille large, en % de
    la page — pas en vw, sinon la barre de défilement décale le texte de 8,5 px — : le texte part au même x que le logo (40 px à 1 521 px de fenêtre, 200 px
    à 1 920). À gauche la région en eyebrow, le titre, les infos (valeur en sans or foncé, étiquette gris chaud dessous, filets verticaux entre elles), puis
@@ -21,19 +20,19 @@
 .fiche__fait:first-child{padding-left:0;border-left:0}
 .fiche__valeur{font-family:var(--sans);font-weight:500;font-size:17px;line-height:1.25;color:var(--or-fonce);white-space:nowrap}
 .fiche__etiquette{font-size:13px;line-height:1.3;color:var(--c-etiquette-chiffre)}
-/* chapitres : titres en sans medium, numéros or foncé (bascule 20 figée sur « sans », revue du 23/09), 34 px entre eux */
+/* chapitres : titres en sans medium, numéros or foncé, 34 px entre eux */
 .fiche__chapitres{display:flex;flex-direction:column;gap:34px;margin-top:44px}
 .chapitre{max-width:52ch}
 .chapitre__num{font-family:var(--sans);font-size:15px;color:var(--c-num-chapitre);letter-spacing:.06em;margin-bottom:8px}
 .chapitre__titre{font-family:var(--sans);font-weight:500;font-size:var(--fs-chapitre);line-height:1.15;letter-spacing:-.01em;margin-bottom:16px}
-/* numéro à côté du titre, texte en retrait sous le titre (06/10, choix d'Axel, lot 3 : option C) : une grille de deux colonnes, le numéro dans
+/* numéro à côté du titre, texte en retrait sous le titre : une grille de deux colonnes, le numéro dans
    la première (2,2 em), le titre et le texte dans la seconde, numéro et titre sur la même ligne de base. Fiches seulement : les pages légales gardent
    le numéro au-dessus du titre (src/styles/texte.css) */
 .fiche__chapitres .chapitre{display:grid;grid-template-columns:2.2em minmax(0,1fr);align-items:baseline}
 .fiche__chapitres .chapitre__num{margin-bottom:0}
 .fiche__chapitres .chapitre__texte{grid-column:2}
-/* la photo qui suit (26/09) : quand le texte est plus long que la photo, elle reste en place pendant qu'on lit la fin, puis tout repart ensemble ;
-   rien ne bouge quand elle est plus haute que le texte. Le cadre est un ::before au format du cadre, l'image le remplit. Sur le site, l'en-tête collant
+/* la photo qui suit : quand le texte est plus long que la photo, elle reste en place pendant qu'on lit la fin, puis tout repart ensemble ;
+   rien ne bouge quand elle est plus haute que le texte. Le cadre est un ::before au format du cadre, l'image le remplit. L'en-tête collant
    passe au-dessus d'elle quand il revient (comme sur la Home) */
 .fiche__photo{grid-column:3;width:100%;position:sticky;top:0;overflow:hidden}
 .fiche__photo::before{content:"";display:block;aspect-ratio:var(--cadre-format)}
@@ -61,7 +60,7 @@
 .fiche__voisin--suiv{text-align:right}
 .suivant__nom{display:inline-block;font-family:var(--serif);font-size:var(--fs-suivant);line-height:1.2;color:var(--c-lien);padding-bottom:2px}
 
-/* ---------- téléphone (section 5 de maquette.css) ---------- */
+/* ---------- téléphone ---------- */
 @media (max-width:640px){
   /* la région et le titre, les infos (Localisation et Surface sur une ligne, Usage dessous), la photo pleine largeur au même format — elle ne suit plus
      (position: relative) —, les chapitres, la mosaïque (deux photos au plus par rangée), les voisins */
@@ -79,7 +78,7 @@
   .fiche__voisins{padding-bottom:44px;gap:16px}
   .fiche__voisin .suivant__nom{font-size:20px}
 }
-/* ---------- mouvement réduit (section 5) ---------- */
+/* ---------- mouvement réduit ---------- */
 @media (prefers-reduced-motion:reduce){
   .fiche__tuile img{transition:none}
 }

@@ -1,12 +1,10 @@
-/* Home du site (lot 4, 01/10/2026) : les règles de design/maquette/maquette.css pour la Home, reprises telles quelles — premier écran et bande des
-   chiffres, graphique en anneau (sans les barres ni la bascule), carte (section 4 ; Collectif et partenaires sur leur page depuis le 07/10) ; .section--chart (section 3) ; leurs règles
-   téléphone (sections 5 et 7) et mouvement réduit (section 5). Rien de la liste des 4, qui n'est plus sur la Home. Importé par src/pages/index.astro,
+/* Home : premier écran et bande des chiffres, graphique en anneau, carte ; leurs règles téléphone et mouvement réduit. Importé par src/pages/index.astro,
    après le socle (src/styles/base.css…). Balisage : src/components/home/. */
-.section--chart{padding-top:64px}   /* 64 px entre la fin des paragraphes de la Home et « 11 150 m² … » (gel du 23/09) */
+.section--chart{padding-top:64px}   /* 64 px entre la fin des paragraphes de la Home et le titre du graphique */
 
-/* premier écran (structure F, figée le 23/09) : la photo pleine largeur porte l'accroche en blanc, en haut à gauche du container ; la bande des
+/* premier écran : la photo pleine largeur porte l'accroche en blanc, en haut à gauche du container ; la bande des
    chiffres vient juste après la photo, puis les paragraphes en deux colonnes — le premier à gauche, le second à droite avec la signature
-   dessous (gel du 23/09 : les deux colonnes s'équilibrent). La grille du hero passe en display:contents, ses enfants (accroche, texte)
+   dessous (les deux colonnes s'équilibrent). La grille du hero passe en display:contents, ses enfants (accroche, texte)
    se replacent dans une grille à une colonne avec la photo et la bande. */
 .hero{display:grid;grid-template-columns:minmax(0,1fr);padding:0}
 .hero__grid{display:contents}
@@ -21,7 +19,7 @@
 /* voile depuis le coin haut-gauche, celui de l'accroche, pas depuis tout le haut */
 .hero__photo::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 110% 160% at 0 0,rgba(0,0,0,.62) 0%,rgba(0,0,0,.48) 32%,rgba(0,0,0,.22) 60%,transparent 88%)}
 
-/* bande des chiffres : les quatre chiffres et les anneaux (figés le 23/09), juste après la photo */
+/* bande des chiffres : les quatre chiffres et les anneaux, juste après la photo */
 .band{background:var(--surface-bande)}
 .stats-band{position:relative;overflow:hidden;padding:var(--bande-haut) 0 var(--bande-bas);grid-area:2/1/3/2}
 .stats-band>.container{position:relative;z-index:1}
@@ -34,11 +32,11 @@
 .deco__svg{display:block;position:absolute;top:0;right:0;height:100%;width:420px;color:var(--c-deco)}
 .deco__2{color:var(--c-deco-2)}
 
-/* graphique en anneau (lot 2b, item 1 : « un cercle qui se remplit », Julien, 30/09 ; variante A retenue par Axel le 01/10, 1,8 s) : un anneau, trois parts
+/* graphique en anneau : un anneau, trois parts
    (anthracite, or, or clair) séparées par un blanc, légende à droite en rangées à filets ; 220 px (180 au téléphone, légende dessous). Traits de 14 unités
    sans arrondi (pathLength 100 : --l est la longueur d'une part en centièmes du tour). Le tour suit une seule courbe de décélération, découpée en parts
    (--d départ et --t durée en fractions de --remplissage, --e la portion de courbe : src/components/home/Graphique.astro).
-   Le remplissage : le script du composant pose .a-remplir (vide), puis .est-rempli quand l'anneau est entièrement à l'écran (retouche du 01/10) — une seule fois.
+   Le remplissage : le script du composant pose .a-remplir (vide), puis .est-rempli quand l'anneau est entièrement à l'écran — une seule fois.
    Sans JavaScript, ou avec « réduire les animations », tout est plein d'emblée. */
 .graph--anneau{display:grid;grid-template-columns:220px minmax(0,340px);column-gap:72px;align-items:center}
 .graph__svg{display:block;overflow:visible;width:220px;height:220px}
@@ -52,24 +50,22 @@
 .graph__cle--1{background:var(--c-part-1)}.graph__cle--2{background:var(--c-part-2)}.graph__cle--3{background:var(--c-part-3)}
 .graph__val{color:var(--c-meta);font-variant-numeric:tabular-nums}
 
-/* réalisations : la carte (figée le 23/09) */
+/* réalisations : la carte */
 .carte{display:grid;grid-template-columns:8fr 4fr;gap:64px;align-items:center}
 .carte__fig{max-width:600px}
 .carte__svg{display:block;width:100%;height:auto;font-family:var(--sans);font-size:11px}
 .carte__pays{fill:var(--surface-carte);stroke:none}
 .carte__pt{fill:var(--c-point);stroke:var(--blanc);stroke-width:1.5}
 .carte__lab{fill:var(--c-meta);pointer-events:none;transition:fill .2s,opacity .2s}
-/* .carte__lab--groupe (Bruxelles) : plus de couleur propre depuis le 07/10 (Axel) — en gris chaud comme les autres villes ; la classe reste, check.mjs s'en sert */
+/* .carte__lab--groupe (Bruxelles, data/carte/belgique.svg) n'a pas de règle propre : en gris chaud comme les autres villes */
 .carte__lieu:hover .carte__lab{fill:var(--c-texte);opacity:1}
 .carte__texte .h2{margin-bottom:20px}
 .carte__texte p{max-width:46ch;margin-bottom:24px}
 .autres__lien{display:inline-block;color:var(--c-lien);font-size:15px;padding-bottom:1px}
 
-/* collectif et partenaires : sur leur page depuis le 07/10 (src/styles/collectif.css) */
-
-/* ---------- téléphone (section 5 de maquette.css) ---------- */
+/* ---------- téléphone ---------- */
 @media (max-width:640px){
-  .section--chart{padding-top:44px}   /* comme dans maquette.css, où la règle téléphone .section{padding:44px 0} (section 5) passe après .section--chart (section 3) ; ici base.css précède home.css */
+  .section--chart{padding-top:44px}   /* 44 px comme les autres sections : la règle téléphone .section{padding:44px 0} de base.css, chargé avant home.css, ne l'emporte pas sur les 64 px ci-dessus */
   .stats{grid-template-columns:1fr 1fr;gap:22px 0}
   .stat{padding:0 12px 0 16px}
   .stat:nth-child(3){border-left:0;padding-left:0}
@@ -81,12 +77,12 @@
   .carte__fig{max-width:none}
   .carte__lab:not([data-rang="1"]){opacity:0}
 }
-/* ---------- mouvement réduit (section 5) ---------- */
+/* ---------- mouvement réduit ---------- */
 @media (prefers-reduced-motion:reduce){
   .carte__lab,.graph__part{transition:none}
   .graph.a-remplir .graph__part{stroke-dasharray:var(--l) 100}
 }
-/* ---------- téléphone, premier écran (section 7) ---------- */
+/* ---------- téléphone, premier écran ---------- */
 @media (max-width:640px){
   /* photo de 420 px, accroche en bas à gauche, voile depuis le bas, paragraphes en une colonne */
   .hero__photo{height:420px}

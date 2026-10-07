@@ -5,12 +5,12 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import registre from './src/lib/rehype-registre.mjs';
 
-// Les pages de texte rendues par Astro depuis leur Markdown (content/mentions-legales.md, content/politique-confidentialite.md ; lot 6, 01/10/2026) : le
-// plugin registre (découpage par ##, typographie, liens — src/lib/rehype-registre.mjs) est donné au processeur Markdown d'Astro — Sätteri, celui
-// d'Astro 7 — par cette intégration, sans dépendance ni import du processeur : ses options sont faites pour être complétées par une intégration
-// (options.hastPlugins, options.features). Sur ces pages, GFM est coupé (sinon « contact@apd-gba.be » et « www… » deviendraient des liens automatiques)
-// et la ponctuation « intelligente » aussi : le texte publié est celui du fichier (apostrophes typographiques comprises), la typographie est l'affaire
-// du plugin. Les autres pages ne rendent pas leur Markdown (src/lib/contenu.ts : texte brut, comme la maquette).
+// Les pages de texte rendues par Astro depuis leur Markdown (content/mentions-legales.md, content/politique-confidentialite.md) : le plugin registre
+// (découpage par ##, typographie, liens — src/lib/rehype-registre.mjs) est donné au processeur Markdown d'Astro — Sätteri, celui d'Astro 7 — par cette
+// intégration, sans dépendance ni import du processeur : ses options sont faites pour être complétées par une intégration (options.hastPlugins,
+// options.features). Sur ces pages, GFM est coupé (sinon « contact@apd-gba.be » et « www… » deviendraient des liens automatiques) et la ponctuation
+// « intelligente » aussi : le texte publié est celui du fichier (apostrophes typographiques comprises), la typographie est l'affaire du plugin. Les
+// autres pages ne rendent pas leur Markdown (src/lib/contenu.ts : texte brut).
 const pagesTexte = {
   name: 'pages-texte',
   hooks: {
@@ -23,15 +23,15 @@ const pagesTexte = {
   },
 };
 
-// Les images que rien ne cite, retirées du site publié (05/10/2026). src/lib/photos.ts importe paresseusement toutes les photos de
+// Les images que rien ne cite, retirées du site publié. src/lib/photos.ts importe paresseusement toutes les photos de
 // design/directions/img/ (import.meta.glob) : au build, Vite copie chacune dans dist/_astro/ (<nom>.<empreinte>.jpg). Astro supprime l'original d'une
 // photo après en avoir produit les versions (sauf si le code a lu l'une de ses propriétés : src/lib/photos.ts), mais pas celui d'une photo dont il
 // n'a produit aucune version — le <clé>.jpg d'une photo qui a aussi un <clé>-l.jpg (le site part de la plus grande ; formatPhoto() n'en lit que les
-// dimensions, sur sa copie) et les photos qu'aucune donnée ne cite : 11 fichiers, 6 Mo publiés pour rien (relevé du 05/10). Une fois le site écrit,
+// dimensions, sur sa copie) et les photos qu'aucune donnée ne cite, publiés pour rien. Une fois le site écrit,
 // cette intégration supprime de dist/_astro/ toute image dont aucun fichier de dist/ ne cite le nom : aucune page ne peut la charger. Seuls sont
 // examinés les noms faits de lettres sans accent, de chiffres, de « - », « _ » et « . » : une page les cite tels quels, sans encodage. Plutôt qu'un
 // glob restreint aux fichiers servis : il faudrait y tenir à la main la liste des <clé>.jpg doublés d'un <clé>-l.jpg et celle des photos non citées ;
-// ici, rien à tenir à jour, et le format des tuiles reste lu sur le <clé>.jpg, comme la maquette.
+// ici, rien à tenir à jour, et le format des tuiles reste lu sur le <clé>.jpg (formatPhoto, src/lib/photos.ts).
 function imagesOrphelines() {
   let config;
   return {
@@ -64,11 +64,11 @@ function imagesOrphelines() {
   };
 }
 
-// Le plan du site pour les moteurs de recherche, dist/sitemap.xml (lot 7, 06/10/2026), écrit une fois le site construit, sans service ni paquet : chaque
+// Le plan du site pour les moteurs de recherche, dist/sitemap.xml, écrit une fois le site construit, sans service ni paquet : chaque
 // page de dist/ (un fichier .html), à son adresse publique — `site` puis le chemin, sans « .html » ni barre finale, comme les liens du site (trailingSlash
 // 'never', build.format 'file' : GitHub Pages sert realisations.html à /realisations). Sauf la 404, les pages de /dev/ (contrôle) et les redirections (une
-// page qui porte <meta http-equiv="refresh">). Rien à tenir à jour : une nouvelle page y entre d'elle-même, et les adresses suivent `site` (lot 9 :
-// https://perpetual.be). robots.txt (src/pages/robots.txt.ts) n'y renvoie qu'une fois l'indexation ouverte (data/site.json, indexation).
+// page qui porte <meta http-equiv="refresh">). Rien à tenir à jour : une nouvelle page y entre d'elle-même, et les adresses suivent
+// `site`. robots.txt (src/pages/robots.txt.ts) n'y renvoie qu'une fois l'indexation ouverte (data/site.json, indexation).
 function planDuSite() {
   let config;
   return {
@@ -101,9 +101,9 @@ function planDuSite() {
   };
 }
 
-// Adresse de prévisualisation (GitHub Pages). Au lot 9, `site` devient https://perpetual.be
-// et le fichier public/CNAME est ajouté ; avec `indexation` à vrai dans data/site.json (noindex retiré, robots.txt ouvert), rien d'autre ne change :
-// sitemap.xml, robots.txt et les adresses absolues des pages suivent `site`.
+// Adresse de prévisualisation (GitHub Pages). À la mise en ligne, `site` devient https://perpetual.be et le fichier public/CNAME est ajouté ; avec
+// `indexation` à vrai dans data/site.json (noindex retiré, robots.txt ouvert), rien d'autre ne change : sitemap.xml, robots.txt et les adresses
+// absolues des pages suivent `site`.
 export default defineConfig({
   site: 'https://perpetual-be.github.io',
   trailingSlash: 'never',

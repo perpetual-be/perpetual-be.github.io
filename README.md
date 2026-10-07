@@ -2,172 +2,203 @@
 
 Site de Perpetual — promoteur et développeur immobilier, Bruxelles. Site statique construit avec [Astro](https://astro.build), hébergé sur GitHub Pages.
 
+Le contenu est de la donnée, pas du code : les textes sont dans `content/`, les projets, les photos citées, les partenaires et la navigation dans `data/`. Ajouter un projet ou changer un texte ne demande pas de toucher au HTML.
+
 ## Lancer en local
 
 Prérequis : Node.js 22 ou plus récent.
 
 ```bash
 npm install
-npm run dev        # http://localhost:4321
+npm run dev        # http://localhost:4321, rechargé à chaque modification
 npm run build      # génère le site dans dist/
 npm run preview    # sert dist/ pour vérification
-npm run comparer   # après npm run build : les pages du site identiques au pixel près à la maquette — Home, Engagements, fiches projet, vue Réalisations, en-tête (menu du téléphone compris) et pied de page ; page Collectif alignée sur Engagements (Playwright global : NODE_PATH=$(npm root -g))
 ```
+
+Le premier `npm run build` produit toutes les versions des photos et prend plusieurs minutes ; les suivants repartent du cache `.astro-cache/` et ne prennent que quelques secondes.
+
+Le build s'arrête avec un message qui dit quoi corriger quand une donnée manque ou ne colle pas (une photo citée mais absente, un projet oublié dans la vue Réalisations, un champ obligatoire vide…).
 
 ## Déployer
 
 Chaque push sur la branche `main` construit le site et le publie sur GitHub Pages (`.github/workflows/deploy.yml`). Aucune étape manuelle.
 
-Les pull requests ouvertes depuis une branche de ce dépôt sont fusionnées automatiquement dans `main` dès que le site se construit sans erreur (`.github/workflows/auto-merge.yml`), puis le site est déployé. Pour garder une PR ouverte (relecture, travail en cours), lui ajouter l'étiquette `no-auto-merge` ; la retirer relance la fusion.
+Les pull requests ouvertes depuis une branche de ce dépôt sont fusionnées automatiquement dans `main` dès que le site se construit sans erreur (`.github/workflows/auto-merge.yml`), puis le site est déployé. Une PR dont le build échoue reste ouverte. Pour garder une PR ouverte (relecture, travail en cours), lui ajouter l'étiquette `no-auto-merge` ; la retirer relance la fusion.
+
+Les deux workflows gardent les photos déjà produites d'un build à l'autre (cache `.astro-cache`) : un build ne produit que les versions nouvelles. Le cache d'une PR ne sert qu'à cette PR : le déploiement qui suit la fusion refait donc les versions nouvelles qu'elle a introduites. Les workflows retirent `.astro-cache/data-store.json` avant chaque build, pour que les pages légales soient toujours rendues à neuf ; en local, après une modification de `src/lib/rehype-registre.mjs`, faire de même :
+
+```bash
+rm .astro-cache/data-store.json
+```
 
 ## Où modifier quoi
 
 | Je veux… | Fichier |
 |---|---|
-| Changer le texte d'une page | `content/<page>.md` (`home`, `realisations`, `collectif`, `engagements`, `contact`) |
-| Engagements : les rangées (un titre `##` par verbe, puis ses paragraphes ; seuls les liens sont rendus) et l'œuvre sur sa cimaise | `content/engagements.md` ; l'œuvre dans son en-tête (`oeuvre` : `rang`, la rangée qui la porte ; `photo`, la clé du fichier `design/directions/img/<clé>.jpg` ; `legende` et `detail` du cartel, le détail avec ses espaces insécables ; `alt`), lue aussi par la maquette |
-| Mentions légales et politique de confidentialité : une rangée par titre `##` (le numéro « 1. » devient « 01 » au-dessus du titre), le Markdown de la section à droite (gras, italique, listes, liens, retours à la ligne forcés) | `content/mentions-legales.md` et `content/politique-confidentialite.md` ; la date de dernière mise à jour de la confidentialité dans son en-tête (`updated`, date ISO, vide jusqu'au lot 9 : la ligne n'est pas affichée et le build l'écrit en avertissement) |
-| Texte de la page 404 (adresse inconnue) | `content/404.md` (texte provisoire, lot 3) |
-| Chiffres clés et répartition du portefeuille (Home) | en-tête de `content/home.md` (`stats`, `portfolio`) |
-| Textes de la Home : accroche, paragraphes et signature ; page Collectif : paragraphes et chute (titre et description dans son en-tête) | `content/home.md`, `content/collectif.md`, lus comme par la maquette : blocs séparés par une ligne vide, commentaires HTML ignorés, texte brut |
-| Titre et paragraphe à côté de la carte (Home) | en-tête de `content/home.md` (`carte` : `title`, `text`) ; le programme agences (`content/realisations.md`, le paragraphe qui suit « ## Le programme agences ») sert à la vue Réalisations |
-| Photo du premier écran de la Home et son cadrage | en-tête de `content/home.md` (`hero` : `photo`, la clé de la photo ; `focal`, le point focal, ex. `"50% 20%"`) |
-| Carte des réalisations (contour, points, étiquettes, villes et groupes) | `data/carte/belgique.svg` et `belgique.json`, partagés par le site et la maquette (`src/lib/carte.ts`) |
-| Ajouter ou modifier un projet (détaillé, programme agences, galerie) | `data/projects.json` |
-| Une fiche projet (`/realisations/<id>`, une par projet `detailed`, dans l'ordre du champ `order` ; projet précédent et suivant en boucle dans ce même ordre) : ses infos, ses photos, ses chapitres | `data/projects.json` — ses infos : `region` (l'eyebrow au-dessus du titre), `quartier` (la « Localisation » quand elle n'est pas `location`, facultatif : The Bank seulement), `location`, `surface`, `use`, `tete` (la photo de tête : `cadre`, `paysage` ou `carre` ; `focal`, son point focal, ex. `"50% 0%"`) ; ses photos : `selection` (la première en tête, les suivantes en mosaïque, dans l'ordre) ; ses chapitres : `was`, `saw`, `became` (« Ce que c’était », « Ce que nous y avons vu », « Ce que c’est devenu ») |
-| Vue Réalisations (`/realisations`) : l'ordre des projets (les rangées 2-2-1) et la mosaïque des agences (rangée par rangée, les deux cases de texte comprises) | `data/realisations.json` — `rangees` : par rangée, sa `classe` (`a` : 7/12 puis 5/12 ; `b` : 5/12 puis 7/12 ; `seul` : toute la largeur) et ses `projets`, chacun son `id` et sa `part` de la rangée en douzièmes (7 et 5, 5 et 7, 12) ; `mosaique` : les rangées, de 3 ou 4 cases chacune, une case étant l'id d'un bien ou `cas:debut` / `cas:fin` (les deux cases de texte). Chaque projet `detailed` ou `project` figure une fois dans `rangees`, chaque bien `agency` ou `gallery` une fois dans la mosaïque : le build s'arrête sinon, comme la maquette |
-| Les infos d'un bloc de la vue Réalisations (le nom sur la photo, Lieu, Surface, Usage) | `data/projects.json` — `name`, `location` (Lieu), `surface`, `use` (Usage), `bloc.focal` (le point focal de sa photo, la première clé de `selection`, ex. `"50% 30%"`) ; Brosse : `projet`, le troisième fait (« Projet », provisoire) tant que son usage (`use`) manque |
-| Les photos d'un bien de la mosaïque (vue Réalisations) | `data/projects.json`, `selection` : la première est sur la tuile — elle donne son format à la case, qui la montre entière —, toutes se parcourent sur la tuile et passent dans la visionneuse |
-| Les deux cases de texte de la mosaïque (vue Réalisations) | `content/realisations.md`, le paragraphe qui suit « ## Le programme agences », coupé à la première phrase : la première case, puis la suite (deux phrases au moins, sinon le build s'arrête ; les espaces insécables sont gardés) |
-| Navigation de l'en-tête (`nav`), plan et nom du contact du pied de page (`plan`, `contact`), e-mail, ville, TVA, citation, indexation (`indexation` : faux jusqu'à la mise en ligne — toutes les pages en `noindex`, `robots.txt` fermé ; vrai au lot 9 — `noindex` retiré, sauf sur la 404 et `/dev/photos`, `robots.txt` ouvert avec le plan du site) | `data/site.json` |
-| Le plan du site pour les moteurs de recherche (`/sitemap.xml`) et `/robots.txt` | rien à tenir à jour : `sitemap.xml` est écrit après chaque build (intégration `plan-du-site`, `astro.config.mjs`) avec toutes les pages de `dist/` sauf la 404, `/dev/` et les redirections, aux adresses de `site` ; `robots.txt` est écrit par `src/pages/robots.txt.ts` d'après `indexation` (`data/site.json`) |
-| Titre et description d'une page ; adresse canonique et partage (Open Graph) | le titre et la description de l'en-tête de `content/<page>.md` ; une fiche : sa description est calculée (`src/pages/realisations/[id].astro`) depuis `data/projects.json` — « `name`, `location` · `surface` · `use`. » — puis la phrase de la Home (`name` et `tagline` de `data/site.json`) ; les balises (lien canonique, Open Graph, carte large) sont posées par `src/layouts/Base.astro`, aux adresses de `site` |
-| L'image de partage (réseaux, messageries : `/partage.jpg`, 1 200 × 630) | `src/lib/partage.ts` : la clé de la photo et son point focal (aujourd'hui Community 05, la photo du premier écran) ; l'image est produite au build (`src/pages/partage.jpg.ts`), aucun fichier à ajouter |
-| Les icônes PNG (`/favicon-32.png`, `/apple-touch-icon.png` 180 × 180 sur fond blanc) | rien : tirées de `public/favicon.svg` au build (`src/lib/icones.ts`) |
-| Une ancienne adresse du site de 2020 à renvoyer vers la nouvelle (`/projets` → `/realisations`, `/contact` → `/#contact`) | `src/pages/[ancienne].astro`, la liste `ANCIENNES` : une page sans mise en page, renvoi immédiat (meta refresh), lien canonique, noindex, un lien au libellé de la navigation ; absente de `sitemap.xml` |
-| Le texte alternatif d'une photo | sa légende dans `data/projects.json` (`captions`, par fichier) ; à défaut « nom, lieu » pour un projet (« The Bank, Liège »), la ville pour un bien de la mosaïque des agences (`src/lib/alt.ts`) ; vides : la photo du premier écran de la Home et celles des blocs-liens de la vue Réalisations (le lien dit déjà tout) ; l'œuvre d'Engagements garde le sien (`content/engagements.md`) |
-| Ajouter un logo partenaire | `data/partners.json` + les fichiers dans `public/partners/couleur/`, `mono/` et `encre/` |
-| Ajouter des photos | réduire les originaux du Drive avec `design/directions/src/reduire-photos.mjs`, committer les fichiers produits dans `design/directions/img/`, puis citer leurs clés dans `data/projects.json` (`selection`) — voir plus bas |
-| Changer la mise en page ou les styles | `src/` (pages, gabarits, composants, `styles/`) — une couleur ou une taille se change dans `src/styles/jetons.css`, en reprenant la valeur de `design/maquette/maquette.css` |
-| Vérifier qu'une page est identique à sa maquette | `npm run build`, puis `NODE_PATH=$(npm root -g) npm run comparer` (`scripts/comparer-maquette.mjs` : Home, Engagements, les quatre fiches projet et la vue Réalisations au pixel près, les pages légales et la 404 alignées sur Engagements, tout `dist/` ; les écarts en images dans `scripts/ecarts/`) |
-| Palette, typographies, maquettes | `design/` — la maquette (`design/maquette/`) est la référence du site |
+| Changer le texte d'une page | `content/<page>.md` — voir [Les textes des pages](#les-textes-des-pages) |
+| Changer le titre ou la description d'une page (onglet, moteurs de recherche, partage) | l'en-tête (`title`, `description`) de `content/<page>.md` ; une fiche projet : sa description est calculée depuis `data/projects.json` (« `name`, `location` · `surface` · `use`. » puis la phrase de la Home) |
+| Les chiffres clés et le graphique de la Home | l'en-tête de `content/home.md` (`stats`, `portfolio`) |
+| La photo du premier écran de la Home et son cadrage | l'en-tête de `content/home.md` (`hero` : `photo`, la clé de la photo ; `focal`, son point focal, ex. `"50% 20%"`) |
+| Le titre et le paragraphe à côté de la carte (Home) | l'en-tête de `content/home.md` (`carte` : `title`, `text`) |
+| La carte des réalisations (contour, points, étiquettes, villes) | `data/carte/belgique.svg` et `data/carte/belgique.json` |
+| Ajouter ou modifier un projet | `data/projects.json`, puis `data/realisations.json` — voir [Ajouter un projet](#ajouter-un-projet) |
+| L'ordre des projets et la mosaïque des agences (vue Réalisations) | `data/realisations.json` — voir [La vue Réalisations](#la-vue-réalisations) |
+| Ajouter une photo, en changer, la recadrer | `design/directions/img/` et `data/projects.json` — voir [Ajouter une photo](#ajouter-une-photo) |
+| Le texte alternatif d'une photo | sa légende dans `data/projects.json` (`captions`, par fichier) ; à défaut « nom, lieu » pour un projet (« The Bank, Liège »), la ville pour un bien de la mosaïque (`src/lib/alt.ts`) |
+| Ajouter ou retirer un logo partenaire (page Collectif) | `data/partners.json` et `public/partners/` — voir [Partenaires](#partenaires) |
+| La navigation de l'en-tête et du menu du téléphone | `data/site.json`, `nav` — voir [Navigation, pied de page et menu du téléphone](#navigation-pied-de-page-et-menu-du-téléphone) |
+| Le pied de page : plan du site, contact, e-mail, ville, citation | `data/site.json` (`plan`, `contact`, `email`, `name`, `city`, `quote`) |
+| L'image de partage (réseaux, messageries : `/partage.jpg`, 1 200 × 630) | `src/lib/partage.ts` : la clé de la photo et son point focal ; l'image est produite au build (`src/pages/partage.jpg.ts`) |
+| Les icônes (`/favicon.svg`, `/favicon-32.png`, `/apple-touch-icon.png`) | `public/favicon.svg` ; les PNG en sont tirés au build (`src/lib/icones.ts`) |
+| Renvoyer une ancienne adresse du site de 2020 vers la nouvelle | `src/pages/[ancienne].astro`, la liste `ANCIENNES` (aujourd'hui `/projets` → `/realisations`, `/contact` → `/#contact`) |
+| Une couleur, une taille, une police | `src/styles/jetons.css` (les composants ne lisent que ses rôles `--c-*`, `--surface-*`, `--fs-*`…) |
+| La mise en page d'une page | `src/pages/` (une page par fichier), `src/components/` et `src/styles/` (une feuille par page) — voir [Structure](#structure) |
+| L'indexation par les moteurs de recherche | `data/site.json`, `indexation` — voir [Mise en ligne sur perpetual.be](#mise-en-ligne-sur-perpetualbe) |
 
-Le contenu est de la donnée, pas du code : ajouter un projet consiste à ajouter une entrée dans `data/projects.json`, sans toucher au HTML.
+Rien à tenir à jour pour `sitemap.xml` (écrit après chaque build avec toutes les pages, sauf la 404, `/dev/` et les redirections : `astro.config.mjs`) ni pour `robots.txt` (écrit d'après `indexation` : `src/pages/robots.txt.ts`).
 
-### Structure
+### Les textes des pages
 
-```
-content/               textes des pages (Markdown), un fichier par page
-data/projects.json     projets détaillés, programme agences, galerie
-data/realisations.json la composition de la vue Réalisations : les rangées des projets (rangees) et la mosaïque des agences (mosaique)
-data/partners.json     logos partenaires
-public/partners/       logos partenaires en SVG : couleur/, mono/ et encre/ (currentColor)
-data/site.json         navigation de l'en-tête (nav), plan et contact du pied de page (plan, contact), coordonnées, citation, réglage d'indexation (indexation : faux jusqu'au lot 9, toutes les pages en noindex et robots.txt fermé)
-data/carte/            la carte des réalisations de la Home : belgique.svg (contour, points, étiquettes), belgique.json (villes, longitudes, groupes), partagée par le site et la maquette
-design/                palette, typographies, maquettes exportées ; design/maquette/ est la référence du site (en-tête, pied de page, jetons)
-public/                favicon, logo, fichiers statiques servis tels quels
-public/fonts/          les quatre polices du site (woff2), copiées de design/maquette/fonts/ : aucune police chargée chez un tiers
-src/                   layouts, pages, composants, styles (Astro)
-src/layouts/Base.astro mise en page commune à toutes les pages : head (titre, description, noindex, lien canonique, Open Graph et carte de partage, icônes, préchargement des polices), styles, en-tête, <main>, pied de page ; la prop page est posée en data-page sur <html>, comme dans la maquette
-src/pages/             index.astro (la Home), engagements.astro (Engagements, identique à la maquette), realisations.astro (la vue Réalisations, /realisations : les projets en 2-2-1, la mosaïque des agences ; identique à la maquette), realisations/[id].astro (les quatre fiches projet, /realisations/<id>, une par projet detailed de data/projects.json, identiques à la maquette), mentions-legales.astro et confidentialite.astro (pages légales, le Markdown rendu par Astro sur le gabarit d'Engagements), 404.astro (adresse inconnue, servie par GitHub Pages ; au-dessus de 640 px, tout dans la colonne de gauche), dev/photos.astro (contrôle des photos), robots.txt.ts (robots.txt, d'après le réglage indexation de data/site.json), partage.jpg.ts (l'image de partage), favicon-32.png.ts et apple-touch-icon.png.ts (les icônes PNG), [ancienne].astro (les anciennes adresses du site de 2020 : /projets, /contact)
-src/components/        SiteHeader.astro (en-tête collant : logo, navigation ; trait et aria-current sur l'entrée active ; au téléphone, le bouton du menu et la navigation en panneau), SiteFooter.astro (pied de page, id="contact"), ProjectPhoto.astro (photos ; ratioSource : la boîte garde le format de la source), Visionneuse.astro (la visionneuse des photos, modale : fond blanc, la photo entière dans un cadre 4:3, flèches, clavier, compteur ; les fiches et la vue Réalisations, dont elle fait aussi tourner les albums sur place)
-src/components/home/   les sections de la Home, une par composant : PremierEcran (photo, accroche, bande des chiffres, paragraphes), Graphique (l'anneau qui se remplit), Carte
-src/components/collectif/  Partenaires.astro (les logos partenaires de la page Collectif, à la masse visuelle) ; la page : src/pages/collectif.astro
-src/components/engagements/  le gabarit des pages de texte : PageHead (le titre seul, .page-head), Registre (.registre), Rang (une rangée d'Engagements : le verbe, les paragraphes, l'œuvre sur sa cimaise avec son cartel)
-src/components/fiche/  une fiche projet : Corps (la région, le titre, les trois infos et les trois chapitres à gauche, la photo de tête qui suit à droite), Mosaique (« Photos » : les photos en rangées justifiées, chacune un bouton qui ouvre la visionneuse ; le script qui place les rangées), Voisins (projet précédent et suivant, en boucle)
-src/components/realisations/  la vue Réalisations : Projets (les rangées de blocs), BlocLien (un projet à fiche, lien vers elle), BlocAlbum (un projet sans fiche, Brosse), Album (les photos parcourables sur place, communes au bloc de Brosse et aux tuiles), Mosaique (la mosaïque des agences et ses deux cases de texte), Tuile (un bien), Fait (un fait sous le nom), tailles.ts (les sizes des photos, comme la maquette)
-src/scripts/boucle.js  la piste en boucle (Boucle, reprise de design/maquette/maquette.js), un module partagé : la visionneuse et les photos parcourables de la vue Réalisations
-src/lib/               contenu.ts (les textes de content/ lus comme par la maquette : blocs ; Engagements : rangées, œuvre, liens en ligne ; pages de texte rendues par Astro, 404, date en français), rehype-registre.mjs (le plugin du gabarit registre pour le Markdown des pages légales — découpage par ##, numéros, typographie dont « e-mail » insécable, liens, commentaires retirés —, enregistré dans astro.config.mjs), carte.ts (la carte), photos.ts (photos : la source d'une clé, ses dimensions, son format, la version en grand de la visionneuse) ; alt.ts (les textes alternatifs des photos : la légende, sinon « nom, lieu » ou la ville), partage.ts (l'image de partage : photo, point focal, texte alternatif), icones.ts (les icônes PNG tirées de public/favicon.svg)
-src/styles/            le système de la maquette, importé dans cet ordre : polices.css, jetons.css (le :root de maquette.css, la couche de rôles que lisent les composants), base.css (avec le défilement fluide vers les ancres, propre au site), entete.css, pied.css ; puis, importés par la page : home.css (la Home) ; page.css (ce que partagent les pages de texte : titre, registre, rangées, liens), engagements.css (verbe, texte, cimaise, œuvre, cartel) et texte.css (pages légales et 404 : numéro et titre de chapitre, texte, date de mise à jour) ; introuvable.css (la 404 seule : tout dans la colonne de gauche au-dessus de 640 px) ; fiche.css (les fiches : titre en serif, corps, infos, chapitres, photo qui suit, mosaïque, voisins) ; realisations.css (la vue Réalisations : titre en sans léger, projets, mosaïque, photos parcourables, cases de texte) ; visionneuse.css (la visionneuse, des fiches et de la vue Réalisations)
-scripts/comparer-maquette.mjs  vérification : Home, Engagements, les quatre fiches projet et la vue Réalisations identiques au pixel près à la maquette (en-tête et pied de page compris ; photos avec tolérance ; mosaïques des fiches et de la vue Réalisations au pixel, aussi après un changement de largeur ; photos parcourables, survol, clavier ; visionneuse ; sans JavaScript), pages légales, 404 et page Collectif alignées sur Engagements, menu du téléphone (ouvert identique à la maquette, Échap, clavier, sans JavaScript), tout dist/ (adresse de contact, commentaires, espaces insécables, liens internes, aucun lien vers les fiches de la maquette, 404), en-tête collant, défilement fluide vers #contact, remplissage de l'anneau, polices locales, noindex (npm run comparer)
-design/directions/img/ photos réduites (1 800 et 2 800 px pour le site, 800 px pour la maquette), versionnées : la source des photos du site
-```
+Un fichier Markdown par page dans `content/`. L'en-tête (entre les `---`) porte le titre, la description et les réglages de la page ; le corps, les textes. Les commentaires HTML (`<!-- … -->`) sont des notes internes : ils ne sont jamais publiés.
 
-Dans les fichiers Markdown, les commentaires HTML (`<!-- … -->`) sont des indications de mise en page : ils ne sont pas publiés.
+| Page | Fichier | Comment le corps est lu |
+|---|---|---|
+| Home (`/`) | `content/home.md` | des blocs séparés par une ligne vide : l'accroche (le bloc qui commence par `# `), les paragraphes, puis la signature (le dernier bloc) ; texte brut, sans mise en forme Markdown |
+| Collectif (`/collectif`) | `content/collectif.md` | des blocs séparés par une ligne vide : les paragraphes, puis la phrase de fin en grand (le dernier bloc) ; texte brut. Les logos viennent de `data/partners.json` |
+| Engagements (`/engagements`) | `content/engagements.md` | une rangée par titre `##` (le verbe), puis ses paragraphes ; seuls les liens `[texte](adresse)` sont rendus. L'œuvre sur sa cimaise est dans l'en-tête (`oeuvre` : `rang`, l'id de la rangée qui la porte, ex. `soutenir` ; `photo`, sa clé ; `legende` et `detail` du cartel, le détail avec ses espaces insécables ; `alt`) |
+| Réalisations (`/realisations`) | `content/realisations.md` | le titre et la description de l'en-tête ; le paragraphe qui suit « ## Le programme agences » remplit les deux cases de texte de la mosaïque, coupé à la première phrase (deux phrases au moins, sinon le build s'arrête) |
+| Mentions légales, confidentialité | `content/mentions-legales.md`, `content/politique-confidentialite.md` | une rangée par titre `##` (« 1. Titre » : le numéro devient « 01 » au-dessus du titre), le Markdown de la section à droite (gras, italique, listes, liens, retours à la ligne forcés). La confidentialité affiche sa date de mise à jour dès que l'en-tête la donne (`updated`, date ISO) ; vide, la ligne n'apparaît pas et le build l'écrit en avertissement |
+| Page 404 (adresse inconnue) | `content/404.md` | des paragraphes, sans titre (le titre est dans l'en-tête) ; seuls les liens sont rendus |
+
+Les textes en blocs sont insérés tels quels : les espaces insécables du fichier sont gardés, et une espace insécable est ajoutée avant « : » dans les paragraphes d'Engagements et de la 404 et dans les pages légales. `content/contact.md` n'est pas affiché : le bloc contact est le pied de page, lu dans `data/site.json`.
+
+### Navigation, pied de page et menu du téléphone
+
+- **Les entrées de l'en-tête** : `nav` dans `data/site.json`, un libellé et une adresse par entrée. Les mêmes entrées forment le menu du téléphone. L'entrée de la page en cours est soulignée (prop `active` de chaque page, ex. `active="/realisations"` dans `src/pages/realisations.astro`).
+- **Le pied de page** : `plan` (les liens), `contact`, `email`, `name` et `city`, `quote` dans `data/site.json` ; balisage dans `src/components/SiteFooter.astro`, styles dans `src/styles/pied.css`. Il porte `id="contact"`, la cible de l'entrée « Contact ».
+- **Le menu du téléphone** (jusqu'à 640 px) : le bouton à trois traits et le panneau sont dans `src/components/SiteHeader.astro` (balisage et script), leurs styles dans `src/styles/entete.css`. Le menu ne s'active qu'avec la classe `menu-js`, posée sur `<html>` dès le `<head>` par `src/layouts/Base.astro`, avant le premier rendu : sans elle (sans JavaScript), pas de bouton et les entrées restent visibles sur une seconde ligne. Une entrée de plus : vérifier qu'elle tient dans le panneau et, au-dessus de 640 px, sur la ligne de l'en-tête.
+- **L'en-tête collant** (il se cache quand on descend, revient quand on remonte) : le premier script de `src/components/SiteHeader.astro`.
+
+## Ajouter un projet
+
+1. **Les photos** : les réduire et les déposer dans `design/directions/img/`, nommées `<id>-01`, `<id>-02`… (voir [Ajouter une photo](#ajouter-une-photo)).
+2. **Le projet** : une entrée dans `data/projects.json` (champs [ci-dessous](#projets-dataprojectsjson)). Son `kind` décide où il apparaît :
+   - `detailed` : un projet avec sa fiche (`/realisations/<id>`) et son bloc sur la vue Réalisations ;
+   - `project` : un projet sans fiche, son bloc sur la vue Réalisations ouvre ses photos ;
+   - `agency` ou `gallery` : un bien du programme agences, une tuile de la mosaïque.
+3. **Sa place sur la vue Réalisations** : `data/realisations.json` — un `detailed` ou un `project` dans `rangees`, un `agency` ou un `gallery` dans `mosaique` (voir [La vue Réalisations](#la-vue-réalisations)). Le build s'arrête si un projet y manque ou y figure deux fois.
+4. **La carte de la Home**, pour une ville nouvelle : son point et son étiquette dans `data/carte/belgique.svg`, sa longitude dans `data/carte/belgique.json`. Le titre de la carte (`carte.title`, `content/home.md`) est à retoucher si le projet est plus à l'ouest ou plus à l'est que ceux qu'il nomme.
+5. `npm run build`, puis vérifier la page (`npm run preview`) et `/dev/photos`.
 
 ### Projets (`data/projects.json`)
 
-Une entrée par projet. Champs :
+Une entrée par projet.
 
 | Champ | Rôle |
 |---|---|
-| `id` | clé du projet ; c'est aussi le nom du dossier de photos et le préfixe des fichiers (`<id>-01.jpg`, `<id>-02.jpg`, …) |
+| `id` | clé du projet, dans l'adresse de sa fiche ; c'est aussi le préfixe de ses photos (`<id>-01`, `<id>-02`…) |
 | `name` | nom affiché |
-| `kind` | `detailed` (projet détaillé, avec sa fiche, `/realisations/<id>`), `project` (projet montré parmi les projets de la vue Réalisations, sans fiche pour l'instant : Brosse ; son bloc ouvre la visionneuse), `agency` (exemple du programme agences) ou `gallery` (bien du programme agences) — sur la vue Réalisations, agences et galerie forment ensemble la mosaïque du programme agences |
-| `order` | ordre d'affichage au sein de son `kind` ; projets détaillés : l'ordre des fiches et de leur boucle « Projet précédent / suivant » |
-| `location`, `surface`, `use` | la description standard « Localisation · Surface · Usage » ; projet détaillé : les trois infos de sa fiche (lot 5, 05/10 : la surface de Data Box est « 4 200 m² », l'hectare est dans son texte) ; projet détaillé ou sans fiche : les faits de son bloc de la vue Réalisations (Lieu, Surface, Usage) ; bien du programme agences : la surface et l'usage de sa tuile (la ville : le `name` d'une agence, le `location` d'un bien de la galerie) |
-| `projet` | projet sans fiche dont l'usage n'est pas encore connu (Brosse, à demander à Julien) : le troisième fait de son bloc de la vue Réalisations, « Projet », provisoire (l'intitulé du site 2020), montré tant que `use` manque |
-| `region` | projet détaillé : la région, l'eyebrow au-dessus du titre de sa fiche (Bruxelles, Liège, Rochefort) |
-| `quartier` | projet détaillé, facultatif : la « Localisation » de sa fiche quand elle n'est pas `location` (The Bank : Centre-ville) |
-| `tete` | projet détaillé : la photo de tête de sa fiche (la première clé de `selection`), `{ "cadre": "paysage" \| "carre", "focal": "50% 0%" }` — `paysage`, 50 % de la page au format 2100 / 1694 ; `carre`, 40 %, 1:1 ; `focal`, son point focal (object-position) |
-| `bloc` | projet détaillé ou sans fiche : son bloc de la vue Réalisations, `{ "focal": "50% 30%" }` — le point focal (object-position) de sa photo, la première clé de `selection` |
-| `address` | adresse complète du bien (tableau de Julien du 13/09) ; donnée de référence, pas nécessairement affichée |
-| `was`, `saw`, `became` | les trois champs d'un projet détaillé, les trois chapitres de sa fiche : ce que c'était, ce que nous y avons vu, ce que c'est devenu |
-| `photos` | fichiers du reportage, dans l'ordre |
-| `selection` | les photos montrées (facultatif), en clés sans extension (`<id>-03`), dans l'ordre d'affichage. Projet détaillé : la première est la photo du projet — tête de sa fiche, aperçu de la liste des 4 (Home, sauf si `apercu.photo` en choisit une autre), bloc de la vue Réalisations —, les suivantes la mosaïque de sa fiche ; les clés `data-box-03` à `-07` sont des vues drone (correspondance avec les fichiers dans `design/maquette/src/README.md`). Programme agences et galerie : la première est la photo de la tuile dans la mosaïque de la vue Réalisations (montrée entière : la largeur de la tuile suit son format), toutes se parcourent sur la tuile et passent dans la visionneuse ; Belgrade et Bois-de-Villers commencent par l'intérieur (choix du 04/10). Projet sans fiche (`project`) : la première est la photo de son bloc, toutes se parcourent sur le bloc et passent dans la visionneuse. Sélection provisoire : elle se change ici, sans toucher au code |
-| `apercu` | projet détaillé, facultatif : l'aperçu de la liste des 4 de la Home, `{ "photo"?: "<clé>", "cadre": [x, y, largeur, hauteur] }`. `photo` : la clé de la photo montrée (par défaut la première de `selection`) ; `cadre` : le cadrage dans le cadre 4:5 de l'aperçu, en fractions de l'image entière (x et largeur sur sa largeur, y et hauteur sur sa hauteur ; en pixels, largeur / hauteur = 4/5 à 1 % près, la construction refuse le reste). Sans `apercu`, la photo est centrée dans le cadre. La tête de fiche et le bloc de la vue Réalisations gardent la première photo de `selection` |
-| `hero` | la photo pleine largeur d'un projet détaillé |
-| `heroCandidates` | plusieurs photos pleine largeur à tester tant que le choix n'est pas fait |
-| `captions` | légende par fichier photo (sert de texte alternatif) |
+| `kind` | `detailed`, `project`, `agency` ou `gallery` (voir plus haut) |
+| `order` | ordre au sein de son `kind` ; projets détaillés : l'ordre des fiches et de leur boucle « Projet précédent / suivant » |
+| `location`, `surface`, `use` | lieu, surface et usage : les trois infos d'une fiche, les faits Lieu, Surface, Usage d'un bloc ; pour un bien de la mosaïque, la surface et l'usage de sa tuile. La ville d'une tuile est le `name` d'un `agency`, le `location` d'un `gallery` |
+| `projet` | projet sans fiche dont l'usage n'est pas connu : le troisième fait de son bloc (« Projet »), montré tant que `use` manque |
+| `region` | projet détaillé : la région, au-dessus du titre de sa fiche |
+| `quartier` | projet détaillé, facultatif : la « Localisation » de sa fiche quand elle n'est pas `location` |
+| `tete` | projet détaillé : la photo de tête de sa fiche (la première de `selection`), `{ "cadre": "paysage" \| "carre", "focal": "50% 0%" }` — `paysage`, 50 % de la page au format 2100 / 1694 ; `carre`, 40 %, 1:1 ; `focal`, son point focal |
+| `bloc` | projet détaillé ou sans fiche : `{ "focal": "50% 30%" }`, le point focal de sa photo sur la vue Réalisations |
+| `was`, `saw`, `became` | projet détaillé : les trois chapitres de sa fiche (« Le lieu », « Notre idée », « Aujourd'hui ») |
+| `selection` | les photos montrées, en clés sans extension (`<id>-03`), dans l'ordre. Projet détaillé : la première est la tête de sa fiche et la photo de son bloc, les suivantes la mosaïque de sa fiche. Projet sans fiche, bien de la mosaïque : la première est sur le bloc ou la tuile (elle donne son format à la tuile, montrée entière), toutes se parcourent sur place et dans la visionneuse. Se change ici, sans toucher au code |
+| `captions` | légende par fichier photo (`"<clé>.jpg": "…"`), qui sert de texte alternatif |
+| `photos` | les fichiers du reportage, pour mémoire |
+| `address`, `hero`, `heroCandidates`, `apercu` | données de référence, pas utilisées par le site aujourd'hui |
 
-### Partenaires (`data/partners.json`)
+Un champ obligatoire manquant (pour une fiche : `order`, `region`, `location` ou `quartier`, `surface`, `use`, `tete`, `was`, `saw`, `became`, `selection` ; pour un bloc : `selection`, `bloc.focal`, `location`, `surface`, `use` ou `projet` ; pour une tuile : la ville, `surface`, `use`) arrête le build, comme une clé de `selection` qui n'est pas une photo du projet.
 
-Une entrée par partenaire. Champs :
+### La vue Réalisations
+
+`data/realisations.json` compose la page :
+
+- `rangees` : les rangées de projets, de haut en bas. Chacune a sa `classe` — `a` (7/12 puis 5/12), `b` (5/12 puis 7/12) ou `seul` (toute la largeur) — et ses `projets`, chacun son `id` et sa `part` de la rangée en douzièmes (7 et 5, 5 et 7, ou 12). Chaque projet `detailed` ou `project` y figure une fois.
+- `mosaique` : les rangées de la mosaïque des agences, 3 ou 4 cases chacune. Une case est l'id d'un bien (`agency` ou `gallery`) ou l'une des deux cases de texte, `cas:debut` et `cas:fin`. Chaque bien y figure une fois ; sa tuile prend le format de sa première photo.
+
+## Ajouter une photo
+
+Le dépôt ne contient que des versions réduites des photos, dans `design/directions/img/` ; c'est la seule source des photos du site. Les originaux restent dans le Drive (`PERPETUAL / Site 2026 / 02 Photos/<id du projet>/`, nommés `<id>-01.jpg`, `<id>-02.jpg`…) et n'entrent jamais dans le dépôt.
+
+Chaque photo a une **clé**, `<id>-NN` (ex. `community-05`). Le site a besoin de sa version de 1 800 px, `<clé>.jpg` ; une photo montrée en grand (premier écran, tête de fiche, bloc pleine largeur) a aussi sa version de 2 800 px, `<clé>-l.jpg`.
+
+1. Réduire l'original (redressement, métadonnées retirées, JPEG qualité 82) :
+
+   ```bash
+   node design/directions/src/reduire-photos.mjs --grand "G:\Mon Drive\PERPETUAL\Site 2026\02 Photos\brosse\brosse-01.jpg"
+   ```
+
+   Ajouter `--tres-grand` pour la version de 2 800 px.
+2. Committer les fichiers produits dans `design/directions/img/`.
+3. Citer la clé dans `data/projects.json` (`selection`, à sa place dans l'ordre d'affichage) et, si elle a une légende, l'ajouter dans `captions`.
+4. `npm run build` : une clé citée sans version de 1 800 ou 2 800 px arrête le build, avec la marche à suivre.
+
+**Recadrer une photo** : ajouter sa clé dans `design/directions/src/recadrages.json` (gauche, haut, largeur, hauteur, en fractions de l'original redressé, et la raison), puis la réduire de nouveau. Le recadrage est appliqué à chaque réduction ; l'original du Drive reste entier.
+
+**Changer le cadrage sans recadrer** : le point focal (`focal` de `tete`, `bloc` ou `hero`), une position CSS (`"50% 20%"` : centré en largeur, 20 % depuis le haut).
+
+**Page de contrôle** : `/dev/photos` (non indexée, aucun lien vers elle) montre chaque photo citée par `data/projects.json`, projet par projet, et signale en rouge une clé citée mais absente du dépôt.
+
+**Ce que fait le build** : `src/lib/photos.ts` trouve la plus grande version d'une clé ; `src/components/ProjectPhoto.astro` l'affiche en plusieurs largeurs (800, 1 200, 1 800, 2 800 px, jamais au-delà de la source), en AVIF et WebP avec un JPEG de repli. La visionneuse charge une version WebP de 1 800 px au plus, seulement à son ouverture. Le site publié ne contient que les versions servies : l'intégration `images-orphelines` (`astro.config.mjs`) retire de `dist/` toute image qu'aucune page ne cite, et le build en écrit la liste.
+
+## Partenaires
+
+Les logos de la page Collectif, dans l'ordre de `data/partners.json`. Une entrée par partenaire :
 
 | Champ | Rôle |
 |---|---|
-| `id` | clé du partenaire ; c'est aussi le nom des fichiers SVG (`<id>.svg`) dans `public/partners/couleur/` et `public/partners/mono/` |
-| `name` | nom affiché (sert de texte alternatif) |
-| `logo` | chemin du logo en couleurs d'origine, servi depuis `public/` (`/partners/couleur/<id>.svg`) |
-| `logoMono` | chemin de la déclinaison monochrome noire (`/partners/mono/<id>.svg`) |
-| `logoInk` | chemin de la déclinaison à encre variable (`/partners/encre/<id>.svg`) — même tracé que `mono`, peint en `currentColor` |
-| `url` | site du partenaire ; absent tant que l'adresse n'est pas connue |
+| `id` | clé du partenaire ; c'est aussi le nom de ses fichiers (`<id>.svg`) dans `public/partners/couleur/`, `mono/` et `encre/` |
+| `name` | nom affiché au survol, et texte alternatif |
+| `logo` | le logo en couleurs, celui que montre le site (`/partners/couleur/<id>.svg`) |
+| `logoMono` | la déclinaison noire (`/partners/mono/<id>.svg`) |
+| `logoInk` | la déclinaison à encre variable (`/partners/encre/<id>.svg`) ; obligatoire : son `viewBox` donne la hauteur du logo |
+| `url` | site du partenaire, facultatif |
 
-Les trois jeux de SVG sont **normalisés optiquement** : chaque fichier a un canevas de 100 unités de haut, le logo étant centré dedans à une taille qui égalise son poids visuel (un bloc plein comme Synopsis occupe moins de hauteur qu'un logotype linéaire comme CN Architecture). Une seule règle CSS — même hauteur pour tous — suffit donc à obtenir une bande équilibrée ; il ne faut **pas** régler la taille logo par logo.
+Ajouter un logo : ses trois fichiers SVG dans `public/partners/couleur/`, `mono/` et `encre/`, puis une entrée dans `data/partners.json`.
 
-Les trois traitements sont en concurrence, le choix n'est pas fait :
+Les trois jeux de SVG sont **normalisés optiquement** : chaque fichier a un canevas de 100 unités de haut (`viewBox="0 0 <largeur> 100"`), le logo centré dedans à une taille qui égalise son poids visuel. La page calcule la hauteur de chaque logo depuis la largeur de ce canevas (`src/components/collectif/Partenaires.astro`) : il ne faut **pas** régler la taille logo par logo.
 
 | Jeu | Ce que c'est | Comment l'insérer |
 |---|---|---|
 | `couleur/` | couleurs d'origine de chaque partenaire | `<img src="…">` |
 | `mono/` | noir pur `#000000`, figé dans le fichier | `<img src="…">` |
-| `encre/` | même tracé, couleur pilotée par le CSS | **SVG inline obligatoire** |
+| `encre/` | même tracé, peint en `currentColor` | **SVG inline obligatoire** |
 
-**Piège à connaître sur `encre/`** : `currentColor` ne traverse pas la frontière d'un `<img>`. Inséré avec `<img src="/partners/encre/asap.svg">`, le logo s'affiche en noir — c'est-à-dire exactement comme `mono/`. Pour que la couleur suive le CSS, le SVG doit être injecté dans le HTML (lecture du fichier au build et insertion du balisage), et la couleur se règle alors par la propriété `color` du conteneur. Le repli est donc sans danger : au pire on retombe sur le monochrome noir.
+**Piège à connaître sur `encre/`** : `currentColor` ne traverse pas la frontière d'un `<img>`. Inséré avec `<img src="/partners/encre/asap.svg">`, le logo s'affiche en noir, exactement comme `mono/`. Pour que la couleur suive le CSS, le SVG doit être inséré dans le HTML (lu au build), et sa couleur se règle alors par la propriété `color` du conteneur.
 
-La planche de comparaison des traitements est dans `design/partenaires-comparaison.svg` (les bandes « encre » y sont montrées dans les couleurs du logo Perpetual, à titre d'essai seulement — la palette du site n'est pas arrêtée).
+## Structure
 
-### Photos
-
-**Une seule source, dans le dépôt : les versions réduites de `design/directions/img/`** (décision du 01/10/2026). Les originaux (haute résolution) n'entrent jamais dans le dépôt : ils vivent dans le Drive (`PERPETUAL / Site 2026 / 02 Photos/<id du projet>/`, nommés `<id>-01.jpg`, `<id>-02.jpg`, …).
-
-Chaque photo a une **clé**, `<id>-NN` (ex. `community-05`), et jusqu'à trois versions, produites depuis l'original par `design/directions/src/reduire-photos.mjs` (redressement EXIF, métadonnées retirées, JPEG qualité 82) :
-
-| Fichier | Plus grand côté | Sert à |
-|---|---|---|
-| `<clé>-s.jpg` | 800 px | la maquette seulement |
-| `<clé>.jpg` | 1 800 px | le site et la maquette — **obligatoire pour le site** |
-| `<clé>-l.jpg` | 2 800 px | les photos montrées en grand (premier écran, tête de fiche) |
-
-Ajouter une photo :
-
-```bash
-node design/directions/src/reduire-photos.mjs --petit --grand "G:\Mon Drive\PERPETUAL\Site 2026\02 Photos\brosse\brosse-01.jpg"
-# --tres-grand en plus pour une photo pleine largeur
 ```
-
-puis committer les fichiers produits dans `design/directions/img/` et citer la clé dans `data/projects.json` (champ `selection`, dans l'ordre d'affichage).
-
-**Recadrer une photo** : ajouter sa clé dans `design/directions/src/recadrages.json` (gauche, haut, largeur, hauteur, en fractions de l'original redressé, et la raison), puis la réduire de nouveau : le script applique le recadrage avant la réduction, à chaque fois ; l'original du Drive reste entier (05/10/2026 : `bnp-braine-le-comte-02`, `gilly-02`, `ing-tervuren-01`).
-
-**Dans le site** : `src/lib/photos.ts` trouve la plus grande version d'une clé ; le composant `src/components/ProjectPhoto.astro` l'affiche (`<ProjectPhoto cle="community-05" sizes="100vw" focal="50% 20%" />`) : Astro en tire, au build, plusieurs largeurs (800, 1 200, 1 800, 2 800 px, jamais au-delà de la source) en AVIF et WebP, avec un JPEG de repli. Texte alternatif : `alt`, donné par la page selon `src/lib/alt.ts` (la légende `captions`, sinon « nom, lieu » ou la ville ; vide pour une photo décorative ou déjà nommée par son lien). Une clé citée sans version de 1 800 ou 2 800 px arrête le build avec un message qui dit quoi faire. La visionneuse (fiches et vue Réalisations) montre une version WebP de 1 800 px au plus, jamais au-delà de la source (`photoGrande`, `src/lib/photos.ts`), chargée seulement quand on l'ouvre. Le site publié ne contient que les versions servies : au build, Vite copie dans `dist/_astro/` toutes les photos du dossier (le glob de `photos.ts`) ; Astro en retire les originaux dont il a produit les versions, puis l'intégration `images-orphelines` (`astro.config.mjs`) toute image qu'aucun fichier de `dist/` ne cite — le `<clé>.jpg` d'une photo qui a aussi un `<clé>-l.jpg`, les photos citées par aucun projet (05/10/2026 : 11 fichiers, 6 Mo) ; le build en écrit la liste.
-
-**Sur GitHub** : tout est dans le dépôt, le build automatique a donc toutes les photos. Les versions produites par Astro sont gardées d'un build à l'autre (cache `.astro-cache`, cf. `astro.config.mjs`, `.github/workflows/deploy.yml` et `auto-merge.yml`) : chaque build repart du cache le plus récent et enregistre le sien, sous une clé propre à son run, si bien qu'il ne produit que les versions nouvelles — celles d'une nouvelle photo, comme les largeurs et formats qu'une nouvelle page demande pour une photo déjà là (un build complet à froid prend ~8 minutes — mesuré le 05/10 en local, la vue Réalisations, les fiches et la page de contrôle comprises : ~1 100 versions de photos —, un build avec le cache quelques secondes). Le cache enregistré par le build d'une PR ne sert qu'à cette PR (GitHub ne le donne pas à `main`) : le déploiement qui suit la fusion refait donc les versions nouvelles de la PR. Le même dossier contient `data-store.json`, le Markdown des pages de texte rendu par Astro, qui ne se renouvelle que si le fichier Markdown change : les workflows le retirent avant chaque construction, pour qu'un changement du plugin (`src/lib/rehype-registre.mjs`) soit toujours appliqué (en local : `rm .astro-cache/data-store.json` avant `npm run build`).
-
-**Page de contrôle** (non indexée, aucun lien vers elle) : `/dev/photos` montre chaque photo citée par `data/projects.json`, projet par projet, par le même composant que le site, et signale en rouge une clé citée mais absente du dépôt.
+content/                 textes des pages (Markdown), un fichier par page
+data/projects.json       projets détaillés, projets sans fiche, programme agences, galerie
+data/realisations.json   la composition de la vue Réalisations : rangées des projets, mosaïque des agences
+data/partners.json       logos partenaires
+data/site.json           navigation, pied de page, coordonnées, citation, réglage d'indexation
+data/carte/              la carte des réalisations de la Home : belgique.svg et belgique.json
+design/directions/img/   les photos réduites, source des photos du site
+design/directions/src/   reduire-photos.mjs et recadrages.json
+public/                  fichiers servis tels quels : favicon.svg, fonts/ (les quatre polices du site), partners/
+src/layouts/Base.astro   mise en page commune : <head> (titre, description, noindex, lien canonique, partage, icônes, polices), en-tête, <main>, pied de page
+src/pages/               une page par fichier : index (Home), collectif, engagements, realisations, realisations/[id] (les fiches),
+                         mentions-legales, confidentialite, 404, dev/photos, [ancienne] (redirections), robots.txt, partage.jpg, icônes PNG
+src/components/          en-tête, pied de page, ProjectPhoto, Visionneuse ; puis un dossier par page : home/, collectif/, engagements/
+                         (aussi le gabarit des pages de texte), fiche/, realisations/
+src/lib/                 la lecture des données : contenu.ts (textes), photos.ts, alt.ts (textes alternatifs), carte.ts, partage.ts,
+                         icones.ts, rehype-registre.mjs (la mise en forme des pages légales)
+src/scripts/boucle.js    la piste en boucle de la visionneuse et des photos parcourables
+src/styles/              polices, jetons, base, entete, pied (communes, importées par Base.astro) ; puis une feuille par page
+astro.config.mjs         adresse du site, cache, et les intégrations : pages de texte, images orphelines, sitemap.xml
+```
 
 ## Domaine
 
 Le site est servi sur `perpetual.be` via GitHub Pages (fichier `public/CNAME` + enregistrements DNS chez l'hébergeur du domaine).
 
-**Mise en ligne sur `perpetual.be` (lot 9)**, côté dépôt : `site: 'https://perpetual.be'` dans `astro.config.mjs`, le fichier `public/CNAME` (`perpetual.be`) et `"indexation": true` dans `data/site.json`. Rien d'autre : le `noindex` des pages part (sauf la 404 et `/dev/photos`), `robots.txt` s'ouvre et renvoie au plan du site, et `sitemap.xml` passe aux adresses de `perpetual.be`. Pour changer d'hébergeur, il suffit de lancer `npm run build` et de servir le contenu de `dist/` : aucune dépendance à GitHub dans le site lui-même.
+### Mise en ligne sur perpetual.be
+
+Côté dépôt : `site: 'https://perpetual.be'` dans `astro.config.mjs`, le fichier `public/CNAME` (`perpetual.be`) et `"indexation": true` dans `data/site.json`. Rien d'autre : le `noindex` des pages part (sauf la 404 et `/dev/photos`), `robots.txt` s'ouvre et renvoie au plan du site, et `sitemap.xml` passe aux adresses de `perpetual.be`. Pour changer d'hébergeur, il suffit de lancer `npm run build` et de servir le contenu de `dist/` : aucune dépendance à GitHub dans le site lui-même.

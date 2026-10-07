@@ -1,10 +1,8 @@
 ---
-// La Home (lot 4, message 2/2, 01/10/2026), identique à celle de la maquette (design/maquette/index.html, la référence) : en-tête → photo pleine largeur
-// portant l'accroche → bande des quatre chiffres avec les anneaux → deux colonnes de paragraphes et la signature → graphique en anneau qui se remplit →
-// carte sous « Réalisations » → pied de page (07/10/2026, retour de Julien : Collectif et ses logos partenaires quittent la Home pour leur page,
-// src/pages/collectif.astro). Les textes viennent de content/ (src/lib/contenu.ts, lus comme build.mjs),
-// la photo du premier écran et le texte de la carte de l'en-tête de content/home.md (hero, carte), la carte de data/carte/. Un composant par section :
-// src/components/home/.
+// La Home : en-tête → photo pleine largeur portant l'accroche → bande des quatre chiffres avec les anneaux → deux colonnes de paragraphes et la
+// signature → graphique en anneau qui se remplit → carte sous « Réalisations » → pied de page. Les textes viennent de content/home.md
+// (src/lib/contenu.ts), la photo du premier écran et le texte de la carte de son en-tête (hero, carte), la carte de data/carte/. Un composant par
+// section : src/components/home/.
 import Base from '../layouts/Base.astro';
 import PremierEcran from '../components/home/PremierEcran.astro';
 import Graphique from '../components/home/Graphique.astro';

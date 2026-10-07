@@ -1,7 +1,6 @@
-/* Base du site (lot 4, 01/10/2026) : la section 3 de design/maquette/maquette.css, reprise telle quelle — reset, html, body, liens, images, listes,
-   les deux grilles (.container 1 200 px, .large 1 600 px), l'eyebrow, les titres de section, les sections et le trait de survol de tous les liens. */
+/* Base du site : reset, html, body, liens, images, listes, les deux grilles (.container 1 200 px, .large 1 600 px), l'eyebrow, les titres de section, les sections et le trait de survol de tous les liens. */
 *{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100%;background:var(--blanc);scroll-behavior:smooth}   /* défilement fluide vers une ancre (« Contact » → #contact, le pied de page) : demande d'Axel du 01/10, absent de la maquette */
+html{-webkit-text-size-adjust:100%;background:var(--blanc);scroll-behavior:smooth}   /* défilement fluide vers une ancre (« Contact » → #contact, le pied de page) */
 body{background:var(--blanc);color:var(--c-texte);font-family:var(--sans);font-size:var(--fs-texte);line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 img{display:block;max-width:100%}
@@ -19,7 +18,7 @@ ol,ul{list-style:none}
 .trait::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--c-trait);transform:scaleX(0);transform-origin:left;transition:transform .25s}
 .trait:hover::after,.trait.is-active::after{transform:scaleX(1)}
 
-/* téléphone : les sections (section 5 de maquette.css) */
+/* téléphone : les sections */
 @media (max-width:640px){
   .section{padding:44px 0}
 }

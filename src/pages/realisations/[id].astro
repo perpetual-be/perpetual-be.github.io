@@ -1,16 +1,15 @@
 ---
-// Les fiches projet (lot 5, message 1/2, 05/10/2026) : une page par projet détaillé (kind « detailed » de data/projects.json), à l'adresse
-// /realisations/<id>, dans l'ordre du champ order ; chacune identique à sa fiche dans la maquette (design/maquette/projet-<id>.html, la référence).
-// En-tête — « Réalisations » actif : le trait, sans aria-current, ce n'est pas la page Réalisations elle-même — → le corps : la région, le titre, les
+// Les fiches projet : une page par projet détaillé (kind « detailed » de data/projects.json), à l'adresse /realisations/<id>, dans l'ordre du champ
+// order. En-tête — « Réalisations » actif : le trait, sans aria-current, ce n'est pas la page Réalisations elle-même — → le corps : la région, le titre, les
 // trois infos et les trois chapitres à gauche, la photo de tête qui suit à droite → « Photos », la mosaïque → le projet précédent et le suivant, en
-// boucle dans l'ordre du champ order → pied de page ; la visionneuse, masquée, dans <main> après l'article (comme la maquette). Brosse (kind project)
+// boucle dans l'ordre du champ order → pied de page ; la visionneuse, masquée, dans <main> après l'article. Brosse (kind project)
 // n'a pas de fiche. Les infos d'une fiche viennent de data/projects.json : region (l'eyebrow), quartier (la Localisation, à défaut location), surface,
 // use, tete (le cadre et le point focal de la photo de tête) ; ses chapitres, was, saw et became ; ses photos, selection — la première en tête, les
 // suivantes en mosaïque. Un champ manquant arrête le build.
-// La description de la page (lot 7, 06/10/2026, choix d'Axel D1 A), calculée depuis les données, sans texte nouveau : « <name>, <location> · <surface> ·
+// La description de la page, calculée depuis les données, sans texte nouveau : « <name>, <location> · <surface> ·
 // <use>. » puis la phrase de la Home, « Perpetual — le trait d’union entre les idées et le capital. » (name et tagline de data/site.json) — ex. « The Bank,
 // Liège · 1 100 m² · Logements & commerce. Perpetual — le trait d’union entre les idées et le capital. » Elle suit data/projects.json.
-// Textes alternatifs des photos (lot 7, D5 ; src/lib/alt.ts) : la légende de la photo, sinon « nom, location » (« The Bank, Liège »).
+// Textes alternatifs des photos (src/lib/alt.ts) : la légende de la photo, sinon « nom, location » (« The Bank, Liège »).
 // Composants : src/components/fiche/ (Corps, Mosaique, Voisins) et src/components/Visionneuse.astro ; styles : src/styles/fiche.css et visionneuse.css.
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';

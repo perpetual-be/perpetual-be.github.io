@@ -1,9 +1,8 @@
-// L'image de partage (Open Graph et carte de partage des réseaux et messageries ; lot 7, 06/10/2026, choix d'Axel D2 A) : la photo du premier écran de la
-// Home, Community 05, recadrée en 1 200 × 630 avec le même point focal vertical (20 % : le haut du bâtiment), sans texte ni logo. Produite au build par
-// src/pages/partage.jpg.ts depuis la plus grande version de la photo (design/directions/img/<clé>-l.jpg, sinon <clé>.jpg ; aucun fichier de plus dans le
-// dépôt), servie à /partage.jpg (JPEG, ~155 Ko : sous les 300 Ko au-delà desquels WhatsApp n'affiche pas d'aperçu). Les balises sont posées par
-// src/layouts/Base.astro sur toutes les pages, l'adresse absolue tirée de `site` (astro.config.mjs). Pour en changer : la clé et le point focal ici
-// (x et y : la part de la marge laissée à gauche et en haut, 0,5 = centré).
+// L'image de partage (Open Graph et carte de partage des réseaux et messageries) : la photo du premier écran de la Home, Community 05, recadrée en
+// 1 200 × 630 avec le même point focal vertical (20 % : le haut du bâtiment), sans texte ni logo. Produite au build par src/pages/partage.jpg.ts depuis
+// la plus grande version de la photo, servie à /partage.jpg (JPEG, ~155 Ko : sous les 300 Ko au-delà desquels WhatsApp n'affiche pas d'aperçu). Les
+// balises sont posées par src/layouts/Base.astro sur toutes les pages, l'adresse absolue tirée de `site` (astro.config.mjs). Pour en changer : la clé
+// et le point focal ici (x et y : la part de la marge laissée à gauche et en haut, 0,5 = centré).
 import { getCollection } from 'astro:content';
 import { nomEtLieu, texteAlternatif } from './alt';
 

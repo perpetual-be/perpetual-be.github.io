@@ -1,17 +1,17 @@
-// Le plugin « registre » des pages de texte rendues depuis leur Markdown (lot 6, 01/10/2026) — mentions légales, politique de confidentialité —, écrit ici,
-// sans dépendance : un plugin hast (l'arbre HTML, celui de rehype) pour Sätteri, le processeur Markdown d'Astro 7 — Astro n'exécute plus les plugins rehype
-// « unified » sans installer @astrojs/markdown-remark —, enregistré par astro.config.mjs et appliqué aux seuls fichiers de content/ qu'il nomme (la
-// fabrique rend null pour les autres). Ce qu'il fait :
+// Le plugin « registre » des pages de texte rendues depuis leur Markdown — mentions légales, politique de confidentialité —, sans dépendance : un plugin
+// hast (l'arbre HTML, celui de rehype) pour Sätteri, le processeur Markdown d'Astro 7 — Astro n'exécute plus les plugins rehype « unified » sans
+// installer @astrojs/markdown-remark —, enregistré par astro.config.mjs et appliqué aux seuls fichiers de content/ qu'il nomme (la fabrique rend null
+// pour les autres). Ce qu'il fait :
 //   · découpage : une section.rang par titre ## (l'id : le slug du titre, sans son numéro), le gabarit d'Engagements — à gauche (.rang__g) le titre en
 //     h2.chapitre__titre, comme les chapitres des fiches, précédé de son numéro en p.chapitre__num (« 01 ») quand il commence par un numéro
 //     (« 1. Responsable du traitement » ; la section prend alors .rang--numerote et le titre perd son numéro) ; à droite (.rang__d) le reste de la
 //     section, tel que rendu par Astro (gras, italique, listes, liens, retours à la ligne forcés), dans .page-texte ; un bloc hors d'une section arrête le
 //     build, comme pour Engagements ;
 //   · typographie : espaces insécables avant « : ; ? ! » et à l'intérieur des guillemets français (pas dans le code) ; « e-mail » et « e-mails » ne se
-//     coupent plus au trait d'union (retouche du 01/10 : un span en white-space: nowrap — Instrument Sans n'a pas le trait d'union insécable U+2011,
-//     qui viendrait d'une autre police) ;
+//     coupent pas au trait d'union (un span en white-space: nowrap — Instrument Sans n'a pas le trait d'union insécable U+2011, qui viendrait d'une
+//     autre police) ;
 //   · liens : .lien-texte, mailto compris ; un autre site (http…) s'ouvre dans un nouvel onglet (target _blank, rel noopener), suivi d'un « (nouvel
-//     onglet) » visuellement masqué — comme enLigne() de build.mjs ;
+//     onglet) » visuellement masqué — comme enLigne() de src/lib/contenu.ts ;
 //   · les commentaires HTML de content/ (des notes internes) ne sont pas publiés.
 // Le numéro et le titre sont émis en HTML brut (nœud raw) : le plugin d'ids de titres d'Astro, qui passe après celui-ci sur chaque h1–h6, ne donne
 // ainsi pas au h2 un id qui doublerait celui de la section.
@@ -19,7 +19,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-/** Slug d'un titre, comme build.mjs et src/lib/contenu.ts : accents retirés, minuscules, tirets. */
+/** Slug d'un titre, comme src/lib/contenu.ts : accents retirés, minuscules, tirets. */
 const slug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const SANS_TYPOGRAPHIE = new Set(['code', 'pre', 'script', 'style']);

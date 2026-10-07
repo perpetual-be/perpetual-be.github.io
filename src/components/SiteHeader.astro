@@ -1,14 +1,13 @@
 ---
-// En-tête commun à toutes les pages (lot 4, 01/10/2026) : mêmes balises et classes que header() de design/maquette/src/build.mjs, la maquette étant la
-// référence (styles : src/styles/entete.css). Le logo — le Φ en SVG inline, tiré de public/favicon.svg comme le fait build.mjs (markPath), peint en
+// En-tête commun à toutes les pages (styles : src/styles/entete.css). Le logo — le Φ en SVG inline, tiré de public/favicon.svg (markPath), peint en
 // currentColor, couleur --c-phi — puis « Perpetual » en texte (Jost en capitales par le CSS) ; la navigation lue dans data/site.json (nav).
 // Page active : prop `active` de la mise en page (le href de l'entrée, ex. « /realisations », active aussi sur les fiches) → trait sous le lien
 // (.is-active) ; aria-current="page" sur le lien de la page elle-même seulement.
-// En-tête collant (décision d'Axel du 19/09, absent de la maquette) : le conteneur .entete-collante est collé en haut de la fenêtre ; le script en ligne
-// ci-dessous le cache quand on fait défiler vers le bas et le fait revenir dès qu'on remonte — toujours visible en haut de page (tant que le
-// défilement est inférieur à sa hauteur), seuil de quelques pixels pour ne pas trembler, retour aussi quand le focus clavier entre dedans.
-// Menu au téléphone (07/10/2026, choix d'Axel, avec la page Collectif : quatre entrées ne tiennent plus sur une ligne à côté du Φ) : jusqu'à 640 px,
-// « Φ PERPETUAL » à gauche et un bouton à trois traits à droite (button.menu-bouton, aria-expanded, aria-controls) ; il ouvre la navigation en panneau
+// En-tête collant : le conteneur .entete-collante est collé en haut de la fenêtre ; le script en ligne ci-dessous le cache quand on fait défiler
+// vers le bas et le fait revenir dès qu'on remonte — toujours visible en haut de page (tant que le défilement est inférieur à sa hauteur), seuil de
+// quelques pixels pour ne pas trembler, retour aussi quand le focus clavier entre dedans.
+// Menu du téléphone (quatre entrées ne tiennent pas sur une ligne à côté du Φ) : jusqu'à 640 px, « Φ PERPETUAL » à gauche et un bouton à trois
+// traits à droite (button.menu-bouton, aria-expanded, aria-controls) ; il ouvre la navigation en panneau
 // blanc sous l'en-tête (les quatre entrées en grand, entre des filets) et devient une croix. Le second script ci-dessous : clic sur le bouton, Échap
 // (le focus revient au bouton), clic sur une entrée (« Contact » mène au pied de page) ou passage au-dessus de 640 px referment ; panneau ouvert, la page
 // ne défile plus et <main> et le pied de page sont inertes (Tab reste dans l'en-tête). La classe menu-js, posée sur <html> dans le <head> (Base.astro),
