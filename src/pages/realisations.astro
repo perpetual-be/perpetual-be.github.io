@@ -1,11 +1,10 @@
 ---
-// La vue Réalisations (lot 5, message 2/2, 05/10/2026), à l'adresse /realisations, identique à celle de la maquette (design/maquette/realisations.html, la
-// référence) : en-tête — « Réalisations » actif, le trait et aria-current : c'est la page elle-même — → le titre seul, en sans léger (.p2-ouv ; plus de
-// phrase d'ouverture) → les projets en 2-2-1 : Community et Ateliers 118, The Bank et Data Box, des liens vers leur fiche (/realisations/<id>), puis Brosse
-// seule sur toute la largeur, un album sans fiche → la mosaïque des agences, 4-3-4-3-4, au format entier, avec ses deux cases de texte → pied de page ; la
-// visionneuse, masquée, dans <main> après la mosaïque (comme la maquette). Les photos du bloc de Brosse et des tuiles se parcourent sur place ; un clic sur
-// la photo ouvre la visionneuse sur la photo affichée.
-// Les données, lues comme les lit design/maquette/src/build.mjs, avec les mêmes contrôles (un manque arrête le build) : la composition dans
+// La vue Réalisations, à l'adresse /realisations : en-tête — « Réalisations » actif, le trait et aria-current : c'est la page elle-même — → le titre
+// seul, en sans léger (.p2-ouv) → les projets en rangées (data/realisations.json, rangees) : les projets à fiche sont des liens vers elle
+// (/realisations/<id>), Brosse un album sans fiche → la mosaïque des agences, au format entier, avec ses deux cases de texte → pied de page ; la
+// visionneuse, masquée, dans <main> après la mosaïque. Les photos du bloc de Brosse et des tuiles se parcourent sur place ; un clic sur la photo ouvre
+// la visionneuse sur la photo affichée.
+// Les données, contrôlées (un manque arrête le build) : la composition dans
 // data/realisations.json — rangees, les rangées des projets (classe a, b ou seul ; pour chaque projet son id et sa part en douzièmes), mosaique, les rangées
 // de la mosaïque (ids des biens, cas:debut et cas:fin) — ; les projets et les biens dans data/projects.json — le bloc d'un projet : sa photo (la première clé
 // de selection) et son point focal (bloc.focal), Lieu (location), Surface (surface), Usage (use ; à défaut « Projet », provisoire : projet) ; un bien : la
@@ -29,7 +28,7 @@ import '../styles/visionneuse.css';
 
 const page = await getEntry('pages', 'realisations');
 if (!page) throw new Error('content/realisations.md introuvable');
-// l'énoncé du programme agences, coupé à la première phrase (enonce, enonceSuite de build.mjs) : la première case de texte, puis la seconde
+// l'énoncé du programme agences, coupé à la première phrase : la première case de texte, puis la seconde
 const agences = await lireAgences();
 const [, enonce, enonceSuite] = agences.match(/^(.+?[.!?])\s+(.+)$/s) || [];
 if (!enonceSuite) throw new Error('content/realisations.md : le paragraphe du programme agences doit compter au moins deux phrases');
@@ -40,7 +39,7 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 const albums: AlbumVisionneuse[] = [];
 const grandes = (cles: string[]) => Promise.all(cles.map((cle) => photoGrande(cle)));
 
-// les projets en 2-2-1 : les parts de chaque classe de rangée sont de la mise en page (PARTS de build.mjs, la grille de .alt__rang--<classe>)
+// les rangées des projets : les parts de chaque classe de rangée sont de la mise en page (la grille de .alt__rang--<classe>, realisations.css)
 const PARTS: Record<string, number[]> = { a: [7, 5], b: [5, 7], seul: [12] };
 const rangeesBrutes = composition.rangees.map((r, i) => {
   const ou = `data/realisations.json : rangees, rangée ${i + 1}`;
@@ -58,7 +57,7 @@ for (const r of rangeesBrutes) {
   const blocs: BlocProjet[] = [];
   for (const { id, part } of r.projets) {
     const p = projets.get(id)!;
-    // le bloc d'un projet (blocDe de build.mjs)
+    // le bloc d'un projet
     const b = { photo: (p.selection || [])[0], focal: p.bloc?.focal, lieu: p.location, surface: p.surface };
     const manque = Object.entries({ selection: b.photo, 'bloc.focal': b.focal, location: b.lieu, surface: b.surface }).filter(([, v]) => !v || !v.trim()).map(([k]) => k);
     if (!p.use && !p.projet) manque.push('use (à défaut projet)');
@@ -91,7 +90,7 @@ for (const rang of composition.mosaique) {
   const cases: CaseMosaique[] = [];
   for (const x of rang) {
     if (x === 'cas:debut' || x === 'cas:fin') { cases.push({ cas: x === 'cas:debut' ? 'debut' : 'fin' }); continue; }
-    // un bien (bienDe de build.mjs)
+    // un bien
     const p = projets.get(x)!, photos = p.selection && p.selection.length ? p.selection : [`${x}-01`];
     const etrangere = photos.find((k) => !k.startsWith(x + '-'));
     if (etrangere) throw new Error(`data/projects.json : ${x}, selection — ${etrangere} n'est pas une photo de ce bien`);

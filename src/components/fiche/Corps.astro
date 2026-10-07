@@ -1,13 +1,12 @@
 ---
-// Le corps d'une fiche projet (lot 5, 05/10/2026) : mêmes balises et classes que fichePage() de design/maquette/src/build.mjs, la maquette
-// (design/maquette/projet-<id>.html) étant la référence (styles : src/styles/fiche.css). Une grille de trois colonnes, marge | texte | photo
-// (.fiche__corps--paysage ou --carre, le cadre de la photo de tête). À gauche (.fiche__gauche) : la région en eyebrow et le titre (h1.page__titre, en
-// serif), les trois infos (ol.fiche__faits : la valeur, puis son étiquette Localisation, Surface, Usage), les trois chapitres — was, saw et became,
-// numérotés 01 à 03, leurs textes insérés tels quels, comme build.mjs. À droite (figure.fiche__photo), la photo de tête, au bord de la fenêtre dès le bas
+// Le corps d'une fiche projet (styles : src/styles/fiche.css). Une grille de trois colonnes, marge | texte | photo (.fiche__corps--paysage ou
+// --carre, le cadre de la photo de tête). À gauche (.fiche__gauche) : la région en eyebrow et le titre (h1.page__titre, en serif), les trois infos
+// (ol.fiche__faits : la valeur, puis son étiquette Localisation, Surface, Usage), les trois chapitres — was, saw et became, numérotés 01 à 03, leurs
+// textes insérés tels quels. À droite (figure.fiche__photo), la photo de tête, au bord de la fenêtre dès le bas
 // de l'en-tête, qui suit le texte quand il est plus long qu'elle (CSS).
 // La photo de tête, par ProjectPhoto : la première clé de selection, chargée tout de suite, son point focal (tete.focal de data/projects.json) en
-// object-position, son texte alternatif donné par la page (lot 7, src/lib/alt.ts : sa légende, sinon « nom, lieu »). sizes comme sizesCadre() de build.mjs : la largeur du cadre (100vw au téléphone), multipliée
-// par k = max(1, format de la photo ÷ format du cadre) — en object-fit: cover, une photo plus large que son cadre est calée sur sa hauteur.
+// object-position, son texte alternatif donné par la page (src/lib/alt.ts : sa légende, sinon « nom, lieu »). sizes : la largeur du cadre (100vw au
+// téléphone), multipliée par k = max(1, format de la photo ÷ format du cadre) — en object-fit: cover, une photo plus large que son cadre est calée sur sa hauteur.
 import ProjectPhoto from '../ProjectPhoto.astro';
 import { formatPhoto } from '../../lib/photos';
 
@@ -30,10 +29,9 @@ interface Props {
 }
 
 const { nom, region, lieu, surface, usage, chapitres, photo, cadre, focal, alt } = Astro.props;
-// Le cadre de la photo de tête, de la mise en page (CADRES de build.mjs ; --cadre-largeur et --cadre-format de fiche.css) : sa part de la page, en vw,
-// et son format.
+// Le cadre de la photo de tête, comme --cadre-largeur et --cadre-format de fiche.css (à changer ensemble) : sa part de la page, en vw, et son format.
 const CADRES = { paysage: { largeur: 50, format: 2100 / 1694 }, carre: { largeur: 40, format: 1 } };
-const TITRES = ['Le lieu', 'Notre idée', 'Aujourd’hui']; // 06/10, choix d'Axel (lot 3) ; les mêmes que CHAPITRES de build.mjs
+const TITRES = ['Le lieu', 'Notre idée', 'Aujourd’hui']; // les titres des trois chapitres : was, saw, became
 const k = Math.max(1, (await formatPhoto(photo)) / CADRES[cadre].format);
 const terme = (largeur: string) => (k === 1 ? `calc(${largeur})` : `calc((${largeur}) * ${k.toFixed(3)})`);
 const sizes = `(max-width:640px) ${terme('100vw')}, ${terme(`${CADRES[cadre].largeur}vw`)}`;

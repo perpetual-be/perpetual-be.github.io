@@ -1,7 +1,6 @@
-// La carte des réalisations de la Home (lot 4, 01/10/2026), depuis data/carte/ — de la donnée, partagée avec la maquette : belgique.svg (contour,
-// 17 points, 17 étiquettes placées à la main ; les quatre adresses bruxelloises, groupe « Bruxelles » de belgique.json, sont un seul point ; tous les points de la même taille depuis le 07/10)
-// et belgique.json (villes, longitudes, groupes). Reprise de carteSvg() de design/maquette/src/build.mjs. Le titre et le paragraphe de la carte ne
-// sont plus calculés depuis le 04/10/2026 (lot 2b, item 3 : plus de nombre) : ils sont écrits dans l'en-tête carte de content/home.md (src/lib/contenu.ts).
+// La carte des réalisations de la Home, depuis data/carte/ : belgique.svg (contour, points, étiquettes placées à la main) et belgique.json (villes,
+// longitudes, groupes ; les adresses bruxelloises, groupe « Bruxelles », partagent un seul point). Le titre et le paragraphe de la carte sont dans
+// l'en-tête carte de content/home.md (src/lib/contenu.ts).
 import belgiqueJson from '../../data/carte/belgique.json';
 import svgBrut from '../../data/carte/belgique.svg?raw';
 

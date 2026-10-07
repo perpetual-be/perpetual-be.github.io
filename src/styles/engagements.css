@@ -1,6 +1,5 @@
-/* Page Engagements du site (lot 6, 01/10/2026) : ce qui n'appartient qu'à elle dans design/maquette/maquette.css (section 4, « page Engagements ») — le
-   verbe (.rang__verbe), le texte (.eng-texte), l'œuvre sur sa cimaise (.cimaise, .oeuvre) et son cartel (.cartel) — et leurs règles téléphone
-   (section 5), repris tels quels. Importé par src/pages/engagements.astro, après src/styles/page.css. Balisage : src/components/engagements/Rang.astro. */
+/* Page Engagements : ce qui n'appartient qu'à elle — le verbe (.rang__verbe), le texte (.eng-texte), l'œuvre sur sa cimaise (.cimaise, .oeuvre) et
+   son cartel (.cartel) — et leurs règles téléphone. Importé par src/pages/engagements.astro, après src/styles/page.css. Balisage : src/components/engagements/Rang.astro. */
 .rang__verbe{font-family:var(--serif);font-weight:400;font-size:var(--fs-nom);line-height:1.05;letter-spacing:-.01em}
 .eng-texte{padding-top:9px}   /* la première ligne du texte à hauteur de l'œil du verbe */
 .eng-texte p{margin-bottom:16px;max-width:62ch;text-wrap:pretty}
@@ -14,7 +13,7 @@
 .cartel b{display:block;font-weight:500;font-size:14px;color:var(--c-texte)}
 .cartel span{display:block}
 
-/* ---------- téléphone (section 5 de maquette.css) ---------- */
+/* ---------- téléphone ---------- */
 @media (max-width:640px){
   /* une colonne par rangée — le verbe, le texte, puis l'œuvre ; la cimaise reste dans les gouttières, l'œuvre prend la largeur du panneau */
   .rang__verbe{order:1}

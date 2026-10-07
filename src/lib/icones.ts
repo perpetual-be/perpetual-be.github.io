@@ -1,8 +1,8 @@
-// Les icônes PNG du site (lot 7, 06/10/2026 ; Cockpit t120912p), tirées au build de public/favicon.svg — le Φ du logo, en bronze #684E1E (la teinte claire
-// du mode sombre n'est pas rendue : sharp ne lit pas prefers-color-scheme) — pour les navigateurs et appareils qui ne prennent pas le SVG :
+// Les icônes PNG du site, tirées au build de public/favicon.svg — le Φ du logo, en bronze #684E1E (la teinte claire du mode sombre n'est pas rendue :
+// sharp ne lit pas prefers-color-scheme) — pour les navigateurs et appareils qui ne prennent pas le SVG :
 //   · favicon-32.png : 32 × 32, fond transparent, le Φ à toute la hauteur ;
 //   · apple-touch-icon.png : 180 × 180 (l'icône d'un raccourci sur l'écran d'accueil d'un iPhone ou d'un iPad), fond blanc — iOS remplirait un fond
-//     transparent en noir —, le Φ à 70 % de la hauteur, centré (choix d'Axel D3 A).
+//     transparent en noir —, le Φ à 70 % de la hauteur, centré.
 // Servies par src/pages/favicon-32.png.ts et src/pages/apple-touch-icon.png.ts ; déclarées dans src/layouts/Base.astro. Aucun fichier PNG dans le dépôt.
 import fs from 'node:fs';
 import path from 'node:path';

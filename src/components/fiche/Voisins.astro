@@ -1,8 +1,7 @@
 ---
-// Le projet précédent et le suivant, au bas d'une fiche projet (lot 5, 05/10/2026) : mêmes balises et classes que fichePage() de
-// design/maquette/src/build.mjs, la maquette étant la référence (styles : src/styles/fiche.css). Sur la grille large, un filet au-dessus : « Projet
-// précédent » (← nom, à gauche) et « Projet suivant » (nom →, à droite), en serif or foncé, liens vers /realisations/<id>. La page les choisit en boucle
-// dans l'ordre du champ order de data/projects.json (The Bank → Data Box → Community → Ateliers 118 → The Bank).
+// Le projet précédent et le suivant, au bas d'une fiche projet (styles : src/styles/fiche.css). Sur la grille large, un filet au-dessus : « Projet
+// précédent » (← nom, à gauche) et « Projet suivant » (nom →, à droite), en serif or foncé, liens vers /realisations/<id>. La page les choisit en
+// boucle dans l'ordre du champ order de data/projects.json.
 interface Props {
   prec: { id: string; nom: string };
   suiv: { id: string; nom: string };

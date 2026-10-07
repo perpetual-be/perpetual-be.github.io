@@ -1,13 +1,12 @@
 ---
-// Un album de la vue Réalisations (lot 5, 05/10/2026), commun au bloc de Brosse et aux tuiles de la mosaïque : mêmes balises et classes que albumPhotos()
-// de design/maquette/src/build.mjs, la maquette étant la référence (styles : src/styles/realisations.css). Les photos se parcourent sur place : un bouton sur
+// Un album de la vue Réalisations, commun au bloc de Brosse et aux tuiles de la mosaïque (styles : src/styles/realisations.css). Les photos se parcourent sur place : un bouton sur
 // toute la surface (.photos__ouvrir, le nom accessible de l'album) porte la piste — span.photos, tabindex -1 (pas d'arrêt de tabulation sur elle), une vue
 // (.photos__vue) par photo, qui rogne le zoom du survol ; la première <img> a la classe photos__une — et le texte posé sur la photo (le contenu du
 // composant, masqué aux lecteurs d'écran : le nom accessible le dit déjà) ; à côté du bouton (un bouton ne contient pas d'autres boutons), s'il y a plus
 // d'une photo, « 1 / n » (.photos__compteur) et les deux flèches (.photos__fleche). data-album : l'indice de l'album dans ceux de la visionneuse
 // (src/components/Visionneuse.astro, dont le script fait tourner la piste en boucle, tient le compteur et ouvre la visionneuse sur la photo affichée) ;
 // data-n : le nombre de photos. Sans JavaScript, la piste se fait glisser, sans compteur ni flèches (CSS).
-// Les photos, par ProjectPhoto : chacune avec son texte alternatif (lot 7, règle de src/lib/alt.ts : la légende, sinon « nom, lieu » pour Brosse, la ville
+// Les photos, par ProjectPhoto : chacune avec son texte alternatif (règle de src/lib/alt.ts : la légende, sinon « nom, lieu » pour Brosse, la ville
 // pour un bien ; le nom accessible du bouton l'emporte pour un lecteur d'écran), son sizes, son point focal et son chargement (paresseux, sauf la photo n° 1
 // de Brosse).
 import ProjectPhoto from '../ProjectPhoto.astro';

@@ -1,7 +1,6 @@
 ---
-// La mosaïque des agences, vue Réalisations (lot 5, 05/10/2026) : mêmes balises et classes que realisationsPage() de design/maquette/src/build.mjs, la
-// maquette étant la référence (styles : src/styles/realisations.css). Sur la grille large, les seize biens (kind agency et gallery) en rangées de 4 et de 3
-// cases (4-3-4-3-4 : mosaique de data/realisations.json), au format entier : chaque case a le format de sa photo n° 1 et une part de la rangée proportionnelle
+// La mosaïque des agences, vue Réalisations (styles : src/styles/realisations.css). Sur la grille large, les biens (kind agency et gallery) en rangées
+// de 4 ou de 3 cases (mosaique de data/realisations.json), au format entier : chaque case a le format de sa photo n° 1 et une part de la rangée proportionnelle
 // à ce format — les cases d'une rangée ont la même hauteur, rien n'est recadré ni agrandi. Une case : un bien (./Tuile.astro), ou l'une des deux cases de
 // texte — l'énoncé du programme agences coupé à la première phrase : la première (h2.cas__enonce) en haut à gauche, la suite (p.cas__phrase) en bas à droite,
 // insérées telles quelles (espaces insécables compris), au format CAS_R. Nom accessible de la section : « Programme agences ».
@@ -27,7 +26,7 @@ interface Props {
 }
 
 const { rangees, enonce, suite } = Astro.props;
-// le format des cases de texte : de la mise en page (CAS_R de build.mjs)
+// le format des cases de texte : de la mise en page
 const CAS_R = 1.15;
 // par rangée, le format de chaque case (CAS_R, ou celui de la photo n° 1 du bien) et sa part de la rangée (son format ÷ la somme des formats) : le sizes
 // de ses photos ; ecarts, 14 px par écart

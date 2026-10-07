@@ -1,9 +1,8 @@
 ---
-// Le bloc d'un projet à fiche, vue Réalisations (lot 5, 05/10/2026) : mêmes balises et classes que blocLien() de design/maquette/src/build.mjs, la maquette
-// étant la référence (styles : src/styles/realisations.css). Un lien vers sa fiche (a.bloc#<id> → /realisations/<id>) : la photo du projet, puis le texte
+// Le bloc d'un projet à fiche, vue Réalisations (styles : src/styles/realisations.css). Un lien vers sa fiche (a.bloc#<id> → /realisations/<id>) : la photo du projet, puis le texte
 // posé dessus — le nom en serif blanc, les trois faits (Lieu, Surface, Usage ; « Projet », provisoire, tant que l'usage manque), affichés au survol et au
 // focus clavier, et « lieu · surface » pour le téléphone. La photo, par ProjectPhoto : la première clé de selection, chargée tout de suite, son point focal
-// (bloc.focal de data/projects.json) en object-position, texte alternatif vide comme la maquette, le sizes du bloc (sizesBloc, ./tailles.ts).
+// (bloc.focal de data/projects.json) en object-position, texte alternatif vide (le lien dit déjà tout), le sizes du bloc (sizesBloc, ./tailles.ts).
 import ProjectPhoto from '../ProjectPhoto.astro';
 import Fait from './Fait.astro';
 import { sizesBloc } from './tailles';

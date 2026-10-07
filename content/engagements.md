@@ -24,7 +24,7 @@ Nous mettons aujourd’hui en place avec eux un soutien de longue durée, en moy
 
 <!--
 Le lien Créahmbxl s’ouvre dans un nouvel onglet (liens externes : target="_blank" rel="noopener" au rendu).
-Œuvre — Créahmbxl : l’œuvre (Ines Reddah, 2024, recadrée) est sur une cimaise sous « Soutenir » ; ses données sont dans l’en-tête de ce fichier (oeuvre : la rangée, la clé de la photo — design/directions/img/<clé>.jpg —, la légende et le détail du cartel, qui garde ses espaces insécables, le texte alternatif), lues par la maquette et par le site.
+Œuvre — Créahmbxl : l’œuvre (Ines Reddah, 2024, recadrée) est sur une cimaise sous « Soutenir » ; ses données sont dans l’en-tête de ce fichier (oeuvre : la rangée, la clé de la photo, la légende et le détail du cartel, qui garde ses espaces insécables, le texte alternatif).
 -->
 
 ## Aider

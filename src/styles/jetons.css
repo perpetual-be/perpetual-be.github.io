@@ -1,7 +1,6 @@
-/* Jetons du site (lot 4, 01/10/2026) : le :root de la section 2 de design/maquette/maquette.css, repris tel quel — palette, rôles, typographie, mise en
-   page —, avec ses surcharges au téléphone (≤ 640 px) et en fenêtre basse. C'est le système de styles du site : les composants ne lisent que la couche
-   de rôles (--c-*, --surface-*, --fs-*…), jamais la palette directement. La maquette (design/maquette/) reste la référence : une valeur se change là
-   d'abord, puis ici. */
+/* Jetons du site : palette, rôles, typographie, mise en page, avec leurs surcharges au téléphone (≤ 640 px) et en fenêtre basse. C'est le système
+   de styles du site : les composants ne lisent que la couche de rôles (--c-*, --surface-*, --fs-*…), jamais la palette directement. Une couleur ou une
+   taille se change ici. */
 :root{
   /* palette */
   --blanc:#FFFFFF;--anthracite:#26231F;--gris:#6B655C;--gris-clair:#9A948A;--gris-chaud:#736D60;--filet:#E6E1D6;
@@ -9,40 +8,40 @@
   --sable:#F6F1E6;--papier:#F9F9F6;
   --or-deco:#C9B58A;--or-deco-2:#D9C9A3;
   --photo-texte:#FFFFFF;--voile-fort:rgba(0,0,0,.72);--voile-moyen:rgba(0,0,0,.55);--voile-leger:rgba(0,0,0,.12);
-  /* rôles — le dosage figé le 22/09 ; les composants ne lisent que ceux-ci */
+  /* rôles — les composants ne lisent que ceux-ci */
   --c-texte:var(--anthracite);--c-meta:var(--gris);
   --c-chiffre:var(--or);                                  /* chiffres clés */
-  --c-etiquette-chiffre:var(--gris-chaud);                /* étiquettes des chiffres, figé ; gris chaud #736D60 depuis le 06/10 (lot 7, t171006c : 4,87:1 sur papier, #7A7466 faisait 4,41:1) */
-  --c-signature:var(--or-fonce);                          /* signature : or foncé, figé le 23/09 */
+  --c-etiquette-chiffre:var(--gris-chaud);                /* étiquettes des chiffres : gris chaud #736D60 (4,87:1 sur papier ; #7A7466 ne faisait que 4,41:1) */
+  --c-signature:var(--or-fonce);                          /* signature : or foncé */
   --c-lien:var(--or-fonce);                               /* « Toutes les réalisations → » */
   --c-mail:var(--anthracite);                             /* mail du pied de page, souligné en or clair */
   --c-trait:var(--or);--c-trait-fin:var(--or-clair);      /* trait de survol ; soulignement du mail */
-  --c-remplissage:var(--anthracite);                      /* graphique : remplissage des barres */
-  --c-part-1:var(--anthracite);--c-part-2:var(--or);--c-part-3:var(--or-deco);   /* graphique en anneau (lot 2b, retenu le 01/10) : les trois parts, dans l'ordre du tour */
-  --remplissage:1.8s;                                     /* graphique : durée du remplissage (anneau, barres) — 1,8 s, choisie par Axel le 01/10 (1,2 et 2,5 s comparées) */
+  --c-remplissage:var(--anthracite);                      /* graphique : remplissage des barres (aucune règle ne le lit) */
+  --c-part-1:var(--anthracite);--c-part-2:var(--or);--c-part-3:var(--or-deco);   /* graphique en anneau : les trois parts, dans l'ordre du tour */
+  --remplissage:1.8s;                                     /* graphique : durée du remplissage de l'anneau */
   --c-point:var(--anthracite);                            /* carte : points */
-  --c-num-chapitre:var(--or-fonce);                       /* numéros de chapitre : or foncé (5,0:1 à 15 px ; l'or mat n'y fait que 4,0:1), revue de la fiche */
+  --c-num-chapitre:var(--or-fonce);                       /* numéros de chapitre : or foncé (5,0:1 à 15 px ; l'or mat n'y fait que 4,0:1) */
   --c-phi:var(--bronze);--c-wordmark:var(--anthracite);
   --c-deco:var(--or-deco);--c-deco-2:var(--or-deco-2);    /* élément de la bande (anneaux) : or */
-  --surface:var(--papier);--surface-bande:var(--surface);--surface-carte:var(--sable);   /* bande : papier ; fond du pays (carte) : sable, figé le 26/09 (bascule 15a retirée), pour se lire malgré ses bords irréguliers */
-  --surface-piste:var(--sable);--surface-pied:var(--papier);                             /* graphique : piste en sable ; pied de page : papier, sans filet en haut (figé le 23/09) */
+  --surface:var(--papier);--surface-bande:var(--surface);--surface-carte:var(--sable);   /* bande : papier ; fond du pays (carte) : sable, pour se lire malgré ses bords irréguliers */
+  --surface-piste:var(--sable);--surface-pied:var(--papier);                             /* graphique : piste en sable ; pied de page : papier, sans filet en haut */
   /* typographie */
-  --serif:"Newsreader",Georgia,serif;--sans:"Instrument Sans",system-ui,sans-serif;   /* serif figée le 23/09 : Newsreader 400 partout (la seconde serif et la graisse 500 sont retirées) */
+  --serif:"Newsreader",Georgia,serif;--sans:"Instrument Sans",system-ui,sans-serif;   /* serif : Newsreader 400 partout */
   /* titres de section : deux classes explicites, .h2--sans (--fs-h2) et .h2--serif (--fs-h2-serif) ;
-     titres de chapitre de la fiche : sans medium --fs-chapitre (bascule 20 figée sur « sans », revue de la fiche du 23/09) */
+     titres de chapitre de la fiche : sans medium --fs-chapitre */
   --fs-accroche:52px;--fs-chiffre:58px;--fs-h2:28px;--fs-h2-serif:34px;--fs-chapitre:26px;--fs-texte:17px;--fs-nav:15px;
   --fs-etiquette:13px;--fs-etiquette-chiffre:14px;--fs-signature:24px;--fs-chute:26px;--fs-nom:42px;--fs-ligne:16px;
   --fs-titre-page:64px;--fs-suivant:30px;   /* fiches et vue Réalisations */
   /* mise en page */
   --max:1200px;--gutter:40px;--bande-haut:44px;--bande-bas:40px;
-  --max-large:1600px;   /* grille large, gouttières comprises (26/09) : l'en-tête de toutes les pages, le contenu de la vue Réalisations et des fiches ; le pied de page de toutes les pages et le contenu de la Home et d'Engagements restent sur --max (1 200 px) */
+  --max-large:1600px;   /* grille large, gouttières comprises : l'en-tête de toutes les pages, le contenu de la vue Réalisations et des fiches ; le pied de page de toutes les pages et le contenu de la Home et d'Engagements restent sur --max (1 200 px) */
   /* photo du premier écran : assez basse pour que la bande et ses quatre chiffres tiennent sous elle à 1440 × 900 et 1366 × 703
      (en-tête 76 px + bande ~176 px dans la fenêtre basse ⇒ ~360 px restent pour la photo) */
   --photo-hauteur:clamp(320px,calc(100vh - 270px),560px);--photo-haut:64px;
   --logo-echelle:1;--logo-gap:48px;--zoom:1.035;--zoom-duree:.5s;
 }
 
-/* téléphone (≤ 640 px) : les jetons de la section 5 de maquette.css */
+/* téléphone (≤ 640 px) */
 @media (max-width:640px){
   :root{--gutter:20px;--fs-accroche:36px;--fs-chiffre:40px;--fs-h2:24px;--fs-h2-serif:26px;--fs-nom:30px;--fs-ligne:14px;--fs-signature:21px;--fs-chute:22px;--fs-texte:16px;
     --bande-haut:28px;--bande-bas:24px;--logo-echelle:.6;--logo-gap:28px}

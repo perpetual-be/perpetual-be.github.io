@@ -1,4 +1,4 @@
-// L'image de partage, /partage.jpg (lot 7, 06/10/2026 ; le choix de la photo et son point focal : src/lib/partage.ts), écrite au build : la plus grande
+// L'image de partage, /partage.jpg (le choix de la photo et son point focal : src/lib/partage.ts), écrite au build : la plus grande
 // version de la photo, recadrée au format 1 200 × 630 (toute la largeur ou toute la hauteur gardée, la marge répartie selon le point focal), puis réduite,
 // en JPEG qualité 82 (mozjpeg). sharp est celui qu'Astro utilise déjà pour les photos du site.
 import path from 'node:path';

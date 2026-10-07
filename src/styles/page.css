@@ -1,16 +1,15 @@
-/* Pages de texte du site (lot 6, 01/10/2026) : ce que partagent Engagements (référence : design/maquette/engagements.html) et les pages de texte sans
-   maquette — mentions légales, confidentialité, 404, sur le gabarit d'Engagements (choix d'Axel du 01/10). Les règles de design/maquette/maquette.css,
-   reprises telles quelles : .page-head et .page__titre (section 4), la variante sans léger du titre et le padding 32 / 30 de .page-head d'Engagements
-   (html[data-page="engagements"] ; les pages de texte, html[data-page="texte"], prennent les mêmes), le registre et ses rangées (.registre, .rang,
-   .rang__g, .rang__d), les liens dans le texte (.lien-texte) et le texte masqué (.visuellement-masque) ; leurs règles téléphone et mouvement réduit
-   (section 5). Balisage : src/components/engagements/. Importé par les pages, après le socle (src/styles/base.css…). */
+/* Pages de texte : ce que partagent Engagements, Collectif et les pages de texte — mentions légales, confidentialité, 404, sur le gabarit
+   d'Engagements : .page-head et .page__titre, la variante sans léger du titre et le padding 32 / 30 de .page-head d'Engagements
+   (html[data-page="engagements"] ; html[data-page="texte"] et html[data-page="collectif"] prennent les mêmes), le registre et ses rangées (.registre,
+   .rang, .rang__g, .rang__d), les liens dans le texte (.lien-texte) et le texte masqué (.visuellement-masque) ; leurs règles téléphone et mouvement
+   réduit. Balisage : src/components/engagements/. Importé par les pages, après le socle (src/styles/base.css…). */
 /* titre de page : serif 64 px, celui des fiches — la vue Réalisations et Engagements le passent en sans léger.
-   .page-head est un .container : ne poser que padding-top / padding-bottom, le padding latéral (la gouttière) reste celui de .container (revue du 23/09) */
+   .page-head est un .container : ne poser que padding-top / padding-bottom, le padding latéral (la gouttière) reste celui de .container */
 .page-head{padding-top:40px;padding-bottom:32px}
 .page__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-titre-page);line-height:1;letter-spacing:-.015em}
-/* page Engagements (Cowork, 26/09 ; référence validée : design/revue-engagements/propositions/p1.html), sur le container de 1 200 px comme la Home :
+/* page Engagements, sur le container de 1 200 px comme la Home :
    le titre seul, sans sous-titre, en sans léger comme Réalisations ; puis le registre, une rangée par engagement — le verbe en serif à gauche, le texte
-   à droite (grille 5/7), un filet au-dessus. Les pages de texte sans maquette (data-page="texte") et la page Collectif (data-page="collectif", 07/10)
+   à droite (grille 5/7), un filet au-dessus. Les pages de texte (data-page="texte") et la page Collectif (data-page="collectif")
    reprennent le titre et le padding d'Engagements. */
 html[data-page="engagements"] .page__titre,html[data-page="texte"] .page__titre,html[data-page="collectif"] .page__titre{font-family:var(--sans);font-weight:400;letter-spacing:-.028em;line-height:1.02}
 @media (min-width:641px){html[data-page="engagements"] .page-head,html[data-page="texte"] .page-head,html[data-page="collectif"] .page-head{padding-top:32px;padding-bottom:30px}}   /* téléphone : le padding de .page-head */
@@ -23,7 +22,7 @@ html[data-page="engagements"] .page__titre,html[data-page="texte"] .page__titre,
 .lien-texte:hover,.lien-texte:focus-visible{border-bottom-color:var(--c-trait)}
 .visuellement-masque{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}   /* « (nouvel onglet) », pour les lecteurs d'écran */
 
-/* ---------- téléphone (section 5 de maquette.css) ---------- */
+/* ---------- téléphone ---------- */
 @media (max-width:640px){
   .page-head{padding-top:28px;padding-bottom:24px}
   /* une colonne par rangée ; .rang__g et .rang__d s'effacent (display: contents), l'ordre est posé par `order` dans chaque page */
@@ -32,7 +31,7 @@ html[data-page="engagements"] .page__titre,html[data-page="texte"] .page__titre,
   .rang:last-child{padding-bottom:44px}
   .rang__g,.rang__d{display:contents}
 }
-/* ---------- mouvement réduit (section 5) ---------- */
+/* ---------- mouvement réduit ---------- */
 @media (prefers-reduced-motion:reduce){
   .lien-texte{transition:none}
 }

@@ -1,18 +1,17 @@
 ---
-// Mise en page commune à toutes les pages (lot 4, 01/10/2026) : le système de la maquette (design/maquette/maquette.css) — polices, jetons, base,
-// en-tête, pied de page, dans cet ordre —, l'en-tête collant et le pied de page, puis <main> pour la page. Le <title> est « <titre> — Perpetual »,
-// ou le titre complet passé par la page (fullTitle). noindex sur toutes les pages tant que le réglage `indexation` de data/site.json est faux ; au lot 9,
-// passer ce seul réglage à vrai suffit : le noindex part (sauf sur la 404 et /dev/photos, prop noindex) et robots.txt s'ouvre (src/pages/robots.txt.ts).
-// `page` est posé en data-page sur <html>, comme dans la maquette (lot 6, 01/10/2026) : les règles de maquette.css qui en dépendent s'appliquent telles
-// quelles (html[data-page="engagements"] .page__titre…) ; « texte » pour les pages de texte sans maquette (mentions légales, confidentialité, 404).
-// Adresse et partage (lot 7, 06/10/2026) : le lien canonique — l'adresse publique de la page, `site` (astro.config.mjs) puis son chemin sans « .html », comme
-// sitemap.xml ; pas sur les pages en noindex permanent —, les balises Open Graph (titre de l'onglet, description, adresse, image de partage 1 200 × 630 et
-// son texte alternatif : src/lib/partage.ts) et la carte de partage large (twitter:card). Toutes les adresses suivent `site` : au lot 9, perpetual.be.
-// Icônes (lot 7) : le SVG pour les navigateurs qui le lisent, un PNG de 32 px pour les autres (déclaré avant, avec sizes : Chrome garde alors le SVG) et
+// Mise en page commune à toutes les pages : les styles communs — polices, jetons, base, en-tête, pied de page, dans cet ordre —, l'en-tête collant,
+// <main> pour la page, le pied de page. Le <title> est « <titre> — Perpetual », ou le titre complet passé par la page (fullTitle).
+// noindex sur toutes les pages tant que le réglage `indexation` de data/site.json est faux ; le passer à vrai suffit : le noindex part (sauf sur les
+// pages à prop noindex, la 404 et /dev/photos) et robots.txt s'ouvre (src/pages/robots.txt.ts).
+// `page` est posé en data-page sur <html> : des règles en dépendent (html[data-page="engagements"] .page__titre…) ; « texte » pour les pages de
+// texte (mentions légales, confidentialité, 404), « collectif » pour Collectif, qui prend le titre en sans léger d'Engagements (src/styles/page.css).
+// Adresse et partage : le lien canonique — `site` (astro.config.mjs) puis le chemin sans « .html », comme sitemap.xml ; pas sur les pages en noindex
+// permanent —, les balises Open Graph (titre, description, adresse, image de partage 1 200 × 630 et son texte alternatif : src/lib/partage.ts) et la
+// carte de partage large (twitter:card). Toutes les adresses suivent `site`.
+// Icônes : le SVG pour les navigateurs qui le lisent, un PNG de 32 px pour les autres (déclaré avant, avec sizes : Chrome garde alors le SVG) et
 // l'icône d'écran d'accueil d'iOS (180 px), les deux tirées de public/favicon.svg au build (src/lib/icones.ts).
-// Menu au téléphone (07/10/2026) : la classe menu-js posée sur <html> dès le <head>, avant le premier rendu, pour que l'en-tête du téléphone s'affiche
+// Menu du téléphone : la classe menu-js est posée sur <html> dès le <head>, avant le premier rendu, pour que l'en-tête du téléphone s'affiche
 // d'emblée avec son bouton (sans JavaScript, la navigation reste visible sur deux lignes) ; le menu lui-même est dans SiteHeader.astro.
-// data-page : « collectif » pour la page Collectif (07/10/2026), qui prend le titre en sans léger d'Engagements (src/styles/page.css).
 import '../styles/polices.css';
 import '../styles/jetons.css';
 import '../styles/base.css';
@@ -32,7 +31,7 @@ interface Props {
   active?: string;
   /** La page, pour data-page sur <html> (ex. « engagements », « texte ») ; sans valeur, pas d'attribut. */
   page?: string;
-  /** Vrai : noindex même une fois l'indexation ouverte au lot 9 (la 404, /dev/photos) ; ces pages ne sont pas non plus dans sitemap.xml. */
+  /** Vrai : noindex même une fois l'indexation ouverte (la 404, /dev/photos) ; ces pages ne sont pas non plus dans sitemap.xml. */
   noindex?: boolean;
 }
 

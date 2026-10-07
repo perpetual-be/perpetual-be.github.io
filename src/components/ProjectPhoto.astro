@@ -1,11 +1,11 @@
 ---
 // Une photo du site, par sa clé (<id>-NN ; source : src/lib/photos.ts). Rend un <picture> : AVIF et WebP, JPEG de repli, plusieurs largeurs
 // (Astro retire celles au-delà de la source et ajoute la largeur de la source : une photo de 1 536 px est servie en 800, 1 200 et 1 536), `sizes` à
-// donner par la page (la largeur affichée de la photo). Point focal optionnel, posé en object-position sur l'<img> comme dans la
-// maquette (`focal`, ex. « 50% 20% »). Texte alternatif fourni par la page : alt="" pour une photo décorative (c'est le cas partout dans la maquette) ;
-// les légendes viendront des données au lot 5. Photo du premier écran : loading="eager" et fetchpriority="high". Le `src` de repli (navigateurs
-// sans srcset) est plafonné à 1 200 px : sinon Astro le produirait à la taille de la source, un gros JPEG par photo pour presque personne.
-// `ratioSource` (lot 6) : le format de la source posé en aspect-ratio sur l'<img>, pour une photo entière en width: 100 % / height: auto (l'œuvre
+// donner par la page (la largeur affichée de la photo). Point focal optionnel, posé en object-position sur l'<img> (`focal`, ex. « 50% 20% »).
+// Texte alternatif fourni par la page (src/lib/alt.ts) : alt="" pour une photo décorative. Photo du premier écran : loading="eager" et
+// fetchpriority="high". Le `src` de repli (navigateurs sans srcset) est plafonné à 1 200 px : sinon Astro le produirait à la taille de la source,
+// un gros JPEG par photo pour presque personne.
+// `ratioSource` : le format de la source posé en aspect-ratio sur l'<img>, pour une photo entière en width: 100 % / height: auto (l'œuvre
 // d'Engagements) — sans lui, la hauteur de la boîte suit la version servie, dont la hauteur est arrondie au pixel (340 × 442 pour 870 × 1132 :
 // 442 px au lieu de 442,39), et tout ce qui suit se décale d'une fraction de pixel selon la version choisie par le navigateur.
 import { Picture } from 'astro:assets';

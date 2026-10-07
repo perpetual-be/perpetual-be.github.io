@@ -1,12 +1,11 @@
 ---
-// Le bloc d'un projet sans fiche, vue Réalisations (lot 5, 05/10/2026 ; Brosse, kind project de data/projects.json) : mêmes balises et classes que
-// blocSansFiche() de design/maquette/src/build.mjs, la maquette étant la référence (styles : src/styles/realisations.css). Le même bloc que les autres
-// (div.bloc.bloc--album#<id>), mais un album (./Album.astro) : ses photos — son champ selection, dans l'ordre — se parcourent sur place et un clic ouvre la
-// visionneuse sur la photo affichée. Le texte : le nom, les faits Lieu, Surface et Usage — « Projet », provisoire, tant que l'usage manque (Brosse : à
-// demander à Julien) —, « lieu · surface » pour le téléphone. Nom accessible : « nom, lieu, surface — n photos ».
+// Le bloc d'un projet sans fiche, vue Réalisations (Brosse, kind project de data/projects.json ; styles : src/styles/realisations.css). Le même bloc
+// que les autres (div.bloc.bloc--album#<id>), mais un album (./Album.astro) : ses photos — son champ selection, dans l'ordre — se parcourent sur place
+// et un clic ouvre la visionneuse sur la photo affichée. Le texte : le nom, les faits Lieu, Surface et Usage — « Projet », provisoire, tant que
+// l'usage manque —, « lieu · surface » pour le téléphone. Nom accessible : « nom, lieu, surface — n photos ».
 // Les photos, par ProjectPhoto, le sizes du bloc (sizesBloc, ./tailles.ts) : la n° 1 chargée tout de suite, avec son point focal (bloc.focal) ; les
 // suivantes paresseuses. Sur toute la largeur, la n° 1 de Brosse est servie jusqu'à sa version de 2 362 px (brosse-31-l.jpg, la taille de l'original).
-// Texte alternatif (lot 7, src/lib/alt.ts) : la légende de la photo, sinon « nom, lieu » (« Brosse, Forest »).
+// Texte alternatif (src/lib/alt.ts) : la légende de la photo, sinon « nom, lieu » (« Brosse, Forest »).
 import Album from './Album.astro';
 import Fait from './Fait.astro';
 import { sizesBloc } from './tailles';

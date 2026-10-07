@@ -1,4 +1,4 @@
-// /favicon-32.png (lot 7, 06/10/2026) : le Φ de public/favicon.svg en 32 × 32 (src/lib/icones.ts).
+// /favicon-32.png : le Φ de public/favicon.svg en 32 × 32 (src/lib/icones.ts).
 import type { APIRoute } from 'astro';
 import { favicon32 } from '../lib/icones';
 

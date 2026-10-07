@@ -33,12 +33,11 @@ jobs:
           node-version: 22
           cache: npm
 
-      # Les photos déjà produites par Astro (.astro-cache, cf. astro.config.mjs) d'un build à l'autre : seules les nouvelles versions sont produites.
+      # Les photos déjà produites par Astro (.astro-cache, cf. astro.config.mjs), gardées d'un build à l'autre : seules les nouvelles versions sont produites.
       # Une clé par run : actions/cache n'enregistre rien quand la clé exacte existe déjà, et l'empreinte (photos, ProjectPhoto.astro, package-lock.json)
-      # ne change pas quand une nouvelle page demande d'autres versions des mêmes photos ; avec une clé fixe, ces versions seraient refaites à chaque
-      # build, jamais gardées. Chaque run repart du cache le plus récent, quelle que soit son empreinte (elle n'est plus qu'une étiquette) : Astro y
-      # ajoute sans rien retirer et nomme chaque version d'après le contenu de sa photo, rien de périmé ne peut en sortir. Le run enregistre ensuite
-      # le sien (GitHub évince lui-même les plus anciens au-delà de 10 Go par dépôt).
+      # ne change pas quand une page demande d'autres versions des mêmes photos ; avec une clé fixe, ces versions seraient refaites à chaque build.
+      # Chaque run repart du cache le plus récent (restore-keys), quelle que soit son empreinte — Astro y ajoute sans rien retirer et nomme chaque version
+      # d'après sa photo : rien de périmé n'en sort —, puis enregistre le sien (GitHub évince les plus anciens au-delà de 10 Go par dépôt).
       - name: Cache des photos
         uses: actions/cache@v4
         with:

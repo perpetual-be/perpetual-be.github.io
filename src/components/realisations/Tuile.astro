@@ -1,12 +1,11 @@
 ---
-// Une tuile de la mosaïque des agences, vue Réalisations (lot 5, 05/10/2026) : mêmes balises et classes que la tuile de realisationsPage() dans
-// design/maquette/src/build.mjs, la maquette étant la référence (styles : src/styles/realisations.css). Un bien (kind agency ou gallery), dans le style des
+// Une tuile de la mosaïque des agences, vue Réalisations (styles : src/styles/realisations.css). Un bien (kind agency ou gallery), dans le style des
 // blocs : un album (div.tuile#<id>, ./Album.astro) — ses photos, son champ selection dans l'ordre, se parcourent sur place et un clic ouvre la visionneuse sur
 // la photo affichée —, avec la ville en serif blanc (.tuile__nom), Surface et Usage au survol et au focus clavier (.tuile__faits), la surface pour le
-// téléphone (.tuile__mobile). Nom accessible : « ville, surface, usage — n photos ». La case a le format de sa photo n° 1 (--r, au millième, la valeur de la
-// maquette) : sa largeur dans la rangée lui est proportionnelle, rien n'est recadré.
-// Les photos, par ProjectPhoto, toutes paresseuses : chacune avec le sizes de la case (sizesTuile, ./tailles.ts) et son texte alternatif (lot 7,
-// src/lib/alt.ts : la légende de la photo, sinon la ville, comme sur la tuile).
+// téléphone (.tuile__mobile). Nom accessible : « ville, surface, usage — n photos ». La case a le format de sa photo n° 1 (--r, au millième) : sa
+// largeur dans la rangée lui est proportionnelle, rien n'est recadré.
+// Les photos, par ProjectPhoto, toutes paresseuses : chacune avec le sizes de la case (sizesTuile, ./tailles.ts) et son texte alternatif
+// (src/lib/alt.ts : la légende de la photo, sinon la ville, comme sur la tuile).
 import Album from './Album.astro';
 import Fait from './Fait.astro';
 import { sizesTuile } from './tailles';

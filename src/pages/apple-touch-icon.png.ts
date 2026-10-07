@@ -1,4 +1,4 @@
-// /apple-touch-icon.png (lot 7, 06/10/2026) : le Φ de public/favicon.svg sur fond blanc, 180 × 180 (src/lib/icones.ts).
+// /apple-touch-icon.png : le Φ de public/favicon.svg sur fond blanc, 180 × 180 (src/lib/icones.ts).
 import type { APIRoute } from 'astro';
 import { appleTouchIcon } from '../lib/icones';
 
