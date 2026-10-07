@@ -56,7 +56,7 @@ rm .astro-cache/data-store.json
 | La carte des réalisations (contour, points, étiquettes, villes) | `data/carte/belgique.svg` et `data/carte/belgique.json` |
 | Ajouter ou modifier un projet | `data/projects.json`, puis `data/realisations.json` — voir [Ajouter un projet](#ajouter-un-projet) |
 | L'ordre des projets et la mosaïque des agences (vue Réalisations) | `data/realisations.json` — voir [La vue Réalisations](#la-vue-réalisations) |
-| Ajouter une photo, en changer, la recadrer | `design/directions/img/` et `data/projects.json` — voir [Ajouter une photo](#ajouter-une-photo) |
+| Ajouter une photo, en changer, la recadrer | `photos/` et `data/projects.json` — voir [Ajouter une photo](#ajouter-une-photo) |
 | Le texte alternatif d'une photo | sa légende dans `data/projects.json` (`captions`, par fichier) ; à défaut « nom, lieu » pour un projet (« The Bank, Liège »), la ville pour un bien de la mosaïque (`src/lib/alt.ts`) |
 | Ajouter ou retirer un logo partenaire (page Collectif) | `data/partners.json` et `public/partners/` — voir [Partenaires](#partenaires) |
 | La navigation de l'en-tête et du menu du téléphone | `data/site.json`, `nav` — voir [Navigation, pied de page et menu du téléphone](#navigation-pied-de-page-et-menu-du-téléphone) |
@@ -94,7 +94,7 @@ Les textes en blocs sont insérés tels quels : les espaces insécables du fichi
 
 ## Ajouter un projet
 
-1. **Les photos** : les réduire et les déposer dans `design/directions/img/`, nommées `<id>-01`, `<id>-02`… (voir [Ajouter une photo](#ajouter-une-photo)).
+1. **Les photos** : les réduire et les déposer dans `photos/`, nommées `<id>-01`, `<id>-02`… (voir [Ajouter une photo](#ajouter-une-photo)).
 2. **Le projet** : une entrée dans `data/projects.json` (champs [ci-dessous](#projets-dataprojectsjson)). Son `kind` décide où il apparaît :
    - `detailed` : un projet avec sa fiche (`/realisations/<id>`) et son bloc sur la vue Réalisations ;
    - `project` : un projet sans fiche, son bloc sur la vue Réalisations ouvre ses photos ;
@@ -136,22 +136,22 @@ Un champ obligatoire manquant (pour une fiche : `order`, `region`, `location` ou
 
 ## Ajouter une photo
 
-Le dépôt ne contient que des versions réduites des photos, dans `design/directions/img/` ; c'est la seule source des photos du site. Les originaux restent dans le Drive (`PERPETUAL / Site 2026 / 02 Photos/<id du projet>/`, nommés `<id>-01.jpg`, `<id>-02.jpg`…) et n'entrent jamais dans le dépôt.
+Le dépôt ne contient que des versions réduites des photos, dans `photos/` ; c'est la seule source des photos du site. Les originaux restent dans le Drive (`PERPETUAL / Site 2026 / 02 Photos/<id du projet>/`, nommés `<id>-01.jpg`, `<id>-02.jpg`…) et n'entrent jamais dans le dépôt.
 
 Chaque photo a une **clé**, `<id>-NN` (ex. `community-05`). Le site a besoin de sa version de 1 800 px, `<clé>.jpg` ; une photo montrée en grand (premier écran, tête de fiche, bloc pleine largeur) a aussi sa version de 2 800 px, `<clé>-l.jpg`.
 
 1. Réduire l'original (redressement, métadonnées retirées, JPEG qualité 82) :
 
    ```bash
-   node design/directions/src/reduire-photos.mjs --grand "G:\Mon Drive\PERPETUAL\Site 2026\02 Photos\brosse\brosse-01.jpg"
+   node scripts/reduire-photos.mjs "G:\Mon Drive\PERPETUAL\Site 2026\02 Photos\brosse\brosse-01.jpg"
    ```
 
-   Ajouter `--tres-grand` pour la version de 2 800 px.
-2. Committer les fichiers produits dans `design/directions/img/`.
+   Le script écrit la version de 1 800 px dans `photos/` ; ajouter `--tres-grand` pour la version de 2 800 px (avec `--grand` pour avoir les deux).
+2. Committer les fichiers produits dans `photos/`.
 3. Citer la clé dans `data/projects.json` (`selection`, à sa place dans l'ordre d'affichage) et, si elle a une légende, l'ajouter dans `captions`.
 4. `npm run build` : une clé citée sans version de 1 800 ou 2 800 px arrête le build, avec la marche à suivre.
 
-**Recadrer une photo** : ajouter sa clé dans `design/directions/src/recadrages.json` (gauche, haut, largeur, hauteur, en fractions de l'original redressé, et la raison), puis la réduire de nouveau. Le recadrage est appliqué à chaque réduction ; l'original du Drive reste entier.
+**Recadrer une photo** : ajouter sa clé dans `scripts/recadrages.json` (gauche, haut, largeur, hauteur, en fractions de l'original redressé, et la raison), puis la réduire de nouveau. Le recadrage est appliqué à chaque réduction ; l'original du Drive reste entier.
 
 **Changer le cadrage sans recadrer** : le point focal (`focal` de `tete`, `bloc` ou `hero`), une position CSS (`"50% 20%"` : centré en largeur, 20 % depuis le haut).
 
@@ -189,8 +189,7 @@ data/realisations.json   la composition de la vue Réalisations : rangées des p
 data/partners.json       logos partenaires
 data/site.json           navigation, pied de page, coordonnées, citation, réglage d'indexation
 data/carte/              la carte des réalisations de la Home : belgique.svg et belgique.json
-design/directions/img/   les photos réduites, source des photos du site
-design/directions/src/   reduire-photos.mjs et recadrages.json
+photos/                  les photos réduites, source des photos du site
 public/                  fichiers servis tels quels : favicon.svg, fonts/ (les quatre polices du site), partners/
 src/layouts/Base.astro   mise en page commune : <head> (titre, description, noindex, lien canonique, partage, icônes, polices), en-tête, <main>, pied de page
 src/pages/               une page par fichier : index (Home), collectif, engagements, realisations, realisations/[id] (les fiches),
@@ -202,6 +201,7 @@ src/lib/                 la lecture des données : contenu.ts (textes), photos.t
 src/scripts/boucle.js    la piste en boucle de la visionneuse et des photos parcourables
 src/styles/              polices, jetons, base, entete, pied (communes, importées par Base.astro) ; puis une feuille par page
 scripts/verifier.mjs     la vérification du site construit (npm run verifier)
+scripts/reduire-photos.mjs  la réduction des photos originales, et recadrages.json, les recadrages qu'il applique
 astro.config.mjs         adresse du site, cache, et les intégrations : pages de texte, images orphelines, sitemap.xml
 ```
 

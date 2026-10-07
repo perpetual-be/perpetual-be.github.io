@@ -1,6 +1,6 @@
-// Les photos du site : une seule source, les versions réduites versionnées dans le dépôt — design/directions/img/<clé>.jpg (1 800 px) et, pour
-// quelques-unes, <clé>-l.jpg (2 800 px), produites par design/directions/src/reduire-photos.mjs depuis les originaux du Drive (redressées, sans
-// métadonnées). Les originaux ne sont jamais dans le dépôt ; le site n'utilise pas les <clé>-s.jpg (800 px). Il part de la plus grande version d'une
+// Les photos du site : une seule source, les versions réduites versionnées dans le dépôt — photos/<clé>.jpg (1 800 px) et, pour quelques-unes,
+// <clé>-l.jpg (2 800 px), produites par scripts/reduire-photos.mjs depuis les originaux du Drive (redressées, sans métadonnées). Les originaux ne
+// sont jamais dans le dépôt. Le site part de la plus grande version d'une
 // clé ; Astro en tire, au build, les largeurs et les formats servis (AVIF, WebP, JPEG de repli), sans jamais agrandir. Une clé est l'identifiant
 // d'une photo dans les données : <id du projet>-NN (champ selection de data/projects.json).
 //
@@ -12,8 +12,8 @@
 import type { ImageMetadata } from 'astro';
 import { getImage } from 'astro:assets';
 
-const DOSSIER = '/design/directions/img/';
-const fichiers = import.meta.glob<{ default: ImageMetadata }>(['/design/directions/img/*.jpg', '!/design/directions/img/*-s.jpg']);
+const DOSSIER = '/photos/';
+const fichiers = import.meta.glob<{ default: ImageMetadata }>('/photos/*.jpg');
 
 /** Le fichier de la plus grande version d'une clé (2 800, sinon 1 800 px), ou undefined si la clé n'a pas de version utilisable par le site. */
 export function fichierSource(cle: string): string | undefined {
@@ -25,8 +25,8 @@ export async function photoSource(cle: string): Promise<ImageMetadata> {
   const f = fichierSource(cle);
   if (!f) {
     throw new Error(
-      `Photo « ${cle} » introuvable pour le site : il faut design/directions/img/${cle}.jpg (1 800 px) ou ${cle}-l.jpg (2 800 px) — ` +
-        `la version de 800 px (${cle}-s.jpg) ne suffit pas. La produire depuis l'original avec design/directions/src/reduire-photos.mjs ` +
+      `Photo « ${cle} » introuvable pour le site : il faut photos/${cle}.jpg (1 800 px) ou ${cle}-l.jpg (2 800 px). ` +
+        `La produire depuis l'original avec scripts/reduire-photos.mjs ` +
         `(--grand, et --tres-grand pour une photo pleine largeur), puis la committer.`,
     );
   }
