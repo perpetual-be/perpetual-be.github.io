@@ -56,7 +56,7 @@ a.bloc:hover img{transform:scale(var(--zoom))}
 .tuile__mobile{display:none}
 /* photos parcourables sur place (tuiles et bloc de Brosse ; rétabli le 05/10, comme les vignettes du carrousel) : un bouton sur toute la surface porte la piste
    — une vue par photo, qui rogne le zoom du survol ; à accroche, en boucle (maquette.js) ; un clic ouvre la visionneuse sur la photo affichée — ; s'il y a
-   plusieurs photos (avec JavaScript), « 1 / n » en haut à droite sur un léger voile dans le coin, et deux flèches fines au survol ; au doigt, la piste se fait glisser */
+   plusieurs photos (avec JavaScript), « 1 / n » en haut à droite (sans voile depuis le 07/10), et deux flèches fines au survol ; au doigt, la piste se fait glisser */
 .photos__ouvrir{position:absolute;inset:0;display:block;width:100%;height:100%;margin:0;padding:0;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
 .photos__ouvrir:focus-visible{outline:2px solid var(--c-trait);outline-offset:-2px}
 .photos{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
@@ -64,16 +64,15 @@ a.bloc:hover img{transform:scale(var(--zoom))}
 .photos__vue{position:relative;flex:0 0 100%;height:100%;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always}
 .photos__vue img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform var(--zoom-duree) ease}
 .tuile:hover .photos__vue img,.tuile:has(:focus-visible) .photos__vue img,.bloc--album:hover .photos__vue img,.bloc--album:has(:focus-visible) .photos__vue img{transform:scale(var(--zoom))}
-/* le voile sous le compteur (renforcé le 06/10, lot 7, Cockpit t171006b, choix d'Axel) : plus sombre et plus doux — le dégradé s'éteint au bord de sa boîte
-   (farthest-side), le compteur blanc de 12 px reste à 4,5:1 au moins sur un ciel ou un mur blanc */
-.photos--nav::before{content:"";position:absolute;top:0;right:0;z-index:2;width:200px;height:110px;pointer-events:none;background:radial-gradient(farthest-side at 100% 0,rgba(0,0,0,.7) 0%,rgba(0,0,0,.56) 30%,rgba(0,0,0,.24) 64%,transparent 100%)}
+/* plus de voile sous le compteur (07/10, retours du rendez-vous avec Julien : les zones foncées sur les photos, retirées) — le compteur blanc
+   garde sa seule ombre ; le voile du 06/10 (lot 7, t171006b : 200 × 110 px, noir 70 % au coin) est dans l'historique git */
 .photos__compteur{position:absolute;z-index:3;top:10px;right:12px;font-size:12px;line-height:1;letter-spacing:.02em;color:var(--photo-texte);font-variant-numeric:tabular-nums;text-shadow:0 0 6px rgba(0,0,0,.5);pointer-events:none}
 .photos__fleche{position:absolute;z-index:3;top:50%;transform:translateY(-50%);width:52px;height:96px;display:flex;align-items:center;justify-content:center;background:none;border:0;padding:0;color:var(--photo-texte);cursor:pointer;opacity:0;transition:opacity .25s}
 .photos__fleche--g{left:0}.photos__fleche--d{right:0}
 .photos__fleche svg{width:13px;height:26px;filter:drop-shadow(0 0 3px rgba(0,0,0,.65))}
 .photos__fleche:focus-visible{outline:2px solid var(--photo-texte);outline-offset:-8px}
 [data-album]:hover .photos__fleche,[data-album]:has(:focus-visible) .photos__fleche{opacity:1}
-/* compteur, voile et flèches posés par maquette.js (classe photos--nav, album de plus d'une photo) : sans JavaScript, la piste se fait glisser, sans eux */
+/* compteur et flèches posés par maquette.js (classe photos--nav, album de plus d'une photo) : sans JavaScript, la piste se fait glisser, sans eux */
 [data-album]:not(.photos--nav) .photos__compteur,[data-album]:not(.photos--nav) .photos__fleche{display:none}
 @media (hover:none){.photos__fleche{display:none}}
 /* cases de texte : l'énoncé de Julien sur papier, comme la bande des chiffres de la Home — la première phrase dans la case en haut à gauche de la

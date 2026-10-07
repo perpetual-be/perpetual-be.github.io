@@ -5,10 +5,10 @@
     { "classe": "seul", "projets": [{ "id": "brosse", "part": 12 }] }
   ],
   "mosaique": [
-    ["cas:debut", "bnp-braine-le-comte", "bnp-pont-a-celles", "bnp-jambes"],
+    ["cas:debut", "bnp-braine-le-comte", "consolation", "bnp-jambes"],
     ["belfius-braine-l-alleud", "ing-haaltert", "belfius-mettet"],
     ["bnp-bois-de-villers", "ing-tervuren", "perwez", "ing-welkenraedt"],
     ["wayez-27", "ing-landen", "waremme"],
-    ["gilly", "consolation", "ing-belgrade", "cas:fin"]
+    ["gilly", "bnp-pont-a-celles", "ing-belgrade", "cas:fin"]
   ]
 }

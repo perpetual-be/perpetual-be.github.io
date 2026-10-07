@@ -235,7 +235,7 @@ console.log('\n5 · Réalisations : la carte');
   ok(c.place, 'la section Réalisations (la carte) suit le graphique et précède Collectif (30/09 : plus de liste des 4 entre les deux)');
   ok(!c.bande, 'la bande défilante n’est plus dans la page');
   ok(c.pts === 16 && c.labs === 16 && c.groupe === 'Bruxelles', `carte : ${c.pts} points, ${c.labs} étiquettes, groupe « ${c.groupe} »`);
-  ok(c.bxl.length === 1 && c.bxl[0] === '6.5' && c.autres.length === 15 && c.autres.filter(r => r === '5.5').length === 1 && c.autres.filter(r => r === '4.5').length === 14, 'carte : Bruxelles = un seul point r 6,5, Namur (Jambes + Belgrade, 30/09) r 5,5, les quatorze autres r 4,5');
+  ok(c.bxl.length === 1 && c.bxl[0] === '4.5' && c.autres.length === 15 && c.autres.every(r => r === '4.5'), 'carte : Bruxelles = un seul point, Namur (Jambes + Belgrade, 30/09) un seul point, et les seize points de la même taille, r 4,5 (07/10, retour de Julien : plus de point plus gros)');
   ok(c.rang1.length === 3, 'carte : étiquettes de rang 1 — ' + c.rang1.join(' · '));
   ok(c.fig <= 600, `carte : SVG ${c.fig} px de large (600 max)`);
   ok((await style(p, '.carte__pays', 'fill')) === SABLE && (await style(p, '.carte__pt', 'fill')) === ANTHRACITE && (await style(p, '.carte__pt', 'stroke')) === BLANC && (await style(p, '.carte__lab', 'fill')) === GRIS && (await style(p, '.carte__lab--groupe', 'fill')) === ANTHRACITE, 'carte : fond du pays sable (figé le 26/09), points anthracite à liseré blanc, étiquettes gris chaud, Bruxelles anthracite');
@@ -664,11 +664,11 @@ console.log('\n9 · Vue Réalisations (P2 du 26/09, puis lot 2b du 04/10 : proje
 // les photos, son champ selection (Bois-de-Villers et Belgrade commencent par l'intérieur ; choix d'Axel du 05/10 : Braine-l'Alleud 03, Braine-le-Comte 02
 // recadrée, Gilly 02 recadrée, Tervuren 01 recadrée, Waremme 03, Anderlecht 02)
 const MOSAIQUE = [
-  ['cas:debut', 'bnp-braine-le-comte', 'bnp-pont-a-celles', 'bnp-jambes'],
+  ['cas:debut', 'bnp-braine-le-comte', 'consolation', 'bnp-jambes'],   // Schaerbeek et Pont-à-Celles échangés le 07/10 (retours du rendez-vous avec Julien)
   ['belfius-braine-l-alleud', 'ing-haaltert', 'belfius-mettet'],
   ['bnp-bois-de-villers', 'ing-tervuren', 'perwez', 'ing-welkenraedt'],
   ['wayez-27', 'ing-landen', 'waremme'],
-  ['gilly', 'consolation', 'ing-belgrade', 'cas:fin'],
+  ['gilly', 'bnp-pont-a-celles', 'ing-belgrade', 'cas:fin'],
 ];
 const bienAttendu = id => { const x = donnees.find(d => d.id === id); return { id, ville: x.kind === 'agency' ? x.name : x.location, surface: x.surface, usage: x.use, photos: x.selection && x.selection.length ? x.selection : [`${x.id}-01`] }; };
 const TUILES = MOSAIQUE.flat().filter(x => !x.startsWith('cas:')).map(bienAttendu);

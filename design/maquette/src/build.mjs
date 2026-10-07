@@ -438,7 +438,7 @@ function projets() {
 }
 
 // Carte des réalisations : data/carte/belgique.svg (contour, 17 points, 17 étiquettes placées à la main ; les quatre adresses bruxelloises
-// — groupe « Bruxelles » de belgique.json — sont un seul point plus gros, r 6,5, nommé comme l'étiquette). Chaque étiquette est regroupée
+// — groupe « Bruxelles » de belgique.json — sont un seul point, nommé comme l'étiquette ; tous les points r 4,5 depuis le 07/10). Chaque étiquette est regroupée
 // avec son point (même nom, ou membre de son groupe) dans un <g class="carte__lieu"> : le survol d'un point colore l'étiquette en CSS seul
 // (les villes sont figées sur « toutes », visibles sans survol). data-rang="1" sur une étiquette du SVG la garde visible sur mobile.
 function carteSvg() {

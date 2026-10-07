@@ -9,7 +9,7 @@
    "y": 150.8,
    "etiquette": [
     0,
-    -12,
+    -9,
     "middle"
    ],
    "membres": [
@@ -19,15 +19,15 @@
     "Schaerbeek"
    ],
    "rang": 1,
-   "rayon": 6.5,
-   "note": "dessiné dans belgique.svg comme un seul point de rayon 6,5 en (x, y), nommé « Bruxelles » ; les membres gardent leur entrée dans villes (coordonnées de référence, non dessinées)"
+   "rayon": 4.5,
+   "note": "dessiné dans belgique.svg comme un seul point en (x, y), nommé « Bruxelles », de la même taille que les autres (r 4,5 depuis le 07/10, retour de Julien : toutes les villes à la même taille ; r 6,5 avant) ; les membres gardent leur entrée dans villes (coordonnées de référence, non dessinées)"
   },
   {
    "nom": "Namur",
    "x": 314.1,
    "y": 225.1,
    "etiquette": [
-    9,
+    8,
     4,
     "start"
    ],
@@ -35,8 +35,8 @@
     "Jambes",
     "Belgrade"
    ],
-   "rayon": 5.5,
-   "note": "30/09 (Axel) : Belgrade n'est plus une commune (section de Namur depuis la fusion de 1977, et le nom se lit comme la capitale serbe) ; Jambes est aussi une section de Namur. Dessiné dans belgique.svg comme un seul point de rayon 5,5 (deux adresses ; Bruxelles, quatre, est à 6,5) aux coordonnées de Namur, nommé « Namur » ; les membres gardent leur entrée dans villes."
+   "rayon": 4.5,
+   "note": "30/09 (Axel) : Belgrade n'est plus une commune (section de Namur depuis la fusion de 1977, et le nom se lit comme la capitale serbe) ; Jambes est aussi une section de Namur. Dessiné dans belgique.svg comme un seul point aux coordonnées de Namur, nommé « Namur », de la même taille que les autres (r 4,5 depuis le 07/10, retour de Julien ; r 5,5 avant) ; les membres gardent leur entrée dans villes."
   }
  ],
  "villes": [
