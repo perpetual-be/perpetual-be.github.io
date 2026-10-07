@@ -54,6 +54,10 @@ jobs:
           npm ci
           npm run build
 
+      # Liens, images, plan du site, ni ancienne adresse ni téléphone (scripts/verifier.mjs) : une PR qui casse un lien n'est pas fusionnée.
+      - name: Vérifier le site construit
+        run: npm run verifier
+
       - name: Fusionner la PR
         env:
           GH_TOKEN: ${{ github.token }}

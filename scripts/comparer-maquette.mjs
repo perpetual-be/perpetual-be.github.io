@@ -2,7 +2,7 @@
 // file:// —, à 1521 × 705, 1920 × 1080 et 390 × 844, polices chargées, les captures sous prefers-reduced-motion (anneau plein des deux côtés) :
 //   · le socle (lot 4, message 1) : captures de .site-header et de .site-footer identiques au pixel près, mêmes positions (logo, liens, colonnes, mail,
 //     citation) ; en-tête collant (hors de l'écran après 600 px vers le bas, revenu après 100 px vers le haut, retour au focus clavier, pas de transition
-//     en mouvement réduit) ; polices depuis /fonts/, aucune requête hors du site, meta robots noindex sur / et /dev/photos, console vide ;
+//     en mouvement réduit) ; polices depuis /fonts/, aucune requête hors du site, meta robots noindex sur /, console vide ;
 //   · la Home (lot 4, message 2) : même hauteur totale de page ; captures identiques au pixel près de .stats-band, .hero__text, .section--chart,
 //     .section--autres et .section--collectif (défilement à 0, puis section par section) ; mêmes positions (accroche, chiffres, paragraphes, signature,
 //     anneau, légende, carte et étiquettes, logos) ; photo du premier écran — même boîte, même cadrage (object-position, object-fit cover), version servie
@@ -50,8 +50,8 @@
 //   · tout dist/ : aucune occurrence de « julien@ » et chaque mailto égal à site.email, aucun commentaire venu de content/, espaces insécables avant « : »
 //     dans les textes rendus, aria-current sur le lien de la page elle-même seulement (Engagements, Réalisations), tous les liens internes répondent, aucun
 //     lien vers les fiches de la maquette (projet-<id>.html), une adresse inconnue sert la 404 ;
-//   · le lot 7 : sitemap.xml (les pages publiques à l'adresse de `site`, ni 404, ni /dev/, ni redirection, toutes qui répondent), robots.txt selon
-//     data/site.json (indexation), noindex en dur sur la 404 et /dev/photos ; la photo du premier écran au téléphone à 3× (sizes à sa largeur affichée,
+//   · le lot 7 : sitemap.xml (les pages publiques à l'adresse de `site`, ni 404, ni redirection, toutes qui répondent), robots.txt selon
+//     data/site.json (indexation), noindex en dur sur la 404 ; la photo du premier écran au téléphone à 3× (sizes à sa largeur affichée,
 //     version servie assez grande) ; la description des fiches, calculée ; sur chaque page le lien canonique et les balises Open Graph, /partage.jpg
 //     (1 200 × 630, sous 300 Ko) ; les icônes (/favicon-32.png, /apple-touch-icon.png, déclarées partout) ; les anciennes adresses /projets et /contact
 //     (renvoi, canonique, noindex, un lien) ; les textes alternatifs des photos (tête et mosaïque des fiches, photos n° 1 de la vue Réalisations,
@@ -1239,7 +1239,7 @@ try {
     const fuites = commentaires.filter(c => notes.some(n => n && (c.c.includes(n.slice(0, 40)) || n.includes(c.c.slice(0, 40)))));
     ok(!fuites.length && !commentaires.length, `aucun commentaire HTML dans les pages (${notes.length} notes dans content/, ${commentaires.length} commentaires publiés)` + (commentaires.length ? ' — ' + commentaires.map(c => `${c.f} : ${c.c.slice(0, 50)}`).join(' ; ') : ''));
     // espaces insécables avant « : » dans les textes rendus (le <main> de chaque page, balises et scripts retirés)
-    // (les pages de ce lot, dont les textes passent par enLigne ou le plugin ; la Home et /dev/photos insèrent leurs textes tels quels, comme la maquette : en information)
+    // (les pages de ce lot, dont les textes passent par enLigne ou le plugin ; la Home insère ses textes tels quels, comme la maquette : en information)
     const LOT = ['engagements.html', 'mentions-legales.html', 'confidentialite.html', '404.html'];
     const textes = htmls.map(f => ({ f, t: (lire(f).match(/<main>([\s\S]*?)<\/main>/) || ['', ''])[1].replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, '') }));
     const simples = textes.filter(x => LOT.includes(x.f) && / :/.test(x.t)), insecables = textes.filter(x => LOT.includes(x.f)).reduce((n, x) => n + (x.t.match(/\u00A0:/g) || []).length, 0), autres = textes.filter(x => !LOT.includes(x.f) && / :/.test(x.t)).map(x => x.f);
@@ -1256,7 +1256,7 @@ try {
     const versMaquette = htmls.filter(f => /href="[^"]*projet-[a-z0-9-]+\.html/.test(lire(f)));
     ok(!versMaquette.length && htmls.filter(f => f.startsWith('realisations/')).length === 4, `aucun lien vers projet-<id>.html (les fiches de la maquette) dans les ${htmls.length} pages ; les quatre fiches dans dist/realisations/` + (versMaquette.length ? ' — dans ' + versMaquette.join(', ') : ''));
     // le plan du site (lot 7) : dist/sitemap.xml — les pages publiques (la Home, Réalisations, les fiches dans l'ordre du champ order, Engagements, les
-    // pages légales), chacune une fois, à l'adresse de `site` (astro.config.mjs) sans « .html » ; ni la 404, ni /dev/, ni une redirection ; chacune répond
+    // pages légales), chacune une fois, à l'adresse de `site` (astro.config.mjs) sans « .html » ; ni la 404, ni une redirection ; chacune répond
     const publique = (fs.readFileSync(path.join(REPO, 'astro.config.mjs'), 'utf8').match(/^\s*site:\s*'([^']+)'/m) || [])[1].replace(/\/$/, '');
     const fiches = JSON.parse(fs.readFileSync(path.join(REPO, 'data/projects.json'), 'utf8')).filter(p => p.kind === 'detailed').map(p => `/realisations/${p.id}`);
     const attendues = ['/', '/collectif', '/confidentialite', '/engagements', '/mentions-legales', '/realisations', ...fiches].sort();   // /collectif : 07/10
@@ -1265,7 +1265,7 @@ try {
     const repondent = await Promise.all(chemins.map(async c => (await fetch(SITE + c)).status));
     ok(/^<\?xml version="1\.0" encoding="UTF-8"\?>\n<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">\n(  <url><loc>[^<]+<\/loc><\/url>\n)+<\/urlset>\n$/.test(plan)
       && JSON.stringify([...chemins].sort()) === JSON.stringify(attendues) && new Set(chemins).size === chemins.length && repondent.every(s => s === 200),
-      `sitemap.xml : ${locs.length} adresses sous ${publique} (${chemins.join(', ')}), ni 404, ni /dev/, ni redirection ; toutes répondent` + (repondent.some(s => s !== 200) ? ` — statuts ${repondent.join(', ')}` : ''));
+      `sitemap.xml : ${locs.length} adresses sous ${publique} (${chemins.join(', ')}), ni 404, ni redirection ; toutes répondent` + (repondent.some(s => s !== 200) ? ` — statuts ${repondent.join(', ')}` : ''));
     // robots.txt (lot 7) : écrit selon data/site.json (indexation) — fermé tant qu'il est faux ; ouvert, avec le plan du site, au lot 9 ; plus de public/robots.txt
     const robots = await (await fetch(SITE + '/robots.txt')).text();
     const robotsAttendu = siteJson.indexation ? `User-agent: *\nAllow: /\nSitemap: ${publique}/sitemap.xml\n` : "# Prévisualisation : pas d'indexation avant la mise en ligne sur perpetual.be (lot 9).\nUser-agent: *\nDisallow: /\n";
@@ -1284,7 +1284,7 @@ try {
       const h = lire(f);
       if (/<meta http-equiv="refresh"/i.test(h)) continue;
       const chemin = '/' + f.replace(/(^|\/)index\.html$/, '$1').replace(/\.html$/, '');
-      const permanent = f === '404.html' || f.startsWith('dev/');
+      const permanent = f === '404.html';
       const titre = balise(h, /<title>([^<]*)<\/title>/), desc = balise(h, /<meta name="description" content="([^"]*)"/), canon = balise(h, /<link rel="canonical" href="([^"]*)"/);
       const attendu = {
         canon: permanent ? null : publique + chemin, url: permanent ? null : publique + chemin, titre, desc, image: `${publique}/partage.jpg`, alt: altPartage,
@@ -1299,7 +1299,7 @@ try {
       if (faux.length) ecartsPartage.push(`${f} : ${faux.map(k => `${k} ${JSON.stringify(lu[k])} au lieu de ${JSON.stringify(attendu[k])}`).join(', ')}`);
       if (!desc && !permanent) sansPartage.push(f);
     }
-    ok(!ecartsPartage.length && !sansPartage.length, `adresse et partage : sur les ${htmls.length} pages (hors redirections), og:title = le titre de l'onglet, og:description = la description, image ${publique}/partage.jpg 1 200 × 630 (« ${altPartage} »), carte large ; lien canonique et og:url = l'adresse publique, sauf sur la 404 et /dev/photos ; toutes les pages publiques ont une description`
+    ok(!ecartsPartage.length && !sansPartage.length, `adresse et partage : sur les ${htmls.length} pages (hors redirections), og:title = le titre de l'onglet, og:description = la description, image ${publique}/partage.jpg 1 200 × 630 (« ${altPartage} »), carte large ; lien canonique et og:url = l'adresse publique, sauf sur la 404 ; toutes les pages publiques ont une description`
       + (ecartsPartage.length ? ' — ' + ecartsPartage.join(' ; ') : '') + (sansPartage.length ? ' — sans description : ' + sansPartage.join(', ') : ''));
     // l'image de partage : servie à /partage.jpg, JPEG de 1 200 × 630, sous 300 Ko (le plafond de WhatsApp pour un aperçu)
     const rp = await fetch(SITE + '/partage.jpg'), bp = Buffer.from(await rp.arrayBuffer()), mp = await sharp(bp).metadata();
@@ -1337,21 +1337,15 @@ try {
           `${ancienne} : renvoi immédiat vers ${vers} (meta refresh), noindex, canonique ${publique}${canon}, un seul lien « ${libelle} », ni style ni script ; le navigateur arrive sur ${arrivee.pathname + arrivee.hash}`);
       }
     }
-    // la 404 et /dev/photos gardent noindex même une fois l'indexation ouverte (prop noindex de Base.astro) : lu dans leur source
-    ok(/<Base [^>]*\bnoindex\b/.test(fs.readFileSync(path.join(REPO, 'src/pages/404.astro'), 'utf8')) && /<Base [^>]*\bnoindex\b/.test(fs.readFileSync(path.join(REPO, 'src/pages/dev/photos.astro'), 'utf8')),
-      'la 404 et /dev/photos : noindex en dur (prop noindex de Base.astro), même une fois l\'indexation ouverte');
+    // la 404 garde noindex même une fois l'indexation ouverte (prop noindex de Base.astro) : lu dans sa source
+    ok(/<Base [^>]*\bnoindex\b/.test(fs.readFileSync(path.join(REPO, 'src/pages/404.astro'), 'utf8')),
+      'la 404 : noindex en dur (prop noindex de Base.astro), même une fois l\'indexation ouverte');
     // une adresse inconnue sert la 404 (astro preview, comme GitHub Pages), en chemins absolus
     const r404 = await fetch(SITE + '/une/adresse/inconnue'), h404 = await r404.text();
     const relatifs = [...h404.matchAll(/(?:href|src)="([^"]+)"/g)].map(x => x[1]).filter(u => !/^(\/|https?:|mailto:|#)/.test(u));
     ok(r404.status === 404 && h404.includes('Page introuvable') && !relatifs.length, `une adresse inconnue répond ${r404.status} avec la page « Page introuvable » (dist/404.html), chemins absolus partout` + (relatifs.length ? ' — relatifs : ' + relatifs.join(', ') : ''));
   }
 
-  console.log('\n/dev/photos');
-  const dev = await ouvrir(SITE + '/dev/photos', FORMATS[0]);
-  ok((await dev.p.evaluate(() => document.querySelector('meta[name="robots"]')?.getAttribute('content'))) === 'noindex', 'meta robots noindex sur /dev/photos');
-  ok(!dev.erreurs.length, 'aucune erreur dans la console sur /dev/photos' + (dev.erreurs.length ? ' — ' + dev.erreurs.join(' | ') : ''));
-  ok(dev.requetes.every(u => u.startsWith(SITE + '/')) && (await dev.p.evaluate(() => !!document.querySelector('.entete-collante .site-header') && !!document.querySelector('.site-footer#contact'))), 'en-tête collant et pied de page présents, aucune requête hors du site');
-  await dev.ctx.close();
 } finally {
   await browser.close();
   await serveur.stop();

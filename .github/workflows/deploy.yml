@@ -40,6 +40,9 @@ jobs:
         with:
           node-version: 22
           package-manager: npm@latest
+      # Liens, images, plan du site, ni ancienne adresse ni téléphone (scripts/verifier.mjs). En échec, le job build échoue et deploy ne part pas.
+      - name: Vérifier le site construit
+        run: npm run verifier
 
   deploy:
     needs: build
