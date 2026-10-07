@@ -7,6 +7,12 @@
 // En-tête collant (décision d'Axel du 19/09, absent de la maquette) : le conteneur .entete-collante est collé en haut de la fenêtre ; le script en ligne
 // ci-dessous le cache quand on fait défiler vers le bas et le fait revenir dès qu'on remonte — toujours visible en haut de page (tant que le
 // défilement est inférieur à sa hauteur), seuil de quelques pixels pour ne pas trembler, retour aussi quand le focus clavier entre dedans.
+// Menu au téléphone (07/10/2026, choix d'Axel, avec la page Collectif : quatre entrées ne tiennent plus sur une ligne à côté du Φ) : jusqu'à 640 px,
+// « Φ PERPETUAL » à gauche et un bouton à trois traits à droite (button.menu-bouton, aria-expanded, aria-controls) ; il ouvre la navigation en panneau
+// blanc sous l'en-tête (les quatre entrées en grand, entre des filets) et devient une croix. Le second script ci-dessous : clic sur le bouton, Échap
+// (le focus revient au bouton), clic sur une entrée (« Contact » mène au pied de page) ou passage au-dessus de 640 px referment ; panneau ouvert, la page
+// ne défile plus et <main> et le pied de page sont inertes (Tab reste dans l'en-tête). La classe menu-js, posée sur <html> dans le <head> (Base.astro),
+// active ce mode : sans JavaScript, pas de bouton et les quatre entrées restent visibles, sur une seconde ligne. Styles : src/styles/entete.css.
 import favicon from '../../public/favicon.svg?raw';
 import site from '../../data/site.json';
 
@@ -24,7 +30,8 @@ const courante = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '') ||
 <div class="entete-collante">
 <header class="site-header">
   <a class="logo" href="/" aria-label="Perpetual — accueil"><svg class="logo__mark" viewBox="0 0 100 104.02" aria-hidden="true" set:html={markPath} /><span class="logo__texte">Perpetual</span></a>
-  <nav class="site-nav" aria-label="Navigation">{site.nav.map((n) => <a href={n.href} class:list={['trait', { 'is-active': n.href === active }]} aria-current={n.href === courante ? 'page' : undefined}>{n.label}</a>)}</nav>
+  <button class="menu-bouton" type="button" aria-expanded="false" aria-controls="navigation" aria-label="Menu"><span class="menu-bouton__traits" aria-hidden="true"></span></button>
+  <nav class="site-nav" id="navigation" aria-label="Navigation">{site.nav.map((n) => <a href={n.href} class:list={['trait', { 'is-active': n.href === active }]} aria-current={n.href === courante ? 'page' : undefined}>{n.label}</a>)}</nav>
 </header>
 </div>
 <script is:inline>
@@ -42,5 +49,24 @@ const courante = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '') ||
     }
     window.addEventListener('scroll', function () { if (!prevu) { prevu = true; requestAnimationFrame(placer); } }, { passive: true });
     en.addEventListener('focusin', function () { en.classList.remove('est-cachee'); dernier = window.scrollY; });
+  })();
+  (function () {
+    var html = document.documentElement, bouton = document.querySelector('.menu-bouton'), nav = document.getElementById('navigation'), en = document.querySelector('.entete-collante');
+    if (!bouton || !nav || !en) return;
+    html.classList.add('menu-js');
+    var tel = window.matchMedia('(max-width: 640px)');
+    function ouvert() { return html.classList.contains('menu-ouvert'); }
+    function poser(o, rendreFocus) {
+      html.classList.toggle('menu-ouvert', o);
+      bouton.setAttribute('aria-expanded', o ? 'true' : 'false');
+      [document.querySelector('main'), document.querySelector('.site-footer')].forEach(function (el) { if (el) el.inert = o; });
+      if (o) en.classList.remove('est-cachee');
+      else if (rendreFocus) bouton.focus();
+    }
+    bouton.addEventListener('click', function () { poser(!ouvert()); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ouvert()) poser(false, true); });
+    nav.addEventListener('click', function (e) { if (ouvert() && e.target.closest('a')) poser(false); });
+    var fermerAuDela = function () { if (!tel.matches && ouvert()) poser(false); };
+    if (tel.addEventListener) tel.addEventListener('change', fermerAuDela); else tel.addListener(fermerAuDela);
   })();
 </script>

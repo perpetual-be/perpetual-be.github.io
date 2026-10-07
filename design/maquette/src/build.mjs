@@ -1,6 +1,6 @@
 // Génère les pages de la maquette du lot 2 (design/maquette/*.html : la Home, les quatre fiches projet, la vue Réalisations, la page Engagements) à partir des données du dépôt.
 // Exécuter depuis la racine : node design/maquette/src/build.mjs
-// Lit data/*.json, content/home.md, content/collectif.md, content/realisations.md, content/engagements.md, public/favicon.svg, public/partners/encre/*.svg (hauteurs des logos),
+// Lit data/*.json, content/home.md, content/realisations.md, content/engagements.md, public/favicon.svg (content/collectif.md et les logos partenaires : plus depuis le 07/10, voir « logos »),
 // data/carte/belgique.{svg,json} (la carte, déplacée là le 01/10 : partagée avec le site), et les dimensions des photos de design/directions/img/ (srcset, ratios de la mosaïque, œuvre). N'écrit que dans design/maquette/.
 // Aucune dépendance hors Node.
 import fs from 'node:fs';
@@ -11,7 +11,6 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(HERE, '..');            // design/maquette/
 const REPO = path.resolve(HERE, '../../..');     // racine du dépôt
 const IMG = '../directions/img';                 // photos réduites, relatif aux pages
-const PARTNERS = '../../public/partners';        // logos, relatif aux pages
 // Fins de ligne ramenées à \n : un clone Windows (core.autocrlf) livre les .md en CRLF, et « . » ne franchit pas un \r dans une expression régulière.
 const read = f => fs.readFileSync(path.join(REPO, f), 'utf8').replace(/\r\n?/g, '\n');
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -19,7 +18,6 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 // ---------- données ----------
 const site = JSON.parse(read('data/site.json'));
 const projects = JSON.parse(read('data/projects.json'));
-const partners = JSON.parse(read('data/partners.json'));
 const byId = Object.fromEntries(projects.map(p => [p.id, p]));
 // Libellé de l'entrée « réalisations » de la navigation et du plan du pied de page : data/site.json est la source unique (reprise par le site au lot 4).
 const navLabel = href => { const n = site.nav.find(x => x.href === href); if (!n) throw new Error('data/site.json : entrée de navigation ' + href + ' introuvable'); return n.label; };
@@ -67,8 +65,6 @@ const home = {
   paragraphs: homeBlocks.filter(b => !b.startsWith('# ')).slice(0, -1),
   signature: homeBlocks[homeBlocks.length - 1],
 };
-const collectifBlocks = blocks(frontmatter(read('content/collectif.md')).body);
-const collectif = { paragraphs: collectifBlocks.slice(0, -1), chute: collectifBlocks[collectifBlocks.length - 1] };
 // Programme agences (content/realisations.md), tel quel : l'énoncé de la vue Réalisations (jusqu'au 04/10, aussi le paragraphe de la carte de la Home).
 const realisationsBlocks = blocks(frontmatter(read('content/realisations.md')).body);
 const agences = realisationsBlocks[realisationsBlocks.indexOf('## Le programme agences') + 1];
@@ -289,24 +285,16 @@ function apercuDe(p) {
 const apercus = Object.fromEntries(DETAILLES.map(p => [p.id, apercuDe(p)]));
 
 // ---------- logos ----------
-// Figés en couleur le 22/09 (bascule 14 retirée) : <img> de public/partners/couleur/. La hauteur de chaque logo se calcule à la masse visuelle
-// sur le viewBox du fichier encre (mêmes canevas) : 34 px × √(291 / largeur du viewBox), bornée 34–60 px
-// (les canevas font 100 de haut ; Batopin, 291 de large, est l'étalon à 34 px). Posée en --logo-h sur le <li>.
-function partnerHeight(file) {
-  const svg = fs.readFileSync(path.join(REPO, 'public/partners/encre', path.basename(file)), 'utf8');
-  const w = Number(svg.match(/viewBox="0 0 ([\d.]+) 100"/)[1]);
-  return Math.min(60, Math.max(34, Math.round(34 * Math.sqrt(291 / w))));
-}
-const partnersHtml = partners.map(p =>
-  `<li class="partner" style="--logo-h:${partnerHeight(p.logoInk)}px" title="${esc(p.name)}"><img class="partner__couleur" src="${PARTNERS}/couleur/${path.basename(p.logo)}" alt="${esc(p.name)}" loading="lazy"></li>`
-).join('\n');
+// Les logos partenaires étaient en fin de Home (section Collectif) ; depuis le 07/10 (retour de Julien), ils sont sur la page Collectif, construite
+// directement dans le site (src/pages/collectif.astro, src/components/collectif/Partenaires.astro, même calcul des hauteurs) : plus rien ici.
 
 const markPath = read('public/favicon.svg').match(/<g[\s\S]*<\/g>/)[0];
 const phiSymbol = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="phi" viewBox="0 0 100 104.02">${markPath}</symbol></svg>`;
 const phi = (cls) => `<svg class="${cls}" aria-hidden="true"><use href="#phi"/></svg>`;
 
 // ---------- fragments ----------
-const stateScript = `<script>(function(){var p=new URLSearchParams(location.search),h=document.documentElement;p.forEach(function(v,k){if(/^[a-z][a-z-]*$/.test(k)&&/^[a-z0-9-]*$/.test(v))h.setAttribute('data-'+k,v)})})();</script>`;
+// menu-js (07/10) : posée avant le premier rendu, comme dans le site (Base.astro) — l'en-tête du téléphone s'affiche d'emblée avec le bouton du menu
+const stateScript = `<script>(function(){var p=new URLSearchParams(location.search),h=document.documentElement;h.classList.add('menu-js');p.forEach(function(v,k){if(/^[a-z][a-z-]*$/.test(k)&&/^[a-z0-9-]*$/.test(v))h.setAttribute('data-'+k,v)})})();</script>`;
 
 function head(title) {
   return `<!doctype html>
@@ -324,11 +312,15 @@ ${phiSymbol}`;
 }
 
 // Page active : le trait sous son lien ; sur la page Engagements, aria-current="page" en plus (26/09 ; le lien de « Réalisations » ne change pas).
+// 07/10 (retour de Julien) : « Collectif » en deuxième entrée — la page est construite directement dans le site (/collectif), pas dans la maquette : ici
+// le lien ne mène nulle part (« # », comme les pages légales du pied de page). Au téléphone, le bouton du menu (button.menu-bouton, choix d'Axel) ouvre
+// la navigation en panneau : maquette.css (section 5) et maquette.js, repris du site (SiteHeader.astro, src/styles/entete.css).
 function header(active = '') {
   const a = k => active === k ? ` class="trait is-active"${k === 'engagements' ? ' aria-current="page"' : ''}` : ' class="trait"';
   return `<header class="site-header">
   <a class="logo" href="index.html" aria-label="Perpetual">${phi('logo__mark')}<span class="logo__texte">Perpetual</span></a>
-  <nav class="site-nav" aria-label="Navigation"><a href="${PAGE_REALISATIONS}"${a('realisations')}>${esc(REALISATIONS)}</a><a href="${PAGE_ENGAGEMENTS}"${a('engagements')}>Engagements</a><a href="#contact" class="trait">Contact</a></nav>
+  <button class="menu-bouton" type="button" aria-expanded="false" aria-controls="navigation" aria-label="Menu"><span class="menu-bouton__traits" aria-hidden="true"></span></button>
+  <nav class="site-nav" id="navigation" aria-label="Navigation"><a href="${PAGE_REALISATIONS}"${a('realisations')}>${esc(REALISATIONS)}</a><a href="#" class="trait">Collectif</a><a href="${PAGE_ENGAGEMENTS}"${a('engagements')}>Engagements</a><a href="#contact" class="trait">Contact</a></nav>
 </header>`;
 }
 
@@ -480,20 +472,13 @@ function autres() {
 </section>`;
 }
 
-function collectifBlock() {
-  return `<section class="section section--collectif" id="collectif"><div class="container">
-  <p class="eyebrow">Collectif</p>
-  <div class="collectif__text">${collectif.paragraphs.map(p => `<p>${p}</p>`).join('')}<p class="chute">${collectif.chute}</p></div>
-  <ul class="partners" aria-label="Partenaires">
-${partnersHtml}
-  </ul>
-</div></section>`;
-}
+// Collectif : la section a quitté la Home le 07/10 (retour de Julien) pour sa page, construite directement dans le site (src/pages/collectif.astro).
+// Retour à l'existant : annuler le commit du 07/10 « Collectif » (collectifBlock(), partnersHtml, partnerHeight() et la lecture de content/collectif.md).
 
 function footer() {
   return `<footer class="site-footer" id="contact"><div class="container footer__grid">
   <div class="footer__contact"><p class="footer__name">Julien De Dobbeleer</p><a class="footer__mail" href="mailto:${site.email}">${site.email}</a><p class="footer__addr">${site.name}, ${site.city}</p></div>
-  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="${PAGE_REALISATIONS}">${esc(REALISATIONS)}</a><a class="trait" href="index.html#collectif">Collectif</a><a class="trait" href="${PAGE_ENGAGEMENTS}">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
+  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="${PAGE_REALISATIONS}">${esc(REALISATIONS)}</a><a class="trait" href="#">Collectif</a><a class="trait" href="${PAGE_ENGAGEMENTS}">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
   <blockquote class="footer__quote"><p>«\u00A0${site.quote.text}\u00A0»</p><cite>${site.quote.author}</cite></blockquote>
   <p class="footer__legal">© 2026 ${site.name}</p>
 </div></footer>
@@ -659,7 +644,7 @@ function engagementsPage() {
 
 // ---------- pages ----------
 const pages = {
-  'index.html': () => head({ page: 'home', text: `${site.name} — ${site.tagline}` }) + '\n' + header('') + '\n<main>\n' + lead() + '\n' + chart() + '\n' + autres() + '\n' + collectifBlock() + '\n</main>\n' + footer(),
+  'index.html': () => head({ page: 'home', text: `${site.name} — ${site.tagline}` }) + '\n' + header('') + '\n<main>\n' + lead() + '\n' + chart() + '\n' + autres() + '\n</main>\n' + footer(),
   ...Object.fromEntries(DETAILLES.map((p, i) => [pageFiche(p.id), () => head({ page: 'fiche', text: `${p.name} — ${site.name}` }) + '\n' + header('realisations') + '\n<main>\n' + fichePage(p, i) + '\n</main>\n' + footer()])),
   [PAGE_REALISATIONS]: () => head({ page: 'realisations', text: `${REALISATIONS} — ${site.name}` }) + '\n' + header('realisations') + '\n<main>\n' + realisationsPage() + '\n</main>\n' + footer(),
   [PAGE_ENGAGEMENTS]: () => head({ page: 'engagements', text: `${engagements.titre} — ${site.name}` }) + '\n' + header('engagements') + '\n<main>\n' + engagementsPage() + '\n</main>\n' + footer(),

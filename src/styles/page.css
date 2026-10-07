@@ -10,9 +10,10 @@
 .page__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-titre-page);line-height:1;letter-spacing:-.015em}
 /* page Engagements (Cowork, 26/09 ; référence validée : design/revue-engagements/propositions/p1.html), sur le container de 1 200 px comme la Home :
    le titre seul, sans sous-titre, en sans léger comme Réalisations ; puis le registre, une rangée par engagement — le verbe en serif à gauche, le texte
-   à droite (grille 5/7), un filet au-dessus. Les pages de texte sans maquette (data-page="texte") reprennent le titre et le padding d'Engagements. */
-html[data-page="engagements"] .page__titre,html[data-page="texte"] .page__titre{font-family:var(--sans);font-weight:400;letter-spacing:-.028em;line-height:1.02}
-@media (min-width:641px){html[data-page="engagements"] .page-head,html[data-page="texte"] .page-head{padding-top:32px;padding-bottom:30px}}   /* téléphone : le padding de .page-head */
+   à droite (grille 5/7), un filet au-dessus. Les pages de texte sans maquette (data-page="texte") et la page Collectif (data-page="collectif", 07/10)
+   reprennent le titre et le padding d'Engagements. */
+html[data-page="engagements"] .page__titre,html[data-page="texte"] .page__titre,html[data-page="collectif"] .page__titre{font-family:var(--sans);font-weight:400;letter-spacing:-.028em;line-height:1.02}
+@media (min-width:641px){html[data-page="engagements"] .page-head,html[data-page="texte"] .page-head,html[data-page="collectif"] .page-head{padding-top:32px;padding-bottom:30px}}   /* téléphone : le padding de .page-head */
 .registre{padding-top:12px}
 .rang{display:grid;grid-template-columns:5fr 7fr;gap:0 64px;border-top:1px solid var(--filet);padding:30px 0 52px}
 .rang:last-child{padding-bottom:72px}   /* bas de la dernière rangée → haut du pied de page : 72 px */

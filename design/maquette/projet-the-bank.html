@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Bank — Perpetual</title>
-<script>(function(){var p=new URLSearchParams(location.search),h=document.documentElement;p.forEach(function(v,k){if(/^[a-z][a-z-]*$/.test(k)&&/^[a-z0-9-]*$/.test(v))h.setAttribute('data-'+k,v)})})();</script>
+<script>(function(){var p=new URLSearchParams(location.search),h=document.documentElement;h.classList.add('menu-js');p.forEach(function(v,k){if(/^[a-z][a-z-]*$/.test(k)&&/^[a-z0-9-]*$/.test(v))h.setAttribute('data-'+k,v)})})();</script>
 <link rel="stylesheet" href="maquette.css">
 <link rel="icon" href="../../public/favicon.svg">
 </head>
@@ -44,7 +44,8 @@
 </g></symbol></svg>
 <header class="site-header">
   <a class="logo" href="index.html" aria-label="Perpetual"><svg class="logo__mark" aria-hidden="true"><use href="#phi"/></svg><span class="logo__texte">Perpetual</span></a>
-  <nav class="site-nav" aria-label="Navigation"><a href="realisations.html" class="trait is-active">Réalisations</a><a href="engagements.html" class="trait">Engagements</a><a href="#contact" class="trait">Contact</a></nav>
+  <button class="menu-bouton" type="button" aria-expanded="false" aria-controls="navigation" aria-label="Menu"><span class="menu-bouton__traits" aria-hidden="true"></span></button>
+  <nav class="site-nav" id="navigation" aria-label="Navigation"><a href="realisations.html" class="trait is-active">Réalisations</a><a href="#" class="trait">Collectif</a><a href="engagements.html" class="trait">Engagements</a><a href="#contact" class="trait">Contact</a></nav>
 </header>
 <main>
 <article class="fiche">
@@ -65,7 +66,7 @@
 </main>
 <footer class="site-footer" id="contact"><div class="container footer__grid">
   <div class="footer__contact"><p class="footer__name">Julien De Dobbeleer</p><a class="footer__mail" href="mailto:contact@perpetual.be">contact@perpetual.be</a><p class="footer__addr">Perpetual, 1030 Bruxelles</p></div>
-  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="realisations.html">Réalisations</a><a class="trait" href="index.html#collectif">Collectif</a><a class="trait" href="engagements.html">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
+  <nav class="footer__nav" aria-label="Plan du site"><a class="trait" href="realisations.html">Réalisations</a><a class="trait" href="#">Collectif</a><a class="trait" href="engagements.html">Engagements</a><a class="trait" href="#">Mentions légales</a><a class="trait" href="#">Confidentialité</a></nav>
   <blockquote class="footer__quote"><p>« Il y a deux choses dans un édifice : son usage et sa beauté. Son usage appartient au propriétaire ; sa beauté à tout le monde. »</p><cite>Victor Hugo</cite></blockquote>
   <p class="footer__legal">© 2026 Perpetual</p>
 </div></footer>

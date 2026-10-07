@@ -10,6 +10,9 @@
 // son texte alternatif : src/lib/partage.ts) et la carte de partage large (twitter:card). Toutes les adresses suivent `site` : au lot 9, perpetual.be.
 // Icônes (lot 7) : le SVG pour les navigateurs qui le lisent, un PNG de 32 px pour les autres (déclaré avant, avec sizes : Chrome garde alors le SVG) et
 // l'icône d'écran d'accueil d'iOS (180 px), les deux tirées de public/favicon.svg au build (src/lib/icones.ts).
+// Menu au téléphone (07/10/2026) : la classe menu-js posée sur <html> dès le <head>, avant le premier rendu, pour que l'en-tête du téléphone s'affiche
+// d'emblée avec son bouton (sans JavaScript, la navigation reste visible sur deux lignes) ; le menu lui-même est dans SiteHeader.astro.
+// data-page : « collectif » pour la page Collectif (07/10/2026), qui prend le titre en sans léger d'Engagements (src/styles/page.css).
 import '../styles/polices.css';
 import '../styles/jetons.css';
 import '../styles/base.css';
@@ -47,6 +50,7 @@ const imageAlt = await altPartage();
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>document.documentElement.classList.add('menu-js');</script>
     <title>{pageTitle}</title>
     {description && <meta name="description" content={description} />}
     {(!site.indexation || noindex) && <meta name="robots" content="noindex" />}

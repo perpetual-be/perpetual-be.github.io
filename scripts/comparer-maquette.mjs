@@ -260,12 +260,12 @@ async function controlesPage(site, chemin, largeur, polices, { statut404 = false
 const dasharrays = p => p.evaluate(() => [...document.querySelectorAll('.graph__part')].map(c => ({ l: parseFloat(c.style.getPropertyValue('--l')), v: parseFloat(getComputedStyle(c).strokeDasharray) })));
 
 try {
-  const ENTETE = ['.logo', '.logo__mark', '.logo__texte', '.site-nav', '.site-nav a'];
+  const ENTETE = ['.logo', '.logo__mark', '.logo__texte', '.menu-bouton', '.menu-bouton__traits', '.site-nav', '.site-nav a'];   // le bouton du menu : au téléphone (07/10)
   const PIED = ['.site-footer > .container', '.footer__contact', '.footer__name', '.footer__mail', '.footer__addr', '.footer__nav', '.footer__nav a', '.footer__quote', '.footer__quote p', '.footer__quote cite', '.footer__legal'];
-  const SECTIONS = ['.stats-band', '.hero__text', '.section--chart', '.section--autres', '.section--collectif'];
+  const SECTIONS = ['.stats-band', '.hero__text', '.section--chart', '.section--autres'];   // .section--collectif : sur sa page depuis le 07/10
   const HOME = ['.hero__photo', '.hero__title', '.hero__title span', '.stats-band', '.stat', '.stat__value', '.stat__label', '.hero__text', '.hero__text>p', '.hero__col p', '.signature',
     '.section--chart', '.section--chart .h2', '.graph__svg', '.graph__legende li', '.graph__val', '.section--autres', '.section--autres .eyebrow', '.carte__svg', '.carte__lieu', '.carte__lab',
-    '.carte__texte .h2', '.carte__texte p', '.autres__lien', '.section--collectif', '.section--collectif .eyebrow', '.collectif__text p', '.chute', '.partners', '.partner', '.partner__couleur'];
+    '.carte__texte .h2', '.carte__texte p', '.autres__lien'];
   for (const format of FORMATS) {
     console.log(`\n${fmt(format)}`);
     const nom = `${format[0]}x${format[1]}`;
@@ -345,13 +345,14 @@ try {
     const focus = await normal.p.waitForFunction(() => document.querySelector('.entete-collante').getBoundingClientRect().top === 0, null, { timeout: 2000 }).then(() => true, () => false);
     ok(focus, 'en-tête collant : caché après un nouveau défilement vers le bas, il revient quand le focus clavier entre dedans');
     const liens = await normal.p.evaluate(() => [...document.querySelectorAll('.site-nav a')].map(a => `${a.textContent} → ${a.getAttribute('href')}${a.classList.contains('is-active') ? ' (actif)' : ''}`).join(' · '));
-    ok(liens === 'Réalisations → /realisations · Engagements → /engagements · Contact → #contact' && (await normal.p.evaluate(() => document.querySelector('.logo').getAttribute('href') + ' ' + document.querySelector('.logo').getAttribute('aria-label'))) === '/ Perpetual — accueil',
+    ok(liens === 'Réalisations → /realisations · Collectif → /collectif · Engagements → /engagements · Contact → #contact' && (await normal.p.evaluate(() => document.querySelector('.logo').getAttribute('href') + ' ' + document.querySelector('.logo').getAttribute('aria-label'))) === '/ Perpetual — accueil',
       `navigation : ${liens} ; logo vers / (« Perpetual — accueil »), aucun lien actif sur la Home`);
     ok((await normal.p.evaluate(() => document.title)) === 'Perpetual — Le trait d’union entre les idées et le capital.', `titre de l'onglet : « ${await normal.p.evaluate(() => document.title)} »`);
     // « Contact » → #contact en défilement fluide (scroll-behavior: smooth, demande d'Axel du 01/10) : en route 80 ms après le clic, arrivé au pied de page ensuite
     await normal.p.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await normal.p.waitForTimeout(400);
     const attendu = await normal.p.evaluate(() => Math.round(Math.min(document.querySelector('#contact').getBoundingClientRect().top + window.scrollY, document.documentElement.scrollHeight - window.innerHeight)));
+    if (format[0] <= 640) { await normal.p.click('.menu-bouton'); await normal.p.waitForTimeout(50); }   // au téléphone, « Contact » est dans le menu (07/10)
     await normal.p.click('.site-nav a[href="#contact"]');
     await normal.p.waitForTimeout(80);
     const enRoute = await normal.p.evaluate(() => window.scrollY);
@@ -450,7 +451,7 @@ try {
     ok(l.liens === 'lien-texte Créahmbxl → https://creahmbxl.be _blank noopener +" (nouvel onglet)" | lien-texte Écrivez-nous → #contact' && l.contact === 'FOOTER' && l.masque === '1×1', `liens : ${l.liens.replace(/lien-texte /g, '')} ; #contact est le pied de page ; « (nouvel onglet) » masqué visuellement (${l.masque})`);
     // navigation : Engagements actif, avec aria-current, sur cette page
     const nav = await site.p.evaluate(() => [...document.querySelectorAll('.site-nav a')].map(a => `${a.textContent}${a.classList.contains('is-active') ? ' actif' : ''}${a.hasAttribute('aria-current') ? ' aria-current=' + a.getAttribute('aria-current') : ''} → ${a.getAttribute('href')}`).join(' | '));
-    ok(nav === 'Réalisations → /realisations | Engagements actif aria-current=page → /engagements | Contact → #contact', 'navigation : ' + nav);
+    ok(nav === 'Réalisations → /realisations | Collectif → /collectif | Engagements actif aria-current=page → /engagements | Contact → #contact', 'navigation : ' + nav);
     // la description est lue dans l'en-tête de content/engagements.md, comme pour Réalisations (05/10 : verbes dans l'ordre de la page)
     const descriptionEng = (fs.readFileSync(path.join(REPO, 'content/engagements.md'), 'utf8').match(/^description:\s*(.+)$/m) || [])[1];
     ok((await site.p.evaluate(() => [document.documentElement.dataset.page, document.title, document.querySelector('.page__titre').textContent, document.querySelector('meta[name="description"]')?.content].join(' · '))) === `engagements · Engagements — Perpetual · Engagements · ${descriptionEng}`,
@@ -469,12 +470,12 @@ try {
   // aria-current="page" sur le lien de la page elle-même seulement — « Engagements » sur engagements.html, « Réalisations » sur realisations.html (lot 5,
   // message 2 ; les fiches ont le trait sans aria-current) : les pages construites, sous-dossiers compris (les fiches, dist/realisations/)
   {
-    const PROPRES = { 'engagements.html': 'Engagements', 'realisations.html': 'Réalisations' };
+    const PROPRES = { 'engagements.html': 'Engagements', 'realisations.html': 'Réalisations', 'collectif.html': 'Collectif' };   // Collectif : 07/10
     const pages = fs.readdirSync(path.join(REPO, 'dist'), { recursive: true }).filter(f => f.endsWith('.html')).map(posix).sort();
     const actifs = pages.map(f => { const h = fs.readFileSync(path.join(REPO, 'dist', f), 'utf8'); const m = h.match(/<a href="([^"]+)" class="trait is-active"[^>]*aria-current="page"[^>]*>([^<]+)<\/a>/g) || []; return `${f} : ${m.length ? m.map(x => x.replace(/^.*>([^<]+)<\/a>$/, '$1')).join(', ') : '—'}`; });
     ok(Object.keys(PROPRES).every(f => pages.includes(f)) && actifs.every(a => Object.entries(PROPRES).some(([f, l]) => a === `${f} : ${l}`) || a.endsWith(' : —'))
       && pages.every(f => (fs.readFileSync(path.join(REPO, 'dist', f), 'utf8').match(/aria-current/g) || []).length === (PROPRES[f] ? 1 : 0)),
-      `aria-current="page" sur le lien de la page elle-même seulement, « Engagements » sur engagements.html et « Réalisations » sur realisations.html — ${actifs.join(' · ')}`);
+      `aria-current="page" sur le lien de la page elle-même seulement, « Engagements » sur engagements.html, « Réalisations » sur realisations.html et « Collectif » sur collectif.html — ${actifs.join(' · ')}`);
   }
 
   // ---------- pages de texte sans maquette (lot 6) : mentions légales, confidentialité et 404, sur le gabarit d'Engagements ----------
@@ -536,6 +537,107 @@ try {
       if (chemin === '/confidentialite') ok(m.maj === null, `${chemin} : updated vide dans l'en-tête — pas de ligne « Dernière mise à jour » (le build l'a signalé)`);
       if (chemin === '/adresse-inconnue') ok(m.liens === 'lien-texte /', `${chemin} : la page 404 — un paragraphe, le lien « Revenir à l'accueil » vers / (${m.liens})`);
       await controlesPage(page, chemin, format[0], ['400 17px "Instrument Sans"', 'italic 400 22px Newsreader'].concat(attendu.gauche === 'colonne' ? [] : ['500 26px "Instrument Sans"']), { statut404: chemin === '/adresse-inconnue' });
+      await page.ctx.close();
+    }
+  }
+
+  // ---------- l'en-tête du téléphone : le menu (07/10/2026, avec la page Collectif ; choix d'Axel) ----------
+  // Jusqu'à 640 px, « Φ PERPETUAL » et le bouton du menu (button.menu-bouton) ; la navigation s'ouvre en panneau sous l'en-tête. Home à 390 × 844 :
+  // menu fermé, navigation masquée ; ouvert, captures de la fenêtre du site et de la maquette identiques au pixel près, mêmes boîtes (panneau, entrées,
+  // bouton), aria-expanded, page figée, <main> et pied de page inertes ; Tab parcourt les quatre entrées sans sortir de l'en-tête ; Échap referme et rend
+  // le focus au bouton ; « Contact » referme et mène au pied de page ; en-tête collant caché puis revenu, le panneau s'ouvre sous lui ; au-delà de 640 px,
+  // le menu se referme et le bouton disparaît ; à 1 521 px, pas de bouton ; sans JavaScript (360 px), pas de bouton, les quatre entrées sur une seconde ligne.
+  {
+    console.log('\nEn-tête du téléphone : le menu');
+    const site = await ouvrir(SITE + '/', [390, 844], { reducedMotion: 'reduce' }), maq = await ouvrir(MAQUETTE, [390, 844], { reducedMotion: 'reduce' });
+    const etat = p => p.evaluate(() => { const b = document.querySelector('.menu-bouton'), main = document.querySelector('main'), pied = document.querySelector('.site-footer');
+      return { expanded: b.getAttribute('aria-expanded'), ouvert: document.documentElement.classList.contains('menu-ouvert'), nav: getComputedStyle(document.querySelector('.site-nav')).display, bouton: getComputedStyle(b).display,
+        defile: getComputedStyle(document.documentElement).overflow, inerte: !!(main.inert && pied.inert), libre: !main.inert && !pied.inert, focus: document.activeElement === b }; });
+    const f = await etat(site.p);
+    ok(f.bouton === 'flex' && f.nav === 'none' && f.expanded === 'false' && !f.ouvert && f.libre, `390 : menu fermé — le bouton, la navigation masquée, aria-expanded ${f.expanded}`);
+    await site.p.click('.menu-bouton'); await maq.p.click('.menu-bouton'); await site.p.waitForTimeout(100); await maq.p.waitForTimeout(100);
+    const o = await etat(site.p);
+    ok(o.expanded === 'true' && o.ouvert && o.nav === 'flex' && o.defile === 'hidden' && o.inerte, `390 : menu ouvert — le panneau, aria-expanded ${o.expanded}, la page ne défile plus, <main> et pied de page inertes`);
+    const c = await comparer('menu-ouvert-390x844', await site.p.screenshot({ type: 'png', animations: 'disabled' }), await maq.p.screenshot({ type: 'png', animations: 'disabled' }));
+    ok(c.differents === 0, `390 : menu ouvert, capture de la fenêtre identique à la maquette au pixel près (${c.taille})` + (c.differents ? ' — ' + c.detail : ''));
+    const MENU = ['.site-header', '.logo', '.logo__texte', '.menu-bouton', '.menu-bouton__traits', '.site-nav', '.site-nav a'];
+    memesBoites(await boites(site.p, MENU, null), await boites(maq.p, MENU, null), 'menu ouvert', 'le haut de la page');
+    const arrets = [];
+    for (let i = 0; i < 5; i++) { await site.p.keyboard.press('Tab'); arrets.push(await site.p.evaluate(() => { const a = document.activeElement; return a === document.body ? 'hors de la page' : a.closest('main, .site-footer') ? 'HORS EN-TÊTE' : (a.getAttribute('aria-label') || a.textContent.trim()); })); }
+    ok(arrets.slice(0, 4).join(' · ') === 'Réalisations · Collectif · Engagements · Contact' && arrets[4] !== 'HORS EN-TÊTE', `390 : menu ouvert, Tab depuis le bouton — ${arrets.join(' · ')} (jamais dans la page ni le pied de page)`);
+    await site.p.keyboard.press('Escape'); await site.p.waitForTimeout(50);
+    const e = await etat(site.p);
+    ok(!e.ouvert && e.expanded === 'false' && e.nav === 'none' && e.focus && e.libre && e.defile !== 'hidden', '390 : Échap referme le menu, le focus revient au bouton, la page défile de nouveau');
+    await site.p.click('.menu-bouton'); await site.p.waitForTimeout(50); await site.p.click('.site-nav a[href="#contact"]'); await site.p.waitForTimeout(400);
+    const k = await site.p.evaluate(() => ({ ouvert: document.documentElement.classList.contains('menu-ouvert'), pied: Math.round(document.querySelector('.site-footer').getBoundingClientRect().top), hash: location.hash }));
+    ok(!k.ouvert && k.hash === '#contact' && k.pied < 844, `390 : « Contact » referme le menu et mène au pied de page (haut du pied de page à ${k.pied} px dans la fenêtre)`);
+    // en-tête collant : caché en descendant, revenu en remontant ; le panneau s'ouvre sous lui, en haut de la fenêtre
+    await haut(site.p); await site.p.waitForTimeout(100);
+    await site.p.evaluate(() => window.scrollTo({ top: 900, behavior: 'instant' })); await site.p.waitForTimeout(150);
+    const cache = await site.p.evaluate(() => document.querySelector('.entete-collante').classList.contains('est-cachee'));
+    await site.p.evaluate(() => window.scrollTo({ top: 760, behavior: 'instant' })); await site.p.waitForTimeout(150);
+    await site.p.click('.menu-bouton'); await site.p.waitForTimeout(100);
+    const s = await site.p.evaluate(() => ({ entete: Math.round(document.querySelector('.site-header').getBoundingClientRect().top), cache: document.querySelector('.entete-collante').classList.contains('est-cachee'), panneau: Math.round(document.querySelector('.site-nav').getBoundingClientRect().top), y: Math.round(scrollY) }));
+    ok(cache && !s.cache && s.entete === 0 && s.panneau === 64 && s.y === 760, `390 : en-tête collant caché en descendant, revenu en remontant ; menu ouvert à ${s.y} px de défilement, sous l'en-tête (en haut à ${s.entete}, panneau à ${s.panneau} px)`);
+    await site.p.setViewportSize({ width: 700, height: 844 }); await site.p.waitForTimeout(150);
+    const l = await etat(site.p);
+    ok(!l.ouvert && l.expanded === 'false' && l.bouton === 'none' && l.nav === 'flex' && l.libre, '700 px (au-delà de 640) : le menu se referme, le bouton disparaît, les quatre entrées sur la ligne de l\'en-tête');
+    await site.ctx.close(); await maq.ctx.close();
+    const large = await ouvrir(SITE + '/', [1521, 705], { reducedMotion: 'reduce' });
+    ok((await large.p.evaluate(() => getComputedStyle(document.querySelector('.menu-bouton')).display)) === 'none', '1521 : pas de bouton de menu');
+    await large.ctx.close();
+    const sansJs = await ouvrir(SITE + '/collectif', [360, 800], { javaScriptEnabled: false });
+    const n = await sansJs.p.evaluate(() => { const r = q => document.querySelector(q).getBoundingClientRect(), liens = [...document.querySelectorAll('.site-nav a')].map(a => a.getBoundingClientRect());
+      return { js: document.documentElement.classList.contains('menu-js'), bouton: getComputedStyle(document.querySelector('.menu-bouton')).display, dessous: liens.every(x => x.top >= r('.logo').bottom), ligne: liens.every(x => Math.abs(x.top - liens[0].top) < 1),
+        g: Math.round(liens[0].left), d: Math.round(innerWidth - liens[3].right), deb: document.documentElement.scrollWidth - document.documentElement.clientWidth }; });
+    ok(!n.js && n.bouton === 'none' && n.dessous && n.ligne && n.g === 20 && n.d === 20 && n.deb === 0, `360 sans JavaScript : pas de bouton, les quatre entrées sur une seconde ligne, de ${n.g} à ${n.d} px des bords, aucun débordement`);
+    await sansJs.ctx.close();
+  }
+
+  // ---------- la page Collectif (07/10/2026) : /collectif, sans maquette — la section Collectif de la Home, reprise telle quelle sous le titre ----------
+  // Repères pris sur Engagements : le h1 au même x et au même y (sans léger). Le texte au x du h1, 12 px (4 au téléphone) sous l'ouverture ; les paragraphes
+  // et la chute de content/collectif.md, dans l'ordre ; la chute en serif italique 26 px (22) ; 48 px puis le filet, 32 px, les huit logos à la masse
+  // visuelle (34 à 60 px, × 0,6 au téléphone), alignés au centre sur chaque ligne ; 72 px (44) entre les logos et le pied de page ; « Collectif » actif
+  // avec aria-current ; titre de l'onglet, description de l'en-tête, data-page="collectif" ; aucun débordement ; polices, noindex, console, requêtes.
+  {
+    const md = fs.readFileSync(path.join(REPO, 'content/collectif.md'), 'utf8').replace(/\r\n?/g, '\n');
+    const fm = md.match(/^---\n([\s\S]*?)\n---\n/)[1], corps = md.slice(md.indexOf('\n---\n', 3) + 5);
+    const blocs = corps.replace(/<!--[\s\S]*?-->/g, '').split(/\n\s*\n/).map(x => x.trim()).filter(Boolean);
+    const description = (fm.match(/^description:\s*(.+)$/m) || [])[1];
+    const LOGOS = { ASAP: 42, Batopin: 34, 'CN Architecture': 35, 'Felis & Associés': 34, Menuisol: 34, 'Property Lab': 49, Synopsis: 60, 'Zekaj Construct': 34 };
+    for (const format of FORMATS) {
+      console.log(`\nPage Collectif, ${fmt(format)}`);
+      const tel = format[0] <= 640;
+      const eng = await ouvrir(SITE + '/engagements', format, { reducedMotion: 'reduce' });
+      const repere = await eng.p.evaluate(() => { const h1 = document.querySelector('.page__titre').getBoundingClientRect(); return { x: Math.round(h1.left), y: Math.round(h1.top) }; });
+      await eng.ctx.close();
+      const page = await ouvrir(SITE + '/collectif', format, { reducedMotion: 'reduce' });
+      await amener(page.p, '.partners'); await haut(page.p); await page.p.waitForTimeout(350);
+      const m = await page.p.evaluate(() => {
+        const r = q => document.querySelector(q).getBoundingClientRect(), cs = q => getComputedStyle(document.querySelector(q)), ps = [...document.querySelectorAll('.collectif__text p')], dernier = ps[ps.length - 1];
+        const logos = [...document.querySelectorAll('.partner')].map(li => { const b = li.querySelector('.partner__couleur').getBoundingClientRect(); return { nom: li.title, h: b.height, c: (b.top + b.bottom) / 2, alt: li.querySelector('img').alt, charge: li.querySelector('img').naturalWidth > 0 }; });
+        return { h1: document.querySelector('h1').textContent, h1x: Math.round(r('.page__titre').left), h1y: Math.round(r('.page__titre').top), h1ff: cs('.page__titre').fontFamily.split(',')[0].replace(/"/g, ''),
+          texteX: Math.round(r('.collectif__text').left), ouverture: Math.round(ps[0].getBoundingClientRect().top - r('.page-head').bottom),
+          largeur: (() => { const t = document.createElement('div'); t.style.maxWidth = '64ch'; document.querySelector('.collectif').appendChild(t); const v = getComputedStyle(t).maxWidth; t.remove(); return v === cs('.collectif__text').maxWidth ? '64ch' : cs('.collectif__text').maxWidth; })(),
+          textes: ps.map(p => p.textContent), chute: dernier.className + ' ' + getComputedStyle(dernier).fontStyle + ' ' + getComputedStyle(dernier).fontSize + ' ' + getComputedStyle(dernier).fontFamily.split(',')[0].replace(/"/g, ''),
+          avantFilet: Math.round(r('.partners').top - dernier.getBoundingClientRect().bottom), filet: cs('.partners').borderTopWidth + ' ' + cs('.partners').borderTopStyle + ' ' + cs('.partners').paddingTop,
+          logos, pied: Math.round(r('.site-footer').top - r('.partners').bottom),
+          actifs: [...document.querySelectorAll('.site-nav a.is-active, .site-nav a[aria-current]')].map(a => `${a.textContent}${a.getAttribute('aria-current') ? ' aria-current=' + a.getAttribute('aria-current') : ''} → ${a.getAttribute('href')}`).join(' | '),
+          page: document.documentElement.dataset.page, title: document.title, description: document.querySelector('meta[name="description"]')?.content ?? '', deb: document.documentElement.scrollWidth - document.documentElement.clientWidth };
+      });
+      ok(m.h1 === 'Collectif' && m.h1x === repere.x && m.h1y === repere.y && m.h1ff === 'Instrument Sans', `/collectif : h1 « ${m.h1} » en sans léger, au même x et au même y qu'Engagements (${m.h1x}, ${m.h1y} ; Engagements ${repere.x}, ${repere.y})`);
+      ok(m.texteX === repere.x && m.ouverture === (tel ? 4 : 12) && m.largeur === '64ch', `/collectif : le texte au x du titre (${m.texteX}), ${m.ouverture} px sous l'ouverture (${tel ? 4 : 12} attendus), 64 caractères au plus`);
+      ok(JSON.stringify(m.textes) === JSON.stringify(blocs), `/collectif : les ${blocs.length - 1} paragraphes et la chute de content/collectif.md, dans l'ordre, tels quels`);
+      ok(m.chute === `chute italic ${tel ? 22 : 26}px Newsreader`, `/collectif : la chute « ${blocs[blocs.length - 1]} » en serif italique (${m.chute})`);
+      ok(m.avantFilet === 48 && m.filet === '1px solid 32px', `/collectif : ${m.avantFilet} px entre la chute et le filet des logos, filet ${m.filet.replace(/ 32px$/, '')}, 32 px avant les logos`);
+      const lignes = []; for (const x of [...m.logos].sort((a, b) => a.c - b.c)) { const l = lignes[lignes.length - 1]; if (l && x.c - l[0].c < 10) l.push(x); else lignes.push([x]); }
+      const hauteursOk = m.logos.length === 8 && m.logos.every(x => Math.abs(x.h - LOGOS[x.nom] * (tel ? 0.6 : 1)) < 0.5 && x.alt === x.nom && x.charge);
+      ok(hauteursOk && lignes.every(l => Math.max(...l.map(x => x.c)) - Math.min(...l.map(x => x.c)) <= 1),
+        `/collectif : les 8 logos à la masse visuelle${tel ? ' (× 0,6)' : ''}, chargés, alignés au centre sur ${lignes.length} ligne${lignes.length > 1 ? 's' : ''} — ` + m.logos.map(x => `${x.nom} ${Math.round(x.h * 10) / 10}`).join(' · '));
+      ok(m.pied === (tel ? 44 : 72), `/collectif : bas des logos → haut du pied de page, ${m.pied} px (${tel ? 44 : 72} attendus)`);
+      ok(m.actifs === 'Collectif aria-current=page → /collectif' && m.page === 'collectif' && m.title === 'Collectif — Perpetual' && m.description === description && m.deb === 0,
+        `/collectif : « Collectif » actif avec aria-current (${m.actifs}), html data-page="${m.page}", titre « ${m.title} », description de l'en-tête, aucun débordement (${m.deb} px)`);
+      await controlesPage(page, '/collectif', format[0], ['400 17px "Instrument Sans"', `italic 400 ${tel ? 22 : 26}px Newsreader`]);
       await page.ctx.close();
     }
   }
@@ -707,7 +809,7 @@ try {
       // l'en-tête, le titre de l'onglet, les voisins
       const nav = await site.p.evaluate(() => [...document.querySelectorAll('.site-nav a')].map(a => `${a.textContent}${a.classList.contains('is-active') ? ' actif' : ''} → ${a.getAttribute('href')}`).join(' | '));
       const courant = await site.p.evaluate(() => document.querySelectorAll('[aria-current]').length);
-      ok(nav === 'Réalisations actif → /realisations | Engagements → /engagements | Contact → #contact' && !courant, `navigation : ${nav} — « Réalisations » actif (le trait), sans aria-current (aucun dans la page)`);
+      ok(nav === 'Réalisations actif → /realisations | Collectif → /collectif | Engagements → /engagements | Contact → #contact' && !courant, `navigation : ${nav} — « Réalisations » actif (le trait), sans aria-current (aucun dans la page)`);
       // la description (lot 7, 06/10, choix d'Axel D1 A) : calculée depuis data/projects.json et data/site.json — « <name>, <location> · <surface> · <use>. »
       // puis « Perpetual — le trait d’union entre les idées et le capital. » (la phrase de la Home, depuis name et tagline)
       const page = await site.p.evaluate(() => ({ page: document.documentElement.dataset.page, title: document.title, description: document.querySelector('meta[name="description"]')?.content ?? null }));
@@ -911,7 +1013,7 @@ try {
       // l'en-tête, le titre de l'onglet, la description ; polices, requêtes, noindex, console
       await masquerEntete(site.p, false);
       const nav = await site.p.evaluate(() => [...document.querySelectorAll('.site-nav a')].map(a => `${a.textContent}${a.classList.contains('is-active') ? ' actif' : ''}${a.hasAttribute('aria-current') ? ' aria-current=' + a.getAttribute('aria-current') : ''} → ${a.getAttribute('href')}`).join(' | '));
-      ok(nav === 'Réalisations actif aria-current=page → /realisations | Engagements → /engagements | Contact → #contact' && (await site.p.evaluate(() => document.querySelectorAll('[aria-current]').length)) === 1, 'navigation : ' + nav);
+      ok(nav === 'Réalisations actif aria-current=page → /realisations | Collectif → /collectif | Engagements → /engagements | Contact → #contact' && (await site.p.evaluate(() => document.querySelectorAll('[aria-current]').length)) === 1, 'navigation : ' + nav);
       const description = (fs.readFileSync(path.join(REPO, 'content/realisations.md'), 'utf8').match(/^description:\s*(.+)$/m) || [])[1];
       const entete = await site.p.evaluate(() => [document.documentElement.dataset.page, document.title, document.querySelector('.page__titre').textContent, document.querySelector('meta[name="description"]')?.content].join(' · '));
       ok(entete === `realisations · Réalisations — Perpetual · Réalisations · ${description}`, `html data-page="realisations", titre de l'onglet « Réalisations — Perpetual », h1 « Réalisations » seul, description de l'en-tête de content/realisations.md`);
@@ -1157,7 +1259,7 @@ try {
     // pages légales), chacune une fois, à l'adresse de `site` (astro.config.mjs) sans « .html » ; ni la 404, ni /dev/, ni une redirection ; chacune répond
     const publique = (fs.readFileSync(path.join(REPO, 'astro.config.mjs'), 'utf8').match(/^\s*site:\s*'([^']+)'/m) || [])[1].replace(/\/$/, '');
     const fiches = JSON.parse(fs.readFileSync(path.join(REPO, 'data/projects.json'), 'utf8')).filter(p => p.kind === 'detailed').map(p => `/realisations/${p.id}`);
-    const attendues = ['/', '/confidentialite', '/engagements', '/mentions-legales', '/realisations', ...fiches].sort();
+    const attendues = ['/', '/collectif', '/confidentialite', '/engagements', '/mentions-legales', '/realisations', ...fiches].sort();   // /collectif : 07/10
     const plan = lire('sitemap.xml'), locs = [...plan.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x => x[1]);
     const chemins = locs.map(u => u.startsWith(publique + '/') ? u.slice(publique.length) : '✗ ' + u);
     const repondent = await Promise.all(chemins.map(async c => (await fetch(SITE + c)).status));

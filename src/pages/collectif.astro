@@ -1,0 +1,23 @@
+---
+// La page Collectif (07/10/2026 ; retour de Julien du 7/10 : le Collectif quitte la Home pour sa propre page — choix d'Axel : la section de la Home telle
+// quelle, sous le titre de la page). Pas de maquette : construite directement dans le site, comme les pages légales. En-tête (« Collectif » actif) → le
+// titre seul (.page-head, en sans léger comme Engagements) → les paragraphes et la chute de content/collectif.md (src/lib/contenu.ts) → les logos
+// partenaires (src/components/collectif/Partenaires.astro) → 72 px (44 au téléphone) → pied de page. Styles : src/styles/page.css (titre),
+// src/styles/collectif.css (texte, chute, logos).
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/engagements/PageHead.astro';
+import Partenaires from '../components/collectif/Partenaires.astro';
+import { lireCollectif } from '../lib/contenu';
+import '../styles/page.css';
+import '../styles/collectif.css';
+
+const collectif = await lireCollectif();
+---
+
+<Base title={collectif.titre} description={collectif.description} active="/collectif" page="collectif">
+  <PageHead titre={collectif.titre} />
+  <div class="container collectif">
+    <div class="collectif__text">{collectif.paragraphs.map((p) => <p set:html={p} />)}<p class="chute" set:html={collectif.chute} /></div>
+    <Partenaires />
+  </div>
+</Base>

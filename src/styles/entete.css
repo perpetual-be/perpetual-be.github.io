@@ -10,6 +10,7 @@
 .logo__texte{display:inline-block;font-family:"Jost",system-ui,sans-serif;font-weight:400;font-size:27.7px;letter-spacing:.18em;text-transform:uppercase;line-height:1;color:var(--c-wordmark);white-space:nowrap;position:relative;top:1px}
 .site-nav{grid-column:3;display:flex;gap:36px;font-size:var(--fs-nav);font-weight:500}
 .site-nav a{padding:6px 0;color:var(--c-texte)}
+.menu-bouton{display:none}   /* le bouton du menu : au téléphone seulement (plus bas) */
 
 /* en-tête collant (décision d'Axel du 19/09, absent de la maquette) : un conteneur pleine largeur, collé en haut de la fenêtre, fond blanc, au-dessus du
    contenu ; .site-header dedans, inchangé (1 600 px au plus, centré). Il disparaît quand on fait défiler vers le bas (.est-cachee, posée par le script de
@@ -18,12 +19,30 @@
 .entete-collante{position:sticky;top:0;z-index:10;background:var(--blanc);transition:transform .3s}
 .entete-collante.est-cachee{transform:translateY(-100%)}
 
-/* téléphone : Φ seul dans l'en-tête */
+/* téléphone (07/10/2026, avec la page Collectif ; choix d'Axel) : « Φ PERPETUAL » à gauche, un bouton à trois traits à droite, la navigation dans un
+   panneau. Jusqu'au 07/10 : le Φ seul et les trois entrées sur la même ligne — à quatre entrées, elles touchaient le Φ et débordaient de 10 px à 390 px. */
 @media (max-width:640px){
   .site-header{height:64px}
-  .logo__texte{display:none}
-  .logo__mark{width:22px;height:23px}
-  .site-nav{gap:20px;font-size:14px}
+  .logo{gap:11px}
+  .logo__texte{font-size:19px}
+  /* sans JavaScript (pas de classe menu-js sur <html>) : pas de bouton, les quatre entrées sur une seconde ligne, sur toute la largeur */
+  html:not(.menu-js) .site-header{height:auto;grid-template-columns:1fr;row-gap:12px;padding-top:18px;padding-bottom:8px}
+  html:not(.menu-js) .site-nav{grid-column:1;justify-content:space-between;gap:0;font-size:14px}
+  /* le bouton : 44 × 44 px, les traits calés sur la gouttière de droite ; 22 px de large, 1,5 px d'épaisseur, 7 px d'écart ; une croix une fois ouvert */
+  .menu-js .menu-bouton{grid-column:3;display:flex;align-items:center;justify-content:flex-end;width:44px;height:44px;margin:0;padding:0;border:0;background:none;color:var(--c-texte);cursor:pointer}
+  .menu-bouton__traits{position:relative;display:block;width:22px;height:1.5px;background:currentColor;box-shadow:0 -7px 0 currentColor,0 7px 0 currentColor}
+  .menu-ouvert .menu-bouton__traits{background:transparent;box-shadow:none}
+  .menu-ouvert .menu-bouton__traits::before,.menu-ouvert .menu-bouton__traits::after{content:"";position:absolute;left:0;top:0;width:22px;height:1.5px;background:currentColor;transform:rotate(45deg)}
+  .menu-ouvert .menu-bouton__traits::after{transform:rotate(-45deg)}
+  /* le panneau : la navigation, sous l'en-tête, sur tout l'écran ; les entrées en sans léger 28 px, entre des filets ; la page en cours en or foncé (pas de
+     trait dessous) ; la page derrière ne défile plus */
+  .menu-js .site-nav{display:none}
+  .menu-ouvert .site-nav{display:flex;flex-direction:column;gap:0;position:fixed;top:64px;left:0;right:0;bottom:0;z-index:10;overflow-y:auto;background:var(--blanc);padding:12px var(--gutter) 0;font-size:28px;font-weight:400;letter-spacing:-.02em;line-height:1.2}
+  .menu-ouvert .site-nav a{padding:16px 0 18px;border-top:1px solid var(--filet)}
+  .menu-ouvert .site-nav a:last-child{border-bottom:1px solid var(--filet)}
+  .menu-ouvert .site-nav a::after{display:none}
+  .menu-ouvert .site-nav a.is-active{color:var(--c-lien)}
+  html.menu-ouvert{overflow:hidden}
 }
 /* mouvement réduit : l'en-tête se cache et revient sans glisser */
 @media (prefers-reduced-motion:reduce){

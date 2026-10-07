@@ -33,10 +33,11 @@ export async function lireHome() {
   };
 }
 
-/** Collectif (content/collectif.md) : les paragraphes, puis la chute (le dernier bloc). */
+/** Collectif (content/collectif.md) : les paragraphes, puis la chute (le dernier bloc) ; le titre et la description de l'en-tête (la page Collectif,
+ *  07/10/2026). */
 export async function lireCollectif() {
-  const { blocs } = await corps('collectif');
-  return { paragraphs: blocs.slice(0, -1), chute: blocs[blocs.length - 1] };
+  const { data, blocs } = await corps('collectif');
+  return { titre: data.title as string, description: data.description as string | undefined, paragraphs: blocs.slice(0, -1), chute: blocs[blocs.length - 1] };
 }
 
 /** Le paragraphe du programme agences (content/realisations.md, celui qui suit « ## Le programme agences ») : l'énoncé de la vue Réalisations (lot 5).

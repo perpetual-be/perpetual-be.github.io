@@ -14,4 +14,4 @@ Ce réseau et notre expérience nous donnent les moyens d’une grande équipe, 
 
 On aime travailler ensemble. Alors on continue.
 
-<!-- Logos partenaires (data/partners.json) en fin de page. Format et traitement homogènes, monochrome de préférence. Les fichiers sont fournis au fur et à mesure des accords reçus. -->
+<!-- Logos partenaires (data/partners.json) en fin de page (src/components/collectif/Partenaires.astro). Depuis le 07/10/2026 (retour de Julien), ce texte et les logos sont sur la page Collectif (/collectif), plus sur la Home. Format et traitement homogènes. Les fichiers sont fournis au fur et à mesure des accords reçus. -->

@@ -180,7 +180,11 @@ console.log('\n4 · Valeurs figées et alignement (valeurs par défaut)');
   const hd = await p.evaluate(() => ({ header: document.querySelector('.site-header').getBoundingClientRect().width, logo: document.querySelector('.logo').getBoundingClientRect().left, nav: document.querySelector('.site-nav').getBoundingClientRect().right }));
   ok(hd.header === 1440 && Math.round(hd.logo) === 40 && Math.round(hd.nav) === 1400, `en-tête pleine largeur (logo à ${Math.round(hd.logo)} px, liens à ${1440 - Math.round(hd.nav)} px du bord)`);
   ok(!(await p.evaluate(() => document.querySelector('.section--projets, .four'))), 'plus de liste des 4 sur la Home (30/09, retour de Julien : « tester la Home sans la section Réalisations ») ; les fiches restent accessibles par la vue Réalisations');
-  ok((await style(p, '.partner__couleur', 'display')) === 'block' && !(await p.evaluate(() => document.querySelector('.partner__encre'))), 'logos partenaires : couleur, figés (plus d’encre inline)');
+  ok(!(await p.evaluate(() => document.querySelector('.section--collectif, #collectif, .collectif__text, .chute, .partners, .partner'))), 'plus de section Collectif ni de logos partenaires sur la Home (07/10, retour de Julien : ils ont leur page, construite directement dans le site)');
+  const navHome = await p.evaluate(() => [...document.querySelectorAll('.site-nav a')].map(a => `${a.textContent} → ${a.getAttribute('href')}`).join(' | '));
+  ok(navHome === 'Réalisations → realisations.html | Collectif → # | Engagements → engagements.html | Contact → #contact', `navigation : quatre entrées, « Collectif » en deuxième (07/10 ; pas de page Collectif dans la maquette, le lien ne mène nulle part) — ${navHome}`);
+  ok((await p.evaluate(() => [...document.querySelectorAll('.footer__nav a')].map(a => a.textContent + ' → ' + a.getAttribute('href')).join(' | '))) === 'Réalisations → realisations.html | Collectif → # | Engagements → engagements.html | Mentions légales → # | Confidentialité → #', 'plan du pied de page : « Collectif » ne mène plus à index.html#collectif');
+  ok((await style(p, '.menu-bouton', 'display')) === 'none', 'ordinateur : pas de bouton de menu, la navigation sur une ligne');
   const cles = await p.evaluate(() => [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle));
   const inactives = await p.evaluate(() => [...document.querySelectorAll('.mq__b.is-inactif')].map(f => f.dataset.cle));
   ok(cles.join(' ') === 'graphique' && !inactives.length, 'panneau : ' + cles.join(' · ') + ' (13 graphique, lot 2b : anneau retenu le 01/10 / barres pour le 7/10 ; 9c et 15a figées le 26/09, 20 et 21 retirées ; 22 et 23, vue Réalisations, retirées le 04/10)');
@@ -212,7 +216,25 @@ for (const [w, h] of [[1920, 1080], [1521, 705], [390, 844]]) {
 }
 {
   const { p, ctx } = await ouvrir('', [390, 844]);
-  ok((await style(p, '.logo__texte', 'display')) === 'none' && (await style(p, '.logo__mark', 'display')) !== 'none' && (await style(p, '.site-header', 'height')) === '64px', 'mobile : Φ seul dans l’en-tête');
+  // en-tête du téléphone (07/10, avec la page Collectif ; choix d'Axel) : « Φ PERPETUAL » à gauche, le bouton du menu à droite, la navigation en panneau
+  const tel = await p.evaluate(() => { const s = q => getComputedStyle(document.querySelector(q)), r = q => document.querySelector(q).getBoundingClientRect(), b = r('.menu-bouton'), t = r('.menu-bouton__traits');
+    return { wm: s('.logo__texte').display + ' ' + s('.logo__texte').fontSize, phi: Math.round(r('.logo__mark').width) + ' × ' + Math.round(r('.logo__mark').height), h: s('.site-header').height, nav: s('.site-nav').display,
+      bouton: `${Math.round(b.width)} × ${Math.round(b.height)}`, droite: Math.round(innerWidth - t.right), traits: Math.round(t.width) + ' ' + s('.menu-bouton__traits').height, expanded: document.querySelector('.menu-bouton').getAttribute('aria-expanded'),
+      controls: document.querySelector('.menu-bouton').getAttribute('aria-controls') === document.querySelector('.site-nav').id, label: document.querySelector('.menu-bouton').getAttribute('aria-label'), js: document.documentElement.classList.contains('menu-js') }; });
+  ok(tel.wm === 'block 19px' && tel.phi === '19 × 20' && tel.h === '64px' && tel.nav === 'none' && tel.bouton === '44 × 44' && tel.droite === 20 && tel.traits === '22 1.5px' && tel.expanded === 'false' && tel.controls && tel.label === 'Menu' && tel.js,
+    `mobile : « Φ PERPETUAL » (wordmark ${tel.wm}, Φ ${tel.phi}), en-tête de ${tel.h}, bouton du menu ${tel.bouton} (traits de ${tel.traits}, à ${tel.droite} px du bord), navigation masquée, aria-expanded ${tel.expanded}, aria-controls`);
+  await p.click('.menu-bouton'); await p.waitForTimeout(50);
+  const ouv = await p.evaluate(() => { const n = document.querySelector('.site-nav'), s = getComputedStyle(n), liens = [...n.querySelectorAll('a')];
+    return { display: s.display, position: s.position, top: s.top, bas: Math.round(n.getBoundingClientRect().bottom), fs: getComputedStyle(liens[0]).fontSize, liens: liens.map(a => a.textContent).join(' · '), visibles: liens.every(a => a.getBoundingClientRect().height > 40),
+      expanded: document.querySelector('.menu-bouton').getAttribute('aria-expanded'), defile: getComputedStyle(document.documentElement).overflow, inerte: document.querySelector('main').inert && document.querySelector('.site-footer').inert,
+      croix: getComputedStyle(document.querySelector('.menu-bouton__traits'), '::before').transform !== 'none' }; });
+  ok(ouv.display === 'flex' && ouv.position === 'fixed' && ouv.top === '64px' && ouv.bas === 844 && ouv.fs === '28px' && ouv.liens === 'Réalisations · Collectif · Engagements · Contact' && ouv.visibles && ouv.expanded === 'true' && ouv.defile === 'hidden' && ouv.inerte && ouv.croix,
+    `mobile, menu ouvert : panneau sous l'en-tête jusqu'en bas de l'écran, ${ouv.liens} en ${ouv.fs}, aria-expanded ${ouv.expanded}, la page ne défile plus, <main> et le pied de page inertes, la croix`);
+  await p.keyboard.press('Escape'); await p.waitForTimeout(50);
+  const ferme = await p.evaluate(() => ({ nav: getComputedStyle(document.querySelector('.site-nav')).display, expanded: document.querySelector('.menu-bouton').getAttribute('aria-expanded'), focus: document.activeElement === document.querySelector('.menu-bouton'), inerte: document.querySelector('main').inert }));
+  ok(ferme.nav === 'none' && ferme.expanded === 'false' && ferme.focus && !ferme.inerte, 'mobile : Échap referme le menu, le focus revient au bouton');
+  await p.click('.menu-bouton'); await p.waitForTimeout(50); await p.click('.site-nav a[href="#contact"]'); await p.waitForTimeout(100);
+  ok(await p.evaluate(() => !document.documentElement.classList.contains('menu-ouvert') && document.querySelector('.menu-bouton').getAttribute('aria-expanded') === 'false'), 'mobile : un clic sur une entrée (« Contact ») referme le menu');
   const photo = await rect(p, '.hero__photo'), titre = await rect(p, '.hero__title span'), texte = await rect(p, '.hero__text'), bande = await rect(p, '.stats-band');
   const sigM = await rect(p, '.signature'), parM = await p.evaluate(() => [...document.querySelectorAll('.hero__text p:not(.signature)')].map(e => Math.round(e.getBoundingClientRect().bottom)));
   ok(photo.height === 420 && titre.left === 20 && photo.bottom - titre.bottom >= 24 && photo.bottom - titre.bottom <= 40 && bande.top >= photo.bottom && texte.top >= bande.bottom && (await style(p, '.hero__text', 'gridTemplateColumns')).split(' ').length === 1 && sigM.top >= parM[1] && parM[1] > parM[0], `mobile : photo de ${photo.height} px, accroche en bas à gauche (à ${photo.bottom - titre.bottom} px du bas), bande, puis paragraphes en une colonne et la signature en dernier`);
@@ -220,19 +242,27 @@ for (const [w, h] of [[1920, 1080], [1521, 705], [390, 844]]) {
   ok((await style(p, '.h2--serif', 'fontSize')) === '26px' && (await style(p, '.h2--sans', 'fontSize')) === '24px', 'mobile : titre de la carte en serif 26 px, titre du graphique en sans 24 px');
   await ctx.close();
 }
+{
+  // téléphone sans JavaScript (07/10) : pas de bouton, « Φ PERPETUAL » puis les quatre entrées sur une seconde ligne, sur toute la largeur
+  const { p, ctx } = await ouvrir('', [360, 800], { javaScriptEnabled: false });
+  const m = await p.evaluate(() => { const r = q => document.querySelector(q).getBoundingClientRect(), liens = [...document.querySelectorAll('.site-nav a')].map(a => a.getBoundingClientRect());
+    return { bouton: getComputedStyle(document.querySelector('.menu-bouton')).display, dessous: liens.every(l => l.top >= r('.logo').bottom), ligne: liens.every(l => Math.abs(l.top - liens[0].top) < 1), g: Math.round(liens[0].left), d: Math.round(innerWidth - liens[3].right), deborde: document.documentElement.scrollWidth > innerWidth }; });
+  ok(m.bouton === 'none' && m.dessous && m.ligne && m.g === 20 && m.d === 20 && !m.deborde, `mobile sans JavaScript (360 px) : pas de bouton, les quatre entrées sur une seconde ligne, de ${m.g} à ${m.d} px des bords`);
+  await ctx.close();
+}
 
 console.log('\n5 · Réalisations : la carte');
 {
   const { p, ctx } = await ouvrir('');
   const c = await p.evaluate(() => ({
-    place: document.querySelector('.section--chart').nextElementSibling.classList.contains('section--autres') && document.querySelector('.section--autres').nextElementSibling.classList.contains('section--collectif'),
+    place: document.querySelector('.section--chart').nextElementSibling.classList.contains('section--autres') && !document.querySelector('.section--autres').nextElementSibling,
     pts: document.querySelectorAll('.carte__pt').length, labs: document.querySelectorAll('.carte__lab').length, rang1: [...document.querySelectorAll('.carte__lab[data-rang="1"]')].map(t => t.textContent),
     groupe: document.querySelector('.carte__lab--groupe').textContent, fig: Math.round(document.querySelector('.carte__fig').getBoundingClientRect().width),
     bxl: [...document.querySelectorAll('.carte__lieu[data-lieu="Bruxelles"] .carte__pt')].map(c => c.getAttribute('r')), autres: [...document.querySelectorAll('.carte__lieu:not([data-lieu="Bruxelles"]) .carte__pt')].map(c => c.getAttribute('r')),
     section: Math.round(document.querySelector('.section--autres').getBoundingClientRect().height),
     bande: !!document.querySelector('.bande, .autres__tous'),
   }));
-  ok(c.place, 'la section Réalisations (la carte) suit le graphique et précède Collectif (30/09 : plus de liste des 4 entre les deux)');
+  ok(c.place, 'la section Réalisations (la carte) suit le graphique (30/09 : plus de liste des 4 entre les deux) et termine la Home (07/10 : Collectif sur sa page)');
   ok(!c.bande, 'la bande défilante n’est plus dans la page');
   ok(c.pts === 16 && c.labs === 16 && c.groupe === 'Bruxelles', `carte : ${c.pts} points, ${c.labs} étiquettes, groupe « ${c.groupe} »`);
   ok(c.bxl.length === 1 && c.bxl[0] === '4.5' && c.autres.length === 15 && c.autres.every(r => r === '4.5'), 'carte : Bruxelles = un seul point, Namur (Jambes + Belgrade, 30/09) un seul point, et les seize points de la même taille, r 4,5 (07/10, retour de Julien : plus de point plus gros)');
@@ -357,14 +387,12 @@ console.log('\n5 bis · Graphique 11 150 m² (lot 2b, item 1) : l’anneau, rete
   }
 }
 
-console.log('\n6 · Logos partenaires, photo 2800 px, présentation, sans JavaScript, polices');
+console.log('\n6 · Graphique en barres, photo 2800 px, présentation, sans JavaScript, polices');
 {
   const { p, ctx } = await ouvrir('');
   const barres = await p.evaluate(() => [...document.querySelectorAll('.bar')].map(b => b.querySelector('.bar__label').textContent + ' ' + b.querySelector('.bar__fill').style.width));
   ok(barres.length === 3 && barres.every(b => /\d+%$/.test(b)), 'graphique : trois barres avec leur pourcentage — ' + barres.join(' · '));
-  const logos = await p.evaluate(() => [...document.querySelectorAll('.partner')].map(li => { const r = li.querySelector('.partner__couleur').getBoundingClientRect(); return { nom: li.title, h: Math.round(r.height), c: Math.round((r.top + r.bottom) / 2) }; }));
-  const attendu = { ASAP: 42, Batopin: 34, 'CN Architecture': 35, 'Felis & Associés': 34, Menuisol: 34, 'Property Lab': 49, Synopsis: 60, 'Zekaj Construct': 34 };
-  ok(logos.length === 8 && logos.every(l => l.h === attendu[l.nom]) && Math.max(...logos.map(l => l.c)) - Math.min(...logos.map(l => l.c)) <= 1, 'logos (couleur) à la masse visuelle, alignés au centre : ' + logos.map(l => `${l.nom} ${l.h}`).join(' · '));
+  // logos partenaires à la masse visuelle : vérifiés sur la page Collectif du site depuis le 07/10 (scripts/comparer-maquette.mjs)
   await ctx.close();
 }
 {
@@ -618,13 +646,13 @@ for (const [w, h] of [[1521, 705], [1920, 1080], [1200, 800], [390, 844]]) {
   await ctx.close();
 }
 {
-  // téléphone (The Bank, 390 × 844) : Φ seul ; titre 44 px ; Localisation et Surface sur une ligne, Usage dessous ; titres de chapitre 22 px ; noms des voisins 20 px
+  // téléphone (The Bank, 390 × 844) : « Φ PERPETUAL » et le bouton du menu (07/10) ; titre 44 px ; Localisation et Surface sur une ligne, Usage dessous ; titres de chapitre 22 px ; noms des voisins 20 px
   const { p, ctx } = await ouvrir('', [390, 844], {}, FICHE);
   const m = await p.evaluate(() => { const f = [...document.querySelectorAll('.fiche__fait')].map(e => e.getBoundingClientRect()), c = s => getComputedStyle(document.querySelector(s));
     return { logo: c('.logo__texte').display, titre: c('.page__titre').fontSize, ligne: Math.abs(f[0].top - f[1].top) < 1 && f[1].left >= f[0].right - 0.5, dessous: f[2].top >= f[0].bottom && Math.abs(f[2].left - f[0].left) < 1,
       valeur: c('.fiche__valeur').fontSize, chapitre: c('.chapitre__titre').fontSize, voisin: c('.fiche__voisin .suivant__nom').fontSize }; });
-  ok(m.logo === 'none' && m.titre === '44px' && m.ligne && m.dessous && m.valeur === '16px' && m.chapitre === '22px' && m.voisin === '20px',
-    'téléphone : Φ seul, titre 44 px ; Localisation et Surface sur une ligne, Usage dessous (valeurs 16 px) ; titres de chapitre 22 px ; noms des voisins 20 px');
+  ok(m.logo !== 'none' && m.titre === '44px' && m.ligne && m.dessous && m.valeur === '16px' && m.chapitre === '22px' && m.voisin === '20px',
+    'téléphone : « Φ PERPETUAL » (menu), titre 44 px ; Localisation et Surface sur une ligne, Usage dessous (valeurs 16 px) ; titres de chapitre 22 px ; noms des voisins 20 px');
   await ctx.close();
 }
 {
@@ -1033,7 +1061,7 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   ok(c.alt === ALT_OEUVRE && c.attrs === '870 × 1132' && c.src === '../directions/img/ines-reddah-2024-recadree.jpg' && !c.lazy, `œuvre : ${c.src}, width / height ${c.attrs}, texte alternatif (provisoire, lot 3)`);
   // navigation et panneau
   const nav = await p.evaluate(() => [...document.querySelectorAll('.site-nav a')].map(a => `${a.textContent}${a.classList.contains('is-active') ? ' actif' : ''}${a.hasAttribute('aria-current') ? ' aria-current=' + a.getAttribute('aria-current') : ''} → ${a.getAttribute('href')}`).join(' | '));
-  ok(nav === 'Réalisations → realisations.html | Engagements actif aria-current=page → engagements.html | Contact → #contact', 'navigation : ' + nav);
+  ok(nav === 'Réalisations → realisations.html | Collectif → # | Engagements actif aria-current=page → engagements.html | Contact → #contact', 'navigation : ' + nav);
   const panneau = await p.evaluate(() => ({ b: [...document.querySelectorAll('.mq__b')].map(f => f.dataset.cle + (f.classList.contains('is-inactif') ? ' (' + f.querySelector('.mq__note--inactif').textContent + ')' : '')).join(' · '),
     onglets: [...document.querySelectorAll('.mq__pages a')].map(a => a.textContent + (a.classList.contains('is-active') ? ' (actif)' : '')).join(' · ') }));
   ok(panneau.b === 'graphique (sans effet sur cette page)' && panneau.onglets === 'Home · Fiche · Réalisations · Engagements (actif)', `panneau : aucune bascule sur cette page — ${panneau.b} ; onglets ${panneau.onglets}`);
@@ -1044,8 +1072,8 @@ for (const [w, h] of [[1521, 705], [1440, 900], [1920, 1080], [390, 844]]) {
   const m = await p.evaluate(() => { const s = sel => getComputedStyle(document.querySelector(sel)), rangs = [...document.querySelectorAll('.rang')].map(x => getComputedStyle(x));
     return { logo: s('.logo__texte').display, titre: s('.page__titre').fontSize, tete: s('.page-head').paddingTop + ' / ' + s('.page-head').paddingBottom, registre: s('.registre').paddingTop, verbe: s('.rang__verbe').fontSize,
       cols: rangs.map(x => x.gridTemplateColumns.split(' ').length).join(''), pad: rangs.map(x => x.paddingTop + ' / ' + x.paddingBottom).join(' · '), texte: s('.eng-texte').paddingTop }; });
-  ok(m.logo === 'none' && m.titre === '44px' && m.tete === '28px / 24px' && m.registre === '4px' && m.verbe === '30px' && m.cols === '111' && m.pad === '22px / 40px · 22px / 40px · 22px / 44px' && m.texte === '14px',
-    `mobile : Φ seul, titre 44 px, ouverture ${m.tete} (celle de .page-head), verbes 30 px, une colonne par rangée (${m.pad}), texte 14 px sous le verbe`);
+  ok(m.logo !== 'none' && m.titre === '44px' && m.tete === '28px / 24px' && m.registre === '4px' && m.verbe === '30px' && m.cols === '111' && m.pad === '22px / 40px · 22px / 40px · 22px / 44px' && m.texte === '14px',
+    `mobile : « Φ PERPETUAL » (menu), titre 44 px, ouverture ${m.tete} (celle de .page-head), verbes 30 px, une colonne par rangée (${m.pad}), texte 14 px sous le verbe`);
   await ctx.close();
 }
 {

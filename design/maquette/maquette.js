@@ -391,3 +391,27 @@
   Array.prototype.forEach.call(cibles, function (c) { io.observe(c); });
   new MutationObserver(function () { if (vu) jouer(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-graphique'] });
 })();
+
+// ---- le menu du téléphone (07/10, avec la page Collectif ; choix d'Axel) : repris du site (SiteHeader.astro) ----
+// Jusqu'à 640 px, le bouton à trois traits ouvre la navigation en panneau sous l'en-tête (maquette.css, section 5) ; clic sur le bouton, Échap (le focus
+// revient au bouton), clic sur une entrée ou passage au-dessus de 640 px referment ; panneau ouvert, la page ne défile plus, <main> et le pied de page
+// sont inertes. La classe menu-js est posée sur <html> dans le <head> (stateScript de build.mjs) ; sans JavaScript, les entrées restent visibles.
+(function () {
+  'use strict';
+  var html = document.documentElement, bouton = document.querySelector('.menu-bouton'), nav = document.getElementById('navigation');
+  if (!bouton || !nav) return;
+  html.classList.add('menu-js');
+  var tel = window.matchMedia('(max-width: 640px)');
+  function ouvert() { return html.classList.contains('menu-ouvert'); }
+  function poser(o, rendreFocus) {
+    html.classList.toggle('menu-ouvert', o);
+    bouton.setAttribute('aria-expanded', o ? 'true' : 'false');
+    [document.querySelector('main'), document.querySelector('.site-footer')].forEach(function (el) { if (el) el.inert = o; });
+    if (!o && rendreFocus) bouton.focus();
+  }
+  bouton.addEventListener('click', function () { poser(!ouvert()); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ouvert()) poser(false, true); });
+  nav.addEventListener('click', function (e) { if (ouvert() && e.target.closest('a')) poser(false); });
+  var fermerAuDela = function () { if (!tel.matches && ouvert()) poser(false); };
+  if (tel.addEventListener) tel.addEventListener('change', fermerAuDela); else tel.addListener(fermerAuDela);
+})();

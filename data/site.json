@@ -10,12 +10,13 @@
   "indexation": false,
   "nav": [
     { "label": "Réalisations", "href": "/realisations" },
+    { "label": "Collectif", "href": "/collectif" },
     { "label": "Engagements", "href": "/engagements" },
     { "label": "Contact", "href": "#contact" }
   ],
   "plan": [
     { "label": "Réalisations", "href": "/realisations" },
-    { "label": "Collectif", "href": "/#collectif" },
+    { "label": "Collectif", "href": "/collectif" },
     { "label": "Engagements", "href": "/engagements" },
     { "label": "Mentions légales", "href": "/mentions-legales" },
     { "label": "Confidentialité", "href": "/confidentialite" }

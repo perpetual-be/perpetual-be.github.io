@@ -1,0 +1,21 @@
+---
+// Les logos partenaires de la page Collectif (07/10/2026 : repris tels quels de la section Collectif de la Home, qui quitte la Home ; mêmes balises et
+// classes). Logos figés en couleur (22/09) : data/partners.json, fichiers de public/partners/couleur/. La hauteur de chaque logo se calcule à la masse
+// visuelle sur le viewBox du fichier encre (mêmes canevas, 100 de haut) : 34 px × √(291 / largeur du viewBox), bornée 34–60 px (Batopin, 291 de large,
+// est l'étalon à 34 px), posée en --logo-h sur le <li>. Styles : src/styles/collectif.css.
+import partners from '../../../data/partners.json';
+
+const encre = import.meta.glob('../../../public/partners/encre/*.svg', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+function partnerHeight(logoInk: string | undefined, nom: string): number {
+  const fichier = logoInk?.split('/').pop();
+  const svg = fichier && encre[Object.keys(encre).find((k) => k.endsWith('/' + fichier)) ?? ''];
+  if (!svg) throw new Error(`data/partners.json : ${nom} — logoInk (public/partners/encre/) introuvable, il donne la hauteur du logo`);
+  const w = Number(svg.match(/viewBox="0 0 ([\d.]+) 100"/)?.[1]);
+  if (!w) throw new Error(`public/partners/encre/${fichier} : viewBox « 0 0 <largeur> 100 » attendu`);
+  return Math.min(60, Math.max(34, Math.round(34 * Math.sqrt(291 / w))));
+}
+---
+
+<ul class="partners" aria-label="Partenaires">
+{partners.map((p) => <li class="partner" style={`--logo-h:${partnerHeight(p.logoInk, p.name)}px`} title={p.name}><img class="partner__couleur" src={p.logo} alt={p.name} loading="lazy" /></li>)}
+</ul>
