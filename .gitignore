@@ -12,7 +12,7 @@ node_modules/
 # cache d'Astro, dont les photos déjà produites (gardé par le déploiement GitHub, pas versionné)
 .astro-cache/
 
-# photos originales : elles vivent dans le Drive, jamais dans le dépôt. Les versions réduites (design/directions/img/) sont versionnées :
+# photos originales : elles vivent dans le Drive, jamais dans le dépôt. Les versions réduites (photos/) sont versionnées :
 # c'est la source des photos du site — ne pas ignorer ce dossier, sinon les nouvelles photos n'arrivent pas sur GitHub.
 
 # OS / éditeurs
@@ -20,10 +20,3 @@ node_modules/
 Thumbs.db
 .vscode/
 .idea/
-
-# images de travail des planches
-design/photos-candidates/
-design/directions/*.png
-
-# captures et images des différences écrites par scripts/comparer-maquette.mjs, non versionnées
-scripts/ecarts/

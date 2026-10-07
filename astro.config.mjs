@@ -24,7 +24,7 @@ const pagesTexte = {
 };
 
 // Les images que rien ne cite, retirées du site publié. src/lib/photos.ts importe paresseusement toutes les photos de
-// design/directions/img/ (import.meta.glob) : au build, Vite copie chacune dans dist/_astro/ (<nom>.<empreinte>.jpg). Astro supprime l'original d'une
+// photos/ (import.meta.glob) : au build, Vite copie chacune dans dist/_astro/ (<nom>.<empreinte>.jpg). Astro supprime l'original d'une
 // photo après en avoir produit les versions (sauf si le code a lu l'une de ses propriétés : src/lib/photos.ts), mais pas celui d'une photo dont il
 // n'a produit aucune version — le <clé>.jpg d'une photo qui a aussi un <clé>-l.jpg (le site part de la plus grande ; formatPhoto() n'en lit que les
 // dimensions, sur sa copie) et les photos qu'aucune donnée ne cite, publiés pour rien. Une fois le site écrit,

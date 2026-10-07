@@ -9,7 +9,7 @@ import { PARTAGE } from '../lib/partage';
 
 export const GET: APIRoute = async () => {
   const fichier = fichierSource(PARTAGE.photo);
-  if (!fichier) throw new Error(`src/lib/partage.ts : la photo « ${PARTAGE.photo} » n'a pas de version de 1 800 ou 2 800 px dans design/directions/img/`);
+  if (!fichier) throw new Error(`src/lib/partage.ts : la photo « ${PARTAGE.photo} » n'a pas de version de 1 800 ou 2 800 px dans photos/`);
   const source = path.join(process.cwd(), fichier);
   const { width = 0, height = 0 } = await sharp(source).metadata();
   const format = PARTAGE.largeur / PARTAGE.hauteur;
