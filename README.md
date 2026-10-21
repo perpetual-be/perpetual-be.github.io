@@ -207,8 +207,27 @@ astro.config.mjs         adresse du site, cache, et les intégrations : pages de
 
 ## Domaine
 
-Le site est servi sur `perpetual.be` via GitHub Pages (fichier `public/CNAME` + enregistrements DNS chez l'hébergeur du domaine).
+Le site est en ligne sur https://perpetual.be et https://www.perpetual.be depuis le 21 octobre 2026, servi par GitHub Pages.
 
-### Mise en ligne sur perpetual.be
+### Réglages en place
 
-Côté dépôt : `site: 'https://perpetual.be'` dans `astro.config.mjs`, le fichier `public/CNAME` (`perpetual.be`) et `"indexation": true` dans `data/site.json`. Rien d'autre : le `noindex` des pages part (sauf sur la 404), `robots.txt` s'ouvre et renvoie au plan du site, et `sitemap.xml` passe aux adresses de `perpetual.be`. Pour changer d'hébergeur, il suffit de lancer `npm run build` et de servir le contenu de `dist/` : aucune dépendance à GitHub dans le site lui-même.
+- **Dépôt** : `site: 'https://perpetual.be'` dans `astro.config.mjs` et `"indexation": true` dans `data/site.json`. Les pages sont indexables (sauf la 404), `robots.txt` est ouvert et renvoie au plan du site, `sitemap.xml` donne les adresses de `perpetual.be`. Le fichier `public/CNAME` reste pour mémoire : avec le déploiement par GitHub Actions, c'est le réglage GitHub ci-dessous qui compte.
+- **GitHub** : le domaine `perpetual.be` est vérifié pour l'organisation (Settings → Pages de l'organisation). Dans le dépôt, Settings → Pages → Custom domain `perpetual.be`, avec Enforce HTTPS coché. Retirer ce domaine personnalisé ferait repasser le site sur perpetual-be.github.io.
+- **DNS** : le nom de domaine est enregistré chez Gandi ; sa zone DNS est gérée chez OVH. Les lignes du site :
+
+| Nom | Type | Valeur |
+|---|---|---|
+| `perpetual.be` | A | `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153` |
+| `www` | CNAME | `perpetual-be.github.io.` |
+| `_github-pages-challenge-perpetual-be` | TXT | le code de vérification de GitHub (à garder) |
+
+La messagerie de perpetual.be passe par les lignes MX de la même zone : ne jamais les modifier en touchant au site.
+
+### Changer d'hébergeur
+
+Le site ne dépend pas de GitHub : `npm run build`, servir le contenu de `dist/` ailleurs, puis faire pointer les lignes A et `www` vers le nouvel hébergeur. Pour repasser en prévisualisation non indexée : `site` de nouveau sur `https://perpetual-be.github.io` et `"indexation": false`.
+
+### Accès
+
+- L'organisation GitHub `perpetual-be` a deux propriétaires : le compte du mainteneur et un compte rattaché à `web@perpetual.be`, l'adresse technique de Perpetual, pour que Perpetual garde la main sur le dépôt.
+- Les comptes liés au site utilisent `web@perpetual.be` ; l'adresse publique du site est `contact@perpetual.be`.
