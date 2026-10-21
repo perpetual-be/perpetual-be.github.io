@@ -29,7 +29,7 @@
 .stat__value{display:block;font-family:var(--serif);font-weight:400;font-size:var(--fs-chiffre);line-height:1;color:var(--c-chiffre);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .stat__label{display:block;font-size:var(--fs-etiquette-chiffre);color:var(--c-etiquette-chiffre);margin-top:10px;max-width:22ch;line-height:1.4}
 .deco{position:absolute;inset:0;pointer-events:none}
-.deco__svg{display:block;position:absolute;top:0;right:0;height:100%;width:420px;color:var(--c-deco)}
+.deco__svg{display:block;position:absolute;top:0;right:max(0px,calc((100vw - var(--max)) / 2 - 160px));height:100%;width:420px;color:var(--c-deco)}   /* les anneaux au bord de la fenêtre jusqu'à ~1 520 px, puis à la même distance des chiffres que sur le portable */
 .deco__2{color:var(--c-deco-2)}
 
 /* graphique en anneau : un anneau, trois parts

@@ -1,7 +1,7 @@
 ---
 // Une rangée du registre d'Engagements : section.rang, l'id tiré du verbe ; à gauche (.rang__g) le verbe en h2.rang__verbe et, sous la rangée de
-// l'œuvre (oeuvre.rang, « Soutenir »), la cimaise : figure.oeuvre avec la photo par ProjectPhoto — la clé de l'en-tête, en 340, 680 et 870 px (le
-// fichier fait 870 px ; son JPEG pèse 500 Ko pour 340 px affichés), sizes de la boîte (340 px, la largeur du panneau au téléphone), le texte
+// l'œuvre (oeuvre.rang, « Soutenir »), la cimaise : figure.oeuvre avec la photo par ProjectPhoto — la clé de l'en-tête, en 200, 400, 680 et 870 px (le
+// fichier fait 870 px ; son JPEG pèse 500 Ko), sizes de la boîte (200 px sur ordinateur, la largeur du panneau au téléphone), le texte
 // alternatif de l'en-tête, chargement paresseux ; width et height de la source, et son format en aspect-ratio (ratioSource : la hauteur ne suit pas
 // l'arrondi de la version servie), jamais d'object-fit, ni lien ni zoom — puis figcaption.cartel (légende, détail). À droite (.rang__d) les paragraphes dans .eng-texte, rendus par enLigne (les liens seuls).
 // Styles : src/styles/page.css (la rangée) et src/styles/engagements.css (verbe, texte, cimaise, œuvre, cartel).
@@ -18,6 +18,6 @@ const { rang, oeuvre } = Astro.props;
 ---
 
 <section class="rang" id={rang.id}>
-  <div class="rang__g"><h2 class="rang__verbe">{rang.verbe}</h2>{oeuvre && <div class="cimaise"><figure class="oeuvre"><ProjectPhoto cle={oeuvre.photo} alt={oeuvre.alt} largeurs={[340, 680, 870]} sizes="(max-width: 640px) calc(100vw - 88px), 340px" loading="lazy" ratioSource /><figcaption class="cartel"><b>{oeuvre.legende}</b><span>{oeuvre.detail}</span></figcaption></figure></div>}</div>
+  <div class="rang__g"><h2 class="rang__verbe">{rang.verbe}</h2>{oeuvre && <div class="cimaise"><figure class="oeuvre"><ProjectPhoto cle={oeuvre.photo} alt={oeuvre.alt} largeurs={[200, 400, 680, 870]} sizes="(max-width: 640px) calc(100vw - 88px), 200px" loading="lazy" ratioSource /><figcaption class="cartel"><b>{oeuvre.legende}</b><span>{oeuvre.detail}</span></figcaption></figure></div>}</div>
   <div class="rang__d"><div class="eng-texte">{rang.paragraphes.map((p) => <p set:html={enLigne(p)} />)}</div></div>
 </section>

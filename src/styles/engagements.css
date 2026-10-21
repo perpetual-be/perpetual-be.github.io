@@ -4,10 +4,10 @@
 .eng-texte{padding-top:9px}   /* la première ligne du texte à hauteur de l'œil du verbe */
 .eng-texte p{margin-bottom:16px;max-width:62ch;text-wrap:pretty}
 .eng-texte p:last-child{margin-bottom:0}
-/* l'œuvre, recadrée sur la feuille, sur sa cimaise (panneau papier, dans la colonne, 32 px sous le verbe) : entière — jamais d'object-fit —, jamais
-   agrandie au-delà de 340 px (fichier de 870 px) ; pas un lien, pas de zoom ; le cartel sous l'œuvre, sur le panneau */
-.cimaise{margin-top:32px;background:var(--surface);padding:44px 48px 36px}
-.oeuvre{max-width:340px;margin:0 auto}
+/* l'œuvre, recadrée sur la feuille, sur sa cimaise (panneau papier, dans la colonne, 32 px sous le verbe) : entière — jamais d'object-fit —, 200 px
+   de large sur ordinateur, pour que le panneau s'arrête à peu près avec le texte de la rangée (au téléphone, la largeur du panneau) ; pas un lien, pas de zoom ; le cartel sous l'œuvre, sur le panneau */
+.cimaise{margin-top:32px;background:var(--surface);padding:28px 32px 24px}
+.oeuvre{max-width:200px;margin:0 auto}
 .oeuvre img{width:100%;height:auto}
 .cartel{margin-top:16px;font-size:var(--fs-etiquette);line-height:1.45;color:var(--c-meta)}
 .cartel b{display:block;font-weight:500;font-size:14px;color:var(--c-texte)}

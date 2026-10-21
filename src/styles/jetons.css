@@ -36,8 +36,9 @@
   --max:1200px;--gutter:40px;--bande-haut:44px;--bande-bas:40px;
   --max-large:1600px;   /* grille large, gouttières comprises : l'en-tête de toutes les pages, le contenu de la vue Réalisations et des fiches ; le pied de page de toutes les pages et le contenu de la Home et d'Engagements restent sur --max (1 200 px) */
   /* photo du premier écran : assez basse pour que la bande et ses quatre chiffres tiennent sous elle à 1440 × 900 et 1366 × 703
-     (en-tête 76 px + bande ~176 px dans la fenêtre basse ⇒ ~360 px restent pour la photo) */
-  --photo-hauteur:clamp(320px,calc(100vh - 270px),560px);--photo-haut:64px;
+     (en-tête 76 px + bande ~176 px dans la fenêtre basse ⇒ ~360 px restent pour la photo) ; 560 px au plus jusqu'à 1 600 px de large, puis 35vw (la
+     proportion du portable, ~2,9:1), pour qu'un grand écran ne la réduise pas à une bande — toujours sous la limite de la fenêtre */
+  --photo-hauteur:clamp(320px,min(calc(100vh - 270px),max(560px,35vw)),1200px);--photo-haut:64px;
   --logo-echelle:1;--logo-gap:48px;--zoom:1.035;--zoom-duree:.5s;
 }
 
