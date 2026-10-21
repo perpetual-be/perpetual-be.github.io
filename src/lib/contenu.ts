@@ -14,7 +14,7 @@ async function corps(page: string): Promise<{ data: Record<string, any>; blocs: 
 }
 
 /** La Home (content/home.md) : l'accroche (le bloc « # »), les paragraphes (les blocs suivants sauf le dernier), la signature (le dernier) ;
- *  stats, portfolio, hero, carte (le titre et le paragraphe de la carte des réalisations) et description depuis l'en-tête
+ *  stats, portfolio, hero, colonneGauche (le nombre de paragraphes de la colonne de gauche), carte (le libellé, le titre et le paragraphe de la carte des réalisations) et description depuis l'en-tête
  *  (schéma pages de src/content.config.ts). */
 export async function lireHome() {
   const { data, blocs } = await corps('home');
@@ -27,7 +27,8 @@ export async function lireHome() {
     stats: (data.stats ?? []) as { value: string; label: string }[],
     portfolio: data.portfolio as { title: string; items: { label: string; percent: number }[] } | undefined,
     hero: data.hero as { photo: string; focal?: string } | undefined,
-    carte: data.carte as { title: string; text: string } | undefined,
+    colonneGauche: (data.colonneGauche ?? 1) as number,
+    carte: data.carte as { eyebrow?: string; title: string; text: string } | undefined,
     description: data.description as string | undefined,
   };
 }

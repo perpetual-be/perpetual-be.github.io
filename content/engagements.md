@@ -9,7 +9,7 @@ oeuvre:
   alt: "Peinture d’Ines Reddah, 2024 : deux grands visages ronds cernés de bleu et de rose, entourés de traits verticaux de couleur."
 ---
 
-<!-- Textes de Julien (PDF v2 du 10/09/2026), repris le 05/10/2026 (lot 2b, item 8) : Soutenir réécrit (version A + fin C1, choix d’Axel ; le handicap dit simplement, avec les mots du Créahmbxl ; rencontre, cause et forme du soutien d’après les réponses de Julien du 05/10, sans détail personnel ni argent), Aider et Transmettre retouchés. « 2023 » : à confirmer par Julien (« il y a 3 ans »). -->
+<!-- Textes de Julien (PDF v2 du 10/09/2026), repris le 05/10/2026 (lot 2b, item 8) : Soutenir réécrit (version A + fin C1, choix d’Axel ; le handicap dit simplement, avec les mots du Créahmbxl ; rencontre, cause et forme du soutien d’après les réponses de Julien du 05/10, sans détail personnel ni argent), Aider et Transmettre retouchés. 21/10/2026 : dernière phrase de Soutenir et fin de Transmettre reprises de la relecture de Julien (mail du 19/10). « 2023 » : à confirmer par Julien (« il y a 3 ans »). -->
 <!-- Ordre des rangées : Soutenir, Aider, Transmettre (30/09 : retour de Julien, l’œuvre doit arriver plus tôt ; ordre choisi par Axel). -->
 
 ## Soutenir
@@ -20,7 +20,7 @@ Accompagnés par des artistes-animateurs, les participants y développent leur p
 
 Nous les avons rencontrés en 2023, autour d’un projet artistique, mais la cause nous tient à cœur depuis bien plus longtemps. Ce qui naît dans ces ateliers nous épate par sa franchise et sa spontanéité, sans filtre ni convention.
 
-Nous mettons aujourd’hui en place avec eux un soutien de longue durée, en moyens comme en savoir-faire.
+Nous voulons aujourd’hui les mettre à l’honneur et les soutenir dans la durée.
 
 <!--
 Le lien Créahmbxl s’ouvre dans un nouvel onglet (liens externes : target="_blank" rel="noopener" au rendu).
@@ -43,4 +43,4 @@ Nous ne comptons pas ce temps, et il ne sert aucun de nos projets.
 
 Depuis 2021, Julien De Dobbeleer est professeur invité à la Faculté d’architecture La Cambre-Horta de l’ULB, pour le cours de déontologie.
 
-Quelques heures par an, il rencontre les étudiants de dernière année, au moment où ils quittent l’école, autour d’une question : comment vivre de ce métier sans renoncer à ses idées, et leur donner les moyens d’aboutir ?
+Quelques heures par an, il rencontre les étudiants de dernière année, au moment où ils quittent l’école, autour d’une question : comment vivre de ce métier sans renoncer à ses idées ?

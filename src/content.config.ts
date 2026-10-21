@@ -10,6 +10,8 @@ const pages = defineCollection({
     description: z.string().optional(),
     // Home uniquement : la photo du premier écran (clé <id>-NN, cf. src/lib/photos.ts) et son point focal (object-position), lus par src/pages/index.astro.
     hero: z.object({ photo: z.string(), focal: z.string().optional() }).optional(),
+    // Home uniquement : le nombre de paragraphes de la colonne de gauche, sous la bande des chiffres (1 par défaut ; les suivants et la signature à droite).
+    colonneGauche: z.number().int().min(1).optional(),
     // Engagements uniquement : l'œuvre sur sa cimaise — la rangée (l'id d'un titre ##, ex. soutenir), la clé de la photo (photos/<clé>.jpg),
     // la légende et le détail du cartel, le texte alternatif.
     oeuvre: z.object({ rang: z.string(), photo: z.string(), legende: z.string(), detail: z.string(), alt: z.string() }).optional(),
@@ -24,8 +26,9 @@ const pages = defineCollection({
         items: z.array(z.object({ label: z.string(), percent: z.number() })),
       })
       .optional(),
-    // Home uniquement : le titre et le paragraphe de la carte des réalisations.
-    carte: z.object({ title: z.string(), text: z.string() }).optional(),
+    // Home uniquement : le libellé au-dessus de la carte des réalisations (eyebrow ; à défaut, celui de l'entrée /realisations du menu), son titre et
+    // son paragraphe.
+    carte: z.object({ eyebrow: z.string().optional(), title: z.string(), text: z.string() }).optional(),
   }),
 });
 

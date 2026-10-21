@@ -1,8 +1,8 @@
-/* Page Collectif, sous le titre de la page : le texte sur 64 caractères, la chute en serif italique, le filet puis les logos partenaires. Sur le container de
+/* Page Collectif, sous le titre de la page : le texte sur 68 caractères, la chute en serif italique, le filet puis les logos partenaires. Sur le container de
    1 200 px ; 12 px entre l'ouverture et le texte, comme le registre d'Engagements ; 72 px (44 au téléphone) entre les logos et le pied de page, comme
    les autres pages. Importé par src/pages/collectif.astro, après src/styles/page.css (titre et ouverture). */
 .collectif{padding-top:12px;padding-bottom:72px}
-.collectif__text{max-width:64ch}
+.collectif__text{max-width:68ch}
 .collectif__text p{margin-bottom:16px}
 .chute{font-family:var(--serif);font-style:italic;font-size:var(--fs-chute);line-height:1.3;color:var(--c-texte);margin-top:24px}
 .partners{display:flex;gap:var(--logo-gap);align-items:center;flex-wrap:wrap;margin-top:48px;padding-top:32px;border-top:1px solid var(--filet)}

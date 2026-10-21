@@ -3,8 +3,8 @@
 .section--chart{padding-top:64px}   /* 64 px entre la fin des paragraphes de la Home et le titre du graphique */
 
 /* premier écran : la photo pleine largeur porte l'accroche en blanc, en haut à gauche du container ; la bande des
-   chiffres vient juste après la photo, puis les paragraphes en deux colonnes — le premier à gauche, le second à droite avec la signature
-   dessous (les deux colonnes s'équilibrent). La grille du hero passe en display:contents, ses enfants (accroche, texte)
+   chiffres vient juste après la photo, puis les paragraphes en deux colonnes — les premiers à gauche (colonneGauche de content/home.md), les
+   suivants à droite avec la signature dessous (les deux colonnes s'équilibrent). La grille du hero passe en display:contents, ses enfants (accroche, texte)
    se replacent dans une grille à une colonne avec la photo et la bande. */
 .hero{display:grid;grid-template-columns:minmax(0,1fr);padding:0}
 .hero__grid{display:contents}
@@ -12,7 +12,7 @@
 .hero__title span{display:inline-block;max-width:24ch}
 .hero__text{grid-area:3/1/4/2;justify-self:center;width:100%;max-width:var(--max);margin:0;padding:56px var(--gutter) 0;display:grid;grid-template-columns:1fr 1fr;column-gap:56px;align-items:start}
 .hero__text p{margin-bottom:16px;max-width:none}
-.hero__text>p,.hero__col p:last-child{margin-bottom:0}   /* le premier paragraphe est seul dans sa colonne : pas de marge sous lui */
+.hero__col p:last-child{margin-bottom:0}   /* pas de marge sous le dernier paragraphe d'une colonne */
 .signature{margin-top:8px;font-family:var(--serif);font-style:italic;font-size:var(--fs-signature);line-height:1.3;color:var(--c-signature)}
 .hero__photo{display:block;grid-area:1/1/2/2;position:relative;overflow:hidden;height:var(--photo-hauteur)}
 .hero__photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}   /* object-position : le point focal de la photo (content/home.md, hero.focal), posé en style sur l'<img> par ProjectPhoto */
@@ -89,6 +89,6 @@
   .hero__photo::after{background:linear-gradient(to top,var(--voile-fort) 0%,var(--voile-moyen) 45%,transparent 85%)}
   .hero__title{align-self:end;padding:0 var(--gutter) 28px}
   .hero__text{grid-template-columns:1fr;padding-top:36px}
-  .hero__text>p{margin-bottom:16px}
+  .hero__col:first-child{margin-bottom:16px}   /* une seule colonne : l'écart entre les deux colonnes empilées */
   .signature{margin-top:4px}
 }

@@ -18,7 +18,7 @@ if (!home.carte) throw new Error('content/home.md : carte (le titre et le paragr
 ---
 
 <Base title={`${site.name} — ${site.tagline}`} fullTitle description={home.description}>
-  <PremierEcran h1={home.h1} paragraphs={home.paragraphs} signature={home.signature} stats={home.stats} hero={home.hero} />
+  <PremierEcran h1={home.h1} paragraphs={home.paragraphs} signature={home.signature} gauche={home.colonneGauche} stats={home.stats} hero={home.hero} />
   <Graphique title={home.portfolio.title} items={home.portfolio.items} />
-  <Carte titre={home.carte.title} texte={home.carte.text} />
+  <Carte eyebrow={home.carte.eyebrow} titre={home.carte.title} texte={home.carte.text} />
 </Base>

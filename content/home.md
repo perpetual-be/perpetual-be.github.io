@@ -3,6 +3,7 @@ title: Home
 subtitle: Positionnement et preuves
 description: Perpetual — le trait d’union entre les idées et le capital. Promoteur et développeur immobilier, Bruxelles, actif depuis 2002.
 hero: { photo: community-05, focal: "50% 20%" }
+colonneGauche: 2
 stats:
   - value: "2002"
     label: Nos débuts
@@ -22,19 +23,22 @@ portfolio:
     - label: Commerce
       percent: 25
 carte:
+  eyebrow: Projets en cours
   title: "Chez nous, de Haaltert à Welkenraedt."
   text: "Depuis 2002, nous transformons des bâtiments de toutes tailles, de l’agence bancaire à l’ancienne usine. Nous partons de ce qui est là et cherchons ce que le lieu peut encore apporter autour de lui."
 ---
 
-<!-- Texte de Julien (PDF v2 du 10/09/2026). Accroche et signature de Julien conservées ; les deux paragraphes ont été réécrits par Axel le 30/09/2026 (lot 3). Titre et paragraphe de la carte (section « Réalisations », en-tête `carte`) écrits par Axel le 04/10/2026 (lot 2b, items 3 et 14) : titre sans nombre, à retoucher ici si un projet arrive plus à l’ouest que Haaltert ou plus à l’est que Welkenraedt ; le paragraphe parle de tous les projets, pas du seul programme agences (qui reste sur Réalisations). Chiffres : « 120+ · Bâtiments repensés, aucun identique » (chiffre de Julien, 01/10/2026) remplace « 19 · Jours en moyenne entre deux livraisons » le 04/10/2026, placé en deuxième pour que les chiffres décroissent ; espace insécable dans « aucun identique ». Les commentaires sont des indications de mise en page, non publiées. -->
+<!-- Texte de Julien (PDF v2 du 10/09/2026). Accroche de Julien conservée ; les deux paragraphes réécrits par Axel le 30/09/2026 (lot 3) ont été remplacés le 21/10/2026 par les trois paragraphes de la relecture de Julien (mail du 19/10), avec la signature en français. Titre et paragraphe de la carte (section « Réalisations », en-tête `carte`) écrits par Axel le 04/10/2026 (lot 2b, items 3 et 14) : titre sans nombre, à retoucher ici si un projet arrive plus à l’ouest que Haaltert ou plus à l’est que Welkenraedt ; le paragraphe parle de tous les projets, pas du seul programme agences (qui reste sur Réalisations). Chiffres : « 120+ · Bâtiments repensés, aucun identique » (chiffre de Julien, 01/10/2026) remplace « 19 · Jours en moyenne entre deux livraisons » le 04/10/2026, placé en deuxième pour que les chiffres décroissent ; espace insécable dans « aucun identique ». Les commentaires sont des indications de mise en page, non publiées. -->
 
 # Le trait d’union entre les idées et le capital.
 
-Le monde a toujours évolué, aujourd’hui plus vite et plus fort que jamais. Un nouvel équilibre s’installe, avec le recul du commerce de détail et l’avancée du service et de l’usage. On vit et on travaille autrement, plus souvent seuls, et le besoin d’endroits où se retrouver n’en est que plus grand. Les lieux doivent suivre.
+On n’entre plus dans un lieu pour acheter, mais pour apprendre, se soigner, bouger, travailler ou rencontrer. Le commerce recule, et des milliers de mètres carrés perdent leur raison d’être.
 
-Nous repérons les bâtiments qui ont perdu leur usage et, avec l’œil de plus de vingt ans de métier, nous voyons la valeur sociale et économique qu’ils peuvent encore créer dans leur environnement. Puis nous repensons l’espace et son usage : un atelier d’artisans, une école de danse, une auto-école, des logements, une bijouterie. Chacun ramène de la vie là où le vide grandissait.
+L’envie de se retrouver, elle, n’a jamais été aussi forte. Elle cherche simplement d’autres adresses.
 
-Everything is already inside.
+C’est là que notre travail commence. Devant un bâtiment vide, nous posons une équation : quels usages, quels partenaires, quel modèle pour qu’il vive et qu’il rapporte. Nous n’avons pas de recette, seulement de l’imagination appliquée avec rigueur.
+
+Tout est déjà à l’intérieur.
 
 <!--
 Chiffres clés (frontmatter `stats`) : à présenter sur une ligne, séparés par des points médians ou des filets verticaux.

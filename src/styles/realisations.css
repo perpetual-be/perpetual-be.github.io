@@ -105,10 +105,10 @@ a.bloc:hover img{transform:scale(var(--zoom))}
   .tuile__texte{left:12px;right:12px;bottom:10px}
   .tuile::after{background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.36) 38%,transparent 64%)}   /* le voile des blocs au téléphone, aussi sous les noms des tuiles (nom 19 px à 4,6:1 au pire ; 2,95:1 sans lui) */
 }
-/* ---------- tablette en portrait, de 641 à 880 px ---------- */
+/* ---------- tablette en portrait, de 641 à 940 px ---------- */
 /* la mosaïque des agences comme au téléphone : deux colonnes de tuiles 4:5, nom 19 px et surface dessous, les cases de texte sur toute la largeur — sur
-   les rangées de la grille large, les deux cases de texte seraient rognées entre 650 et 870 px ; les projets gardent leurs rangées */
-@media (min-width:641px) and (max-width:880px){
+   les rangées de la grille large, les deux cases de texte seraient rognées entre 650 et 930 px ; les projets gardent leurs rangées */
+@media (min-width:641px) and (max-width:940px){
   .mos{display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:row dense;gap:10px}
   .mos__rang{display:contents}
   .mos .tuile{aspect-ratio:4/5;flex:none}

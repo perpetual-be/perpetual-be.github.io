@@ -1,16 +1,16 @@
 ---
 title: Collectif
 subtitle: Organisation et partenaires
-description: Perpetual n’a aucun salarié — une cinquantaine de personnes, trois associés et un réseau de partenaires.
+description: Perpetual réunit, projet après projet, des architectes, des avocats, des géomètres, des entreprises de construction et des artisans spécialisés.
 ---
 
-<!-- Texte de Julien (PDF v2 du 10/09/2026), réécrit par Axel le 30/09/2026 (lot 3), puis repris le 04/10/2026 (lot 2b, item 6 : ton plus proche demandé par Julien le 30/09 — même mise en page, longévité des liens, « on » admis). Les trois premiers blocs sont les paragraphes ; le dernier est la phrase de fin, en grand (.chute). -->
+<!-- Texte de Julien (PDF v2 du 10/09/2026), réécrit par Axel le 30/09/2026 (lot 3), puis repris le 04/10/2026 (lot 2b, item 6 : ton plus proche demandé par Julien le 30/09 — même mise en page, longévité des liens, « on » admis), enfin réécrit par Julien le 19/10/2026 (relecture, mail du 19/10 ; phrase de fin gardée). Les trois premiers blocs sont les paragraphes ; le dernier est la phrase de fin, en grand (.chute). -->
 
-Au cœur de Perpetual, trois associés. Pas de salariés, mais une cinquantaine de personnes qui travaillent avec nous, pour beaucoup depuis des années.
+Perpetual ne s’entoure pas d’une grande équipe. Elle la réunit, projet après projet.
 
-Des architectes qui connaissent leur région et savent en garder le style, des avocats, des géomètres, des agents immobiliers, des entreprises de construction et leurs corps de métier, des investisseurs privés qui nous font confiance. Des profils très différents, qu’on retrouve de projet en projet.
+Des architectes qui connaissent leur région et savent en garder le style, des avocats, des géomètres, des entreprises de construction et des artisans spécialisés. Des profils très différents, qu’on retrouve de projet en projet.
 
-Ce réseau et notre expérience nous donnent les moyens d’une grande équipe, avec l’agilité d’une structure légère. C’est ce qui nous permet de travailler aussi bien avec des banques et des groupes qu’avec des pouvoirs publics.
+Ce réseau nous donne les moyens d’une grande équipe, avec l’agilité d’une structure légère. Nous décidons vite, nous ajustons sans inertie, et chaque euro va au projet plutôt qu’à la structure.
 
 On aime travailler ensemble. Alors on continue.
 
