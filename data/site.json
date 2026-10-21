@@ -7,7 +7,7 @@
   "city": "1030 Bruxelles",
   "vat": "BE 0812.325.906",
   "since": 2002,
-  "indexation": false,
+  "indexation": true,
   "nav": [
     { "label": "Réalisations", "href": "/realisations" },
     { "label": "Collectif", "href": "/collectif" },
