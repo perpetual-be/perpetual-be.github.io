@@ -1,7 +1,7 @@
 ---
 title: Politique de confidentialité
 description: Traitement des données par Perpetual — journaux techniques d’hébergement et contact par e-mail, conforme au RGPD.
-updated:
+updated: 2026-10-21
 ---
 
 <!-- Date de dernière mise à jour : le champ updated de l’en-tête, en date ISO (2026-10-01), à remplir à la mise en ligne (lot 9). Tant qu’il est vide, la ligne « Dernière mise à jour » n’est pas affichée sous le titre et la construction du site écrit un avertissement. -->
