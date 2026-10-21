@@ -105,7 +105,7 @@ function planDuSite() {
 // `indexation` à vrai dans data/site.json (noindex retiré, robots.txt ouvert), rien d'autre ne change : sitemap.xml, robots.txt et les adresses
 // absolues des pages suivent `site`.
 export default defineConfig({
-  site: 'https://perpetual-be.github.io',
+  site: 'https://perpetual.be',
   trailingSlash: 'never',
   build: { format: 'file' },
   // Cache d'Astro (dont les photos déjà produites) hors de node_modules/ : le déploiement GitHub le garde d'une fois sur l'autre
