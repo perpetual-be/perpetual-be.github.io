@@ -23,7 +23,6 @@ portfolio:
     - label: Commerce
       percent: 25
 carte:
-  eyebrow: Projets en cours
   title: "Chez nous, de Haaltert à Welkenraedt."
   text: "Depuis 2002, nous transformons des bâtiments de toutes tailles, de l’agence bancaire à l’ancienne usine. Nous partons de ce qui est là et cherchons ce que le lieu peut encore apporter autour de lui."
 ---
