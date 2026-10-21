@@ -1,6 +1,6 @@
 ---
 // Un fait d'un bloc ou d'une tuile de la vue Réalisations : l'étiquette (.fait__et), puis la valeur (.fait__val). provisoire : un fait provisoire
-// (« Projet » de Brosse, tant que son usage manque), signalé par la classe provisoire et un title au survol.
+// (« Projet » de Brosse, tant que son usage manque), signalé par la classe provisoire (sans effet visible) pour le retrouver dans le code.
 interface Props {
   etiquette: string;
   valeur: string;
@@ -10,4 +10,4 @@ interface Props {
 const { etiquette, valeur, provisoire = false } = Astro.props;
 ---
 
-<span class={provisoire ? 'provisoire' : undefined} title={provisoire ? 'intitulé du site 2020, provisoire (lot 3)' : undefined}><span class="fait__et">{etiquette}</span><span class="fait__val">{valeur}</span></span>
+<span class={provisoire ? 'provisoire' : undefined}><span class="fait__et">{etiquette}</span><span class="fait__val">{valeur}</span></span>

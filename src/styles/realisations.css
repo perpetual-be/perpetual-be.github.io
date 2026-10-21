@@ -7,7 +7,7 @@
 .page__titre{font-family:var(--serif);font-weight:400;font-size:var(--fs-titre-page);line-height:1;letter-spacing:-.015em}
 /* vue Réalisations, sur la grille large : le titre en sans léger — la fiche garde la serif, qui prolonge le nom
    des projets posé sur les photos —, seul (le pied de page, lui, reste sur le container de 1 200 px, comme sur toutes les pages).
-   .provisoire : texte ou intitulé provisoire, signalé par un title au survol */
+   .provisoire : texte ou intitulé provisoire (repère dans le code, sans style) */
 html[data-page="realisations"] .page__titre{font-family:var(--sans);font-weight:400;letter-spacing:-.028em;line-height:1.02}
 .p2-ouv{padding-top:32px;padding-bottom:30px}
 /* les projets : rangées de blocs photo (data/realisations.json : 7/5, 5/7 ou toute la largeur), hauteur calée sur la fenêtre ; le nom en serif blanc

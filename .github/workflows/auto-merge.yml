@@ -24,8 +24,12 @@ jobs:
       !contains(github.event.pull_request.labels.*.name, 'no-auto-merge')
     runs-on: ubuntu-latest
     steps:
+      # Sans garder le jeton dans .git/config : npm ci et le build n'en ont pas besoin, et un paquet compromis ne pourrait pas s'en servir
+      # pour pousser. La fusion et le déploiement passent par gh, avec GH_TOKEN donné à leurs seules étapes.
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@v4

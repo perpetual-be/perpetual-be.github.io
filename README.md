@@ -83,7 +83,7 @@ Un fichier Markdown par page dans `content/`. L'en-tête (entre les `---`) porte
 | Mentions légales, confidentialité | `content/mentions-legales.md`, `content/politique-confidentialite.md` | une rangée par titre `##` (« 1. Titre » : le numéro devient « 01 » au-dessus du titre), le Markdown de la section à droite (gras, italique, listes, liens, retours à la ligne forcés). La confidentialité affiche sa date de mise à jour dès que l'en-tête la donne (`updated`, date ISO) ; vide, la ligne n'apparaît pas et le build l'écrit en avertissement |
 | Page 404 (adresse inconnue) | `content/404.md` | des paragraphes, sans titre (le titre est dans l'en-tête) ; seuls les liens sont rendus |
 
-Les textes en blocs sont insérés tels quels : les espaces insécables du fichier sont gardés, et une espace insécable est ajoutée avant « : » dans les paragraphes d'Engagements et de la 404 et dans les pages légales. `content/contact.md` n'est pas affiché : le bloc contact est le pied de page, lu dans `data/site.json`.
+Les textes en blocs sont insérés tels quels : les espaces insécables du fichier sont gardés, et une espace insécable est ajoutée avant « : » dans les paragraphes d'Engagements et de la 404 et dans les pages légales. Le bloc contact n'a pas de fichier dans `content/` : c'est le pied de page, lu dans `data/site.json`.
 
 ### Navigation, pied de page et menu du téléphone
 
